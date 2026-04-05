@@ -4,7 +4,6 @@
 
   const message = ref('Waiting for Laravel...')
 
-  // This function talks to the backend
   const fetchData = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/data')
@@ -20,6 +19,19 @@
 </script>
 
 <template>
-  <h1>Vue + Laravel Connection</h1>
   <p>Message from Backend: <strong>{{ message }}</strong></p>
+  <div class="app-container">
+    <h1>My CRUD App</h1>
+    
+    <router-view />
+  </div>
 </template>
+
+<style>
+  .app-container {
+    font-family: sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+</style>
