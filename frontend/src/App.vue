@@ -5,11 +5,11 @@
     <div class="list-group m-5">
       <div class="list-group-item" v-for="s in students" :key="s.id">
 
-        <div class="d-flex justify-content-between align-items-center" v-if="!s.editing">
+        <div class="d-flex justify-content-between align-items-center" v-if="editing_id !== s.id">
           <span>{{ s.name }} ({{ s.student_id }}) - {{ s.grade }}</span>
 
           <div class="d-flex gap-2">
-            <button class="btn btn-primary btn-sm" @click="s.editing = true">Update</button>
+            <button class="btn btn-primary btn-sm" @click="editing_id = s.id">Update</button>
             <button class="btn btn-danger btn-sm" @click="deleteStudent(s.id)">Delete</button>
           </div>
         </div>
@@ -29,7 +29,7 @@
 
           <div class="col-3 d-flex gap-2">
             <button class="btn btn-success" @click="updateStudent(s)">Save</button>
-            <button class="btn btn-secondary" @click="s.editing = false">Cancel</button>
+            <button class="btn btn-secondary" @click="editing_id=null; load()">Cancel</button>
           </div>
         </div>
       </div>
@@ -68,17 +68,15 @@ export default {
       students: [],
       name: '',
       student_id: '',
-      grade: ''
+      grade: '',
+      editing_id: null
     };
   },
 
   methods: {
     load() {
       studentService.getStudents().then(res => {
-        this.students = res.data.map(s => ({
-          ...s,
-          editing: false
-        }));
+        this.students = res.data;
       });
     },
 
@@ -101,7 +99,10 @@ export default {
         name: s.name,
         student_id: s.student_id,
         grade: s.grade
-      }).then(() => this.load());
+      }).then(() => {
+        this.editing_id = null;
+        this.load();
+      });
     },
 
     deleteStudent(id) {
