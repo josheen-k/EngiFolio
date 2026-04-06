@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PostTable from '../pages/PostTable.vue'
 import Post from '../pages/Post.vue'
 import Edit from '../pages/Edit.vue'
+import Staff from '../pages/Staff.vue'
+import Student from '../pages/Student.vue'
 
 const routes = [
   {
@@ -18,7 +20,18 @@ const routes = [
     path: '/edit/:id',
     name: 'edit',
     component: Edit
+  },
+  {
+    path: '/staff',
+    name: 'staff',
+    component: Staff
+  },
+  {
+    path: '/student',
+    name: 'student',
+    component: Student
   }
+
 ]
 
 const router = createRouter({

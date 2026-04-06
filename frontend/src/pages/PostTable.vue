@@ -32,37 +32,36 @@
   onMounted(() => {
     loadPosts();
 });
-
-
 </script>
 
 <template>
   <div class="post-container">
     <div class="p-5" style="margin-bottom: 20px; border: 1px solid #eee; padding: 20px;">
         <h6>Add post</h6>
-        <input v-model="newPost.title" placeholder="Title" />
-        <input v-model="newPost.body" placeholder="Body" />
-        <button @click="addPost">Add Post</button>
+        <input class="me-2 mb-3 form-control" v-model="newPost.title" placeholder="Title"/>
+        <input class="me-2 mb-3 form-control" v-model="newPost.body" placeholder="Body"/>
+        <button class="btn btn-primary" type="submit" @click="addPost">Add Post</button>
     </div>
 
     <div class="table-container">
-      <h2>Post List</h2>
-      <table border="1" style="width: 100%; text-align: left; border-collapse: collapse;">
-        <thead>
+      <h2 class="ps-3">Post List</h2>
+      <table class="table table-hover border align-middle ps-3 pe-3">
+        <thead class="table-light">
           <tr style="background-color: #f2f2f2;">
-            <th>ID</th>
+            <th class="ps-3" style="width: 90px">ID</th>
             <th>Title</th>
             <th>Content</th>
-            <th>Options</th>
+            <th class="pe-4" style="width: 180px">Options</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="post in posts" :key="post.id">
-            <td><router-link :to="'/post/' + post.id">{{ post.id }}</router-link></td>
+          <tr v-for="post in posts" :key="post.id" @click="$router.push('post/'+ post.id)" style="cursor: pointer;">
+            <td class="ps-3">{{ post.id }}</td>
             <td>{{ post.title }}</td>
             <td>{{ post.body }}</td>
-            <td><router-link :to="'/edit/' + post.id"><button type="button">Edit</button></router-link>
-              <button @click="removePost(post.id)">Delete</button></td>
+            <td class="pe-4 text-center">
+              <router-link :to="'/edit/' + post.id" @click.stop><button  class="btn btn-outline-primary me-2" type="submit" >Edit</button></router-link>
+              <button class="btn btn-danger" type="submit" @click.stop="removePost(post.id)">Delete</button></td>
           </tr>
           <tr v-if="posts.length === 0">
             <td colspan="4" style="text-align: center;">No posts found.</td>

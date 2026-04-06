@@ -1,37 +1,67 @@
 <script setup>
   import { onMounted, ref } from 'vue'
   import axios from 'axios'
-
-  const message = ref('Waiting for Laravel...')
-
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/data')
-      message.value = response.data.content
-    } catch (error) {
-      message.value = "Laravel error."
-    }
-  }
-
-  onMounted(() => {
-    fetchData()
-  })
 </script>
 
 <template>
-  <p>Message from Backend: <strong>{{ message }}</strong></p>
   <div class="app-container">
-    <h1>My CRUD App</h1>
-    
+    <div class="nav-wrapper">
+      <div><router-link to="/"><img class="navLogo" src="@/assets/Logo.png" alt="Adelaide University"></router-link></div>
+      <ul class="nav-bar">
+        <li class="nav-item"><router-link to="/">Home</router-link></li>
+        <li class="nav-item"><router-link to="/staff">Staff</router-link></li>
+        <li class="nav-item"><router-link to="/student">Student</router-link></li>
+      </ul>
+    </div>
     <router-view />
   </div>
 </template>
 
 <style>
-  .app-container {
-    font-family: sans-serif;
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
+
+.nav-item a {
+  color: white;
+  font-family: "Roboto Serif", Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 1.5rem;
+  transition: background-color 0.3s ease;
+  height: auto;
+}
+
+.navLogo {
+  height: 40px;
+  width: auto;
+  display: block;
+  padding: 10px 20px;
+}
+
+.nav-item a:hover {
+  background-color: #020110; 
+}
+
+
+.nav-wrapper {
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  background-color: #140f50;
+  padding: 0;
+}
+
+.nav-bar {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  display: flex;
+}
+
 </style>
+

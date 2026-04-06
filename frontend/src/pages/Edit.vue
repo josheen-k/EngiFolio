@@ -29,16 +29,16 @@
 
 <template>
     <div class="post" v-if="post">
-        <h1>Editing: {{ post.id }}</h1> 
-        <h4>Updated entry</h4>
+        <h1 class="ps-3">Editing: {{ post.id }}</h1> 
+        <h4 class="ps-3">Updated entry</h4>
         <div class="p-5" style="margin-bottom: 20px; border: 1px solid #eee; padding: 20px;">
-            <input v-model="newPost.title" placeholder="Title" />
-            <input v-model="newPost.body" placeholder="Body" />
-            <button @click="editPost">Save changes</button>
+        <input class="me-2 mb-3 form-control" v-model="newPost.title" placeholder="Title"/>
+        <input class="me-2 mb-3 form-control" v-model="newPost.body" placeholder="Body"/>
+        <button class="btn btn-primary" type="submit"  @click="editPost">Save changes</button>
     </div>
 
 
-        <router-link to="/">Back to Table</router-link>
+        <router-link class="ps-3" to="/">Back to Table</router-link>
     </div>
 
     <div v-else>
