@@ -3,7 +3,14 @@
         <h1>Crud Example</h1>
 
         <div v-for="s in students" :key="s.id">
-            {{ s.name }} - {{ s.grade }}
+            {{ s.name }} ({{ s.student_id }}) - {{ s.grade }}
+
+            <input v-model="s.name" placeholder="Name"/>
+            <input v-model="s.student_id" placeholder="ID"/>
+            <input v-model="s.grade" placeholder="Grade"/>
+            <button @click="updateStudent(s)">Update Student</button>
+
+            <button @click="deleteStudent(s.id)">Delete student</button>
         </div>
 
         <input v-model="name" placeholder="Name"/>
@@ -46,6 +53,18 @@ export default {
                 this.student_id = '';
                 this.grade = '';
             });
+        },
+
+        updateStudent(s) {
+            studentService.updateStudent(s.id, {
+              name: s.name,
+              student_id: s.student_id,
+              grade: s.grade
+            }).then(() => this.load());
+        },
+
+        deleteStudent(id) {
+            studentService.deleteStudent(id).then(() => this.load());
         }
     },
     mounted() {
