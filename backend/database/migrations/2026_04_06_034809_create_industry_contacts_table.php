@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('contact_name');
             $table->string('email_id');
             $table->string('company_name');
-            $table->timestamps();
+            $table->string('date_met');
         });
     }
 
