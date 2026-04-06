@@ -2,8 +2,8 @@
     <div>
         <h1>Crud Example</h1>
 
-        <div v-for="s in students" :key="s.id">
-            {{ s.name }} ({{ s.student_id }}) - {{ s.grade }}
+        <div class="student" v-for="s in students" :key="s.id">
+            <span>{{ s.name }} ({{ s.student_id }}) - {{ s.grade }}</span>
 
             <input v-model="s.name" placeholder="Name"/>
             <input v-model="s.student_id" placeholder="ID"/>
@@ -13,10 +13,12 @@
             <button @click="deleteStudent(s.id)">Delete student</button>
         </div>
 
-        <input v-model="name" placeholder="Name"/>
-        <input v-model="student_id" placeholder="ID"/>
-        <input v-model="grade" placeholder="Grade"/>
-        <button @click="addStudent">Add student</button>
+        <div class="add">
+            <input v-model="name" placeholder="Name"/>
+            <input v-model="student_id" placeholder="ID"/>
+            <input v-model="grade" placeholder="Grade"/>
+            <button @click="addStudent">Add student</button>
+        </div>
 
     </div>
 </template>
@@ -72,3 +74,25 @@ export default {
     }
 };
 </script>
+
+<style>
+h1 {
+  text-align: center;
+}
+
+.student {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+span {
+  margin: 20px;
+}
+
+.add {
+  display: flex;
+  gap: 10px;
+  margin: 20px;
+}
+</style>
