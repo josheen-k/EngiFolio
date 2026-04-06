@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\IndustryContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,3 +22,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/data', function () {
     return response()->json(['content' => 'Laravel 10 running']);
 });
+
+
+Route::apiResource('industry-contacts', IndustryContactController::class);
