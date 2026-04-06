@@ -5,12 +5,18 @@
         <div class="student" v-for="s in students" :key="s.id">
             <span>{{ s.name }} ({{ s.student_id }}) - {{ s.grade }}</span>
 
-            <input v-model="s.name" placeholder="Name"/>
-            <input v-model="s.student_id" placeholder="ID"/>
-            <input v-model="s.grade" placeholder="Grade"/>
-            <button @click="updateStudent(s)">Update Student</button>
+            <div class="student" v-if="!s.editing">
+               <button @click="s.editing=true">Update Student</button>
+               <button @click="deleteStudent(s.id)">Delete student</button>
+            </div>
 
-            <button @click="deleteStudent(s.id)">Delete student</button>
+            <div class="student" v-else>
+               <input v-model="s.name" placeholder="Name"/>
+               <input v-model="s.student_id" placeholder="ID"/>
+               <input v-model="s.grade" placeholder="Grade"/>
+               <button @click="updateStudent(s)">Save</button>
+               <button @click="s.editing=false">Cancel</button>
+            </div>
         </div>
 
         <div class="add">
@@ -39,7 +45,10 @@ export default {
     methods: {
         load() {
             studentService.getStudents().then(res => {
-                this.students = res.data;
+                this.students = res.data.map(s => ({
+                  ...s,
+                  editing: false
+                }));
             });
         },
 
