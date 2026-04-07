@@ -1,44 +1,51 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../pages/home.vue'
-import StudentProfile from '../pages/profile.vue'
-import ProfileSettings from '../pages/profileSettings.vue'
-import EACompetency from '../pages/eaCompetency.vue'
-import CareerPlanning from '../pages/careerPlanning.vue'
-import CareerDevelopment from '@/pages/careerDevelopment.vue'
+import Homepage from '@/pages/public/Homepage.vue'
+import StudentDashboard from '../pages/student/Dashboard.vue'
+import StudentProfile from '../pages/student/profile.vue'
+import ProfileSettings from '../pages/student/profileSettings.vue'
+import EACompetency from '../pages/student/eaCompetency.vue'
+import CareerPlanning from '../pages/student/careerPlanning.vue'
+import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'homePage',
-    component: HomePage
+    name: 'Homepage',
+    component: Homepage
   },
 
   {
-    path: '/profile/username',
+    path: '/student/dashboard',
+    name: 'Dashboard',
+    component: StudentDashboard
+  },
+
+  {
+    path: '/student/profile/username',
     name: 'profile',
     component: StudentProfile
   },
 
   {
-    path: '/settings/profile',
+    path: '/student/settings/profile',
     name: 'profile-settings',
     component: ProfileSettings
   },
 
     {
-    path: '/career-development',
+    path: '/student/career-development',
     name: 'careerDevelopment',
     component: CareerDevelopment
   },
   
   {
-    path: '/career-planning',
+    path: '/student/career-planning',
     name: 'careerPlanning',
     component: CareerPlanning
   },
 
   {
-    path: '/eaCompetency',
+    path: '/student/eaCompetency',
     name: 'eaCompetency',
     component: EACompetency
   }
