@@ -21,8 +21,7 @@ class IndustryContactController extends Controller
             'date_met' => 'nullable|date',
         ]);
 
-        $validated['user_id'] = auth()->id();
-
+        // Save the validated data
         $contact = IndustryContact::create($validated);
 
         return response()->json($contact, 201);
@@ -37,8 +36,8 @@ class IndustryContactController extends Controller
     {
         $validated = $request->validate([
             'contact_name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
-            'progress_notes' => 'nullable|string',
+            'company_name' => 'nullable|string|max:255',
+            'email_id' => 'nullable|string',
             'date_met' => 'nullable|date',
         ]);
 

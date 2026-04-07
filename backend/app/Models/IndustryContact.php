@@ -9,8 +9,11 @@ class IndustryContact extends Model
 {
     use HasFactory;
 
+    protected $table = 'industry_contacts';
+    protected $primaryKey = 'contact_id';
+    public $incrementing = true;
+
     protected $fillable = [
-        'contact_id',
         'contact_name',
         'email_id',
         'company_name',

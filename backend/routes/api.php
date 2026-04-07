@@ -24,4 +24,4 @@ Route::get('/data', function () {
 });
 
 
-Route::apiResource('industry-contacts', IndustryContactController::class);
+Route::apiResource('/industry-contacts', IndustryContactController::class);

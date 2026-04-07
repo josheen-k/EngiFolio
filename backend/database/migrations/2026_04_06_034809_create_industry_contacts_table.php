@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('industry_contacts', function (Blueprint $table) {
             $table->id();
-            $table->integer('contact_id');
             $table->string('contact_name');
             $table->string('email_id');
             $table->string('company_name');
             $table->string('date_met');
+            $table->timestamps();
         });
     }
 
