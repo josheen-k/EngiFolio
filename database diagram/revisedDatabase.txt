@@ -2,16 +2,39 @@
 
 // Student table linked to the uni
 Table student {
-  student_id bigint [pk, not null, unique]
+  student_id varchar(20) [pk]
   first_name varchar(100) [not null]
   last_name varchar(100) [not null]
+  email varchar(255) [unique, not null]
   program varchar(255) [not null]
 }
 
+Table staff {
+  staff_id varchar(20) [pk]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  email varchar(255) [unique, not null]
+}
+
+Table staff_profile {
+  staff_profile_id bigint [pk]
+  staff_id varchar(20) [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table assigned_student {
+  assigned_student_id varchar(20) [pk]
+  staff_id varchar(20) [not null]
+  student_id varchar(20) [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+} 
+
 Table student_profile {
   profile_id bigint [pk, increment]
-  student_id bigint [not null, unique]
-  introduction varchar(255)  [note: 'Write a brief introduction about yourself (e.g. your degree, areas of interest in engineering, and key strengths).']
+  student_id  varchar(20) [not null, unique]
+  introduction text  [note: 'Write a brief introduction about yourself (e.g. your degree, areas of interest in engineering, and key strengths).']
   elevator_pitch text  [note: 'Prepare a 30-second pitch to introduce yourself at networking events or interviews.']
   resume_url varchar(500)  [note: 'Insert a link to your most recent resume (e.g. via cloud storage or portfolio).']
   linked_in_url varchar(500)  [note: 'Include a link to your LinkedIn or other professional profile (if available).'] 
@@ -21,7 +44,7 @@ Table student_profile {
 
 Table career_development_plan {
   development_plan_id bigint [pk, increment]
-  student_id bigint [not null, unique]
+  student_id  varchar(20) [not null, unique]
   career_goal varchar(500) [note: 'Career Goal on Graduation']
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -29,53 +52,85 @@ Table career_development_plan {
 
 Table ea_competency_development {
   ea_competency_development_id bigint [pk, increment]
-  student_id bigint [not null, unique]
+  student_id  varchar(20) [not null, unique]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 
 // Tables linked directly to the introduction section of the student engineering profile
+Table event {
+    event_id bigint [pk, increment]
+    profile_id bigint [not null]
+    name char(255) [not null]
+    event_date date [not null]
+    event_time time [not null]
+    location char(255)
+    details text
+    created_at datetime [not null]
+    updated_at datetime [not null]
+}
+
 Table networking_questions {
-    networking_questions_id integer [primary key]
-    profile_id bigint
+    networking_questions_id bigint [pk, increment]
+    event_id bigint [not null]
     networking_questions text [note: 'List 3–5 thoughtful questions you can ask employers or professionals to start meaningful conversations.']
     created_at datetime [not null]
     updated_at datetime [not null]
 }
 
+Table industry_contact {
+    industry_contact_id bigint [pk, increment]
+    profile_id bigint [not null]
+    name char(255) [not null]
+    company char(255) [not null]
+    contact_info text
+    notes text
+    date_met date
+    created_at datetime [not null]
+    updated_at datetime [not null]
+}
+
 Table job_resources {
-  job_resources_id integer [primary key]
-  profile_id bigint
-  title varchar
+  job_resources_id bigint [pk, increment]
+  profile_id bigint [not null]
+  title varchar(255) [not null]
   body text [note: 'Store responses to selection criteria, interview practice videos, or other supporting materials for job applications.']
+  file_path varchar(500) [note: 'if applicable']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table achievement_cert {
-  achievement_cert_id integer [primary key]
-  profile_id bigint
-  title varchar
+  achievement_cert_id bigint [pk, increment]
+  profile_id bigint [not null]
+  title varchar(255) [not null]
   body text [note: 'Upload awards, scholarships, or other certificates that demonstrate your academic or extracurricular success.']
+  file_path varchar(500) [note: 'if applicable']
+  issued_date date
+  expiry_date date
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table attainment_cert {
-  attainment_cert_id integer [primary key]
-  profile_id bigint
-  title varchar
+  attainment_cert_id bigint [pk, increment]
+  profile_id bigint [not null]
+  title varchar(255) [not null]
   body text [note: 'Include training credentials such as White Card, First Aid, WHS training, or other job-related certifications.']
+  file_path varchar(500) [note: 'if applicable']
+  issued_date date
+  expiry_date date
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table portfolio_note {
-  portfolio_note_id integer [primary key]
-  profile_id bigint
-  title varchar
+  portfolio_note_id bigint [pk, increment]
+  profile_id bigint [not null]
+  title varchar(255) [not null]
   body text [note: 'Add links to relevant portfolio items, project work, or documentation of achievements.']
+  file_path varchar(500) [note: 'if applicable']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -83,56 +138,51 @@ Table portfolio_note {
 
 // Tables linked directly to the career planning section of the student engineering profile
 Table preferred_employer {
-  preferred_employer_id integer [primary key]
-  profile_id bigint
-  title varchar
-  body text [note: 'List companies, consultancies, or government organisations you’d like to work with.']
+  preferred_employer_id bigint [pk, increment]
+  profile_id bigint [not null]
+  employer varchar(255) [not null, note: 'List companies, consultancies, or government organisations you’d like to work with.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table preferred_role {
-  preferred_role_id integer [primary key]
-  profile_id bigint
-  title varchar
-  body text [note: 'Identify job titles or types of engineering roles youre most interested in.']
+  preferred_role_id bigint [pk, increment]
+  profile_id bigint [not null]
+  role varchar(255) [not null, note: 'Identify job titles or types of engineering roles youre most interested in.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 
 Table professional_value {
-  professional_value_id integer [primary key]
-  profile_id bigint
-  title varchar
-  body text [note: 'List the workplace values that are most important to you (e.g. collaboration, sustainability, innovation).']
+  professional_value_id bigint [pk, increment]
+  profile_id bigint [not null]
+  value varchar(255) [not null, note: 'List the workplace values that are most important to you (e.g. collaboration, sustainability, innovation).']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table key_skill_strength {
-  id integer [primary key]
-  profile_id bigint
-  title varchar
+  key_skill_strength_id bigint [pk, increment]
+  profile_id bigint [not null]
+  title varchar(255) [not null]
   body text [note: 'Summarise your strongest technical and professional skills relevant to engineering.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table current_development_goal {
-  current_development_goal_id integer [primary key]
-  profile_id bigint
-  title varchar
-  body text [note: 'Outline a few short-term goals (e.g. build CAD skills, improve presentation confidence, gain industry exposure).']
+  current_development_goal_id bigint [pk, increment]
+  profile_id bigint [not null]
+  goal varchar(255) [not null, note: 'Outline a few short-term goals (e.g. build CAD skills, improve presentation confidence, gain industry exposure).']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
-Table extra_Curricular_activity {
-  id integer [primary key]
-  profile_id bigint
-  title varchar
-  body text [note: 'Outline a few short-term goals (e.g. build CAD skills, improve presentation confidence, gain industry exposure).']
+Table extra_curricular_activity {
+  extra_curricular_activity_id bigint [pk, increment]
+  profile_id bigint [not null]
+  activity varchar(255) [not null, note: 'Outline a few short-term goals (e.g. build CAD skills, improve presentation confidence, gain industry exposure).']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -141,100 +191,123 @@ Table extra_Curricular_activity {
 // Tables linked to career development plan
 Table career_planning_overview {
   career_planning_overview_id bigint [pk, increment]
-  development_plan_id bigint [not null, unique]
-  planning_year int
+  development_plan_id bigint [not null]
+  planning_year int [not null]
   career_goal varchar(500) [note: 'Career Goal on Graduation']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table professional_interest {
-  professional_interest_id integer [primary key]
-  development_plan_id bigint [not null, unique]
-  title varchar
+  professional_interest_id bigint [pk, increment]
+  career_planning_overview_id bigint [not null]
   body text [note: 'List specific roles, industries, or fields you are currently interested in.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table employer_interest {
-  employer_interest_id integer [primary key]
-  development_plan_id bigint [not null, unique]
-  title varchar
+  employer_interest_id bigint [pk, increment]
+  career_planning_overview_id bigint [not null]
   body text [note: 'Include current organisations you would like to work with or learn more about.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table personal_value {
-  id integer [primary key]
-  development_plan_id bigint [not null, unique]
-  title varchar
+  personal_value_id bigint [pk, increment]
+  career_planning_overview_id bigint [not null]
   body text [note: 'Note what is most important to you in your future workplace.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table development_focus {
-  development_focus_id integer [primary key]
-  development_plan_id bigint [not null, unique]
-  title varchar
+  development_focus_id bigint [pk, increment]
+  career_planning_overview_id bigint [not null]
   body text [note: 'List your main goals for the year (e.g. build network, get a part-time job) and the key technical and professional skills you want to develop (e.g. communication, software tools). Reference relevant EA Stage 1 competencies where appropriate.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
-Table extra_curricular_activity {
-  extra_curricular_activity_id integer [primary key]
-  development_plan_id bigint [not null, unique]
-  title varchar
+Table development_extra_curricular_activity {
+  extra_curricular_activity_id bigint [pk, increment]
+  career_planning_overview_id bigint [not null]
   body text [note: 'List part time work, clubs, societies, or volunteering relevant to your goals.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table networking_plan {
-  id integer [primary key]
-  development_plan_id bigint [not null, unique]
-  title varchar
-  body text [note: 'List people or types of events you want to connect with.']
+  id bigint [pk, increment]
+  career_planning_overview_id bigint [not null]
+  networking varchar(255) [not null, note: 'List people or types of events you want to connect with.']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table smart_goal {
   smart_goal_id bigint [pk, increment]
-  development_plan_id bigint [not null, unique]
-  action_steps varchar(500) [note: 'Career Goal on Graduation']
+  development_plan_id bigint [not null]
   timeline varchar(500) [note: 'Career Goal on Graduation']
-  porgress_notes varchar(500) [note: 'Career Goal on Graduation']
-  key_learnings varchar(500) [note: 'Career Goal on Graduation']
+  progress_notes text [note: 'Career Goal on Graduation']
+  key_learnings text [note: 'Career Goal on Graduation']
+  start_date datetime [not null]
+  end_date datetime [not null]
+  completion_date datetime
+  completion_notes text
   created_at datetime [not null]
   updated_at datetime [not null]
-
 }
 
+Table smart_goal_feedback {
+  smart_feedback_id bigint [pk, increment]
+  smart_goal_id bigint [not null]
+  staff_id bigint [not null]
+  feedback text
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+// Individual action steps to take to achieve the smart goal
+Table action_step {
+  action_step_id bigint [pk, increment]
+  smart_goal_id bigint [not null]
+  description varchar(500) [note: 'Career Goal on Graduation']
+  completed tinyint(1) [note: 'Yes or no']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
 
 // Table linked to EA competency development
 Table ea_competency {
   ea_competency_id bigint [pk, increment]
-  ea_competency_development_id bigint
-  ea_competency_code bigint [not null, unique]
-  ea_category varchar(500)
-  entering_level varchar(500) [note: 'Emerging, Developing, Proficient, Confident']
-  skills_prior varchar(500) [note: 'Prior to Entering the Program - Skills Review']
-  evidence_link varchar(500) [note: 'Include a link to relevant evidence of your experience and the skills you developed. This could include a report, presentation slides, drawings, designs, feedback from teachers, peer feedback, supervisor feedback from a part-time job, or evidence of activities you’ve led or organised through student societies, clubs, or volunteering etc.']
+  ea_competency_development_id bigint [not null]
+  ea_competency_code varchar(20) [not null]
+  ea_category varchar(255) [not null]
+  ea_competency varchar(500) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table ea_competency_yearly {
   ea_competency_yearly_id bigint [pk, increment]
-  ea_competency_id bigint
-  year_number bigint
-  skill_level varchar(500) [note: 'Emerging, Developing, Proficient, Confident']
-  skills_review varchar(500)
+  ea_competency_id bigint [not null]
+  year_number int [not null, note: 'Sequence numbers beginning at 0 (Entering)']
+  skill_level varchar(50) [not null, note: 'Emerging, Developing, Proficient, Confident']
+  skills_review text
   evidence_link varchar(500) [note: 'Include a link to relevant evidence of your experience and the skills you developed. This could include a report, presentation slides, drawings, designs, feedback from teachers, peer feedback, supervisor feedback from a part-time job, or evidence of activities you’ve led or organised through student societies, clubs, or volunteering etc.']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table competency_feedback {
+  competency_feedback_id bigint [pk, increment]
+  ea_competency_yearly_id bigint [not null]
+  staff_id bigint [not null]
+  feedback text
+  created_at datetime [not null]
+  updated_at datetime [not null]
 }
 
 
@@ -242,35 +315,45 @@ Table ea_competency_yearly {
 Ref student_profile: student.student_id - student_profile.student_id
 Ref career_development_plan: student.student_id - career_development_plan.student_id
 Ref ea_competency_development: student.student_id - ea_competency_development.student_id
+Ref staff_profiles: staff.staff_id - staff_profile.staff_id
+Ref assigned_students: staff_profile.staff_profile_id < assigned_student.staff_id
+Ref assigned_students: assigned_student.student_id < student.student_id
 
 
 // References for the introduction section of the student profile
-Ref networking_questions: student_profile.profile_id < networking_questions.profile_id
+Ref events: student_profile.profile_id < event.profile_id
+Ref networking_questions: event.event_id < networking_questions.event_id
+Ref industry_contacts: student_profile.profile_id < industry_contact.profile_id
 Ref job_resources: student_profile.profile_id < job_resources.profile_id
 Ref achievement_certs: student_profile.profile_id < achievement_cert.profile_id
-Ref attainment_cert: student_profile.profile_id < attainment_cert.profile_id
-Ref portfolio_note: student_profile.profile_id < portfolio_note.profile_id
+Ref attainment_certs: student_profile.profile_id < attainment_cert.profile_id
+Ref portfolio_notes: student_profile.profile_id < portfolio_note.profile_id
 
 
 // References for the career planning section of the student profile
-Ref preferred_employer: student_profile.profile_id < preferred_employer.profile_id
-Ref preferred_role: student_profile.profile_id < preferred_role.profile_id
+Ref preferred_employers: student_profile.profile_id < preferred_employer.profile_id
+Ref preferred_roles: student_profile.profile_id < preferred_role.profile_id
 Ref professional_values: student_profile.profile_id < professional_value.profile_id
 Ref key_skills_and_strengths: student_profile.profile_id < key_skill_strength.profile_id
 Ref current_development_goals: student_profile.profile_id < current_development_goal.profile_id
-Ref extra_Curricular_activities: student_profile.profile_id < extra_Curricular_activity.profile_id
+Ref extra_curricular_activities: student_profile.profile_id < extra_curricular_activity.profile_id
 
 
 // References for career development plan
 Ref career_planning_overview: career_development_plan.development_plan_id < career_planning_overview.development_plan_id
-Ref professional_interests: career_development_plan.development_plan_id < professional_interest.development_plan_id
-Ref employers_of_interest: career_development_plan.development_plan_id < employer_interest.development_plan_id
-Ref personal_values: career_development_plan.development_plan_id < personal_value.development_plan_id
-Ref development_focus: career_development_plan.development_plan_id < development_focus.development_plan_id
-Ref extra_curricular_activities: career_development_plan.development_plan_id < extra_curricular_activity.development_plan_id
-Ref networking_plans: career_development_plan.development_plan_id < networking_plan.development_plan_id
+Ref professional_interests: career_development_plan.development_plan_id < professional_interest.career_planning_overview_id
+Ref employers_of_interest: career_development_plan.development_plan_id < employer_interest.career_planning_overview_id
+Ref personal_values: career_development_plan.development_plan_id < personal_value.career_planning_overview_id
+Ref development_focus: career_development_plan.development_plan_id < development_focus.career_planning_overview_id
+Ref development_extra_curricular_activities: career_development_plan.development_plan_id < development_extra_curricular_activity.career_planning_overview_id
+Ref networking_plans: career_development_plan.development_plan_id < networking_plan.career_planning_overview_id
 Ref smart_goals: career_development_plan.development_plan_id < smart_goal.development_plan_id
+Ref smart_goal_action_plan: smart_goal.smart_goal_id < action_step.smart_goal_id
+Ref smart_goal_feedback: staff_profile.staff_profile_id < smart_goal_feedback.staff_id
 
 // References for ea competency development
 Ref ea_competency: ea_competency_development.ea_competency_development_id < ea_competency.ea_competency_development_id
 Ref ea_competency_yearly: ea_competency.ea_competency_id < ea_competency_yearly.ea_competency_id
+Ref ea_competency_feedback: ea_competency_yearly.ea_competency_yearly_id < competency_feedback.ea_competency_yearly_id
+Ref ea_competency_feedback: staff_profile.staff_profile_id < competency_feedback.staff_id
+
