@@ -42,4 +42,5 @@ Open two terminals. In the first terminal run:
 `cd backend`
 `php artisan serve`
 In the second terminal run:
+`cd frontend`
 `npm run dev`
