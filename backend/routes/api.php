@@ -23,5 +23,15 @@ Route::get('/data', function () {
     return response()->json(['content' => 'Laravel 10 running']);
 });
 
+Route::get('/industry-contacts', [IndustryContactController::class, 'index']);
 
-Route::apiResource('/industry-contacts', IndustryContactController::class);
+// Create a new contact
+Route::post('/industry-contacts', [IndustryContactController::class, 'store']);
+
+Route::get('/industry-contacts/{contact}', [IndustryContactController::class, 'show']);
+
+// Update an existing contact
+Route::put('/industry-contacts/{contact}', [IndustryContactController::class, 'update']);
+
+// Delete a contact
+Route::delete('/industry-contacts/{contact}', [IndustryContactController::class, 'destroy']);

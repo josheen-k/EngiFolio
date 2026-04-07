@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\IndustryContact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class IndustryContactController extends Controller
 {
@@ -21,7 +22,7 @@ class IndustryContactController extends Controller
             'date_met' => 'nullable|date',
         ]);
 
-        // Save the validated data
+     
         $contact = IndustryContact::create($validated);
 
         return response()->json($contact, 201);
@@ -29,7 +30,7 @@ class IndustryContactController extends Controller
 
     public function show(IndustryContact $contact)
     {
-        return response()->json($contact);
+        return response()->json(IndustryContact::all());
     }
 
     public function update(Request $request, IndustryContact $contact)
@@ -48,6 +49,7 @@ class IndustryContactController extends Controller
 
     public function destroy(IndustryContact $contact)
     {
+        Log::info('Deleting contact with ID: ' . $contact->id);
         $contact->delete();
         return response()->json(['message' => 'Deleted']);
     }

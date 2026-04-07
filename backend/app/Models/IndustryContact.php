@@ -10,7 +10,7 @@ class IndustryContact extends Model
     use HasFactory;
 
     protected $table = 'industry_contacts';
-    protected $primaryKey = 'contact_id';
+    protected $primaryKey = 'id';
     public $incrementing = true;
 
     protected $fillable = [
