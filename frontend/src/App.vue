@@ -9,7 +9,7 @@
       <div><router-link to="/"><img class="navLogo" src="@/assets/Logo.png" alt="Adelaide University"></router-link></div>
       <ul class="nav-bar">
         <li class="nav-item"><router-link to="/">Home</router-link></li>
-        <li class="nav-item"><router-link to="/profile/username">Student Profile</router-link></li>
+        <li class="nav-item"><router-link to="/profile/1">Student Profile</router-link></li>
         <li class="nav-item"><router-link to="/career-planning">Career Planning</router-link></li>
         <li class="nav-item"><router-link to="/career-development">Career Development Plan</router-link></li>
         <li class="nav-item"><router-link to="/eaCompetency">EA Competency</router-link></li>

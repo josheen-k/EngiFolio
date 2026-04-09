@@ -1,79 +1,58 @@
 <script setup>
   import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router'
+  import { useRoute } from 'vue-router'
   import axios from 'axios';
 
-  const router = useRouter();
+  const route = useRoute();
+  const profile = ref(null);
+  const loading = ref(true);
 
-
-  const editProfile = async () => {
-    router.push('/settings/profile');
+  const loadProfile = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/profile/${route.params.id}`);
+      profile.value = response.data.profile || response.data;
+    } catch (error) {
+      console.error("Error while fetching profile:", error);
+    } finally {
+      loading.value = false;
+    }
   };
 
   onMounted(() => {
-
-});
+    loadProfile();
+  })
 </script>
 
 <template>
-  <div class="container">
-    <div class="p-5">
-        <h3>John Smith's profile</h3>
-        <h6>Introduction</h6>
-        <p>Write a brief introduction about yourself (e.g. your degree, areas of interest in engineering, and key strengths).</p>
-
-        <h6>Elevator Pitch</h6>
-        <p>Prepare a 30-second pitch to introduce yourself at networking events or interviews.</p>
-
-        <h6>Networking Questions</h6>
-        <ul>
-          <li>First question</li>
-          <li>Second question</li>
-          <li>Third question</li>
-        </ul>
-
-
-        <h6>Updated Resume</h6>
-        <div class="linked-in">
-          <a href="https://au.linkedin.com/">My LinkedIn Profile</a>
-        </div>
-        
-
-        <button class="btn btn-primary " type="submit" @click="editProfile">Edit Profile</button>
+  <div class="profile" v-if="profile">
+    <h1 class="ps-3">{{profile.first_name}} {{profile.last_name}}</h1>
+    <p class="ps-3" v-if="profile.preferred_name"><strong>Preferred Name:</strong> {{ profile.preferred_name }}</p>
+    
+    <div class="degree-details ps-3">
+      <p><strong>Degree:</strong> {{ profile.degree_title }}</p>
+      <p><strong>Specialisation:</strong> {{ profile.specialisation }}</p>
     </div>
+
+    <div class="intro ps-3">
+      <h3>Personal Introduction: </h3>
+      <p>{{ profile.personal_intro }}</p>
+    </div>
+
+    <div class="intro ps-3">
+      <h3>Upcoming Actions: </h3>
+      <p>{{ profile.upcoming_actions}}</p>
+    </div>
+
+    <router-link :to="{name: 'profile-settings', params:{ id: profile.profile_id }}" class="btn btn-outline-primary me-2 ps-3">Edit Profile</router-link>
+
+    <router-link to="/" class="ps-3">Back to Dashboard</router-link>
+  </div>
+
+  <div v-else-if="loading">
+    <p class="ps-3">Loading profile...</p>
+  </div>
+
+  <div v-else>
+    <p class="ps-3">Profile not found.</p>
   </div>
 </template>
-
-<style>
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 50vh;
-      background-color: #f8f9fa;
-    }
-
-    .profilePic {
-      height: 120px;
-      width: 120px;
-      object-fit: cover;
-      border-radius: 50%;
-      margin: 0 auto 20px auto;
-      border: 4px solid #f0f2f5;
-      padding: 0;
-    }
-
-    h3, h6 {
-      font-weight: 700;
-      color: #2c3e50;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
-
-    p {
-      color: #6c757d;
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-    }
-</style>
