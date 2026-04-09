@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('question_order');
             $table->text('question_text');
             $table->unique(['event_id', 'question_order']);
+            $table->timestamps();
         });
     }
 
