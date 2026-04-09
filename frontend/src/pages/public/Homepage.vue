@@ -15,23 +15,28 @@
             <div class="row align-items-center g-5">
                 <div class="col-12 col-md-6">
                     <span class="hero-tag mb-4 d-inline-block">A PORTFOLIO PERSONALISED TO TRACK YOUR PROGRESS</span>
-                    <h1 class="hero-title mb-4">The smarter way<br>to navigate your<br><span class="hero-higlight">ENGINEERING </span>journey</h1>
-                    <p class="hero-desc mb-4">To meet Engineers Australia accreditation requirements,engineering students must be given opportunities throughout
-                        their program to reflect on their development of the Engineers Australia Stage 1 competencies. With <span>EngiFolio</span> students can
-                        track their professional development, record competency progress, and build a structured portfolio aligned with industry
+                    <h1 class="hero-title mb-4">
+                        The&nbsp;&nbsp;&nbsp;smarter&nbsp;&nbsp;&nbsp;way<br>to&nbsp;&nbsp;&nbsp;navigate&nbsp;&nbsp;&nbsp;your<br><span
+                            class="hero-highlight">ENGINEERING </span>journey</h1>
+                    <p class="hero-desc mb-4">To meet Engineers Australia accreditation requirements, engineering
+                        students must be given opportunities throughout
+                        their program to reflect on their development of the Engineers Australia Stage 1 competencies.
+                        With <span>EngiFolio</span> students can
+                        track their professional development, record competency progress, and build a structured
+                        portfolio aligned with industry
                         accreditation standards.
                     </p>
 
-                    <div class="d-flex flex-wrap gap-3">
-                    <button class="btn btn-dark btn-hero px-4 py-2">Explore features</button>
-                    <button class="btn btn-outline-dark btn-hero px-4 py-2">See demo</button>
+                    <div class="d-flex flex-wrap gap-5 ms-3 mt-5">
+                        <button class="btn btn-dark btn-hero px-5 py-2">Explore features</button>
+                        <button class="btn btn-outline-dark btn-hero px-5 py-2">See demo</button>
+                    </div>
                 </div>
-                </div>
-            </div>
 
-            <div class="col-12 col-md-6 d-flex justify-content-center">
-                <div class="hero-img">
-                    <img src="@/assets/engi-dude-home.png">
+                <div class="col-12 col-md-6 d-flex justify-content-center">
+                    <div class="hero-img">
+                        <img src="@/assets/engi-dude-home.png">
+                    </div>
                 </div>
             </div>
         </section>
@@ -70,7 +75,7 @@
 
 <script>
 export default {
-    name:'Homepage',
+    name: 'Homepage',
     data() {
         return {
             features: [
@@ -109,3 +114,50 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.page {
+    font-family: 'Martel', sans-serif;
+    color: #1a1a2e;
+    background: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.btn {
+    font-family: 'Montserrat Alternates', sans-serif;
+    border-radius: 30px;
+    font-size: 1.25rem;
+}
+
+.hero-tag {
+    border: 1.5px solid #22222275;
+    border-radius: 20px;
+    padding: 6px 25px;
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.05rem;
+    color: #22222275;
+}
+
+.hero-highlight {
+    color: #1d9ecf;
+    font-family: 'Kode Mono', monospace;
+    font-size: 2.8rem;
+}
+
+.hero-title {
+    font-size: 3.75rem;
+    font-family: 'Martel', sans-serif;
+    color: #2b2b2b;
+    line-height: 4rem;
+}
+
+.hero-desc {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1.2rem;
+    color: #444;
+    text-align: justify;
+    width: 90%;
+}
+</style>
