@@ -3,14 +3,13 @@
         <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
 
             <div class="logo">
-                <span class="logo-engi">ENGI</span>
-                <span class="logo-folio">FOLIO</span>
+                <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
             </div>
 
             <button class="btn btn-dark btn-signin px-4">Sign in</button>
         </nav>
 
-        <section class="container-lg py-5">
+        <section class="container-lg py-5 mt-5">
 
             <div class="row align-items-center g-5">
                 <div class="col-12 col-md-6">
@@ -41,15 +40,15 @@
             </div>
         </section>
 
-        <div class="divider"></div>
+        <Divider />
 
         <section class="container-lg py-5">
-            <h2 class="f-title text-center mb-5"><span class="f-key">Key</span> Features</h2>
+            <h2 class="f-title text-center mb-5">Key&nbsp;&nbsp;&nbsp;Features</h2>
             <div class="row row-cols-1 row-cols-md-3 g-5">
 
-                <div class="col" v-for="f in features" :key="f.title">
-                    <div class="f-card text-center d-flex flex-column align-items-center gap-2">
-                        <div class="f-icon">{{ f.icon }}</div>
+                <div class="col" v-for="f in features" :key="f.name">
+                    <div class="f-card text-center d-flex flex-column align-items-center gap-2 mt-5">
+                        <div class="f-icon"><img :src="f.icon" :alt="f.name"></div>
                         <h3 class="f-name">{{ f.name }}</h3>
                         <p class="f-desc">{{ f.desc }}</p>
                     </div>
@@ -57,56 +56,48 @@
             </div>
         </section>
 
-        <div class="divider"></div>
-
-        <footer class="d-flex justify-content-between flex-wrap gap-3 px-4 px-md-5 py-4">
-            <span>Copyright EngiFolio 2026</span>
-
-            <div class="logo">
-                <span class="logo-engi">ENGI</span>
-                <span class="logo-folio">FOLIO</span>
-            </div>
-
-            <span><u>Privacy Policy</u></span>
-        </footer>
+        <Footer />
 
     </div>
 </template>
 
 <script>
+import Divider from '@/components/Divider.vue';
+import Footer from '@/components/Footer.vue';
 export default {
     name: 'Homepage',
+    components: { Divider, Footer },
     data() {
         return {
             features: [
                 {
-                    icon: ':)',
-                    title: 'Create a Profile',
+                    icon: new URL('@/assets/feature1.png', import.meta.url).href,
+                    name: 'Create a Profile',
                     desc: 'Add your personal information, upcoming actions for personal development and links to your resume and other files.'
                 },
                 {
-                    icon: ':(',
-                    title: 'Set your SMART Goals',
+                    icon: new URL('@/assets/feature2.png', import.meta.url).href,
+                    name: 'Set your SMART Goals',
                     desc: 'Create action steps, write your learnings and stay on track.'
                 },
                 {
-                    icon: ':/',
-                    title: 'Log Upcoming Events & Industry Contacts',
+                    icon: new URL('@/assets/feature3.png', import.meta.url).href,
+                    name: 'Log Upcoming Events & Industry Contacts',
                     desc: 'Keep track of each event you attend, prepare questions to ask, record contact information, and note your progress.'
                 },
                 {
-                    icon: ':0',
-                    title: 'Record Evidence of Stage 1 Competencies',
+                    icon: new URL('@/assets/feature4.png', import.meta.url).href,
+                    name: 'Record Evidence of Stage 1 Competencies',
                     desc: 'See all the competencies and record your evidence for each one by uploading a file or using a link.'
                 },
                 {
-                    icon: ':3',
-                    title: 'Access your Career Development Learning (CDL) pages',
+                    icon: new URL('@/assets/feature5.png', import.meta.url).href,
+                    name: 'Access your Career Development Learning pages',
                     desc: 'View a list of your CDLs and complete them accordingly.'
                 },
                 {
-                    icon: ':P',
-                    title: 'View a Summary & Export Data',
+                    icon: new URL('@/assets/feature6.png', import.meta.url).href,
+                    name: 'View a Summary & Export Data',
                     desc: 'See your stats for each year and choose what you would like to export with file type.'
                 },
             ],
@@ -122,6 +113,11 @@ export default {
     background: #fff;
     min-height: 100vh;
     overflow-x: hidden;
+}
+
+.logo-img {
+  height: 2.5rem;
+  object-fit: contain;
 }
 
 .btn {
@@ -146,7 +142,8 @@ export default {
     font-size: 2.8rem;
 }
 
-.hero-title {
+.hero-title,
+.f-title {
     font-size: 3.75rem;
     font-family: 'Martel', sans-serif;
     color: #2b2b2b;
@@ -156,8 +153,25 @@ export default {
 .hero-desc {
     font-family: 'Maven Pro', sans-serif;
     font-size: 1.2rem;
-    color: #444;
+    color: #2b2b2b;
     text-align: justify;
     width: 90%;
+}
+
+.f-icon>img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.f-name {
+    font-family: 'Kode Mono', monospace;
+    font-size: 2rem;
+}
+
+.f-desc {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1.2rem;
+    color: #555555;
 }
 </style>
