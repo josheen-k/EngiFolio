@@ -6,6 +6,7 @@ import ProfileSettings from '../pages/student/profileSettings.vue'
 import EACompetency from '../pages/student/eaCompetency.vue'
 import CareerPlanning from '../pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
+import TestStudentCrud from '../pages/TestStudent/TestStudentCrud.vue';
 
 const routes = [
   {
@@ -48,7 +49,14 @@ const routes = [
     path: '/student/eaCompetency',
     name: 'eaCompetency',
     component: EACompetency
+  },
+
+  {
+    path: '/test-crud',
+    name: 'TestCrud',
+    component: TestStudentCrud
   }
+
 ]
 
 const router = createRouter({

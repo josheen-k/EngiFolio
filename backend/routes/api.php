@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\StudentProfileController;
-
+use App\Http\Controllers\TestStudentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,3 +27,9 @@ Route::get('/data', function () {
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+Route::get('/test-students', [TestStudentController::class, 'index']);
+Route::post('/test-students', [TestStudentController::class, 'store']);
+Route::get('/test-students/{id}', [TestStudentController::class, 'show']);
+Route::put('/test-students/{id}', [TestStudentController::class, 'update']);
+Route::delete('/test-students/{id}', [TestStudentController::class, 'destroy']);
