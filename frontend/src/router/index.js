@@ -21,13 +21,13 @@ const routes = [
   },
 
   {
-    path: '/student/profile/username',
+    path: '/profile/:id',
     name: 'profile',
     component: StudentProfile
   },
 
   {
-    path: '/student/settings/profile',
+    path: '/settings/profile/:id',
     name: 'profile-settings',
     component: ProfileSettings
   },

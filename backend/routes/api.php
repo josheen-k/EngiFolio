@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\StudentProfileController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,6 +20,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/data', function () {
+Route::get('/data', function () { 
     return response()->json(['content' => 'Laravel 10 running']);
 });
+
+Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
+
+Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
