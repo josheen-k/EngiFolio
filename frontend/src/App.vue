@@ -1,25 +1,37 @@
-<script setup>
-  import { onMounted, ref } from 'vue'
-  import axios from 'axios'
-
-  const message = ref('Waiting for Laravel...')
-
-  // This function talks to the backend
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/data')
-      message.value = response.data.content
-    } catch (error) {
-      message.value = "Laravel error."
-    }
-  }
-
-  onMounted(() => {
-    fetchData()
-  })
-</script>
 
 <template>
-  <h1>Vue + Laravel Connection</h1>
-  <p>Message from Backend: <strong>{{ message }}</strong></p>
+  <div id="app" class="p-4">
+    <header>
+      <h1>EngiFolio - Industry Contacts</h1>
+    </header>
+
+    <main>
+      <IndustryContacts />
+    </main>
+  </div>
 </template>
+
+<script setup>
+import IndustryContacts from './components/IndustryContact.vue';
+</script>
+
+<style>
+#app {
+  font-family: Arial, Helvetica, sans-serif, Helvetica, Arial, sans-serif;
+  color: grey black;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+main {
+  background: whitesmoke;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+</style>
