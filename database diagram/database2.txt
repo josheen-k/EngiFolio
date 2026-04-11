@@ -1,3 +1,5 @@
+// https://dbdiagram.io/home
+
 // =====================================================
 // ENGINEERING PORTFOLIO WEB APPLICATION
 // =====================================================
@@ -15,6 +17,7 @@
 // [REMOVED] Remove phone_number, email, linkedin_url from industry_contacts
 // [OPTIONAL DELETE] mentor_student_mapping can be deleted later if your business
 //                   does not require staff-to-student assignment control
+// [NEW] Added new parts to student profile as specified in the competency checklist
 
 
 // =====================================================
@@ -127,10 +130,52 @@ Table student_links {
 // [NEW] Separated from student_profiles because elevator pitch belongs more naturally to networking
 Table elevator_pitches {
   pitch_id bigint [pk, increment]
-  user_id bigint [not null, unique, ref: > users.user_id]
+  user_id bigint [not null, unique, ref: - users.user_id]
   pitch_text text [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
+}
+
+Table achievement_cert {
+  achievement_cert_id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.user_id]
+  title varchar(255) [not null]
+  body text [note: 'Upload awards, scholarships, or other certificates that demonstrate your academic or extracurricular success.']
+  file_path varchar(500) [note: 'if applicable']
+  issued_date date
+  expiry_date date
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table attainment_cert {
+  attainment_cert_id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.user_id]
+  title varchar(255) [not null]
+  body text [note: 'Include training credentials such as White Card, First Aid, WHS training, or other job-related certifications.']
+  file_path varchar(500) [note: 'if applicable']
+  issued_date date
+  expiry_date date
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table portfolio_note {
+  portfolio_note_id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.user_id]
+  title varchar(255) [not null]
+  body text [note: 'Add links to relevant portfolio items, project work, or documentation of achievements.']
+  file_path varchar(500) [note: 'if applicable']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table job_resources {
+  job_resources_id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.user_id]
+  title varchar(255) [not null]
+  body text [note: 'Store responses to selection criteria, interview practice videos, or other supporting materials for job applications.']
+  file_path varchar(500) [note: 'if applicable']
 }
 
 /*

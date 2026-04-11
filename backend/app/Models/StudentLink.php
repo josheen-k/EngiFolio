@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class StudentLink extends Model
+{
+    use HasFactory;
+
+    protected $table = 'student_links';
+    protected $primaryKey = 'link_id';
+    protected $fillable = [
+        'profile_id',
+        'link_type',
+        'link_label',
+        'link_url',
+        'display_order',
+    ];
+
+    public function studentProfile()
+    {
+        return $this->belongsTo(StudentProfile::class, 'profile_id');
+    }
+}
