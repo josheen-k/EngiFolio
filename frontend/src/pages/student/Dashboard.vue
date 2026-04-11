@@ -1,6 +1,7 @@
 <script setup>
   import { onMounted, ref } from 'vue'
   import axios from 'axios'
+  import Navbar from '@/components/Navbar.vue'
 
   const message = ref('Waiting for Laravel...')
 
@@ -20,6 +21,7 @@
 </script>
 
 <template>
-  <h1 class="ps-3">EngiFolio</h1>
-  <p class="ps-3">Message from Backend: <strong>{{ message }}</strong></p>
+  <div>
+    <Navbar/>
+  </div>
 </template>

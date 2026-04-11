@@ -4,19 +4,19 @@
         <div>
             <ul>
                 <li>
-                    <a href="../pages/student/Dashboard.vue">Dashboard</a>
+                    <router-link to="/student/dashboard">Dashboard</router-link>
                 </li>
                 <li>
-                    <a href="../pages/student/Goals.vue">Goals</a>
+                    <router-link to="/student/eaCompetency">Competencies</router-link>
                 </li>
                 <li>
-                    <a href="../pages/student/Networking.vue">Networking</a>
+                    <router-link to="/student/career-planning">Goals</router-link>
                 </li>
                 <li>
-                    <a href="../pages/student/eaCompetency.vue">Competencies</a>
+                    <router-link to="/student/networking">Networking</router-link>
                 </li>
                 <li>
-                    <a href="../pages/student/careerDevelopment.vue">CDL</a>
+                    <router-link to="/student/career-development">CDL</router-link>
                 </li>
             </ul>
             <div>
@@ -25,3 +25,9 @@
         </div> 
     </nav>
 </template>
+
+<script>
+export default {
+    name: 'Navbar'
+}
+</script>

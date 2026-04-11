@@ -2,6 +2,7 @@
   import { ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router'
   import axios from 'axios';
+  import Navbar from '@/components/Navbar.vue'
 
   const router = useRouter();
 
@@ -16,6 +17,7 @@ const editCareerPlanning = async () => {
 
 <template>
   <div class="container">
+    <Navbar/>
     <div class="p-5">
         <h3>Competency Planning</h3>
         <p>This will display the student's career planning information and can be edited by the student.</p>

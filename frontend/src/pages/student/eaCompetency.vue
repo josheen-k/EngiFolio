@@ -2,6 +2,7 @@
   import { ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router'
   import axios from 'axios';
+  import Navbar from '@/components/Navbar.vue'
 
   const router = useRouter();
 
@@ -12,6 +13,7 @@
 
 <template>
   <div class="container">
+    <Navbar/>
     <div class="p-5">
         <h3>EA Competency</h3>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
