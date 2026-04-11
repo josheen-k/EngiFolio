@@ -6,7 +6,7 @@ import ProfileSettings from '../pages/student/profileSettings.vue'
 import EACompetency from '../pages/student/eaCompetency.vue'
 import CareerPlanning from '../pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
-
+import GoalsPage from '../pages/student/GoalsPage.vue'
 const routes = [
   {
     path: '/',
@@ -48,6 +48,12 @@ const routes = [
     path: '/student/eaCompetency',
     name: 'eaCompetency',
     component: EACompetency
+  },
+
+  {
+  path: '/goals',
+  name: 'GoalsPage',
+  component: GoalsPage
   }
 ]
 
