@@ -58,6 +58,7 @@ export default {
 .active-link {
     background: #1a1a1a;
     color: #ffffff;
+    font-weight: lighter;
 }
 
 .active-link:hover {
