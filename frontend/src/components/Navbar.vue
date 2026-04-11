@@ -6,19 +6,19 @@
             </div>
             <ul class="navbar-nav flex-row gap-2">
                 <li class="nav-item">
-                    <router-link class="nav-link" to="/student/dashboard">Dashboard</router-link>
+                    <router-link class="nav-link" active-class="active-link" to="/student/dashboard">Dashboard</router-link>
                 </li>
                 <li>
-                    <router-link class="nav-link" to="/student/eaCompetency">Competencies</router-link>
+                    <router-link class="nav-link" active-class="active-link" to="/student/eaCompetency">Competencies</router-link>
                 </li>
                 <li>
-                    <router-link class="nav-link" to="/student/career-planning">Goals</router-link>
+                    <router-link class="nav-link" active-class="active-link" to="/student/career-planning">Goals</router-link>
                 </li>
                 <li>
-                    <router-link class="nav-link" to="/student/networking">Networking</router-link>
+                    <router-link class="nav-link" active-class="active-link" to="/student/networking">Networking</router-link>
                 </li>
                 <li>
-                    <router-link class="nav-link" to="/student/career-development">CDL</router-link>
+                    <router-link class="nav-link" active-class="active-link" to="/student/career-development">CDL</router-link>
                 </li>
             </ul>
         </div>
@@ -53,6 +53,16 @@ export default {
 .nav-link:hover {
     background: #f0f0f0;
     color: #222222;
+}
+
+.active-link {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.active-link:hover {
+    background: #1a1a1a;
+    color: #ffffff;
 }
 
 .av-img {
