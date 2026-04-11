@@ -23,6 +23,9 @@ Route::get('/data', function () {
     return response()->json(['content' => 'Laravel 10 running']);
 });
 
+Route::get("/test-me", function () {
+    return 'Hello from Laravel!';
+});
 
 Route::get('/posts', [PostController::class, 'index']);
 Route::post('/posts', [PostController::class, 'store']);

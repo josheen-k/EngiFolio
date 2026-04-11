@@ -13,7 +13,8 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::all();
-        return view('posts.index', compact('posts'));
+        // return view('posts.index', compact('posts'));
+        return response()->json($posts);
     }
 
     /**
@@ -35,7 +36,7 @@ class PostController extends Controller
         ]);
 
         Post::create($request->all());
-        return redirect()->route('posts.index')->with('success', 'Post created successfully!');
+        return response()->json(['message' => 'Post created successfully!']);
     }
 
     /**
@@ -44,7 +45,7 @@ class PostController extends Controller
     public function show(string $id)
     {
         $post = Post::find($id);
-        return view('posts.show', compact('post'));
+        return response()->json($post);
     }
 
     /**
@@ -52,7 +53,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('posts.edit', compact('post'));
+        return response()->json($post);
     }
 
     /**
@@ -68,7 +69,7 @@ class PostController extends Controller
         $post = Post::find($id);
         $post->update($request->all());
 
-        return redirect()->route('posts.index')->with('success', 'Post updated successfully!');
+        return response()->json(['message' => 'Post updated successfully!']);
     }
 
     /**
@@ -78,6 +79,6 @@ class PostController extends Controller
     {
         $post = Post::find($id);
         $post->delete();
-        return redirect()->route('posts.index')->with('success', 'Post deleted successfully!');
+        return response()->json(['message' => 'Post deleted successfully!']);
     }
 }
