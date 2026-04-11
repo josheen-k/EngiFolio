@@ -16,8 +16,8 @@ const editCareerPlanning = async () => {
 </script>
 
 <template>
+  <Navbar/>
   <div class="container">
-    <Navbar/>
     <div class="p-5">
         <h3>Competency Planning</h3>
         <p>This will display the student's career planning information and can be edited by the student.</p>

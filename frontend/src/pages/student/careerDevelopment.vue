@@ -12,8 +12,8 @@
 </script>
 
 <template>
+  <Navbar/>
   <div class="container">
-    <Navbar/>
     <div class="p-5">
         <h3>Career Development</h3>
         <p>Use this page to plan your career goals and track how your interests, skills, and professional goals develop across your degree. For each year, start by identifying your current interests, values, skills, and networking plans. Then set at least one SMART goal using the section provided. SMART goals should be Specific, Measurable, Achievable, Relevant, and Time-bound. For each goal, identify key action steps, your timeline, and any progress or insights you gain throughout the year.</p>
