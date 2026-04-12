@@ -1,25 +1,337 @@
+<template>
+  <Navbar/>
+
+  <main class="container-xl py-5 px-4">
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-md-6">
+        <h2 class="sec-title text-center">Your Stats</h2>
+
+        <div class="row g-4">
+          <div class="col-6">
+
+            <div class="card stat-card card-dark">
+              <div class="card-body d-flex flex-column justify-content-between p-3">
+                <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
+                
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="circle circle-light">
+                    <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
+                  </span>
+                  <span class="stat-data">{{ stats.totalReflections }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+
+            <div class="card stat-card card-light">
+              <div class="card-body d-flex flex-column justify-content-between p-3">
+                <p class="stat-title mb-2">Mastered<br/>Competencies</p>
+                
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="circle circle-dark">
+                    <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
+                  </span>
+                  <span class="stat-data">{{ stats.comptMastered }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+
+            <div class="card stat-card card-light">
+              <div class="card-body d-flex flex-column justify-content-between p-3">
+                <p class="stat-title mb-2">SMART Goals<br/>Completed</p>
+                
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="circle circle-dark">
+                    <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
+                  </span>
+                  <span class="stat-data">{{ stats.goalsDone }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+
+            <div class="card stat-card card-dark">
+              <div class="card-body d-flex flex-column justify-content-between p-3">
+                <p class="stat-title mb-2">Current Average<br/>Level</p>
+                
+                <div class="d-flex justify-content-center">
+                  <span class="stat-data">{{ stats.avgLevel }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-3">
+          <button class="btn btn-filter px-4">
+            Filter by year
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <h2 class="sec-title text-center mb-3">Attainment Level Distribution</h2>
+        <div class="chart d-flex justify-content-center">
+          <apexchart type="pie" width="120%" height="420" :options="chartOptions" :series="series" />
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-5">
+      <div class="col-12 col-lg-8">
+        <h2 class="sec-title text-center">Need More Focus On</h2>
+        <div class="table-style">
+          <table class="table table-bordered focus-table">
+            <thead>
+              <tr>
+                <th class="text-center">Id</th>
+                <th class="text-center">Description</th>
+                <th class="text-center">Entries</th>
+                <th class="text-center">Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in focusItems" :key="item.id">
+                <td><a href="#" class="table-link">{{ item.id }}</a></td>
+                <td>{{ item.description }}</td>
+                <td class="text-center">{{ item.entries }}</td>
+                <td class="text-center">{{ item.level }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <h2 class="sec-title text-center">Quick Links</h2>
+
+        <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
+          <button class="btn btn-ql rounded-pill">Add a new reflection</button>
+          <button class="btn btn-ql rounded-pill">Edit profile</button>
+          <button class="btn btn-ql rounded-pill btn-ql3">Add a new networking event</button>
+          <button class="btn btn-ql rounded-pill">Export profile</button>
+          <button class="btn btn-ql rounded-pill">Add a SMART goal</button>
+        </div>
+
+        <h2 class="sec-title text-center mt-5">Recent Activity</h2>
+        <ul class="ps-5 activity-list">
+          <li class="mb-3" v-for="act in recentAct" :key="act">
+            {{ act }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <Footer/>
+</template>
+
 <script setup>
-  import { onMounted, ref } from 'vue'
-  import axios from 'axios'
+import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
 
-  const message = ref('Waiting for Laravel...')
+const focusItems = [
+  {
+    id: '1.2',
+    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
+    entries: 0,
+    level: 'Emerging'
+  },
 
-  // This function talks to the backend
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/data')
-      message.value = response.data.content
-    } catch (error) {
-      message.value = "Laravel error."
-    }
-  }
+  {
+    id: '1.2',
+    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
+    entries: 0,
+    level: 'Emerging'
+  },
 
-  onMounted(() => {
-    fetchData()
-  })
+  {
+    id: '1.2',
+    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
+    entries: 0,
+    level: 'Emerging'
+  },
+
+  {
+    id: '1.2',
+    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
+    entries: 0,
+    level: 'Emerging'
+  },
+
+  {
+    id: '1.2',
+    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
+    entries: 0,
+    level: 'Emerging'
+  },
+]
+
+const recentAct = [
+  '2 Apr 2026: Added reflection for competency 1.2',
+  '1 Apr 2026: Updated goal: Do 3 mini projects',
+  '25 Mar 2026: Deleted goal: Improve teamwork',
+  '22 Mar 2026: Updated profile'
+]
+
+const stats = {
+  totalReflections: 14,
+  comptMastered: "3/16",
+  goalsDone: "6/10",
+  avgLevel: "Developing"
+}
+
+const series = [2, 4, 3, 2, 1]
+// not started, emerging, developing, competent, proficient
+
+const chartOptions = {
+  labels: [
+    'Not Started',
+    'Emerging',
+    'Developing',
+    'Competent',
+    'Proficient'
+  ],
+  legend: {
+    position: 'bottom',
+    fontFamily: 'Maven Pro, sans-serif',
+    fontSize: '16px'
+  },
+  colors: [
+    '#e2dfd7', // not started
+    '#aba298', // emerging
+    '#b1bbb3', // developing
+    '#7c848c', // competent
+    '#333639'  // proficient
+  ]
+}
 </script>
 
-<template>
-  <h1 class="ps-3">EngiFolio</h1>
-  <p class="ps-3">Message from Backend: <strong>{{ message }}</strong></p>
-</template>
+<style scoped>
+.sec-title {
+  font-family: 'Martel', serif;
+  font-size: 2rem;
+  color: #2b2b2bc5;
+  font-weight: lighter;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  border-radius: 1.5rem;
+  border-color: #000000;
+  height: 12rem;
+  padding: 0.5rem;
+}
+
+.card-dark {
+  background: #f1f1f1;
+}
+
+.card-light {
+  background: #ffffff;
+}
+
+.stat-title {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.5rem;
+  color: #878787;
+}
+
+.stat-data {
+  font-family: 'Martian Mono', monospace;
+  font-size: 2.1rem;
+  font-weight: 300;
+  color: #606060;
+}
+
+.circle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-light {
+  background: #ffffff;
+}
+
+.circle-dark {
+  background: #f1f1f1;
+}
+
+.arrow-img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.btn-filter {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.5rem;
+  font-size: 1rem;
+  font-weight: lighter;
+  background: #e6e6e6;
+}
+
+.btn-filter:hover {
+  background: #666666;
+  color: #ffffff;
+}
+
+.focus-table {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.95rem;
+}
+
+.focus-table thead th {
+  font-family: 'Martian Mono', monospace;
+  color: #222222;
+  font-weight: 200;
+  font-size: 1.2rem;
+  background-color: #f1f1f1;
+  border-color: #d0d0d0;
+  margin: 5rem;
+}
+
+.focus-table tbody td {
+  border-color: #e0e0e0;
+  color: #222222;
+  vertical-align: middle;
+}
+
+.table-link {
+  color: #1a1a1a;
+  font-family: 'Martian Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.btn-ql {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  background: #555555;
+  padding: 0.5rem 1rem;
+}
+
+.btn-ql3 {
+  width: 86%;
+}
+
+.btn-ql:hover {
+  color: #ffffff;
+  background: #333333;
+}
+
+.activity-list {
+  font-family: 'Maven Pro', sans-serif;
+  color: #444444;
+}
+</style>
