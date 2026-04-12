@@ -75,17 +75,26 @@
     <div class="row g-4">
       <div class="col-12 col-lg-8">
         <h2 class="sec-title text-center mb-3">Need More Focus On</h2>
-
-        <table class="table">
-          <tbody>
-            <tr v-for="item in focusItems" :key="item.id">
-              <td>{{ item.id }}</td>
-              <td>{{ item.description }}</td>
-              <td>{{ item.entries }}</td>
-              <td>{{ item.level }}</td>
-            </tr>
-          </tbody>
+        <div class="table-style">
+          <table class="table table-bordered focus-table">
+            <thead>
+              <tr>
+                <th class="text-center">Id</th>
+                <th class="text-center">Description</th>
+                <th class="text-center">Entries</th>
+                <th class="text-center">Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in focusItems" :key="item.id">
+                <td><a href="#" class="table-link">{{ item.id }}</a></td>
+                <td>{{ item.description }}</td>
+                <td class="text-center">{{ item.entries }}</td>
+                <td class="text-center">{{ item.level }}</td>
+              </tr>
+            </tbody>
         </table>
+        </div>
       </div>
       <div class="col-12 col-lg-4">
         <h2 class="sec-title text-center mb-3">Quick Links</h2>
@@ -198,5 +207,32 @@ const stats = {
 .btn-filter:hover {
   background: #666666;
   color: #ffffff;
+}
+
+.focus-table {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.95rem;
+}
+
+.focus-table thead th {
+  font-family: 'Martian Mono', monospace;
+  color: #222222;
+  font-weight: 200;
+  font-size: 1.2rem;
+  background-color: #f1f1f1;
+  border-color: #d0d0d0;
+  margin: 5rem;
+}
+
+.focus-table tbody td {
+  border-color: #e0e0e0;
+  color: #222222;
+  vertical-align: middle;
+}
+
+.table-link {
+  color: #1a1a1a;
+  font-family: 'Martian Mono', monospace;
+  font-size: 0.8rem;
 }
 </style>
