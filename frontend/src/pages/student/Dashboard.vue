@@ -6,7 +6,7 @@
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center">Your Stats</h2>
 
-        <div class="row g-3">
+        <div class="row g-4">
           <div class="col-6">
 
             <div class="card stat-card card-dark">
@@ -78,6 +78,9 @@
       </div>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center mb-3">Attainment Level Distribution</h2>
+        <div class="chart d-flex justify-content-center">
+          <apexchart type="pie" width="120%" height="420" :options="chartOptions" :series="series" />
+        </div>
       </div>
     </div>
 
@@ -182,6 +185,31 @@ const stats = {
   comptMastered: "3/16",
   goalsDone: "6/10",
   avgLevel: "Developing"
+}
+
+const series = [2, 4, 3, 2, 1]
+// not started, emerging, developing, competent, proficient
+
+const chartOptions = {
+  labels: [
+    'Not Started',
+    'Emerging',
+    'Developing',
+    'Competent',
+    'Proficient'
+  ],
+  legend: {
+    position: 'bottom',
+    fontFamily: 'Maven Pro, sans-serif',
+    fontSize: '16px'
+  },
+  colors: [
+    '#e2dfd7', // not started
+    '#aba298', // emerging
+    '#b1bbb3', // developing
+    '#7c848c', // competent
+    '#333639'  // proficient
+  ]
 }
 </script>
 
