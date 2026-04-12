@@ -1,5 +1,7 @@
 <template>
     <div class="page">
+        <!-- Moved navigation to app.vue
+        
         <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
 
             <div class="logo">
@@ -7,7 +9,7 @@
             </div>
 
             <button class="btn btn-dark btn-signin px-4">Sign in</button>
-        </nav>
+        </nav> -->
 
         <section class="container-lg py-5 mt-5">
 

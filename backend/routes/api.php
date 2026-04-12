@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\StudentLinkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,13 @@ Route::get('/data', function () {
     return response()->json(['content' => 'Laravel 10 running']);
 });
 
+// Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
-
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+// Student Profile Links
+Route::post('/link', [StudentLinkController::class, 'store']);
+Route::put('/link/{id}', [StudentLinkController::class, 'update']);
+Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
+
+// 
