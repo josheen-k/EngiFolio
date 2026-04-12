@@ -5,35 +5,46 @@
                 <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
             </div>
             <ul class="navbar-nav flex-row gap-2">
-                <li class="nav-item">
-                    <router-link class="nav-link" active-class="active-link" to="/student/dashboard">Dashboard</router-link>
-                </li>
-                <li>
-                    <router-link class="nav-link" active-class="active-link" to="/student/eaCompetency">Competencies</router-link>
-                </li>
-                <li>
-                    <router-link class="nav-link" active-class="active-link" to="/student/career-planning">Goals</router-link>
-                </li>
-                <li>
-                    <router-link class="nav-link" active-class="active-link" to="/student/networking">Networking</router-link>
-                </li>
-                <li>
-                    <router-link class="nav-link" active-class="active-link" to="/student/career-development">CDL</router-link>
-                </li>
+                <li class="nav-item"><router-link class="nav-link" active-class="active-link" to="/student/dashboard">Dashboard</router-link></li>
+                <li><router-link class="nav-link" active-class="active-link" to="/student/eaCompetency">Competencies</router-link></li>
+                <li><router-link class="nav-link" active-class="active-link" to="/student/career-planning">Goals</router-link></li>
+                <li><router-link class="nav-link" active-class="active-link" to="/student/networking">Networking</router-link></li>
+                <li><router-link class="nav-link" active-class="active-link" to="/student/career-development">CDL</router-link></li>
             </ul>
         </div>
-        <div>
+
+        <div class="profile" ref="dropdown">
             <img class="rounded-circle av-img"
                 src="https://img.freepik.com/free-photo/young-woman-attend-courses-girl-student-studying-holding-notebooks-showing-thumb-up-approval-recommending-company-standing-blue-background_1258-70145.jpg"
-                alt="Profile">
+                alt="Profile" @click="openDropdown">
+
+            <div v-if="isOpen" class="dd">
+                <router-link :to="`/profile/${userId}`" class="dd-item" @click="closeDropdown">Profile</router-link>
+                <router-link :to="`/settings/profile/${userId}`" class="dd-item" @click="closeDropdown">Settings</router-link>
+                <router-link to="/" class="dd-item logout" @click="closeDropdown">Logout</router-link>
+            </div>
         </div>
     </nav>
 </template>
 
-<script>
-export default {
-    name: 'Navbar'
+<script setup>
+import { ref } from 'vue';
+import { onClickOutside } from '@vueuse/core'
+
+const userId =1;
+const isOpen = ref(false);
+const dropdown = ref(null);
+
+const openDropdown = () => {
+    isOpen.value = !isOpen.value
 }
+const closeDropdown = () => {
+    isOpen.value = false;
+}
+
+onClickOutside(dropdown, () => {
+    isOpen.value = false;
+})
 </script>
 
 <style scoped>
@@ -71,5 +82,44 @@ export default {
     height: 3.5rem;
     object-fit: cover;
     border: 2px solid #c5c5c5;
+    cursor: pointer;
+}
+
+.profile {
+    position: relative;
+    display: inline-block;
+}
+
+.dd {
+    position: absolute;
+    right: -0.625rem;
+    top: 120%;
+    width: 6rem;
+    padding: 0.4rem;
+    background: #ffffff;
+    border: 1px solid #bebebe;
+    border-radius: 0.8rem;
+    box-shadow: 0 0.5rem 1.4rem #bbbbbba9;
+    z-index: 1;
+}
+
+.dd-item {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 0.9rem;
+    color: #444444;
+    display: block;
+    padding: 0.5rem 0.8rem;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.dd-item:hover {
+    background: #f1f1f1;
+    border-radius: 0.5rem;
+}
+
+.logout {
+    color: #ff746c;
 }
 </style>
