@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-5">
       <div class="col-12 col-lg-8">
         <h2 class="sec-title text-center mb-3">Need More Focus On</h2>
         <div class="table-style">
@@ -93,15 +93,22 @@
                 <td class="text-center">{{ item.level }}</td>
               </tr>
             </tbody>
-        </table>
+          </table>
         </div>
       </div>
       <div class="col-12 col-lg-4">
         <h2 class="sec-title text-center mb-3">Quick Links</h2>
-      </div>
-      <div class="col-12 col-lg-4">
-        <h2 class="sec-title text-center mb-3">Recent Activity</h2>
-        <ul>
+
+        <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
+          <button class="btn btn-ql rounded-pill">Add a reflection</button>
+          <button class="btn btn-ql rounded-pill">Edit profile</button>
+          <button class="btn btn-ql rounded-pill w-75">Add a new networking event</button>
+          <button class="btn btn-ql rounded-pill">Export profile</button>
+          <button class="btn btn-ql rounded-pill">Add SMART goal</button>
+        </div>
+
+        <h2 class="sec-title text-center mt-5">Recent Activity</h2>
+        <ul class="ps-3 activity-list">
           <li v-for="act in recentAct" :key="act">
             {{ act }}
           </li>
@@ -234,5 +241,24 @@ const stats = {
   color: #1a1a1a;
   font-family: 'Martian Mono', monospace;
   font-size: 0.8rem;
+}
+
+.btn-ql {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  background: #555555;
+  padding: 0.5rem 1rem;
+}
+
+.btn-ql:hover {
+  color: #ffffff;
+  background: #333333;
+}
+
+.activity-list {
+  font-family: 'Maven Pro', sans-serif;
+  color: #444444;
+  padding-left: 1.2rem;
 }
 </style>
