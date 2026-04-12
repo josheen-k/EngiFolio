@@ -1,19 +1,22 @@
 <template>
   <Navbar/>
 
-  <main class="container-xl py-4 px-4">
+  <main class="container-xl py-5 px-4">
     <div class="row g-4 mb-4">
       <div class="col-12 col-md-6">
-        <h2 class="sec-title text-center mb-3">Your Stats</h2>
+        <h2 class="sec-title text-center">Your Stats</h2>
 
         <div class="row g-3">
           <div class="col-6">
 
-            <div class="card stat-card">
+            <div class="card stat-card card-dark">
               <div class="card-body d-flex flex-column justify-content-between p-3">
                 <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
                 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="circle circle-light">
+                    <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
+                  </span>
                   <span class="stat-data">{{ stats.totalReflections }}</span>
                 </div>
               </div>
@@ -22,11 +25,14 @@
 
           <div class="col-6">
 
-            <div class="card stat-card">
+            <div class="card stat-card card-light">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
+                <p class="stat-title mb-2">Mastered<br/>Competencies</p>
                 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="circle circle-dark">
+                    <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
+                  </span>
                   <span class="stat-data">{{ stats.comptMastered }}</span>
                 </div>
               </div>
@@ -35,11 +41,14 @@
 
           <div class="col-6">
 
-            <div class="card stat-card">
+            <div class="card stat-card card-light">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
+                <p class="stat-title mb-2">SMART Goals<br/>Completed</p>
                 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="circle circle-dark">
+                    <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
+                  </span>
                   <span class="stat-data">{{ stats.goalsDone }}</span>
                 </div>
               </div>
@@ -48,11 +57,11 @@
 
           <div class="col-6">
 
-            <div class="card stat-card">
+            <div class="card stat-card card-dark">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
+                <p class="stat-title mb-2">Current Average<br/>Level</p>
                 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex justify-content-center">
                   <span class="stat-data">{{ stats.avgLevel }}</span>
                 </div>
               </div>
@@ -74,7 +83,7 @@
 
     <div class="row g-5">
       <div class="col-12 col-lg-8">
-        <h2 class="sec-title text-center mb-3">Need More Focus On</h2>
+        <h2 class="sec-title text-center">Need More Focus On</h2>
         <div class="table-style">
           <table class="table table-bordered focus-table">
             <thead>
@@ -97,19 +106,19 @@
         </div>
       </div>
       <div class="col-12 col-lg-4">
-        <h2 class="sec-title text-center mb-3">Quick Links</h2>
+        <h2 class="sec-title text-center">Quick Links</h2>
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
-          <button class="btn btn-ql rounded-pill">Add a reflection</button>
+          <button class="btn btn-ql rounded-pill">Add a new reflection</button>
           <button class="btn btn-ql rounded-pill">Edit profile</button>
-          <button class="btn btn-ql rounded-pill w-75">Add a new networking event</button>
+          <button class="btn btn-ql rounded-pill btn-ql3">Add a new networking event</button>
           <button class="btn btn-ql rounded-pill">Export profile</button>
-          <button class="btn btn-ql rounded-pill">Add SMART goal</button>
+          <button class="btn btn-ql rounded-pill">Add a SMART goal</button>
         </div>
 
         <h2 class="sec-title text-center mt-5">Recent Activity</h2>
-        <ul class="ps-3 activity-list">
-          <li v-for="act in recentAct" :key="act">
+        <ul class="ps-5 activity-list">
+          <li class="mb-3" v-for="act in recentAct" :key="act">
             {{ act }}
           </li>
         </ul>
@@ -182,12 +191,22 @@ const stats = {
   font-size: 2rem;
   color: #2b2b2bc5;
   font-weight: lighter;
+  margin-bottom: 2rem;
 }
 
 .stat-card {
   border-radius: 1.5rem;
   border-color: #000000;
-  height: 11rem;
+  height: 12rem;
+  padding: 0.5rem;
+}
+
+.card-dark {
+  background: #f1f1f1;
+}
+
+.card-light {
+  background: #ffffff;
 }
 
 .stat-title {
@@ -198,9 +217,32 @@ const stats = {
 
 .stat-data {
   font-family: 'Martian Mono', monospace;
-  font-size: 1.5rem;
+  font-size: 2.1rem;
   font-weight: 300;
   color: #606060;
+}
+
+.circle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-light {
+  background: #ffffff;
+}
+
+.circle-dark {
+  background: #f1f1f1;
+}
+
+.arrow-img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
 }
 
 .btn-filter {
@@ -251,6 +293,10 @@ const stats = {
   padding: 0.5rem 1rem;
 }
 
+.btn-ql3 {
+  width: 86%;
+}
+
 .btn-ql:hover {
   color: #ffffff;
   background: #333333;
@@ -259,6 +305,5 @@ const stats = {
 .activity-list {
   font-family: 'Maven Pro', sans-serif;
   color: #444444;
-  padding-left: 1.2rem;
 }
 </style>
