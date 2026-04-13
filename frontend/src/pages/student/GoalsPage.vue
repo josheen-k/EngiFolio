@@ -117,8 +117,9 @@ const loading = ref(true)
 const fromDate = ref('')
 const toDate = ref('')
 const showNewGoalForm = ref(false)
+const planId = ref(null)
 const newGoalData = reactive({
-  plan_id: 1, // Assuming a default plan_id, you might need to get this from somewhere
+  plan_id: null,
   goal_description: '',
   timeline: '',
   progress_notes: '',
@@ -127,7 +128,7 @@ const newGoalData = reactive({
   end_date: '',
   completion_date: '',
   completion_notes: '',
-  status: 'active'
+  status: 'planned'
 })
 
 const loadGoals = async () => {
@@ -156,7 +157,24 @@ const loadGoals = async () => {
   }
 }
 
+const loadPlanId = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/career-plans')
+    if (response.data && response.data.length > 0) {
+      planId.value = response.data[0].plan_id
+      newGoalData.plan_id = response.data[0].plan_id
+    } else {
+      console.warn('No career development plan found')
+      alert('Please create a Career Development Plan first')
+    }
+  } catch (error) {
+    console.error('Error loading plan ID:', error)
+    alert('Failed to load Career Development Plan')
+  }
+}
+
 onMounted(() => {
+  loadPlanId()
   loadGoals()
 })
 
@@ -165,12 +183,18 @@ const newGoal = () => {
 }
 
 const createGoal = async () => {
+  if (!newGoalData.plan_id) {
+    alert('Please create a Career Development Plan first')
+    return
+  }
+
   try {
-    await axios.post('http://127.0.0.1:8000/api/smart-goals', newGoalData)
+    const payload = normalizeGoalPayload(newGoalData)
+    await axios.post('http://127.0.0.1:8000/api/smart-goals', payload)
     showNewGoalForm.value = false
     // Reset form
     Object.assign(newGoalData, {
-      plan_id: 1,
+      plan_id: planId.value,
       goal_description: '',
       timeline: '',
       progress_notes: '',
@@ -179,12 +203,29 @@ const createGoal = async () => {
       end_date: '',
       completion_date: '',
       completion_notes: '',
-      status: 'active'
+      status: 'planned'
     })
     loadGoals() // Refresh the list
+    alert('Goal created successfully!')
   } catch (error) {
     console.error('Error creating goal:', error)
-    alert('Failed to create goal')
+    const errorMessage = error.response?.data?.message || 
+                        Object.values(error.response?.data?.errors || {}).flat()[0] ||
+                        'Failed to create goal'
+    alert(`Failed to create goal: ${errorMessage}`)
+  }
+}
+
+const normalizeGoalPayload = (goal) => {
+  return {
+    ...goal,
+    timeline: goal.timeline || null,
+    progress_notes: goal.progress_notes || null,
+    learnings: goal.learnings || null,
+    start_date: goal.start_date || null,
+    end_date: goal.end_date || null,
+    completion_date: goal.completion_date || null,
+    completion_notes: goal.completion_notes || null,
   }
 }
 
@@ -192,7 +233,7 @@ const cancelNewGoal = () => {
   showNewGoalForm.value = false
   // Reset form
   Object.assign(newGoalData, {
-    plan_id: 1,
+    plan_id: planId.value,
     goal_description: '',
     timeline: '',
     progress_notes: '',
@@ -201,7 +242,7 @@ const cancelNewGoal = () => {
     end_date: '',
     completion_date: '',
     completion_notes: '',
-    status: 'active'
+    status: 'planned'
   })
 }
 

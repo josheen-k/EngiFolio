@@ -10,9 +10,12 @@ class CareerDevelopmentPlanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Get current user's career development plans
+        // For now, without auth, we'll return all plans (you may need to add auth later)
+        $plans = CareerDevelopmentPlan::all();
+        return response()->json($plans);
     }
 
     /**
