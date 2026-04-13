@@ -1,15 +1,13 @@
 <template>
-    <div class="page">
-        <!-- Moved navigation to app.vue
-        
+    <div class="page"> 
         <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
 
             <div class="logo">
                 <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
             </div>
 
-            <button class="btn btn-dark btn-signin px-4">Sign in</button>
-        </nav> -->
+            <button class="btn btn-dark btn-signin px-4" @click="signIn">Sign in</button>
+        </nav>
 
         <section class="container-lg py-5 mt-5">
 
@@ -105,6 +103,11 @@ export default {
             ],
         };
     },
+    methods: {
+        signIn() {
+            this.$router.push('/student/dashboard');
+        }
+    }
 };
 </script>
 

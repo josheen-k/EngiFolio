@@ -7,6 +7,7 @@ import EACompetency from '../pages/student/eaCompetency.vue'
 import CareerPlanning from '../pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
 import Networking from '@/pages/student/Networking.vue'
+import Export from '@/pages/student/export.vue'
 
 const routes = [
   {
@@ -55,7 +56,14 @@ const routes = [
     path: '/student/networking',
     name: 'networking',
     component: Networking
+  },
+
+  {
+    path: '/student/export',
+    name: 'export',
+    component: Export
   }
+
 ]
 
 const router = createRouter({

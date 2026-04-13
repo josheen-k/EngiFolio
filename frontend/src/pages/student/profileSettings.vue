@@ -81,7 +81,6 @@
         
         <div class="d-flex align-items-center justify-content-between mb-4 px-3">
           <h1 class="h2 fw-bold mb-0">Edit Profile Settings</h1>
-          <span class="text-muted">ID: {{ route.params.id }}</span>
         </div>
 
         <div class="card shadow-sm border-0">
@@ -92,19 +91,19 @@
               <div class="row g-3">
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">First Name</label>
-                  <input v-model="profile.first_name" class="form-control form-control-lg" placeholder="e.g. John" />
+                  <input v-model="profile.first_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Last Name</label>
-                  <input v-model="profile.last_name" class="form-control form-control-lg" placeholder="e.g. Smith" />
+                  <input v-model="profile.last_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Preferred Name</label>
-                  <input v-model="profile.preferred_name" class="form-control form-control-lg" placeholder="e.g. Johnny" />
+                  <input v-model="profile.preferred_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-12">
                   <label class="form-label fw-semibold">Degree Title</label>
-                  <input v-model="profile.degree_title" class="form-control" placeholder="e.g. Bachelor of Computer Science" />
+                  <input v-model="profile.degree_title" class="form-control"/>
                 </div>
               </div>
             </div>
@@ -113,74 +112,75 @@
               <h5 class="text-primary mb-4 fw-bold"><i class="bi bi-chat-left-text-fill me-2"></i>About You</h5>
               <div class="mb-3">
                 <label class="form-label fw-semibold">Personal Introduction</label>
-                <textarea v-model="profile.personal_intro" class="form-control" rows="4" placeholder="Briefly describe your background and goals..."></textarea>
+                <textarea v-model="profile.personal_intro" class="form-control" rows="4"></textarea>
               </div>
               <div class="mb-3">
                 <label class="form-label fw-semibold">Upcoming Actions</label>
-                <textarea v-model="profile.upcoming_actions" class="form-control" rows="2" placeholder="What are you working on next?"></textarea>
+                <textarea v-model="profile.upcoming_actions" class="form-control" rows="2"></textarea>
               </div>
             </div>
 
             <div class="mb-5">
-              <h5 class="text-primary mb-4 fw-bold"><i class="bi bi-link-45deg me-2"></i>Professional Links</h5>
-              <p class="text-muted small mb-4">Leave a field empty and save to remove that link from your public profile.</p>
+              <h5 class="text-primary mb-4 fw-bold"><i class="bi"></i>Professional Links</h5>
+              <p class="text-muted small mb-4">Empty links will not appear on your profile.</p>
               
               <div class="row g-4">
                 <div class="col-md-6">
                   <label class="form-label fw-semibold">LinkedIn</label>
                   <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-linkedin text-primary"></i></span>
-                    <input v-model="getLink('linkedin').link_url" class="form-control" placeholder="https://linkedin.com/in/..." />
+                    <span class="input-group-text bg-white"><i class="bi"></i></span>
+                    <input v-model="getLink('linkedin').link_url" class="form-control"/>
                   </div>
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label fw-semibold">GitHub</label>
                   <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-github"></i></span>
-                    <input v-model="getLink('github').link_url" class="form-control" placeholder="https://github.com/..." />
+                    <span class="input-group-text bg-white"><i class="bi"></i></span>
+                    <input v-model="getLink('github').link_url" class="form-control"/>
                   </div>
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label fw-semibold">Resume Link</label>
                   <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-file-earmark-pdf"></i></span>
-                    <input v-model="getLink('resume').link_url" class="form-control" placeholder="Google Drive/Dropbox URL" />
+                    <span class="input-group-text bg-white"><i class="bi"></i></span>
+                    <input v-model="getLink('resume').link_url" class="form-control"/>
                   </div>
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold">Portfolio / Website</label>
+                  <label class="form-label">Portfolio / Website</label>
                   <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-globe"></i></span>
-                    <input v-model="getLink('portfolio').link_url" class="form-control" placeholder="https://yourwebsite.com" />
+                    <span class="input-group-text bg-white"><i class="bi"></i></span>
+                    <input v-model="getLink('portfolio').link_url" class="form-control"/>
                   </div>
                 </div>
 
                 <div class="col-12">
-                  <label class="form-label fw-semibold">Cover Letter Link</label>
+                  <label class="form-label">Cover Letter Link</label>
                   <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="bi bi-file-earmark-text"></i></span>
-                    <input v-model="getLink('cover_letter').link_url" class="form-control" placeholder="Link to document" />
+                    <span class="input-group-text bg-white"><i class="bi"></i></span>
+                    <input v-model="getLink('cover_letter').link_url" class="form-control"/>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="border-top pt-4 d-flex justify-content-end gap-2">
-              <button class="btn btn-light px-4" @click="cancel">Cancel</button>
-              <button class="btn btn-primary px-5 fw-bold" @click="saveChanges">Save All Changes</button>
-            </div>
+            <footer class="border-top pt-4 d-flex justify-content-end gap-2">
+              <button class="btn btn-outline-secondary btn-sm" @click="cancel">Cancel</button>
+              <button class="btn btn-dark btn-sm" @click="saveChanges">Save All Changes</button>
+            </footer>
 
           </div>
         </div>
       </div>
     </div>
+    
+    <Footer />
   </div>
 
   <div v-else class="container py-5 text-center">
-    <div class="spinner-grow text-primary" role="status"></div>
-    <p class="mt-3 text-muted">Fetching your profile data...</p>
+    <p class="text-muted small">Loading settings...</p>
   </div>
 </template>

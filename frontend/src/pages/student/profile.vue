@@ -2,6 +2,8 @@
   import { ref, onMounted } from 'vue';
   import { useRoute } from 'vue-router'
   import axios from 'axios';
+  import Navbar from '@/components/Navbar.vue'
+  import Footer from '@/components/Footer.vue'
 
   const route = useRoute();
   const profile = ref(null);
@@ -24,25 +26,21 @@
 </script>
 
 <template>
-  <div class="container py-5" v-if="profile">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        
-        <div class="card shadow-sm mb-4">
-          <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h1 class="display-5 fw-bold mb-0">{{profile.first_name}} {{profile.last_name}}</h1>
-                <p class="text-muted mb-0" v-if="profile.preferred_name">({{ profile.preferred_name }})</p>
-              </div>
-              <span class="badge bg-primary rounded-pill px-3 py-2">Student</span>
-            </div>
-          </div>
-        </div>
+  <Navbar />
 
-        <div class="card shadow-sm mb-4">
+  <main class="container-xl py-5 px-4" v-if="profile">
+    <div class="row mb-5">
+      <div class="col-12">
+        <h1 class="display-5 fw-bold mb-0">{{profile.first_name}} {{profile.last_name}}</h1>
+        <p class="text-muted mb-0" v-if="profile.preferred_name">Goes by: ({{ profile.preferred_name }})</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <section class="card shadow-sm mb-4">
           <div class="card-header bg-white py-3">
-            <h5 class="mb-0 text-primary">Academic Information</h5>
+            <h2 class="h5 mb-0 text-primary">Academic Information</h2>
           </div>
           <div class="card-body">
             <div class="row">
@@ -56,49 +54,49 @@
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <div class="mb-4">
-              <h5 class="border-bottom pb-2">Personal Introduction</h5>
-              <p class="text-secondary" style="white-space: pre-line;">{{ profile.personal_intro }}</p>
-            </div>
+        <section class="mb-5">
+          <h2 class="h5 fw-bold mb-3">Personal Introduction</h2>
+          <p class="text-dark lh-base" style="white-space: pre-line;">
+            {{ profile.personal_intro }}
+          </p>
+        </section>
 
-            <div class="mb-4">
-              <h5 class="border-bottom pb-2">Upcoming Actions</h5>
-              <p class="text-secondary">{{ profile.upcoming_actions }}</p>
-            </div>
-
-            <div>
-              <h5 class="border-bottom pb-2">Professional Links</h5>
-              <div v-if="profile.links && profile.links.length > 0" class="list-group list-group-flush">
-                <a 
-                  v-for="link in profile.links" 
-                  :key="link.link_id" 
-                  :href="link.link_url" 
-                  target="_blank" 
-                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                >
-                  <span class="fw-bold">{{ link.link_label }}</span>
-                  <span class="text-primary small text-truncate ms-2">{{ link.link_url }}</span>
-                </a>
-              </div>
-              <p v-else class="text-muted italic">No links added yet.</p>
-            </div>
+        <section class="mb-5">
+          <h2 class="h5 fw-bold mb-3">Upcoming Actions</h2>
+          <div class="p-3 bg-light border-start border-4">
+            {{ profile.upcoming_actions }}
           </div>
-        </div>
+        </section>
 
-        <div class="d-flex align-items-center">
-          <router-link :to="{name: 'profile-settings', params:{ id: route.params.id }}" class="btn btn-primary px-4">Edit Profile</router-link>
-          <router-link to="/" class="btn btn-outline-secondary">Back to Dashboard</router-link>
-        </div>
+        <section class="mb-5">
+          <h2 class="h5 fw-bold mb-3">Professional Links</h2>
+          <table class="table table-hover border-top">
+            <tbody>
+              <tr v-for="link in profile.links" :key="link.link_id">
+                <td class="fw-semibold w-25">{{ link.link_label }}</td>
+                <td><a :href="link.link_url" target="_blank" class="text-break">{{ link.link_url }}</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <div class="d-flex flex-column gap-2">
+          <router-link :to="{name: 'profile-settings', params:{ id: route.params.id }}" class="btn btn-outline-dark">
+            Edit Profile
+          </router-link>
+          <router-link to="/" class="btn btn-link text-muted btn-sm">
+            Back to Dashboard
+          </router-link>
       </div>
     </div>
-  </div>
+  </main>
 
-  <div v-else-if="loading" class="container py-5 text-center">
-    <p class="mt-2 text-muted">Loading profile...</p>
+  <div v-else-if="loading" class="text-center py-5">
+    <div class="spinner-border" role="status"></div>
+    <p>Loading profile...</p>
   </div>
 
   <div v-else class="container py-5">
@@ -106,4 +104,6 @@
       Profile not found.
     </div>
   </div>
+
+  <Footer />
 </template>
