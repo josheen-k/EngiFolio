@@ -1,56 +1,65 @@
-<script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router'
-  import axios from 'axios';
-  import Navbar from '@/components/Navbar.vue'
-
-  const router = useRouter();
-
-  onMounted(() => {
-
-});
-</script>
-
 <template>
   <Navbar/>
-  <div class="container">
-    <div class="p-5">
-        <h3>EA Competency</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    </div>
+
+  <div>
+    <aside>
+      <nav>
+        <ul>
+          <li>CURRENT</li>
+          <li>DISCONTINUED</li>
+          <li>DRAFTS</li>
+          <li>FEEDBACK</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <h1>Current Competencies</h1>
+
+      <section>
+        <h2>Knowledge and Skill Base</h2>
+        <span><b>6</b></span>
+        <ul>
+          <li>Competency 1.1</li>
+          <li>Competency 1.2</li>
+          <li>Competency 1.3</li>
+          <li>Competency 1.4</li>
+          <li>Competency 1.5</li>
+          <li>Competency 1.6</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Engineering Application Ability</h2>
+        <span><b>4</b></span>
+        <ul>
+          <li>Competency 2.1</li>
+          <li>Competency 2.2</li>
+          <li>Competency 2.3</li>
+          <li>Competency 2.4</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Professional and Personal Attributes</h2>
+        <span><b>6</b></span>
+        <ul>
+          <li>Competency 1.1</li>
+          <li>Competency 1.2</li>
+          <li>Competency 1.3</li>
+          <li>Competency 1.4</li>
+          <li>Competency 1.5</li>
+          <li>Competency 1.6</li>
+        </ul>
+      </section>
+    </main>
   </div>
+
+  <Footer/>
 </template>
 
-<style>
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 50vh;
-      background-color: #f8f9fa;
-    }
+<script setup lang="ts">
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 
-    .profilePic {
-      height: 120px;
-      width: 120px;
-      object-fit: cover;
-      border-radius: 50%;
-      margin: 0 auto 20px auto;
-      border: 4px solid #f0f2f5;
-      padding: 0;
-    }
-
-    h3, h6 {
-      font-weight: 700;
-      color: #2c3e50;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
-
-    p {
-      color: #6c757d;
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-    }
-</style>
+</script>
