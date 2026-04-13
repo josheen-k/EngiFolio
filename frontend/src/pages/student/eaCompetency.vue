@@ -10,15 +10,9 @@
     </aside>
 
     <main>
-      <h1>{{currTitle}}</h1>
+      <h1 class="comp-title">{{currTitle}}</h1>
 
-      <section v-for="g in filteredGrps" :key="g.group_id">
-        <h2>{{ g.group_name }}</h2><span><b>6</b></span>
-
-        <div v-for="i in g.indicators" :key="i.indicator_id">
-          <h3>{{ i.display_id }}</h3>
-        </div>
-      </section>
+      <component :is="currComponent"/>
     </main>
   </div>
 
@@ -29,6 +23,10 @@
 import { ref, computed } from 'vue'
 import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import CurrentCompetency from '@/components/CurrentCompetency.vue';
+import DraftReflections from '@/components/DraftReflections.vue';
+import FeedbackReflections from '@/components/FeedbackReflections.vue';
+import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 
 // different tabs in side pannel
 const currTab = ref('CURRENT');
@@ -49,73 +47,20 @@ const currTitle = computed(()=> {
       return 'Competencies'
   }
 });
-
-// dummy data
-const groups = [
-  {
-    group_id: 1,
-    group_name: "Knowledge and Skill Base",
-    status: "CURRENT",
-
-    indicators: [
-      {
-        indicator_id: 11,
-        display_id: "1.1",
-        description: "Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline. ",
-        entries: [
-          {
-            entry_id: 1,
-            title: "Lab project on structural analysis",
-            level: "Developing",
-            year: 2,
-            updated_at: "2026-04-12",
-            evidence: [
-              { type: "url", value: "https://myLab.com/report" },
-              { type: "file", value: "LabReport.pdf" }
-            ]
-          }
-        ]
-      },
-      {
-        indicator_id: 12,
-        display_id: "1.2",
-        description: "Conceptual understanding of the mathematics, numerical analysis, statistics, and computer and information sciences which underpin the engineering discipline.",
-        entries: []
-      }
-    ]
-  },
-
-  {
-    group_id: 2,
-    group_name: "Engineering Application Ability",
-    status: "CURRENT",
-    indicators: [
-      {
-        indicator_id: 21,
-        display_id: "2.1",
-        description: "Application of established engineering methods to complex engineering problem solving.",
-        entries: []
-      }
-    ]
-  },
-
-  {
-    group_id: 3,
-    group_name: "Professional and Personal Attributes",
-    status: "CURRENT",
-    indicators: [
-      {
-        indicator_id: 31,
-        display_id: "3.1",
-        description: "Ethical conduct and professional accountability.",
-        entries: []
-      }
-    ]
+// render components based on current tab
+const currComponent = computed(()=> {
+  switch (currTab.value) {
+    case 'CURRENT':
+      return CurrentCompetency
+    case 'DRAFTS':
+      return DraftReflections
+    case 'FEEDBACK':
+      return FeedbackReflections
+    case 'DISCONTINUED':
+      return DiscontinuedCompetency
+    default:
+      return 'Competencies'
   }
-];
-
-const filteredGrps = computed(() => {
-  return groups.filter(g=>g.status === currTab.value)
 });
 </script>
 
@@ -124,6 +69,7 @@ const filteredGrps = computed(() => {
   font-family: 'Maven Pro', sans-serif;
   font-size: 1.2rem;
   border-radius: 1.5rem;
+  cursor: pointer;
 }
 
 .sidebar-on {
@@ -139,5 +85,13 @@ const filteredGrps = computed(() => {
 
 .dot-on {
   background: #88c2d2;
+}
+
+.comp-title {
+  font-family: 'Martel', serif;
+  font-size: 2rem;
+  color: #2b2b2bc5;
+  font-weight: lighter;
+  margin-bottom: 2rem;
 }
 </style>
