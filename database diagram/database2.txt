@@ -36,10 +36,22 @@ Enum goal_status_enum {
 }
 
 Enum competency_level_enum {
+  NotStarted
   Emerging
   Developing
   Proficient
   Competent
+}
+
+Enum competency_entry_status_enum {
+  draft
+  submitted
+  reviewed
+}
+
+Enum evidence_type_enum {
+  url 
+  file
 }
 
 Enum cdl_progress_status_enum {
@@ -354,13 +366,38 @@ Table competency_entries {
   entry_id bigint [pk, increment]
   user_id bigint [not null, ref: > users.user_id]
   indicator_id bigint [not null, ref: > competency_indicators.indicator_id]
+
+  // Reflection details
+  experience_title varchar(255) [not null, note: 'Short title of the experience']
+  associated_year int [not null, note: 'Academic year']
+  experience_tasks text [not null, note: 'Description of experience and tasks']
+  key_learnings text [not null, note: 'Key learnings from that experience']
+  future_applications text [not null, note: 'How the learning will be apllied in future']
+
   level competency_level_enum [not null]
+  status competency_entry_status_enum [not null, default: 'draft']
   start_date date
   end_date date
-  skill_review text
-  evidence text
   created_at datetime [not null]
   updated_at datetime [not null]
+
+  indexes {
+    (user_id, indicator_id, status)
+  }
+}
+
+// Stores multiple evidence each competency entry
+Table competency_evidence {
+  evidence_id bigint [pk, increment]
+  entry_id bigint [not null, ref: > competency_entries.entry_id]
+  evidence_type evidence_type_enum [not null, note: 'Indicates whether evidence is url or file upload']
+  evidence_value varchar(500) [not null, note: 'Stores evidence path']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    (entry_id)
+  }
 }
 
 /*
