@@ -1,22 +1,17 @@
 <template>
   <Navbar/>
 
-  <div>
-    <aside>
-      <nav>
-        <ul>
-          <li>CURRENT</li>
-          <li>DRAFTS</li>
-          <li>FEEDBACK</li>
-          <li>DISCONTINUED</li>
-        </ul>
-      </nav>
+  <div class="d-flex gap-4 p-4">
+    <aside class="d-flex gap-2 flex-column pt-5">
+      <div class="d-flex align-items-center gap-2 px-3 py-2"
+      :class="{'sidebar-active': currTab===t}" v-for="t in tabs" :key="t" 
+      @click="currTab = t">{{ t }}</div>
     </aside>
 
     <main>
       <h1>Current Competencies</h1>
 
-      <section v-for="g in groups" :key="g.group_id">
+      <section v-for="g in filteredGrps" :key="g.group_id">
         <h2>{{ g.group_name }}</h2><span><b>6</b></span>
 
         <div v-for="i in g.indicators" :key="i.indicator_id">
@@ -29,16 +24,20 @@
   <Footer/>
 </template>
 
-<script setup lang="ts">
+<script setup>
+import { ref, computed } from 'vue'
 import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+
+const currTab = ref('CURRENT')
+const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED']
 
 // dummy data
 const groups = [
   {
     group_id: 1,
     group_name: "Knowledge and Skill Base",
-    status: "current",
+    status: "CURRENT",
 
     indicators: [
       {
@@ -71,7 +70,7 @@ const groups = [
   {
     group_id: 2,
     group_name: "Engineering Application Ability",
-    status: "current",
+    status: "CURRENT",
     indicators: [
       {
         indicator_id: 21,
@@ -85,7 +84,7 @@ const groups = [
   {
     group_id: 3,
     group_name: "Professional and Personal Attributes",
-    status: "current",
+    status: "CURRENT",
     indicators: [
       {
         indicator_id: 31,
@@ -97,4 +96,7 @@ const groups = [
   }
 ]
 
+const filteredGrps = computed(() => {
+  return groups.filter(g=>g.status === currTab.value)
+})
 </script>
