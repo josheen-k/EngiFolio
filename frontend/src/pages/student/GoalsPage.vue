@@ -95,7 +95,7 @@ const loadGoals = async () => {
       params.to = toDate.value
     }
     // For testing, I cannot use port 8000 for some reason, so I am using 9000 instead. Please change it back to 8000 when you test it.
-    const response = await axios.get('http://127.0.0.1:9000/api/smart-goals', {
+    const response = await axios.get('http://127.0.0.1:8000/api/smart-goals', {
       params
     })
 
