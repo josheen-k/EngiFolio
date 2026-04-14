@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('networking_events', function (Blueprint $table) {
             $table->id('event_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->string('event_name', 255);
             $table->dateTime('event_datetime');
             $table->string('location', 255);

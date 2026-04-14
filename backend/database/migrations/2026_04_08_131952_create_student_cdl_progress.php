@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('student_cdl_progress', function (Blueprint $table) {
             $table->id('progress_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->foreignId('cdl_id')->constrained('cdl_modules', 'cdl_id');
-            $table->enum('status', ['Not Started', 'In Progress', 'Completed']);
+            $table->string('status', 25);
+            $table->check("status IN ('Not Started', 'In Progress', 'Completed'')");
             $table->unsignedTinyInteger('progress_percentage')->default(0);
             $table->dateTime('last_accessed_at');
             $table->dateTime('completed_at');

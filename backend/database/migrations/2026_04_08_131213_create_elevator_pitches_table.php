@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('elevator_pitches', function (Blueprint $table) {
             $table->id('pitch_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->text('pitch_text');
             $table->timestamps();
         });

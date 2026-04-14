@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('goal_action_steps', function (Blueprint $table) {
             $table->id('step_id');
-            $table->foreignId('goal_id')->constrained('smart_goals', 'goal_id');
+            $table->foreignId('goal_id')->constrained('smart_goals', 'goal_id')->onDelete('cascade');
             $table->integer('step_order');
             $table->text('step_description');
             $table->unique(['goal_id', 'step_order']);

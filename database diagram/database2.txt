@@ -15,8 +15,6 @@
 // [REMOVED] Remove elevator_pitch from student_profiles
 // [REMOVED] Remove linkedin_url, resume_url, cover_letter_url from student_profiles
 // [REMOVED] Remove phone_number, email, linkedin_url from industry_contacts
-// [OPTIONAL DELETE] mentor_student_mapping can be deleted later if your business
-//                   does not require staff-to-student assignment control
 // [NEW] Added new parts to student profile as specified in the competency checklist
 
 
@@ -97,7 +95,7 @@ Table users {
   email varchar(255) [not null, unique]
   password_hash varchar(255) [not null]
   role_id bigint [not null, ref: > roles.role_id]
-  account_status account_status_enum [not null, default: 'active']
+  account_status varchar(25) [note: "CHECK (account_status IN ('active', 'disabled'))", not null, default: 'active']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -127,7 +125,7 @@ Table student_profiles {
 Table student_links {
   link_id bigint [pk, increment]
   profile_id bigint [not null, ref: > student_profiles.profile_id]
-  link_type student_link_type_enum [not null]
+  link_type varchar(25) [note: "CHECK (link_type IN ('linkedin', 'resume', 'cover_letter', 'github', 'portfolio', 'other'))", not null]
   link_label varchar(100) [not null, note: 'Display label shown to users']
   link_url varchar(500) [not null]
   display_order int [not null, default: 1]
@@ -200,17 +198,6 @@ Table job_resources {
 
 
 // =====================================================
-// HOMEPAGE / PUBLIC CONTENT
-// =====================================================
-
-
-
-
-
-
-
-
-// =====================================================
 // CAREER DEVELOPMENT PLAN (CDP)
 // =====================================================
 
@@ -250,7 +237,7 @@ Table smart_goals {
   end_date date
   completion_date date
   completion_notes text
-  status goal_status_enum [not null, default: 'planned']
+  status varchar(25) [note: "CHECK (status IN ('planned', 'in_progress', 'completed'))", not null, default: 'planned']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -316,7 +303,7 @@ Table industry_contacts {
 Table industry_contact_methods {
   method_id bigint [pk, increment]
   contact_id bigint [not null, ref: > industry_contacts.contact_id]
-  method_type contact_method_type_enum [not null]
+  method_type varchar(25) [note: "CHECK (contact_method IN ('phone', 'email', 'linkedin', 'website', 'other'))", not null]
   method_value varchar(500) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -374,8 +361,8 @@ Table competency_entries {
   key_learnings text [not null, note: 'Key learnings from that experience']
   future_applications text [not null, note: 'How the learning will be apllied in future']
 
-  level competency_level_enum [not null]
-  status competency_entry_status_enum [not null, default: 'draft']
+  level varchar(25) [note: "CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Competent'))", not null]
+  status varchar(25) [note: "CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))", not null, default: 'draft']
   start_date date
   end_date date
   created_at datetime [not null]
@@ -390,7 +377,7 @@ Table competency_entries {
 Table competency_evidence {
   evidence_id bigint [pk, increment]
   entry_id bigint [not null, ref: > competency_entries.entry_id]
-  evidence_type evidence_type_enum [not null, note: 'Indicates whether evidence is url or file upload']
+  evidence_type varchar(25) [note: "CHECK (evidence_type IN ('url', 'file'))", not null]
   evidence_value varchar(500) [not null, note: 'Stores evidence path']
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -475,7 +462,7 @@ Table student_cdl_progress {
   progress_id bigint [pk, increment]
   user_id bigint [not null, ref: > users.user_id]
   cdl_id bigint [not null, ref: > cdl_modules.cdl_id]
-  status cdl_progress_status_enum [not null, default: 'not_started']
+  status varchar(25) [note: "CHECK (status IN ('Not Started', 'In Progress', 'Completed''))", not null, default: 'not_started']
   progress_percentage int [not null, default: 0, note: 'Should be validated as 0-100 in application logic']
   last_accessed_at datetime
   completed_at datetime

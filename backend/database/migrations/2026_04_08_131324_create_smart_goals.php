@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('smart_goals', function (Blueprint $table) {
             $table->id('goal_id');
-            $table->foreignId('plan_id')->constrained('career_development_plans', 'plan_id');
+            $table->foreignId('plan_id')->constrained('career_development_plans', 'plan_id')->onDelete('cascade');
             $table->text('goal_description');
             $table->text('timeline');
             $table->text('progress_notes');
@@ -22,7 +22,8 @@ return new class extends Migration
             $table->date('end_date');
             $table->date('completion_date');
             $table->text('completion_notes');
-            $table->enum('status', ['planned', 'in_progress', 'completed'])->default('planned');
+            $table->string('status', 25)->default('planned');
+            $table->check("status IN ('planned', 'in_progress', 'completed')");
             $table->timestamps();
         });
     }

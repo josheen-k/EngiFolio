@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('system_audit_logs', function (Blueprint $table) {
             $table->id('log_id');
-            $table->foreignId('admin_id')->constrained('users', 'user_id');
+            $table->foreignId('admin_id')->nullable()->constrained('users', 'user_id');
             $table->string('action_type', 100);
             $table->string('target_table', 100);
             $table->integer('target_row_id');

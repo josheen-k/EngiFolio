@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('goal_feedback', function (Blueprint $table) {
             $table->id('feedback_id');
-            $table->foreignId('goal_id')->constrained('smart_goals', 'goal_id');
-            $table->foreignId('staff_id')->constrained('users', 'user_id');
+            $table->foreignId('goal_id')->constrained('smart_goals', 'goal_id')->onDelete('cascade');
+            $table->foreignId('staff_id')->nullable()->constrained('users', 'user_id');
             $table->text('feedback_content');
             $table->timestamps();
         });
