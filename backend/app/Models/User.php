@@ -24,3 +24,4 @@ class User extends Model
         return $this->hasOne(StudentProfile::class, 'user_id');
     }
 }
+
