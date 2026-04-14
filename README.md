@@ -44,3 +44,4 @@ Open two terminals. In the first terminal run:
 In the second terminal run:
 `cd frontend`
 `npm run dev`
+
