@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('entry_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->string('evidence_type', 25);
-            $table->check("evidence_type IN ('url', 'file')");
             $table->string('evidence_value', 500);
             $table->unique(['entry_id']);
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE competency_evidence ADD CONSTRAINT check_evidence_type CHECK (evidence_type IN ('url', 'file'))");
     }
 
     /**

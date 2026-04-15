@@ -18,15 +18,16 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
 
-            $table->text('timeline')->nullable();;
-            $table->text('progress_notes')->nullable();;
-            $table->text('learnings')->nullable();;
-            $table->date('completion_date')->nullable();;
-            $table->text('completion_notes')->nullable();;
+            $table->text('timeline')->nullable();
+            $table->text('progress_notes')->nullable();
+            $table->text('learnings')->nullable();
+            $table->date('completion_date')->nullable();
+            $table->text('completion_notes')->nullable();
             $table->string('status', 25)->default('planned');
-            $table->check("status IN ('planned', 'in_progress', 'completed')");
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE smart_goals ADD CONSTRAINT check_smart_goals CHECK (status IN ('planned', 'in_progress', 'completed'))");
     }
 
     /**

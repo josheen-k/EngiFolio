@@ -18,9 +18,10 @@ return new class extends Migration
             $table->string('email', 255)->unique();
             $table->string('password_hash', 255);
             $table->string('account_status', 25)->default('active');
-            $table->check("account_status IN ('active', 'disabled')");
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE users ADD CONSTRAINT check_account_status CHECK (account_status IN ('active', 'disabled'))");
     }
 
     /**

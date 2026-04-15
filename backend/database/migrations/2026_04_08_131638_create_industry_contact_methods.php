@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id('method_id');
             $table->foreignId('contact_id')->constrained('industry_contacts', 'contact_id')->onDelete('cascade');
             $table->string('contact_method', 25);
-            $table->check("contact_method IN ('phone', 'email', 'linkedin', 'website', 'other')");
             $table->string('method_value', 500);
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE industry_contact_methods ADD CONSTRAINT check_contact_method CHECK (contact_method IN ('phone', 'email', 'linkedin', 'website', 'other'))");
     }
 
     /**

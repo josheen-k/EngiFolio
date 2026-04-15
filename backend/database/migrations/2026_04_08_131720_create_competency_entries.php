@@ -21,15 +21,16 @@ return new class extends Migration
             $table->text('key_learnings')->nullable();
             $table->text('future_applications')->nullable();
             $table->string('level', 25);
-            $table->check("level IN ('Emerging', 'Developing', 'Proficient', 'Competent')");
             $table->string('status', 25)->default('Draft');
-            $table->check("status IN ('Draft', 'Submitted', 'Reviewed')");
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'indicator_id', 'status'], 'entries_user_indicator_status_index');
         });
+
+        DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_level CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Competent'))");
+        DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_status CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))");
     }
 
     /**
