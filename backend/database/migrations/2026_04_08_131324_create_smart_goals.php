@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('goal_id');
             $table->foreignId('plan_id')->constrained('career_development_plans', 'plan_id')->onDelete('cascade');
             $table->text('goal_description');
+<<<<<<< HEAD
             $table->date('start_date');
             $table->date('end_date');
 
@@ -24,6 +25,16 @@ return new class extends Migration
             $table->date('completion_date')->nullable();
             $table->text('completion_notes')->nullable();
             $table->string('status', 25)->default('planned');
+=======
+            $table->text('timeline')->nullable();
+            $table->text('progress_notes')->nullable();
+            $table->text('learnings')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->date('completion_date')->nullable();
+            $table->text('completion_notes')->nullable();
+            $table->enum('status', ['planned', 'in_progress', 'completed'])->default('planned');
+>>>>>>> SMART_GOALS-page
             $table->timestamps();
         });
 

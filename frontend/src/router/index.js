@@ -10,6 +10,7 @@ import Networking from '@/pages/student/Networking.vue'
 import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 
+import GoalsPage from '../pages/student/GoalsPage.vue'
 const routes = [
   {
     path: '/',
@@ -69,6 +70,12 @@ const routes = [
     path: '/login',
     name: 'login',
     component: Login
+  },
+
+  {
+  path: '/goals',
+  name: 'GoalsPage',
+  component: GoalsPage
   }
 
 ]

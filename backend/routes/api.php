@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentLinkController;
+use App\Http\Controllers\SmartGoalController;
+use App\Http\Controllers\CareerDevelopmentPlanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,3 +37,15 @@ Route::put('/link/{id}', [StudentLinkController::class, 'update']);
 Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
 
 // 
+Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+
+// Smart Goal routes
+Route::get('/smart-goals', [SmartGoalController::class, 'index']);
+Route::post('/smart-goals', [SmartGoalController::class, 'store']);
+Route::get('/smart-goals/{id}', [SmartGoalController::class, 'show']);
+Route::put('/smart-goals/{id}', [SmartGoalController::class, 'update']);
+Route::delete('/smart-goals/{id}', [SmartGoalController::class, 'destroy']);
+
+// Career Development Plan routes
+Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
