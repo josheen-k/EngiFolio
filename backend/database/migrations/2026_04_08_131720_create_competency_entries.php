@@ -13,14 +13,22 @@ return new class extends Migration
     {
         Schema::create('competency_entries', function (Blueprint $table) {
             $table->id('entry_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->foreignId('indicator_id')->constrained('competency_indicators', 'indicator_id');
-            $table->enum('level', ['Emerging', 'Developing', 'Proficient', 'Competent']);
+            $table->string('experience_title', 255);
+            $table->integer('associated_year');
+            $table->text('experience_tasks');
+            $table->text('key_learnings')->nullable();
+            $table->text('future_applications')->nullable();
+            $table->string('level', 25);
+            $table->check("level IN ('Emerging', 'Developing', 'Proficient', 'Competent')");
+            $table->string('status', 25)->default('Draft');
+            $table->check("status IN ('Draft', 'Submitted', 'Reviewed')");
             $table->date('start_date');
-            $table->date('end_date');
-            $table->text('skill_review');
-            $table->text('evidence');
+            $table->date('end_date')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'indicator_id', 'status'], 'entries_user_indicator_status_index');
         });
     }
 

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('competency_groups', function (Blueprint $table) {
             $table->id('group_id');
-            $table->string('display_id', 20);
+            $table->string('display_id', 20)->unique();
             $table->string('group_name', 255);
-            $table->text('description');
-            $table->date('discontinued_date');
+            $table->text('description')->nullable();
+            $table->date('discontinued_date')->nullable();
             $table->timestamps();
         });
     }

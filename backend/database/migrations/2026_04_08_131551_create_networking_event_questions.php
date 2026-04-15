@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('networking_event_questions', function (Blueprint $table) {
             $table->id('question_id');
-            $table->foreignId('event_id')->constrained('networking_events', 'event_id');
+            $table->foreignId('event_id')->constrained('networking_events', 'event_id')->onDelete('cascade');
             $table->integer('question_order');
             $table->text('question_text');
             $table->unique(['event_id', 'question_order']);
