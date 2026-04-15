@@ -20,10 +20,9 @@ return new class extends Migration
             $table->text('learnings');
             $table->date('start_date');
             $table->date('end_date');
-            $table->date('completion_date');
-            $table->text('completion_notes');
-            $table->string('status', 25)->default('planned');
-            $table->check("status IN ('planned', 'in_progress', 'completed')");
+            $table->date('completion_date')->nullable();
+            $table->text('completion_notes')->nullable();
+            $table->enum('status',['planned', 'in_progress', 'completed'])->default('planned');
             $table->timestamps();
         });
     }

@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('student_links', function (Blueprint $table) {
             $table->id('link_id');
-            $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
-            $table->string('link_type', 25);
-            $table->check("link_type IN ('linkedin', 'resume', 'cover_letter', 'github', 'portfolio', 'other')");
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->enum('link_type',['linkedin','resume','cover_letter','github', 'portfolio','other']);
             $table->string('link_label', 100);
             $table->string('link_url', 500);
             $table->integer('display_order')->default(1);
-            $table->unique(['profile_id', 'link_type', 'link_url']);
+            $table->unique(['user_id', 'link_type', 'link_url']);
             $table->timestamps();
         });
     }

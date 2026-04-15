@@ -27,3 +27,19 @@ Route::get('/data', function () {
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+use App\Http\Controllers\NetworkingEventController;
+use App\Http\Controllers\NetworkingEventQuestionController;
+
+//Event
+Route::get('/networking-events', [NetworkingEventController::class, 'index']);
+Route::post('/networking-events', [NetworkingEventController::class, 'store']);
+Route::get('networking-events/{networkingEvent}', [NetworkingEventController::class, 'show']);
+Route::put('networking-events/{networkingEvent}', [NetworkingEventController::class, 'update']);
+Route::delete('networking-events/{networkingEvent}', [NetworkingEventController::class, 'destroy']);
+
+//Questions
+Route::get('/networking-events/{id}/questions', [NetworkingEventQuestionController::class, 'index']);
+Route::post('/networking-events/{id}/questions', [NetworkingEventQuestionController::class, 'store']);
+Route::put('/questions/{id}', [NetworkingEventQuestionController::class, 'update']);
+Route::delete('/questions/{id}', [NetworkingEventQuestionController::class,'destroy']);

@@ -13,6 +13,7 @@ class NetworkingEventController extends Controller
     public function index()
     {
         //
+        return NetworkingEvent::with('questions')->get();
     }
 
     /**
@@ -21,29 +22,47 @@ class NetworkingEventController extends Controller
     public function store(Request $request)
     {
         //
+        return NetworkingEvent::create([
+            'user_id' => null,
+            'event_name' => $request->name,
+            'event_datetime' => $request->date,
+            'location' => $request->location,
+            'details' => $request->details,
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(NetworkingEvent $networkingEvent)
+    public function show($id)
     {
         //
+        return NetworkingEvent::with('questions')->findOrFail($id);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, NetworkingEvent $networkingEvent)
+    public function update(Request $request, $id)
     {
         //
+        $event = NetworkingEvent::findOrFail($id);
+        $event->update([
+            'event_name' => $request->name,
+            'event_datetime' => $request->date,
+            'location' => $request->location,
+            'details' => $request->details,
+        ]);
+        return $event;
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(NetworkingEvent $networkingEvent)
+    public function destroy($id)
     {
         //
+        NetworkingEvent::destroy($id);
+        return ['message' => 'deleted'];
     }
 }

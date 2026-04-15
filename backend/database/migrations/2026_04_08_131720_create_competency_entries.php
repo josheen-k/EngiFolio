@@ -20,10 +20,10 @@ return new class extends Migration
             $table->text('experience_tasks');
             $table->text('key_learnings');
             $table->text('future_applications');
-            $table->string('level', 25);
-            $table->check("level IN ('Emerging', 'Developing', 'Proficient', 'Competent')");
-            $table->string('status', 25)->default('Draft');
-            $table->check("status IN ('Draft', 'Submitted', 'Reviewed')");
+
+            $table->enum('level', ['Emerging', 'Developing', 'Proficient', 'Competent']);
+
+            $table->enum('status',['Draft', 'Submitted', 'Reviewed'])->default('Draft');
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('username', 100)->unique();
             $table->string('email', 255)->unique();
             $table->string('password_hash', 255);
-            $table->string('account_status', 25)->default('active');
-            $table->check("account_status IN ('active', 'disabled')");
+            $table->enum('account_status',['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }
