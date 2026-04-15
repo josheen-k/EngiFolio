@@ -58,8 +58,6 @@ const currComponent = computed(()=> {
       return FeedbackReflections
     case 'DISCONTINUED':
       return DiscontinuedCompetency
-    default:
-      return 'Competencies'
   }
 });
 </script>
