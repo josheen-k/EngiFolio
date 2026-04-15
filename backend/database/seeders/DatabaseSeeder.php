@@ -15,6 +15,308 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Add the three roles required for the database
+        DB::table('roles')->insert([
+            [
+                'role_id' => 1, 
+                'role_name' => 'Admin'
+            ],
+            [
+                'role_id' => 2, 
+                'role_name' => 'Staff'
+            ],
+            [
+                'role_id' => 3, 
+                'role_name' => 'Student'
+            ],
+        ]);
 
+        // Create an admin, tutor and two students
+        DB::table('users')->insert([
+            [
+                'user_id' => 1, 
+                'username' => 'admin1', 
+                'email' => 'admin1@adelaide.edu.au', 
+                'password_hash' => Hash::make('password'), 
+                'role_id' => 1, 
+                'account_status' => 'active', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'user_id' => 2, 
+                'username' => 'tutor1', 
+                'email' => 'jane@adelaide.edu.au', 
+                'password_hash' => Hash::make('password'), 
+                'role_id' => 2, 
+                'account_status' => 'active', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'user_id' => 3, 
+                'username' => 'a123456',
+                'email' => 'alex.smith@adelaide.edu.au', 
+                'password_hash' => Hash::make('password'), 
+                'role_id' => 3, 
+                'account_status' => 'active', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'user_id' => 4, 
+                'username' => 'a789012', 
+                'email' => 'kate.brown@adelaide.edu.au', 
+                'password_hash' => Hash::make('password'), 
+                'role_id' => 3, 
+                'account_status' => 'active', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Create profiles for the two students
+        DB::table('student_profiles')->insert([
+            [
+                'profile_id' => 1,
+                'user_id' => 3, 
+                'first_name' => 'Alex', 
+                'last_name' => 'Smith', 
+                'degree_title' => 'Bachelor of Engineering', 
+                'specialisation' => 'Mechanical',
+                'personal_intro' => 'Focused on sustainable energy systems.',
+                'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'profile_id' => 2,
+                'user_id' => 4, 
+                'first_name' => 'Kate', 
+                'last_name' => 'Brown', 
+                'degree_title' => 'Bachelor of Civil Engineering', 
+                'specialisation' => 'Structural',
+                'personal_intro' => 'Interested in earthquake-resistant urban design.',
+                'created_at' => now(), 'updated_at' => now()
+            ],
+        ]);
+
+        // Add links to the student profiles
+        DB::table('student_links')->insert([
+            [
+                'profile_id' => 1, 
+                'link_type' => 'linkedin', 
+                'link_label' => 'LinkedIn', 
+                'link_url' => 'https://linkedin.com/in/alex-eng',
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 2, 
+                'link_type' => 'portfolio', 
+                'link_label' => 'My Design Portfolio', 
+                'link_url' => 'https://kate-structures.com', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add elevator pitches
+        DB::table('elevator_pitches')->insert([
+            [
+                'user_id' => 3, 
+                'pitch_text' => 'Hi, I am Alex, a Mechanical student focusing on fluid dynamics.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'user_id' => 4, 
+                'pitch_text' => 'I am Kate, an aspiring Structural Engineer dedicated to steel detailing.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add career development plans with smart goals
+        DB::table('career_development_plans')->insert([
+            [
+                'plan_id' => 1, 
+                'user_id' => 3, 
+                'plan_year' => 2026, 
+                'professional_interests' => 'Solar power', 
+                'created_at' => now(), 
+                'updated_at' => now()],
+            [
+                'plan_id' => 2, 
+                'user_id' => 4, 
+                'plan_year' => 2026, 
+                'professional_interests' => 'Bridge design', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        DB::table('smart_goals')->insert([
+            [
+                'goal_id' => 1, 
+                'plan_id' => 1, 
+                'goal_description' => 'Complete Statics Course', 
+                'status' => 'in_progress', 
+                'start_date' => '2026-02-01', 
+                'end_date' => '2026-06-30', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'goal_id' => 2, 
+                'plan_id' => 2, 
+                'goal_description' => 'Secure a summer internship', 
+                'status' => 'planned', 
+                'start_date' => '2026-05-01', 
+                'end_date' => '2026-08-01', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add some industry contacts to the networking pages
+        DB::table('industry_contacts')->insert([
+            [
+                'contact_id' => 1, 
+                'user_id' => 3, 
+                'contact_name' => 'Robert Ford', 
+                'company' => 'Westworld Robotics', 
+                'date_met' => '2026-05-15', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'contact_id' => 2, 
+                'user_id' => 4, 
+                'contact_name' => 'Sarah Connor', 
+                'company' => 'Cyberdyne Systems', 
+                'date_met' => '2026-01-20', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        DB::table('industry_contact_methods')->insert([
+            [
+                'contact_id' => 1, 
+                'method_type' => 'email', 
+                'method_value' => 'r.ford@westworld.com', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'contact_id' => 2, 
+                'method_type' => 
+                'linkedin', 
+                'method_value' => 'linkedin.com/in/sconnor', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add competency groups for competency indicators and entries
+        DB::table('competency_groups')->insert([
+            [
+                'group_id' => 1, 
+                'display_id' => 'CAT1', 
+                'group_name' => 'Knowledge Base', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        DB::table('competency_indicators')->insert([
+            [
+                'indicator_id' => 1, 
+                'group_id' => 1, 
+                'display_id' => '1.1', 
+                'indicator_name' => 
+                'Theory Research', 
+                'description' => 'Theory base.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add sample competency entries
+        DB::table('competency_entries')->insert([
+            [
+                'entry_id' => 1, 
+                'user_id' => 3, 
+                'indicator_id' => 1, 
+                'experience_title' => 'Bridge Project', 
+                'associated_year' => 2026, 
+                'experience_tasks' => 'CAD work', 
+                'level' => 'Proficient', 
+                'status' => 'Submitted', 
+                'start_date' => '2026-03-01', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'entry_id' => 2, 
+                'user_id' => 4, 
+                'indicator_id' => 1, 
+                'experience_title' => 
+                'Site Visit Analysis', 
+                'associated_year' => 2026, 
+                'experience_tasks' => 'Material testing', 
+                'level' => 'Emerging', 
+                'status' => 'Draft', 
+                'start_date' => '2026-04-10', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add modules for students to track progress
+        DB::table('cdl_modules')->insert([
+            [
+                'cdl_id' => 1, 
+                'title' => 'Ethics', 
+                'description' => 'Ethics 101', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add sample progress for students
+        DB::table('student_cdl_progress')->insert([
+            [
+                'user_id' => 3, 
+                'cdl_id' => 1, 
+                'status' => 'In Progress', 
+                'progress_percentage' => 75, 
+                'completed_at' => null,
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'user_id' => 4, 
+                'cdl_id' => 1, 
+                'status' => 'Completed', 
+                'progress_percentage' => 100, 
+                'completed_at' => now(), 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // Add link between tutor and student
+        DB::table('mentor_student_mapping')->insert([
+            [
+                'staff_id' => 2, 
+                'student_id' => 3, 
+                'assigned_at' => now()
+            ],
+            [
+                'staff_id' => 2, 
+                'student_id' => 4, 
+                'assigned_at' => now()
+            ],
+        ]);
     }
 }
