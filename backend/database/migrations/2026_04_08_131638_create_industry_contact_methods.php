@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('contact_method', 25);
             $table->check("contact_method IN ('phone', 'email', 'linkedin', 'website', 'other')");
             $table->string('method_value', 500);
-            $table->unique(['contact_id', 'contact_method']);
             $table->timestamps();
         });
     }

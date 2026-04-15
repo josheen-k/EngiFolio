@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id('portfolio_note_id');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->string('title', 255);
-            $table->text('body');
-            $table->string('file_path', 500);
+            $table->text('body')->nullable();
+            $table->string('file_path', 500)->nullable();
             $table->timestamps();
         });
     }
