@@ -57,6 +57,7 @@ class StudentProfileController extends Controller
             'last_name'        => 'required|string|max:255',
             'preferred_name'   => 'nullable|string|max:255',
             'degree_title'     => 'nullable|string|max:255',
+            'specialisation'     => 'nullable|string|max:255',
             'personal_intro'   => 'nullable|string',
             'upcoming_actions' => 'nullable|string',
         ]);

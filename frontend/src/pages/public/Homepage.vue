@@ -105,7 +105,7 @@ export default {
     },
     methods: {
         signIn() {
-            this.$router.push('/student/dashboard');
+            this.$router.push('/login');
         }
     }
 };
