@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GoalActionStep;
 use App\Models\SmartGoal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SmartGoalController extends Controller
 {
@@ -83,6 +85,32 @@ class SmartGoalController extends Controller
         $smartGoal->update($validated);
 
         return response()->json($smartGoal);
+    }
+
+    public function replaceActionSteps(Request $request, $goalId)
+    {
+        $smartGoal = SmartGoal::findOrFail($goalId);
+
+        $validated = $request->validate([
+            'steps' => 'required|array',
+            'steps.*.step_description' => 'required|string',
+        ]);
+
+        DB::transaction(function () use ($smartGoal, $validated) {
+            $smartGoal->actionSteps()->delete();
+
+            foreach ($validated['steps'] as $index => $step) {
+                GoalActionStep::create([
+                    'goal_id' => $smartGoal->goal_id,
+                    'step_description' => $step['step_description'],
+                    'step_order' => $index + 1,
+                ]);
+            }
+        });
+
+        return response()->json(
+            $smartGoal->fresh(['actionSteps'])
+        );
     }
 
     /**

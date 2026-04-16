@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentLinkController;
 use App\Http\Controllers\SmartGoalController;
+use App\Http\Controllers\GoalActionStepController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
 use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
@@ -45,7 +46,11 @@ Route::post('/smart-goals', [SmartGoalController::class, 'store']);
 Route::get('/smart-goals/{id}', [SmartGoalController::class, 'show']);
 Route::put('/smart-goals/{id}', [SmartGoalController::class, 'update']);
 Route::delete('/smart-goals/{id}', [SmartGoalController::class, 'destroy']);
+Route::put('/smart-goals/{goalId}/action-steps', [SmartGoalController::class, 'replaceActionSteps']);
 Route::get('user/smart-goals/{userId}', [SmartGoalController::class, 'showUserGoals']);
+Route::post('/smart-goals/{goalId}/action-steps', [GoalActionStepController::class, 'store']);
+Route::put('/action-steps/{stepId}', [GoalActionStepController::class, 'update']);
+Route::delete('/action-steps/{stepId}', [GoalActionStepController::class, 'destroy']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);

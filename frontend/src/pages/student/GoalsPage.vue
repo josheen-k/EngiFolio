@@ -126,8 +126,8 @@
           <td>{{ goal.goal_description }}</td>
 
           <td>
-            <ul v-if="goal.actionSteps && goal.actionSteps.length">
-              <li v-for="step in goal.actionSteps" :key="step.step_id">
+            <ul v-if="getGoalSteps(goal).length">
+              <li v-for="step in getGoalSteps(goal)" :key="step.step_id">
                 {{ step.step_description }}
               </li>
             </ul>
@@ -151,12 +151,47 @@
         </tr>
       </tbody>
     </table>
+
+    <div v-if="showStepModal" class="modal-backdrop" @click.self="closeStepModal">
+      <div class="step-modal-card">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h3 class="form-title mb-1">Edit Action Steps</h3>
+            <p class="modal-subtitle mb-0">{{ stepModalGoalTitle }}</p>
+          </div>
+          <button type="button" class="btn page-btn-outline" @click="closeStepModal">Close</button>
+        </div>
+
+        <div class="steps-editor">
+          <div v-for="(step, index) in stepDrafts" :key="step.localKey" class="step-row">
+            <label class="step-label">
+              <span>Step {{ index + 1 }}</span>
+              <textarea
+                v-model="step.step_description"
+                class="step-input"
+                placeholder="Describe this action step"
+              ></textarea>
+            </label>
+            <button type="button" class="btn page-btn-danger align-self-start" @click="removeStep(index)">
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <button type="button" class="btn page-btn-success" @click="addStep">Add Step</button>
+          <button type="button" class="btn page-btn-primary" :disabled="savingSteps" @click="saveSteps">
+            {{ savingSteps ? 'Saving...' : 'Save Steps' }}
+          </button>
+        </div>
+      </div>
+    </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
 
@@ -166,8 +201,12 @@ const fromDate = ref('')
 const toDate = ref('')
 const showNewGoalForm = ref(false)
 const showEditGoalForm = ref(false)
+const showStepModal = ref(false)
 const editingGoal = ref(null)
 const planId = ref(null)
+const stepModalGoal = ref(null)
+const savingSteps = ref(false)
+const stepDrafts = ref([])
 const newGoalData = reactive({
   plan_id: null,
   goal_description: '',
@@ -192,6 +231,8 @@ const editGoalData = reactive({
   completion_notes: '',
   status: 'planned'
 })
+
+const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
 
 const loadGoals = async () => {
   try {
@@ -327,7 +368,79 @@ const cancelEditGoal = () => {
 }
 
 const editSteps = (goal) => {
-  alert(`Edit steps for goal: ${goal.goal_description}`)
+  stepModalGoal.value = goal
+  // Laravel serializes relations as snake_case in JSON responses.
+  const sortedSteps = [...getGoalSteps(goal)].sort((a, b) => (a.step_order ?? 0) - (b.step_order ?? 0))
+  stepDrafts.value = sortedSteps.map((step, index) => ({
+    step_id: step.step_id,
+    step_description: step.step_description || '',
+    step_order: step.step_order ?? index + 1,
+    localKey: `existing-${step.step_id}`
+  }))
+
+  if (stepDrafts.value.length === 0) {
+    addStep()
+  }
+
+  showStepModal.value = true
+}
+
+const stepModalGoalTitle = computed(() => stepModalGoal.value?.goal_description || '')
+
+const addStep = () => {
+  stepDrafts.value.push({
+    step_id: null,
+    step_description: '',
+    step_order: stepDrafts.value.length + 1,
+    localKey: `new-${Date.now()}-${Math.random()}`
+  })
+}
+
+const removeStep = (index) => {
+  stepDrafts.value.splice(index, 1)
+  stepDrafts.value.forEach((step, orderIndex) => {
+    step.step_order = orderIndex + 1
+  })
+}
+
+const closeStepModal = () => {
+  if (savingSteps.value) {
+    return
+  }
+
+  showStepModal.value = false
+  stepModalGoal.value = null
+  stepDrafts.value = []
+}
+
+const saveSteps = async () => {
+  if (!stepModalGoal.value) {
+    return
+  }
+
+  const normalizedSteps = stepDrafts.value
+    .map((step) => step.step_description.trim())
+    .filter((stepDescription) => stepDescription)
+
+  try {
+    savingSteps.value = true
+
+    await axios.put(`http://127.0.0.1:8000/api/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
+      steps: normalizedSteps.map((step_description) => ({ step_description }))
+    })
+
+    await loadGoals()
+    closeStepModal()
+    alert('Action steps updated successfully!')
+  } catch (error) {
+    console.error('Error updating action steps:', error)
+    const errorMessage = error.response?.data?.message ||
+      Object.values(error.response?.data?.errors || {}).flat()[0] ||
+      'Failed to update action steps'
+    alert(`Failed to update action steps: ${errorMessage}`)
+  } finally {
+    savingSteps.value = false
+  }
 }
 
 const editGoal = (goal) => {
@@ -538,5 +651,63 @@ const deleteGoal = async (goal) => {
 .goal-form-card textarea {
   resize: vertical;
   min-height: 72px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  z-index: 1050;
+}
+
+.step-modal-card {
+  width: min(100%, 48rem);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 1.4rem;
+  padding: 1.4rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.14);
+}
+
+.modal-subtitle {
+  color: #6a6a6a;
+}
+
+.steps-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.step-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 1px solid #e4e4e4;
+  border-radius: 1rem;
+  background: #fafafa;
+}
+
+.step-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.step-input {
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #d1d1d1;
+  border-radius: 0.75rem;
+  resize: vertical;
+  background: #ffffff;
 }
 </style>
