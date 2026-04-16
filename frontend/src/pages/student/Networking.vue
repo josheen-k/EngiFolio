@@ -210,7 +210,8 @@ const deleteComment = async(id) => {
                     style="border-bottom: 1px solid #ddd;">
 
                     <td style="padding: 15px;">{{ event.event_name }}</td>
-                    <td style="padding: 15px;">{{ event.event_datetime }}</td>
+                    <!--confirm later, Do we need a actually time for this?_?-->
+                    <td style="padding: 15px;">{{ event.event_datetime.split(' ')[0] }}</td>
                     <td style="padding: 15px;">{{ event.location }}</td>
                     <td style="padding: 15px;">{{ event.details }}</td>
 
