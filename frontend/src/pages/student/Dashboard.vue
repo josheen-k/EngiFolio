@@ -130,6 +130,7 @@
         </ul>
       </div>
     </div>
+    <Footer/>
   </main>
 
   <div v-else-if="loading" class="text-center py-5">
@@ -143,7 +144,7 @@
 		<Footer />
 	</div>
 
-  <Footer/>
+
 </template>
 
 <script setup>
