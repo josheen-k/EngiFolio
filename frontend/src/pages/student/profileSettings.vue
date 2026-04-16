@@ -2,6 +2,8 @@
   import { ref, onMounted } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import axios from 'axios';
+  import Navbar from '@/components/Navbar.vue'
+  import Footer from '@/components/Footer.vue'
 
   const router = useRouter();
   const route = useRoute();
@@ -71,19 +73,29 @@ onMounted(() => {
 </script>
 
 <template>
+  <Navbar />
   <body class="container py-5" v-if="profile">
     <div class="row justify-content-center">
       <div class="col-lg-10">
         
         <div class="align-items-center mb-4">
-          <h2 class="fw-bold">Edit Profile Settings</h2>
+          <h2 class="sec-title mb-1">Edit Profile</h2>
         </div>
-
-        <div class="card shadow-sm border-0">
-          <div class="card-body p-4 p-md-5">
+      <div class="card stat-card card-dark border-0 p-4">
+          <h5 class="stat-title mb-4">Profile Image</h5>
+          <div class="d-flex align-items-center gap-4">
+              <img :src="profile.profile_image_url || '/src/assets/default.jpg'" @error="(e) => e.target.src = '/default.jpg'" class="profile-pic" style="flex-shrink: 0;"/>
+              <div class="flex-grow-1">
+                  <label class="form-label fw-bold">Profile Image URL</label>
+                  <input v-model.lazy="profile.profile_image_url" class="form-control" placeholder="Link to your profile picture"/>
+              </div>
+          </div>
+      </div>
+        <div class="row justify-content-center">
+          <div class="card-body p-4">
             
-            <div class="mb-5">
-              <h5 class="text-primary mb-4 fw-bold">Basic Information</h5>
+            <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
+              <h5 class="stat-title mb-4">Basic Information</h5>
               <div class="row g-3">
                 <div class="col-md-4">
                   <label class="form-label fw-bold">First Name</label>
@@ -108,20 +120,16 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="mb-5">
-              <h5 class="text-primary mb-4 fw-bold">About You</h5>
+            <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
+              <h5 class="stat-title mb-4">About You</h5>
               <div class="mb-3">
                 <label class="form-label fw-bold">Personal Introduction</label>
                 <textarea v-model="profile.personal_intro" class="form-control" rows="4"></textarea>
               </div>
-              <div class="mb-3">
-                <label class="form-label fw-bold">Upcoming Actions</label>
-                <textarea v-model="profile.upcoming_actions" class="form-control" rows="2"></textarea>
-              </div>
             </div>
 
-            <div class="mb-5">
-              <h5 class="text-primary mb-4 fw-bold">Professional Links</h5>
+            <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
+              <h5 class="stat-title mb-4">Professional Links</h5>
               
               <div class="row g-4">
                 <div class="col-md-6">
@@ -160,12 +168,10 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-
             <footer class="border-top pt-4 d-flex justify-content-end gap-2">
-              <button class="btn btn-outline-secondary btn-sm" @click="cancel">Cancel</button>
-              <button class="btn btn-dark btn-sm" @click="saveChanges">Save All Changes</button>
+              <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
+              <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
             </footer>
-
           </div>
         </div>
       </div>
@@ -179,3 +185,73 @@ onMounted(() => {
     <Footer />
   </div>
 </template>
+
+<style scoped>
+	.sec-title {
+		font-family: 'Martel', serif;
+		font-size: 2.0rem;
+		color: #1c1c1cc5;
+		font-weight: lighter;
+		margin-bottom: 2rem;
+	}
+
+	.card-dark {
+		background: #f1f1f1;
+	}
+
+	.stat-title {
+		font-family: 'Maven Pro', sans-serif;
+		font-size: 1.5rem;
+		color: #3b3b3b;
+	}
+
+	.btn-filter {
+		font-family: 'Montserrat Alternates', sans-serif;
+		border-radius: 1.5rem;
+		font-weight: lighter;
+		background: #e6e6e6;
+	}
+
+	.focus-table {
+		font-family: 'Maven Pro', sans-serif;
+		font-size: 0.95rem;
+	}
+
+	.focus-table thead th {
+		font-family: 'Martian Mono', monospace;
+		color: #222222;
+		font-weight: 200;
+		font-size: 1.2rem;
+		background-color: #f1f1f1;
+		border-color: #d0d0d0;
+		margin: 5rem;
+	}
+
+	.btn-ql {
+		font-family: 'Montserrat Alternates', sans-serif;
+		font-size: 1rem;
+		color: #ffffff;
+		background: #555555;
+		padding: 0.5rem 1rem;
+	}
+
+	.btn-ql:hover {
+		color: #ffffff;
+		background: #333333;
+	}
+
+	.btn-filter:hover {
+		background: #666666;
+		color: #ffffff;
+	}
+
+  .profile-pic {
+		width: 150px;
+		height: 150px; 
+		border-radius: 50%;
+		object-fit: cover;   
+		border: 3px solid #f1f1f1; 
+		background-color: #fff;
+		box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+	}
+</style>

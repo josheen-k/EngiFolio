@@ -51,15 +51,12 @@ class StudentProfileController extends Controller
             'degree_title'     => 'nullable|string|max:255',
             'specialisation'     => 'nullable|string|max:255',
             'personal_intro'   => 'nullable|string',
-            'upcoming_actions' => 'nullable|string',
+            'profile_image_url' => 'nullable|string|max:2048',
         ]);
 
         $profile->update($validated);
 
-        return response()->json([
-            'message' => 'Updated successfully',
-            'profile' => $profile
-        ]);
+        return response()->json(['message' => 'Updated successfully', 'profile' => $profile]);
     }
 
     /**
