@@ -13,7 +13,7 @@ class NetworkingEventController extends Controller
     public function index()
     {
         //
-        return NetworkingEvent::with('questions')->get();
+        return NetworkingEvent::with(['questions','comments'])->get();
     }
 
     /**

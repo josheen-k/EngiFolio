@@ -1,24 +1,23 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import axios from 'axios'
-import Navbar from '@/components/Navbar.vue'
 
 //state
 const events = ref([])
 const editingEventId = ref(null)
 const showForm = ref(false)
-
-const comments = ref([])
-const newComment = ref('')
-const editingCommentId = ref(null)
-const showComments = ref(false)
+const newEvent = ref({
+    name: '',
+    date: '',
+    location: '',
+    details: ''
+})
 
 const currentEventId = ref(null)
-
 const questions = ref([])
 const newQuestion = ref('')
 const editingQuestionId = ref(null)
-const showQuestions = ref(false)
+const showQuestions =ref(false)
 
 //fetch
 const fetchEvents = async() => {
@@ -28,14 +27,6 @@ const fetchEvents = async() => {
 
 //run when load
 onMounted(fetchEvents)
-
-
-const newEvent = ref({
-    name: '',
-    date: '',
-    location: '',
-    details: ''
-})
 
 const addEvent = async () => {
         if (editingEventId.value) {
@@ -67,12 +58,7 @@ const deleteEvent = async(id) => {
 
 const editEvent = (event) =>{
     editingEventId.value = event.event_id
-    newEvent.value = {
-      name: event.event_name,
-      date: event.event_datetime,
-      location: event.location,
-      details: event.details
-    }
+    newEvent.value = {...event}
     showForm.value = true
 }
 
@@ -97,6 +83,10 @@ const addQuestion = async() => {
                  question: newQuestion.value 
             }
         )
+        const index = questions.value.findIndex(
+            q => q.id === editingQuestionId.value
+        )
+        questions.value[index] = res.data
     } else {
         res = await axios.post(
             `http://127.0.0.1:8000/api/networking-events/${currentEventId.value}/questions`, {
@@ -115,8 +105,6 @@ const addQuestion = async() => {
 const deleteQuestion = async(id) => {
     await axios.delete(`http://127.0.0.1:8000/api/questions/${id}`)
     
-    fetchEvents()
-
     questions.value = questions.value.filter(q => q.id !== id)
 }
 
@@ -125,48 +113,9 @@ const editQuestion =(q) => {
     editingQuestionId.value = q.id
 }
 
-const openComments = async(eventId) => {
-  currentEventId.value = eventId
-  showComments.value = true
-
-  const res = await axios.get(`http://127.0.0.1:8000/api/networking-events/${eventId}/comments`)
-
-  comments.value = res.data
-}
-
-const addComment = async()=> {
-  if(!newComment.value.trim()) return
-
-  if(editingCommentId.value) {
-    await axios.put(`http://127.0.0.1:8000/api/comments/${editingCommentId.value}`, {comment: newComment.value})
-  } else {
-    await axios.post(`http://127.0.0.1:8000/api/networking-events/${currentEventId.value}/comments`, {comment: newComment.value})
-  }
-
-  newComment.value = ''
-  editingCommentId.value = null
-  
-  await openComments(currentEventId.value)
-  await fetchEvents()
-}
-
-
-const editComment = (comment) => {
-  newComment.value = comment.comment_text
-  editingCommentId.value = comment.id
-}
-
-const deleteComment = async(id) => {
-  await axios.delete(`http://127.0.0.1:8000/api/comments/${id}`)
-  await openComments(currentEventId.value)
-  await fetchEvents()
-}
-
 </script>
 
 <template>
-  <Navbar />
-
     <div style="
         min-height: 100vh;
         background-color: white;
@@ -176,19 +125,17 @@ const deleteComment = async(id) => {
         <!--title-->
         <h1 style="font-size: 40px; margin-bottom: 40px;">Event Page</h1>
 
-        <!--table---->
-        <table  cellpadding="10" style="margin-top: 20px; width:100%; border: 1px solid black;">
-          <thead>
+        <!--table-->
+        <table border="1" cellpadding="10" style="margin-top: 20px; width:100%">
             <tr>
                 <th>Name</th>
                 <th>Date</th>
                 <th>Location</th>
                 <th>Details</th>
                 <th>Questions</th>
-                <th>Comments</th>
                 <th>Actions</th>
             </tr>
-          </thead> 
+            
             <!--empty message-->
             <tbody v-if="events.length ===0">
                 <tr>
@@ -234,17 +181,6 @@ const deleteComment = async(id) => {
                             Add Questions
                         </button>
                     </td>
-
-                    <td>
-                      <ul v-if="event.comments && event.comments.length">
-                        <li v-for="c in event.comments" :key="'c.id'">
-                          {{ c.comment_text }}
-                        </li>
-                      </ul>
-                      <button @click="openComments(event.event_id)">
-                        Mange Comments
-                      </button>"
-                    </td>
                     
                     <td style="padding: 15px;">
                         <button 
@@ -274,30 +210,7 @@ const deleteComment = async(id) => {
                 </tr>
             </tbody>
         </table>
-        <div v-if="showComments" style="
-          position: fixed;
-          top: 30%;
-          left: 40%;
-          background: white;
-          padding: 20px;
-          border: 1px solid black;">
 
-          <h3>Comments</h3>
-          <input v-model="newComment" placeholder="Enter comment" />
-          <button @click="addComment">
-            {{ editingCommentId ? 'Update Comment' : 'Add Comment' }}
-          </button>
-
-          <ul>
-            <li v-for="c in comments" :key="c.id">
-              {{ c.comment_text }}
-              <button @click="editComment(c)">Edit</button>
-              <button @click="deleteComment(c.id)">Delete</button>
-            </li>
-          </ul>
-          
-          <button @click="showComments = false">Close</button>
-        </div>
         <button
             @click="showForm = true"
             style="
@@ -390,8 +303,6 @@ const deleteComment = async(id) => {
     </div>  
 </template>
 
-
-<!--i have to do it later on -->
 <!--<script setup>
   import { onMounted, ref } from 'vue'
   import axios from 'axios'

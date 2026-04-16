@@ -30,4 +30,11 @@ class NetworkingEvent extends Model
     {
         return $this->hasMany(NetworkingEventQuestion::class, 'event_id','event_id');
     }
+
+    public function comments()
+    {
+        return $this->hasMany(NetworkingEventComment::class, 'event_id', 'event_id');
+    }
 }
+
+

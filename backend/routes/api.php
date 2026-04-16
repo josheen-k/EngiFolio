@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\NetworkingEventCommentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,3 +44,9 @@ Route::get('/networking-events/{id}/questions', [NetworkingEventQuestionControll
 Route::post('/networking-events/{id}/questions', [NetworkingEventQuestionController::class, 'store']);
 Route::put('/questions/{id}', [NetworkingEventQuestionController::class, 'update']);
 Route::delete('/questions/{id}', [NetworkingEventQuestionController::class,'destroy']);
+
+//Comment
+Route::get('/networking-events/{id}/comments', [NetworkingEventCommentController::class, 'index']);
+Route::post('/networking-events/{id}/comments', [NetworkingEventCommentController::class, 'store']);
+Route::put('/comments/{id}', [NetworkingEventCommentController::class, 'update']);
+Route::delete('/comments/{id}', [NetworkingEventCommentController::class,'destroy']);
