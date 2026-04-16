@@ -302,14 +302,15 @@ const deleteComment = async(id) => {
             @click="showForm = true"
             style="
             position: fixed;
-            bottom: 20px;
+            bottom: 120px;
             left: 20px;
             padding: 10px 20px;
             background-color: #28a745;
             border: none; 
             color: white;
             font-size: 16px;
-            cursor: pointer;">
+            cursor: pointer;
+            z-index: 1000;">
             
             Add Event
         </button>
@@ -387,7 +388,38 @@ const deleteComment = async(id) => {
                         <button @click="showQuestions=false">Close</button>
                     </div>
             </div>
-    </div>  
+      </div>
+<!-- bottom bar -->
+<div style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #0b1a5e;
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+">
+
+  <!-- LEFT -->
+  <div>
+    <img src="/src/assets/Logo.png" alt="Adelaide University" style="height: 40px"/>
+  </div>
+
+  <!-- CENTER -->
+  <div style="max-width: 600px; text-align: center; font-size: 14px;">
+    EngiFolio acknowledges the Kaurna people as the Traditional Owners of the Country where the city of Adelaide is situated today, and pays its respects to Elders past and present.
+  </div>
+
+  <!-- RIGHT -->
+  <div>
+    <a href="#" style="color: white;">Privacy policy</a>
+  </div>
+
+</div>
+
 </template>
 
 
