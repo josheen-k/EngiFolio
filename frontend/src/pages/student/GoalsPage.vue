@@ -1,11 +1,17 @@
 <template>
   <div class="goals-page">
-    <div class="top-bar">
-      <button class="new-goal-btn" @click="newGoal">New Goal</button>
-    </div>
+    <Navbar />
+    <main class="container-xl py-4 px-4 px-md-5">
+      <section class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+          <h1 class="page-title mb-2">SMART Goals</h1>
+          <p class="page-subtitle mb-0">Track your progress and keep your career plan on course.</p>
+        </div>
+        <button class="btn page-btn-primary px-4 py-2" @click="newGoal">New Goal</button>
+      </section>
 
-    <div v-if="showNewGoalForm" class="new-goal-form">
-      <h3>Create New Goal</h3>
+    <div v-if="showNewGoalForm" class="goal-form-card mb-4">
+      <h3 class="form-title">Create New Goal</h3>
       <form @submit.prevent="createGoal">
         <label>
           Goal Description:
@@ -35,13 +41,15 @@
           Completion Notes:
           <textarea v-model="newGoalData.completion_notes"></textarea>
         </label>
-        <button type="submit">Create Goal</button>
-        <button type="button" @click="cancelNewGoal">Cancel</button>
+        <div class="d-flex gap-2 pt-1">
+          <button type="submit" class="btn page-btn-primary">Create Goal</button>
+          <button type="button" class="btn page-btn-outline" @click="cancelNewGoal">Cancel</button>
+        </div>
       </form>
     </div>
 
-    <div v-if="showEditGoalForm" class="edit-goal-form">
-      <h3>Edit Goal</h3>
+    <div v-if="showEditGoalForm" class="goal-form-card mb-4">
+      <h3 class="form-title">Edit Goal</h3>
       <form @submit.prevent="updateGoal">
         <label>
           Goal Description:
@@ -71,13 +79,15 @@
           Completion Notes:
           <textarea v-model="editGoalData.completion_notes"></textarea>
         </label>
-        <button type="submit">Update Goal</button>
-        <button type="button" @click="cancelEditGoal">Cancel</button>
+        <div class="d-flex gap-2 pt-1">
+          <button type="submit" class="btn page-btn-primary">Update Goal</button>
+          <button type="button" class="btn page-btn-outline" @click="cancelEditGoal">Cancel</button>
+        </div>
       </form>
     </div>
 
-    <div class="filter-section">
-      <h2>Date Range</h2>
+    <div class="filter-section mb-4">
+      <h2 class="filter-title mb-0">Date Range</h2>
 
       <label>
         From:
@@ -89,13 +99,13 @@
         <input type="date" v-model="toDate" />
       </label>
 
-      <button class="filter-btn" @click="loadGoals">Filter</button>
+      <button class="btn page-btn-outline" @click="loadGoals">Filter</button>
     </div>
 
-    <div v-if="loading">Loading goals...</div>
-    <div v-else-if="goals.length === 0">No goals found.</div>
+    <div v-if="loading" class="status-msg">Loading goals...</div>
+    <div v-else-if="goals.length === 0" class="status-msg">No goals found.</div>
 
-    <table v-else class="goals-table">
+    <table v-else class="table goals-table">
       <thead>
         <tr>
           <th>SMART Goal</th>
@@ -123,7 +133,7 @@
             </ul>
             <span v-else>No steps</span>
 
-            <button class="edit-steps-btn" @click="editSteps(goal)">Edit Steps</button>
+            <button class="btn page-btn-success mt-2" @click="editSteps(goal)">Edit Steps</button>
           </td>
 
           <td>{{ goal.timeline }}</td>
@@ -135,18 +145,20 @@
           <td>{{ goal.completion_notes }}</td>
 
           <td class="actions-cell">
-            <button @click="editGoal(goal)">Edit</button>
-            <button @click="deleteGoal(goal)">Delete</button>
+            <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
+            <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import axios from 'axios'
+import Navbar from '@/components/Navbar.vue'
 
 const goals = ref([])
 const loading = ref(true)
@@ -369,129 +381,162 @@ const deleteGoal = async (goal) => {
 
 <style scoped>
 .goals-page {
-  padding: 24px;
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  color: #2b2b2b;
 }
 
-.top-bar {
-  margin-bottom: 20px;
+.page-title {
+  font-family: 'Martel', serif;
+  font-size: 2.4rem;
+  color: #2b2b2b;
+  line-height: 1.15;
 }
 
-.new-goal-btn,
-.filter-btn,
-.edit-steps-btn {
-  background-color: #1677ff;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
+.page-subtitle {
+  font-size: 1.08rem;
+  color: #656565;
 }
 
-.edit-steps-btn {
-  background-color: #1f9d55;
-  margin-top: 10px;
+.btn {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.6rem;
+  font-size: 0.95rem;
+}
+
+.page-btn-primary {
+  background: #2b2b2b;
+  color: #ffffff;
+  border: 1px solid #2b2b2b;
+}
+
+.page-btn-primary:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.page-btn-outline {
+  background: #ffffff;
+  color: #2b2b2b;
+  border: 1px solid #cfcfcf;
+}
+
+.page-btn-outline:hover {
+  background: #f3f3f3;
+}
+
+.page-btn-success {
+  background: #4f9d69;
+  color: #ffffff;
+  border: 1px solid #4f9d69;
+}
+
+.page-btn-success:hover {
+  background: #3f8657;
+  color: #ffffff;
+}
+
+.page-btn-danger {
+  background: #ff746c;
+  color: #ffffff;
+  border: 1px solid #ff746c;
+}
+
+.page-btn-danger:hover {
+  background: #e7635b;
+  color: #ffffff;
 }
 
 .filter-section {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
   flex-wrap: wrap;
+  padding: 1.25rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 1.2rem;
+  background: #fafafa;
+}
+
+.filter-title {
+  font-family: 'Martel', serif;
+  font-size: 1.35rem;
+  color: #2b2b2b;
+}
+
+.status-msg {
+  padding: 1rem 1.25rem;
+  border-radius: 0.9rem;
+  background: #f5f5f5;
+  color: #555555;
 }
 
 .goals-table {
   width: 100%;
-  border-collapse: collapse;
+  border: 1px solid #dedede;
 }
 
 .goals-table th,
 .goals-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
+  border-color: #e0e0e0;
+  padding: 0.85rem;
   vertical-align: top;
   text-align: left;
 }
 
 .goals-table th {
-  background-color: #f5f5f5;
+  font-family: 'Martian Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 400;
+  background-color: #f1f1f1;
+  color: #333333;
 }
 
 .actions-cell {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 7.5rem;
 }
 
-.new-goal-form {
-  margin-bottom: 24px;
-  padding: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #f9f9f9;
+.goal-form-card {
+  padding: 1.1rem 1.25rem;
+  border: 1px solid #e3e3e3;
+  border-radius: 1.2rem;
+  background-color: #fafafa;
 }
 
-.new-goal-form h3 {
+.form-title {
+  font-family: 'Martel', serif;
+  font-size: 1.35rem;
+  color: #2b2b2b;
   margin-top: 0;
 }
 
-.new-goal-form form {
+.goal-form-card form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.new-goal-form label {
+.goal-form-card label {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.new-goal-form input,
-.new-goal-form textarea {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.goal-form-card input,
+.goal-form-card textarea,
+.filter-section input {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d1d1;
+  border-radius: 0.55rem;
+  background: #ffffff;
 }
 
-.new-goal-form textarea {
+.goal-form-card textarea {
   resize: vertical;
-  min-height: 60px;
-}
-
-.edit-goal-form {
-  margin-bottom: 24px;
-  padding: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-}
-
-.edit-goal-form h3 {
-  margin-top: 0;
-}
-
-.edit-goal-form form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.edit-goal-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.edit-goal-form input,
-.edit-goal-form textarea {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.edit-goal-form textarea {
-  resize: vertical;
-  min-height: 60px;
+  min-height: 72px;
 }
 </style>
