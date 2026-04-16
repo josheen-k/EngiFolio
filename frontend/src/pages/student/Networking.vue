@@ -76,6 +76,18 @@ const editEvent = (event) =>{
     showForm.value = true
 }
 
+//in case showForm can't use 
+const openCreateForm = () => {
+  editingEventId.value = null 
+  newEvent.value = {
+    name: '',
+    date: '',
+    location: '',
+    details: ''
+  }
+
+  showForm.value =true
+}
 
 const openQuestions = async(eventId) => {
     currentEventId.value = eventId
@@ -168,32 +180,48 @@ const deleteComment = async(id) => {
   <Navbar />
 
     <div style="
-        min-height: 100vh;
-        background-color: white;
-        color: black;
-        padding: 60px;">
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;">
 
         <!--title-->
-        <h1 style="font-size: 40px; margin-bottom: 40px;">Event Page</h1>
+        <h1 style="font-size: 40px;">Event Page</h1>
 
+        <button
+            @click="showForm = true"
+            style="
+            height: 47px;          
+            padding: 0 20px;            
+            border-radius: 30px;         
+            border: 1.5px solid #333;     
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;">
+            
+            Add Event
+        </button>
+    </div>
         <!--table---->
-        <table  cellpadding="10" style="margin-top: 20px; width:100%; border: 1px solid black;">
+        <table  cellpadding="10" style="margin-top: 20px; width:100%; border: 1px solid black; border-collapse: collapse">
           <thead>
             <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Details</th>
-                <th>Questions</th>
-                <th>Comments</th>
-                <th>Actions</th>
+                <th style="border: 1px solid black;">Name</th>
+                <th style="border: 1px solid black;">Date</th>
+                <th style="border: 1px solid black;">Location</th>
+                <th style="border: 1px solid black;">Details</th>
+                <th style="border: 1px solid black;">Questions</th>
+                <th style="border: 1px solid black;">Comments</th>
+                <th style="border: 1px solid black;">Actions</th>
             </tr>
           </thead> 
             <!--empty message-->
             <tbody v-if="events.length ===0">
                 <tr>
                     <td colspan="6" style="
-                        padding:30px;
+                        padding:15px;
                         text-align: center;
                         color:#888;">
 
@@ -209,67 +237,90 @@ const deleteComment = async(id) => {
                     :key="event.event_id"
                     style="border-bottom: 1px solid #ddd;">
 
-                    <td style="padding: 15px;">{{ event.event_name }}</td>
+                    <td style="padding: 15px; border: 1px solid black;">{{ event.event_name }}</td>
                     <!--confirm later, Do we need a actually time for this?_?-->
-                    <td style="padding: 15px;">{{ event.event_datetime.split(' ')[0] }}</td>
-                    <td style="padding: 15px;">{{ event.location }}</td>
-                    <td style="padding: 15px;">{{ event.details }}</td>
+                    <td style="padding: 15px; border: 1px solid black;">{{ event.event_datetime.split(' ')[0] }}</td>
+                    <td style="padding: 15px; border: 1px solid black;">{{ event.location }}</td>
+                    <td style="padding: 15px; border: 1px solid black;">{{ event.details }}</td>
 
-                    <td style="padding: 15px;">
+                    <td style="padding: 15px; border: 1px solid black;">
                         <div v-if="event.questions && event.questions.length">
                             <ul style="margin-bottom: 10px;">
                                 <li v-for="q in event.questions" :key="q.id">
                                     {{ q.question_text }}
                                 </li>
                             </ul>
-                            <button @click="openQuestions(event.event_id)">
-                                Edit Questions
+                            <button @click="openQuestions(event.event_id)"
+                            style=" height: 47px;               
+                                    padding: 0 20px;             
+                                    border-radius: 30px;        
+                                    border: 1.5px solid #333;     
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 14px;
+                                    cursor: pointer;">Edit Questions
                             </button>
                         </div>
 
                         <button 
                             v-else
                             @click="openQuestions(event.event_id)"
-                            style="background: #007bff; color:white; padding: 5px 10px;">
-                            
-                            Add Questions
+                            style=" height: 47px;               
+                                    padding: 0 20px;             
+                                    border-radius: 30px;        
+                                    border: 1.5px solid #333;     
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 14px;
+                                    cursor: pointer;">Add Questions
                         </button>
                     </td>
 
-                    <td>
+                    <td style="padding: 15px; border: 1px solid black;">
                       <ul v-if="event.comments && event.comments.length">
                         <li v-for="c in event.comments" :key="'c.id'">
                           {{ c.comment_text }}
                         </li>
                       </ul>
-                      <button @click="openComments(event.event_id)">
-                        Mange Comments
-                      </button>"
+                      <button @click="openComments(event.event_id)"
+                      style=" height: 47px;               
+                        padding: 0 20px;             
+                        border-radius: 30px;        
+                        border: 1.5px solid #333;     
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        cursor: pointer;">Mange Comments
+                      </button>
                     </td>
                     
-                    <td style="padding: 15px;">
+                    <td style="padding: 15px; border: 1px solid black;">
                         <button 
                             @click="editEvent(event)"
-                            style="
-                            margin-right: 10px;
-                            padding: 6px 12px;
-                            background-color: #ffc107;
-                            border: none;
-                            cursor: pointer;">
-                            
-                            Edit
+                            style=" height: 47px;               
+                                    padding: 0 20px;             
+                                    border-radius: 30px;        
+                                    border: 1.5px solid #333;     
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 14px;
+                                    cursor: pointer;">Edit
                         </button>
 
-                        <button 
-                            @click="deleteEvent(event.event_id)"
-                            style="
-                                padding: 6px 12px;
-                                background-color: #dc3545;
-                                border: none;
-                                color: white;
-                                cursor: pointer;">
-                            
-                                Delete
+                        <button @click="deleteEvent(event.event_id)"
+                          style=" height: 47px;               
+                                  padding: 0 20px;             
+                                  border-radius: 30px;        
+                                  border: 1.5px solid #333;     
+                                  display: inline-flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  font-size: 14px;
+                                  cursor: pointer;">Delete
                         </button>
                     </td>
                 </tr>
@@ -285,36 +336,57 @@ const deleteComment = async(id) => {
 
           <h3>Comments</h3>
           <input v-model="newComment" placeholder="Enter comment" />
-          <button @click="addComment">
+          <button @click="addComment"
+            style=" height: 47px;               
+                        padding: 0 20px;             
+                        border-radius: 30px;        
+                        border: 1.5px solid #333;     
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        cursor: pointer;">
             {{ editingCommentId ? 'Update Comment' : 'Add Comment' }}
           </button>
 
           <ul>
             <li v-for="c in comments" :key="c.id">
               {{ c.comment_text }}
-              <button @click="editComment(c)">Edit</button>
-              <button @click="deleteComment(c.id)">Delete</button>
+              <button @click="editComment(c)"
+                style=" height: 47px;               
+                        padding: 0 20px;             
+                        border-radius: 30px;        
+                        border: 1.5px solid #333;     
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        cursor: pointer;">Edit</button>
+              <button @click="deleteComment(c.id)"
+                style=" height: 47px;               
+                        padding: 0 20px;             
+                        border-radius: 30px;        
+                        border: 1.5px solid #333;     
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        cursor: pointer;">Delete</button>
             </li>
           </ul>
           
-          <button @click="showComments = false">Close</button>
+          <button @click="showComments = false"
+            style=" height: 47px;               
+                    padding: 0 20px;             
+                    border-radius: 30px;        
+                    border: 1.5px solid #333;     
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    cursor: pointer;">Close</button>
         </div>
-        <button
-            @click="showForm = true"
-            style="
-            position: fixed;
-            bottom: 120px;
-            left: 20px;
-            padding: 10px 20px;
-            background-color: #28a745;
-            border: none; 
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            z-index: 1000;">
-            
-            Add Event
-        </button>
+        
 
         <div v-if="showForm" style="
             position: fixed;
@@ -342,17 +414,29 @@ const deleteComment = async(id) => {
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
                     <button 
                         @click="showForm = false" 
-                        style="padding: 8px 12px; 
-                        background: #dc3545; 
-                        color: white;">
+                        style="  height: 47px;               
+                        padding: 0 20px;             
+                        border-radius: 30px;        
+                        border: 1.5px solid #333;     
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        cursor: pointer;">
                         
                         Cancel
                     </button>
                     <button 
                         @click="addEvent" 
-                        style="padding: 8px 12px; 
-                        background: #28a745; 
-                        color: white;">
+                        style=" height: 47px;               
+                                padding: 0 20px;             
+                                border-radius: 30px;        
+                                border: 1.5px solid #333;     
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 14px;
+                                cursor: pointer;"">
                         
                         {{editingEventId ? 'Update Event' : 'Create Event'}}
                     </button>
@@ -374,22 +458,51 @@ const deleteComment = async(id) => {
                         <h2>Questions</h2>
 
                         <input v-model="newQuestion">
-                        <button @click="addQuestion">
+                        <button @click="addQuestion"
+                          style=" height: 47px;               
+                                  padding: 0 20px;             
+                                  border-radius: 30px;        
+                                  border: 1.5px solid #333;     
+                                  display: inline-flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  font-size: 14px;
+                                  cursor: pointer;">
                             {{ editingQuestionId ? 'Update Question' : 'Add Question' }}
                         </button>
 
                         <ul>
                             <li v-for="q in questions" :key="q.id">
                                 {{ q.question_text }}
-                                <button @click="editQuestion(q)">Edit</button>
-                                <button @click="deleteQuestion(q.id)">Delete</button>
+                                <button @click="editQuestion(q)"
+                                  style="  height: 47px;               
+                                  padding: 0 20px;             
+                                  border-radius: 30px;        
+                                  border: 1.5px solid #333;     
+                                  display: inline-flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  font-size: 14px;
+                                  cursor: pointer;">
+                                  
+                                  Edit
+                                </button>
+                                <button @click="deleteQuestion(q.id)"
+                                  style="  height: 47px;               
+                                  padding: 0 20px;             
+                                  border-radius: 30px;        
+                                  border: 1.5px solid #333;     
+                                  display: inline-flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  font-size: 14px;
+                                  cursor: pointer;">Delete</button>
                             </li>
                         </ul>
 
                         <button @click="showQuestions=false">Close</button>
                     </div>
             </div>
-      </div>
 <!-- bottom bar -->
 <div style="
   position: fixed;
@@ -424,6 +537,11 @@ const deleteComment = async(id) => {
 
 </template>
 
+<style>
+* {
+  font-family: 'Montserrat Alternates', sans-serif;
+}
+</style>
 
 <!--i have to do it later on -->
 <!--<script setup>
