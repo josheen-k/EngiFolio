@@ -34,8 +34,6 @@ const routes = [
     name: 'profile-settings',
     component: ProfileSettings
   },
-  {
-    path: '/student/career-development',
 
     {
     path: '/student/career-development/:id',
@@ -56,6 +54,7 @@ const routes = [
     path: '/student/industry-contacts',
     name: 'IndustryContacts',
     component: IndustryContacts
+  },
 
   {
     path: '/student/networking/:id',
