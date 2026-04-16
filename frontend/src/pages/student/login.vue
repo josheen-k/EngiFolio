@@ -42,8 +42,8 @@
 					</div>
 				</main>
 				<footer>
-					<router-link to="/student/dashboard" class="btn btn-link btn-sm">Student Profile 1</router-link>
-					<router-link to="/profile/2" class="btn btn-link btn-sm">Student Profile 2</router-link>
+					<router-link to="/student/dashboard/1" class="btn btn-link btn-sm">Student Profile 1</router-link>
+					<router-link to="/student/dashboard/2" class="btn btn-link btn-sm">Student Profile 2</router-link>
 				</footer>
 			</div>
 		</div>  

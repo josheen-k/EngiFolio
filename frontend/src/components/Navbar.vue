@@ -5,7 +5,7 @@
                 <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
             </div>
             <ul class="navbar-nav flex-row gap-2">
-                <li class="nav-item"><router-link class="nav-link" active-class="active-link" to="/student/dashboard">Dashboard</router-link></li>
+                <li class="nav-item"><router-link class="nav-link" active-class="active-link" :to="`/student/dashboard/${$route.params.id}`">Dashboard</router-link></li>
                 <li><router-link class="nav-link" active-class="active-link" to="/student/eaCompetency">Competencies</router-link></li>
                 <li><router-link class="nav-link" active-class="active-link" to="/student/career-planning">Goals</router-link></li>
                 <li><router-link class="nav-link" active-class="active-link" to="/student/networking">Networking</router-link></li>
@@ -19,8 +19,8 @@
                 alt="Profile" @click="openDropdown">
 
             <div v-if="isOpen" class="dd">
-                <router-link :to="`/profile/${userId}`" class="dd-item" @click="closeDropdown">Profile</router-link>
-                <router-link :to="`/settings/profile/${userId}`" class="dd-item" @click="closeDropdown">Settings</router-link>
+                <router-link :to="`/profile/${$route.params.id}`" class="dd-item" @click="closeDropdown">Profile</router-link>
+                <router-link :to="`/settings/profile/${$route.params.id}`" class="dd-item" @click="closeDropdown">Settings</router-link>
                 <router-link to="/" class="dd-item logout" @click="closeDropdown">Logout</router-link>
             </div>
         </div>
@@ -30,8 +30,10 @@
 <script setup>
 import { ref } from 'vue';
 import { onClickOutside } from '@vueuse/core'
+import { useRoute } from 'vue-router';
 
-const userId =1;
+const route = useRoute();
+const id = route.params.id;
 const isOpen = ref(false);
 const dropdown = ref(null);
 

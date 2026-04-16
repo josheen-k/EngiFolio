@@ -116,7 +116,7 @@
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
           <button class="btn btn-ql rounded-pill">Add a new reflection</button>
-          <router-link to="/settings/profile/1" class="btn btn-ql rounded-pill">Edit profile</router-link>
+          <router-link :to="'/settings/profile/' + route.params.id" class="btn btn-ql rounded-pill">Edit profile</router-link>
           <button class="btn btn-ql rounded-pill btn-ql3">Add a new networking event</button>
           <router-link to="/student/export" class="btn btn-ql rounded-pill">Export profile</router-link>
           <button class="btn btn-ql rounded-pill">Add a SMART goal</button>
@@ -147,7 +147,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
     import axios from 'axios';
     import Navbar from '@/components/Navbar.vue'
@@ -195,7 +195,7 @@
 
     const loadProfileData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/profile/1`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/profile/${route.params.id}`);
         profile.value = response.data.profile || response.data;
       } catch (error) {
         console.error("Error while fetching profile info:", error);
@@ -204,7 +204,7 @@
 
     const loadUserCompetencyData = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/competency-entries/3`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/competency-entries/${route.params.id}`);
         userCompetencies.value = response.data;
       } catch (error) {
         console.error("Error while fetching user competencies:", error);
@@ -222,7 +222,7 @@
 
     const loadUserGoals = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/user/smart-goals/3`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/user/smart-goals/${route.params.id}`);
         userGoals.value = response.data;
       } catch (error) {
         console.error("Error fetching goals:", error);
@@ -231,6 +231,7 @@
 
     const loadData = async () => {
       loading.value = true;
+      const id = route.params.id;
       try {
         await loadProfileData();
         await loadUserCompetencyData();
@@ -265,11 +266,15 @@
       } finally {
           loading.value = false;
       }
-  };
+    };
 
     onMounted(() => {
       	loadData();
     })
+
+    watch(() => route.params.id, () => {
+      loadData();
+    });
 
 const focusItems = [
   {
@@ -350,7 +355,7 @@ const recentAct = [
 
 .stat-data {
   font-family: 'Martian Mono', monospace;
-  font-size: 2.1rem;
+  font-size: 1.8rem;
   font-weight: 300;
   color: #606060;
 }

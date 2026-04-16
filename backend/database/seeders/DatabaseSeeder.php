@@ -122,13 +122,13 @@ class DatabaseSeeder extends Seeder
         // Add elevator pitches
         DB::table('elevator_pitches')->insert([
             [
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'pitch_text' => 'Hi, I am Alex, a Mechanical student focusing on fluid dynamics.', 
                 'created_at' => now(), 
                 'updated_at' => now()
             ],
             [
-                'user_id' => 4, 
+                'user_id' => 2, 
                 'pitch_text' => 'I am Kate, an aspiring Structural Engineer dedicated to steel detailing.', 
                 'created_at' => now(), 
                 'updated_at' => now()
@@ -139,14 +139,14 @@ class DatabaseSeeder extends Seeder
         DB::table('career_development_plans')->insert([
             [
                 'plan_id' => 1, 
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'plan_year' => 2026, 
                 'professional_interests' => 'Solar power', 
                 'created_at' => now(), 
                 'updated_at' => now()],
             [
                 'plan_id' => 2, 
-                'user_id' => 4, 
+                'user_id' => 2, 
                 'plan_year' => 2026, 
                 'professional_interests' => 'Bridge design', 
                 'created_at' => now(), 
@@ -181,7 +181,7 @@ class DatabaseSeeder extends Seeder
         DB::table('industry_contacts')->insert([
             [
                 'contact_id' => 1, 
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'contact_name' => 'Robert Ford', 
                 'company' => 'Westworld Robotics', 
                 'date_met' => '2026-05-15', 
@@ -190,7 +190,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'contact_id' => 2, 
-                'user_id' => 4, 
+                'user_id' => 2, 
                 'contact_name' => 'Sarah Connor', 
                 'company' => 'Cyberdyne Systems', 
                 'date_met' => '2026-01-20', 
@@ -303,7 +303,7 @@ class DatabaseSeeder extends Seeder
         DB::table('competency_entries')->insert([
             [
                 'entry_id' => 1, 
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'indicator_id' => 1, 
                 'experience_title' => 'Bridge Project', 
                 'associated_year' => 2026, 
@@ -316,7 +316,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'entry_id' => 2, 
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'indicator_id' => 3, 
                 'experience_title' => 'Water Treatment Analysis', 
                 'associated_year' => 2026, 
@@ -329,7 +329,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'entry_id' => 3, 
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'indicator_id' => 5, 
                 'experience_title' => 'Corporate Responsibility Seminar', 
                 'associated_year' => 2025, 
@@ -342,7 +342,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'entry_id' => 4, 
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'indicator_id' => 6, 
                 'experience_title' => 'Technical Report Writing', 
                 'associated_year' => 2026, 
@@ -355,7 +355,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'entry_id' => 5, 
-                'user_id' => 4, 
+                'user_id' => 1, 
                 'indicator_id' => 1, 
                 'experience_title' => 
                 'Site Visit Analysis', 
@@ -383,7 +383,7 @@ class DatabaseSeeder extends Seeder
         // Add sample progress for students
         DB::table('student_cdl_progress')->insert([
             [
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'cdl_id' => 1, 
                 'status' => 'In Progress', 
                 'progress_percentage' => 75, 
@@ -392,7 +392,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
-                'user_id' => 4, 
+                'user_id' => 2, 
                 'cdl_id' => 1, 
                 'status' => 'Completed', 
                 'progress_percentage' => 100, 
@@ -405,13 +405,13 @@ class DatabaseSeeder extends Seeder
         // Add link between tutor and student
         DB::table('mentor_student_mapping')->insert([
             [
-                'staff_id' => 2, 
-                'student_id' => 3, 
+                'staff_id' => 4, 
+                'student_id' => 1, 
                 'assigned_at' => now()
             ],
             [
-                'staff_id' => 2, 
-                'student_id' => 4, 
+                'staff_id' => 4, 
+                'student_id' => 2, 
                 'assigned_at' => now()
             ],
         ]);
