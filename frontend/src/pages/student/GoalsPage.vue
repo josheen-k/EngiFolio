@@ -40,6 +40,42 @@
       </form>
     </div>
 
+    <div v-if="showEditGoalForm" class="edit-goal-form">
+      <h3>Edit Goal</h3>
+      <form @submit.prevent="updateGoal">
+        <label>
+          Goal Description:
+          <textarea v-model="editGoalData.goal_description" required></textarea>
+        </label>
+        <label>
+          Timeline:
+          <input type="text" v-model="editGoalData.timeline" />
+        </label>
+        <label>
+          Progress Notes:
+          <textarea v-model="editGoalData.progress_notes"></textarea>
+        </label>
+        <label>
+          Learnings:
+          <textarea v-model="editGoalData.learnings"></textarea>
+        </label>
+        <label>
+          Start Date:
+          <input type="date" v-model="editGoalData.start_date" />
+        </label>
+        <label>
+          End Date:
+          <input type="date" v-model="editGoalData.end_date" />
+        </label>
+        <label>
+          Completion Notes:
+          <textarea v-model="editGoalData.completion_notes"></textarea>
+        </label>
+        <button type="submit">Update Goal</button>
+        <button type="button" @click="cancelEditGoal">Cancel</button>
+      </form>
+    </div>
+
     <div class="filter-section">
       <h2>Date Range</h2>
 
@@ -117,8 +153,22 @@ const loading = ref(true)
 const fromDate = ref('')
 const toDate = ref('')
 const showNewGoalForm = ref(false)
+const showEditGoalForm = ref(false)
+const editingGoal = ref(null)
 const planId = ref(null)
 const newGoalData = reactive({
+  plan_id: null,
+  goal_description: '',
+  timeline: '',
+  progress_notes: '',
+  learnings: '',
+  start_date: '',
+  end_date: '',
+  completion_date: '',
+  completion_notes: '',
+  status: 'planned'
+})
+const editGoalData = reactive({
   plan_id: null,
   goal_description: '',
   timeline: '',
@@ -246,17 +296,73 @@ const cancelNewGoal = () => {
   })
 }
 
+const cancelEditGoal = () => {
+  showEditGoalForm.value = false
+  editingGoal.value = null
+  // Reset form
+  Object.assign(editGoalData, {
+    plan_id: null,
+    goal_description: '',
+    timeline: '',
+    progress_notes: '',
+    learnings: '',
+    start_date: '',
+    end_date: '',
+    completion_date: '',
+    completion_notes: '',
+    status: 'planned'
+  })
+}
+
 const editSteps = (goal) => {
   alert(`Edit steps for goal: ${goal.goal_description}`)
 }
 
 const editGoal = (goal) => {
-  alert(`Edit goal: ${goal.goal_description}`)
+  editingGoal.value = goal
+  Object.assign(editGoalData, {
+    plan_id: goal.plan_id,
+    goal_description: goal.goal_description || '',
+    timeline: goal.timeline || '',
+    progress_notes: goal.progress_notes || '',
+    learnings: goal.learnings || '',
+    start_date: goal.start_date || '',
+    end_date: goal.end_date || '',
+    completion_date: goal.completion_date || '',
+    completion_notes: goal.completion_notes || '',
+    status: goal.status || 'planned'
+  })
+  showEditGoalForm.value = true
 }
 
-const deleteGoal = (goal) => {
+const updateGoal = async () => {
+  try {
+    const payload = normalizeGoalPayload(editGoalData)
+    await axios.put(`http://127.0.0.1:8000/api/smart-goals/${editingGoal.value.goal_id}`, payload)
+    showEditGoalForm.value = false
+    editingGoal.value = null
+    loadGoals() // Refresh the list
+    alert('Goal updated successfully!')
+  } catch (error) {
+    console.error('Error updating goal:', error)
+    const errorMessage = error.response?.data?.message || 
+                        Object.values(error.response?.data?.errors || {}).flat()[0] ||
+                        'Failed to update goal'
+    alert(`Failed to update goal: ${errorMessage}`)
+  }
+}
+
+const deleteGoal = async (goal) => {
   if (confirm(`Are you sure you want to delete this goal: ${goal.goal_description}?`)) {
-    alert('Goal deleted!')
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/smart-goals/${goal.goal_id}`)
+      loadGoals() // Refresh the list
+      alert('Goal deleted successfully!')
+    } catch (error) {
+      console.error('Error deleting goal:', error)
+      const errorMessage = error.response?.data?.message || 'Failed to delete goal'
+      alert(`Failed to delete goal: ${errorMessage}`)
+    }
   }
 }
 </script>
@@ -349,6 +455,42 @@ const deleteGoal = (goal) => {
 }
 
 .new-goal-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.edit-goal-form {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.edit-goal-form h3 {
+  margin-top: 0;
+}
+
+.edit-goal-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-goal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-goal-form input,
+.edit-goal-form textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.edit-goal-form textarea {
   resize: vertical;
   min-height: 60px;
 }
