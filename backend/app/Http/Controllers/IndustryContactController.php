@@ -11,43 +11,44 @@ class IndustryContactController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($user)
     {
-        //
-        return response()->json(IndustryContact::all());
+        return response()->json(
+            IndustryContact::where('user_id', $user)->get()
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            // 'user_id' => 'required|exists:users,user_id',
-            'contact_name' => 'required|string',
-            'company' => 'nullable|string|max:255',
-            'progress_notes' => 'nullable|string',
-            'date_met' => 'nullable|date',
-        ]);
+    public function store(Request $request, $user)
+{
+    $validated = $request->validate([
+        'contact_name' => 'required|string',
+        'company' => 'nullable|string|max:255',
+        'progress_notes' => 'nullable|string',
+        'date_met' => 'nullable|date',
+    ]);
 
-        $validated['user_id'] = 1;
-        $contact = IndustryContact::create($validated);
+    $validated['user_id'] = $user;
 
-        return response()->json($contact, 201);
-    }
+    $contact = IndustryContact::create($validated);
+
+    return response()->json($contact, 201);
+}
 
     /**
      * Display the specified resource.
      */
-    public function show(IndustryContact $industryContact)
+    public function show($user, IndustryContact $industryContact)
     {
-        return response()->json(IndustryContact::all());
+        return response()->json($industryContact);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, IndustryContact $industryContact)
+    public function update(Request $request, $user, IndustryContact $industryContact)
     {
         $validated = $request->validate([
             'contact_name' => 'required|string|max:255',
@@ -64,10 +65,12 @@ class IndustryContactController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IndustryContact $industryContact)
+    public function destroy($user, IndustryContact $industryContact)
     {
         Log::info('Deleting contact with ID: ' . $industryContact->contact_id);
+
         $industryContact->delete();
+
         return response()->json(['message' => 'Deleted']);
     }
 }
