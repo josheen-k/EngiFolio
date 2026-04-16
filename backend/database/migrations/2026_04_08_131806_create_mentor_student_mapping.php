@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('mentor_student_mapping', function (Blueprint $table) {
             $table->id('mapping_id');
-            $table->foreignId('staff_id')->constrained('users', 'user_id');
-            $table->foreignId('student_id')->constrained('users', 'user_id');
-            $table->dateTime('assigned_at');
+            $table->foreignId('staff_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->dateTime('assigned_at')->useCurrent();
             $table->unique(['staff_id', 'student_id']);
             $table->timestamps();
         });

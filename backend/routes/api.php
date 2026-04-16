@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\IndustryContactController;
+use App\Http\Controllers\StudentLinkController;
+use App\Http\Controllers\SmartGoalController;
+use App\Http\Controllers\CareerDevelopmentPlanController;
+use App\Http\Controllers\CompetencyEntryController;
+use App\Http\Controllers\CompetencyIndicatorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +39,9 @@ Route::put('/users/{user}', [UserController::class, 'update']);
 Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
 
+// Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
+Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 
@@ -48,3 +55,25 @@ Route::get('/users/{user}/industry-contacts/{industryContact}', [IndustryContact
 Route::put('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'update']);
 Route::delete('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'destroy']);
 
+// Student Profile Links
+Route::post('/link', [StudentLinkController::class, 'store']);
+Route::put('/link/{id}', [StudentLinkController::class, 'update']);
+Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
+
+
+// Smart Goal routes
+Route::get('/smart-goals', [SmartGoalController::class, 'index']);
+Route::post('/smart-goals', [SmartGoalController::class, 'store']);
+Route::get('/smart-goals/{id}', [SmartGoalController::class, 'show']);
+Route::put('/smart-goals/{id}', [SmartGoalController::class, 'update']);
+Route::delete('/smart-goals/{id}', [SmartGoalController::class, 'destroy']);
+Route::get('user/smart-goals/{userId}', [SmartGoalController::class, 'showUserGoals']);
+
+// Career Development Plan routes
+Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
+
+// Competency Entries
+Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'show']);
+
+// Competency Indicators
+Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);

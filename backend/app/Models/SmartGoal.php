@@ -29,6 +29,11 @@ class SmartGoal extends Model
         return $this->belongsTo(CareerDevelopmentPlan::class, 'plan_id');
     }
 
+    public function plan()
+    {
+        return $this->belongsTo(CareerDevelopmentPlan::class, 'plan_id', 'plan_id');
+    }
+
     public function actionSteps()
     {
         return $this->hasMany(GoalActionStep::class, 'goal_id');

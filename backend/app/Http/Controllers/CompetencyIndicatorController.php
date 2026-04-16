@@ -12,7 +12,9 @@ class CompetencyIndicatorController extends Controller
      */
     public function index()
     {
-        //
+        $indicators = CompetencyIndicator::all();
+
+        return response()->json($indicators);
     }
 
     /**

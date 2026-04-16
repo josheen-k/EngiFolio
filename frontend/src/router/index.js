@@ -8,7 +8,11 @@ import EACompetency from '@/pages/student/eaCompetency.vue'
 import CareerPlanning from '@/pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
 import IndustryContacts from '@/pages/student/IndustryContacts.vue';
+import Networking from '@/pages/student/Networking.vue'
+import Export from '@/pages/student/export.vue'
+import Login from '@/pages/student/login.vue'
 
+import GoalsPage from '../pages/student/GoalsPage.vue'
 const routes = [
   {
     path: '/',
@@ -16,7 +20,7 @@ const routes = [
     component: Homepage
   },
   {
-    path: '/student/dashboard',
+    path: '/student/dashboard/:id',
     name: 'Dashboard',
     component: StudentDashboard
   },
@@ -32,16 +36,19 @@ const routes = [
   },
   {
     path: '/student/career-development',
+
+    {
+    path: '/student/career-development/:id',
     name: 'careerDevelopment',
     component: CareerDevelopment
   },
   {
-    path: '/student/career-planning',
+    path: '/student/career-planning/:id',
     name: 'careerPlanning',
     component: CareerPlanning
   },
   {
-    path: '/student/eaCompetency',
+    path: '/student/eaCompetency/:id',
     name: 'eaCompetency',
     component: EACompetency
   },
@@ -49,7 +56,31 @@ const routes = [
     path: '/student/industry-contacts',
     name: 'IndustryContacts',
     component: IndustryContacts
+
+  {
+    path: '/student/networking/:id',
+    name: 'networking',
+    component: Networking
+  },
+
+  {
+    path: '/student/export/:id',
+    name: 'export',
+    component: Export
+  },
+
+  {
+    path: '/login',
+    name: 'login',
+    component: Login
+  },
+
+  {
+  path: '/goals/:id',
+  name: 'GoalsPage',
+  component: GoalsPage
   }
+
 ]
 
 const router = createRouter({

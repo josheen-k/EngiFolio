@@ -1,54 +1,95 @@
+<template>
+  <Navbar/>
+
+  <div class="d-flex gap-4 p-4">
+    <aside class="d-flex gap-2 flex-column pt-5">
+      <div class="d-flex align-items-center gap-2 px-3 py-2 sidebar"
+      :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
+        <span class="dot rounded-circle" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
+      </div>
+    </aside>
+
+    <main>
+      <h1 class="comp-title">{{currTitle}}</h1>
+
+      <component :is="currComponent"/>
+    </main>
+  </div>
+
+  <Footer/>
+</template>
+
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router'
-  import axios from 'axios';
+import { ref, computed } from 'vue'
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
+import CurrentCompetency from '@/components/CurrentCompetency.vue';
+import DraftReflections from '@/components/DraftReflections.vue';
+import FeedbackReflections from '@/components/FeedbackReflections.vue';
+import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 
-  const router = useRouter();
+// different tabs in side pannel
+const currTab = ref('CURRENT');
+const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED'];
 
-  onMounted(() => {
-
+// dynamic titles based on current tab
+const currTitle = computed(()=> {
+  switch (currTab.value) {
+    case 'CURRENT':
+      return 'Current Competencies'
+    case 'DRAFTS':
+      return 'Draft Reflections'
+    case 'FEEDBACK':
+      return 'Feedback Recieved'
+    case 'DISCONTINUED':
+      return 'Discontinued Competencies'
+    default:
+      return 'Competencies'
+  }
+});
+// render components based on current tab
+const currComponent = computed(()=> {
+  switch (currTab.value) {
+    case 'CURRENT':
+      return CurrentCompetency
+    case 'DRAFTS':
+      return DraftReflections
+    case 'FEEDBACK':
+      return FeedbackReflections
+    case 'DISCONTINUED':
+      return DiscontinuedCompetency
+  }
 });
 </script>
 
-<template>
-  <div class="container">
-    <div class="p-5">
-        <h3>EA Competency</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    </div>
-  </div>
-</template>
+<style scoped>
+.sidebar{
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.2rem;
+  border-radius: 1.5rem;
+  cursor: pointer;
+}
 
-<style>
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 50vh;
-      background-color: #f8f9fa;
-    }
+.sidebar-on {
+  background: #f3f3f3;
+  color: #222222;
+}
 
-    .profilePic {
-      height: 120px;
-      width: 120px;
-      object-fit: cover;
-      border-radius: 50%;
-      margin: 0 auto 20px auto;
-      border: 4px solid #f0f2f5;
-      padding: 0;
-    }
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  background: #e0e0e0;
+}
 
-    h3, h6 {
-      font-weight: 700;
-      color: #2c3e50;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
+.dot-on {
+  background: #88c2d2;
+}
 
-    p {
-      color: #6c757d;
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-    }
+.comp-title {
+  font-family: 'Martel', serif;
+  font-size: 2rem;
+  color: #2b2b2bc5;
+  font-weight: lighter;
+  margin-bottom: 2rem;
+}
 </style>

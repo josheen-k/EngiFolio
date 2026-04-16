@@ -8,64 +8,13 @@
 // CHANGE LOG
 // -----------------------------------------------------
 // [NEW] Added elevator_pitches as a separate table
-// [NEW] Added student_link_type_enum to standardize profile links
 // [NEW] Added industry_contact_methods to support multiple contact methods
 // [NEW] Added created_by / updated_by style timestamps consistently
 // [NEW] Added unique constraints for clearer business rules
 // [REMOVED] Remove elevator_pitch from student_profiles
 // [REMOVED] Remove linkedin_url, resume_url, cover_letter_url from student_profiles
 // [REMOVED] Remove phone_number, email, linkedin_url from industry_contacts
-// [OPTIONAL DELETE] mentor_student_mapping can be deleted later if your business
-//                   does not require staff-to-student assignment control
 // [NEW] Added new parts to student profile as specified in the competency checklist
-
-
-// =====================================================
-// ENUMS
-// =====================================================
-
-Enum account_status_enum {
-  active
-  disabled
-}
-
-Enum goal_status_enum {
-  planned
-  in_progress
-  completed
-}
-
-Enum competency_level_enum {
-  Emerging
-  Developing
-  Proficient
-  Competent
-}
-
-Enum cdl_progress_status_enum {
-  not_started
-  in_progress
-  completed
-}
-
-// [NEW] Added to standardize student profile links
-Enum student_link_type_enum {
-  linkedin
-  resume
-  cover_letter
-  github
-  portfolio
-  other
-}
-
-// [NEW] Added to support multiple contact methods per industry contact
-Enum contact_method_type_enum {
-  phone
-  email
-  linkedin
-  website
-  other
-}
 
 
 // =====================================================
@@ -85,7 +34,7 @@ Table users {
   email varchar(255) [not null, unique]
   password_hash varchar(255) [not null]
   role_id bigint [not null, ref: > roles.role_id]
-  account_status account_status_enum [not null, default: 'active']
+  account_status varchar(25) [note: "CHECK (account_status IN ('active', 'disabled'))", not null, default: 'active']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -98,11 +47,11 @@ Table users {
 // Stores core student profile information
 Table student_profiles {
   profile_id bigint [pk, increment]
-  user_id bigint [not null, unique, ref: - users.user_id]
-  first_name varchar(100) [not null]
+  user_id bigint [not null, unique, ref: - users.user_id, note: 'On delete: cascade']
+  first_name varchar(100)
   preferred_name varchar(100) [note: 'Optional display name']
   last_name varchar(100) [not null]
-  degree_title varchar(255) [not null]
+  degree_title varchar(255)
   specialization varchar(255)
   personal_intro text
   upcoming_actions text [note: 'Future personal development actions']
@@ -114,11 +63,10 @@ Table student_profiles {
 // [NEW] Centralized link storage instead of mixing fixed URL columns and extra links
 Table student_links {
   link_id bigint [pk, increment]
-  profile_id bigint [not null, ref: > student_profiles.profile_id]
-  link_type student_link_type_enum [not null]
-  link_label varchar(100) [not null, note: 'Display label shown to users']
+  profile_id bigint [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
+  link_type varchar(25) [note: "CHECK (link_type IN ('linkedin', 'resume', 'cover_letter', 'github', 'portfolio', 'other'))", not null]
+  link_label varchar(100) [note: 'Display label shown to users']
   link_url varchar(500) [not null]
-  display_order int [not null, default: 1]
   created_at datetime [not null]
   updated_at datetime [not null]
 
@@ -127,30 +75,29 @@ Table student_links {
   }
 }
 
-// [NEW] Separated from student_profiles because elevator pitch belongs more naturally to networking
+// Separated from student_profiles because elevator pitch belongs more naturally to networking
 Table elevator_pitches {
   pitch_id bigint [pk, increment]
-  user_id bigint [not null, unique, ref: - users.user_id]
-  pitch_text text [not null]
+  user_id bigint [not null, unique, ref: - users.user_id, note: 'On delete: cascade']
+  pitch_text text
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table achievement_cert {
   achievement_cert_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   title varchar(255) [not null]
   body text [note: 'Upload awards, scholarships, or other certificates that demonstrate your academic or extracurricular success.']
   file_path varchar(500) [note: 'if applicable']
   issued_date date
-  expiry_date date
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 Table attainment_cert {
   attainment_cert_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   title varchar(255) [not null]
   body text [note: 'Include training credentials such as White Card, First Aid, WHS training, or other job-related certifications.']
   file_path varchar(500) [note: 'if applicable']
@@ -162,7 +109,7 @@ Table attainment_cert {
 
 Table portfolio_note {
   portfolio_note_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   title varchar(255) [not null]
   body text [note: 'Add links to relevant portfolio items, project work, or documentation of achievements.']
   file_path varchar(500) [note: 'if applicable']
@@ -172,10 +119,12 @@ Table portfolio_note {
 
 Table job_resources {
   job_resources_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   title varchar(255) [not null]
   body text [note: 'Store responses to selection criteria, interview practice videos, or other supporting materials for job applications.']
   file_path varchar(500) [note: 'if applicable']
+  created_at datetime [not null]
+  updated_at datetime [not null]
 }
 
 /*
@@ -188,24 +137,13 @@ Table job_resources {
 
 
 // =====================================================
-// HOMEPAGE / PUBLIC CONTENT
-// =====================================================
-
-
-
-
-
-
-
-
-// =====================================================
 // CAREER DEVELOPMENT PLAN (CDP)
 // =====================================================
 
 // Each student can have one CDP per year
 Table career_development_plans {
   plan_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   plan_year int [not null]
   professional_interests text
   employers_of_interest text
@@ -229,7 +167,7 @@ Table career_development_plans {
 // Stores SMART goals under a specific career plan
 Table smart_goals {
   goal_id bigint [pk, increment]
-  plan_id bigint [not null, ref: > career_development_plans.plan_id]
+  plan_id bigint [not null, ref: > career_development_plans.plan_id, note: 'On delete: cascade']
   goal_description text [not null]
   timeline text
   progress_notes text
@@ -238,7 +176,7 @@ Table smart_goals {
   end_date date
   completion_date date
   completion_notes text
-  status goal_status_enum [not null, default: 'planned']
+  status varchar(25) [note: "CHECK (status IN ('planned', 'in_progress', 'completed'))", not null, default: 'planned']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -246,7 +184,7 @@ Table smart_goals {
 // Stores multiple action steps for one SMART goal
 Table goal_action_steps {
   step_id bigint [pk, increment]
-  goal_id bigint [not null, ref: > smart_goals.goal_id]
+  goal_id bigint [not null, ref: > smart_goals.goal_id, note: 'On delete: cascade']
   step_order int [not null]
   step_description text [not null]
   created_at datetime [not null]
@@ -265,7 +203,7 @@ Table goal_action_steps {
 // Stores upcoming networking events created by students
 Table networking_events {
   event_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   event_name varchar(255) [not null]
   event_datetime datetime [not null]
   location varchar(255)
@@ -277,7 +215,7 @@ Table networking_events {
 // Stores questions prepared for a networking event
 Table networking_event_questions {
   question_id bigint [pk, increment]
-  event_id bigint [not null, ref: > networking_events.event_id]
+  event_id bigint [not null, ref: > networking_events.event_id, note: 'On delete: cascade']
   question_order int [not null]
   question_text text [not null]
   created_at datetime [not null]
@@ -291,7 +229,7 @@ Table networking_event_questions {
 // Stores industry contacts met by students
 Table industry_contacts {
   contact_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   contact_name varchar(255) [not null]
   company varchar(255)
   progress_notes text [note: 'Follow-up notes and interaction history']
@@ -303,15 +241,11 @@ Table industry_contacts {
 // [NEW] Supports multiple contact methods per contact instead of fixed columns
 Table industry_contact_methods {
   method_id bigint [pk, increment]
-  contact_id bigint [not null, ref: > industry_contacts.contact_id]
-  method_type contact_method_type_enum [not null]
+  contact_id bigint [not null, ref: > industry_contacts.contact_id, note: 'On delete: cascade']
+  method_type varchar(25) [note: "CHECK (contact_method IN ('phone', 'email', 'linkedin', 'website', 'other'))", not null]
   method_value varchar(500) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
-
-  indexes {
-    (contact_id, method_type, method_value) [unique]
-  }
 }
 
 /*
@@ -342,6 +276,7 @@ Table competency_indicators {
   indicator_id bigint [pk, increment]
   group_id bigint [not null, ref: > competency_groups.group_id]
   display_id varchar(20) [not null, unique]
+  indicator_name varchar(255) [not null]
   description text [not null]
   indicator_link varchar(500) [note: 'Reference link for this indicator']
   discontinued_date date
@@ -354,13 +289,38 @@ Table competency_entries {
   entry_id bigint [pk, increment]
   user_id bigint [not null, ref: > users.user_id]
   indicator_id bigint [not null, ref: > competency_indicators.indicator_id]
-  level competency_level_enum [not null]
-  start_date date
+
+  // Reflection details
+  experience_title varchar(255) [not null, note: 'Short title of the experience']
+  associated_year int [not null, note: 'Academic year']
+  experience_tasks text [not null, note: 'Description of experience and tasks']
+  key_learnings text [note: 'Key learnings from that experience']
+  future_applications text [note: 'How the learning will be apllied in future']
+
+  level varchar(25) [note: "CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Competent'))", not null]
+  status varchar(25) [note: "CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))", not null, default: 'draft']
+  start_date date [not null]
   end_date date
-  skill_review text
-  evidence text
   created_at datetime [not null]
   updated_at datetime [not null]
+
+  indexes {
+    (user_id, indicator_id, status)
+  }
+}
+
+// Stores multiple evidence each competency entry
+Table competency_evidence {
+  evidence_id bigint [pk, increment]
+  entry_id bigint [not null, ref: > competency_entries.entry_id, note: 'On delete: cascade']
+  evidence_type varchar(25) [note: "CHECK (evidence_type IN ('url', 'file'))", not null]
+  evidence_value varchar(500) [not null, note: 'Stores evidence path']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    (entry_id)
+  }
 }
 
 /*
@@ -381,8 +341,8 @@ and ambiguity over whether the page should use the group link or indicator link.
 // Stores staff feedback for SMART goals
 Table goal_feedback {
   feedback_id bigint [pk, increment]
-  goal_id bigint [not null, ref: > smart_goals.goal_id]
-  staff_id bigint [not null, ref: > users.user_id]
+  goal_id bigint [not null, ref: > smart_goals.goal_id, note: 'On delete: cascade']
+  staff_id bigint [ref: > users.user_id]
   feedback_content text [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -391,32 +351,24 @@ Table goal_feedback {
 // Stores staff feedback for competency entries
 Table competency_feedback {
   feedback_id bigint [pk, increment]
-  entry_id bigint [not null, ref: > competency_entries.entry_id]
-  staff_id bigint [not null, ref: > users.user_id]
+  entry_id bigint [not null, ref: > competency_entries.entry_id, note: 'On delete: cascade']
+  staff_id bigint [ref: > users.user_id]
   feedback_content text [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
-// [OPTIONAL KEEP / OPTIONAL DELETE]
 // Keep this if each staff member should only manage assigned students
 Table mentor_student_mapping {
   mapping_id bigint [pk, increment]
-  staff_id bigint [not null, ref: > users.user_id]
-  student_id bigint [not null, ref: > users.user_id]
+  staff_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
+  student_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   assigned_at datetime [not null]
 
   indexes {
     (staff_id, student_id) [unique]
   }
 }
-
-/*
-[OPTIONAL DELETE]
-Delete mentor_student_mapping if your real business rule is:
-- all staff can view all students
-- no mentor assignment is needed
-*/
 
 
 // =====================================================
@@ -436,9 +388,9 @@ Table cdl_modules {
 // Tracks student progress in each CDL module
 Table student_cdl_progress {
   progress_id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.user_id]
-  cdl_id bigint [not null, ref: > cdl_modules.cdl_id]
-  status cdl_progress_status_enum [not null, default: 'not_started']
+  user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
+  cdl_id bigint [not null, ref: > cdl_modules.cdl_id, note: 'On delete: cascade']
+  status varchar(25) [note: "CHECK (status IN ('Not Started', 'In Progress', 'Completed''))", not null, default: 'not_started']
   progress_percentage int [not null, default: 0, note: 'Should be validated as 0-100 in application logic']
   last_accessed_at datetime
   completed_at datetime
@@ -458,7 +410,7 @@ Table student_cdl_progress {
 // Logs important admin actions for accountability
 Table system_audit_logs {
   log_id bigint [pk, increment]
-  admin_id bigint [not null, ref: > users.user_id]
+  admin_id bigint [ref: > users.user_id, note: 'On delete: set null']
   action_type varchar(100) [not null]
   target_table varchar(100) [not null]
   target_row_id bigint [not null]

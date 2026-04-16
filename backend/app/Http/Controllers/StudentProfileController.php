@@ -22,26 +22,18 @@ class StudentProfileController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      */
     public function show($id)
-{
-    $studentProfile = StudentProfile::with('links')->find($id);
+    {
+        $studentProfile = StudentProfile::with('links')->find($id);
 
-    if (!$studentProfile) {
-        return response()->json(['message' => 'Profile not found'], 404);
+        if (!$studentProfile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+
+        return response()->json($studentProfile);
     }
-
-    return response()->json($studentProfile);
-}
 
 
 
@@ -57,6 +49,7 @@ class StudentProfileController extends Controller
             'last_name'        => 'required|string|max:255',
             'preferred_name'   => 'nullable|string|max:255',
             'degree_title'     => 'nullable|string|max:255',
+            'specialisation'     => 'nullable|string|max:255',
             'personal_intro'   => 'nullable|string',
             'upcoming_actions' => 'nullable|string',
         ]);

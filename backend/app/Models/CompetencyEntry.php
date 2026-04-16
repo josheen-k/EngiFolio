@@ -14,11 +14,15 @@ class CompetencyEntry extends Model
     protected $fillable = [
         'user_id',
         'indicator_id',
+        'experience_title',
+        'associated_year',
+        'experience_tasks',
+        'key_learnings',
+        'future_applications',
         'level',
+        'status',
         'start_date',
         'end_date',
-        'skill_review',
-        'evidence',
     ];
 
     public function user()
@@ -34,5 +38,9 @@ class CompetencyEntry extends Model
     public function feedback()
     {
         return $this->hasMany(CompetencyFeedback::class, 'entry_id');
+    }
+    public function evidence()
+    {
+        return $this->hasMany(CompetencyEvidence::class, 'entry_id');
     }
 }

@@ -1,12 +1,12 @@
 <template>
-    <div class="page">
+    <div class="page"> 
         <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
 
             <div class="logo">
                 <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
             </div>
 
-            <button class="btn btn-dark btn-signin px-4">Sign in</button>
+            <button class="btn btn-dark btn-signin px-4" @click="signIn">Sign in</button>
         </nav>
 
         <section class="container-lg py-5 mt-5">
@@ -27,7 +27,7 @@
                     </p>
 
                     <div class="d-flex flex-wrap gap-5 ms-3 mt-5">
-                        <button class="btn btn-dark btn-hero px-5 py-2">Explore features</button>
+                        <a href="#key-features" class="btn btn-dark btn-hero px-5 py-2">Explore features</a>
                         <button class="btn btn-outline-dark btn-hero px-5 py-2">See demo</button>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
 
         <Divider />
 
-        <section class="container-lg py-5">
+        <section id="key-features" class="container-lg py-5">
             <h2 class="f-title text-center mb-5">Key&nbsp;&nbsp;&nbsp;Features</h2>
             <div class="row row-cols-1 row-cols-md-3 g-5">
 
@@ -103,6 +103,11 @@ export default {
             ],
         };
     },
+    methods: {
+        signIn() {
+            this.$router.push('/login');
+        }
+    }
 };
 </script>
 
