@@ -35,26 +35,6 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->insert([
             [
                 'user_id' => 1, 
-                'username' => 'admin1', 
-                'email' => 'admin1@adelaide.edu.au', 
-                'password_hash' => Hash::make('password'), 
-                'role_id' => 1, 
-                'account_status' => 'active', 
-                'created_at' => now(), 
-                'updated_at' => now()
-            ],
-            [
-                'user_id' => 2, 
-                'username' => 'tutor1', 
-                'email' => 'jane@adelaide.edu.au', 
-                'password_hash' => Hash::make('password'), 
-                'role_id' => 2, 
-                'account_status' => 'active', 
-                'created_at' => now(), 
-                'updated_at' => now()
-            ],
-            [
-                'user_id' => 3, 
                 'username' => 'a123456',
                 'email' => 'alex.smith@adelaide.edu.au', 
                 'password_hash' => Hash::make('password'), 
@@ -64,7 +44,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
-                'user_id' => 4, 
+                'user_id' => 2, 
                 'username' => 'a789012', 
                 'email' => 'kate.brown@adelaide.edu.au', 
                 'password_hash' => Hash::make('password'), 
@@ -73,13 +53,33 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(), 
                 'updated_at' => now()
             ],
+            [
+                'user_id' => 3, 
+                'username' => 'admin1', 
+                'email' => 'admin1@adelaide.edu.au', 
+                'password_hash' => Hash::make('password'), 
+                'role_id' => 1, 
+                'account_status' => 'active', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'user_id' => 4, 
+                'username' => 'tutor1', 
+                'email' => 'jane@adelaide.edu.au', 
+                'password_hash' => Hash::make('password'), 
+                'role_id' => 2, 
+                'account_status' => 'active', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ]
         ]);
 
         // Create profiles for the two students
         DB::table('student_profiles')->insert([
             [
                 'profile_id' => 1,
-                'user_id' => 3, 
+                'user_id' => 1, 
                 'first_name' => 'Alex', 
                 'last_name' => 'Smith', 
                 'degree_title' => 'Bachelor of Engineering', 
@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'profile_id' => 2,
-                'user_id' => 4, 
+                'user_id' => 2, 
                 'first_name' => 'Kate', 
                 'last_name' => 'Brown', 
                 'degree_title' => 'Bachelor of Civil Engineering', 

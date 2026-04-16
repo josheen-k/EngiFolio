@@ -45,6 +45,7 @@ Route::post('/smart-goals', [SmartGoalController::class, 'store']);
 Route::get('/smart-goals/{id}', [SmartGoalController::class, 'show']);
 Route::put('/smart-goals/{id}', [SmartGoalController::class, 'update']);
 Route::delete('/smart-goals/{id}', [SmartGoalController::class, 'destroy']);
+Route::get('user/smart-goals/{userId}', [SmartGoalController::class, 'showUserGoals']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);

@@ -19,7 +19,8 @@ const routes = [
   },
 
   {
-    path: '/student/dashboard',
+    path: '/student/dashboard/',
+    //path: '/student/dashboard/:id',
     name: 'Dashboard',
     component: StudentDashboard
   },

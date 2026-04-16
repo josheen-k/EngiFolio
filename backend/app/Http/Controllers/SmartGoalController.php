@@ -14,12 +14,6 @@ class SmartGoalController extends Controller
     {
         $query = SmartGoal::with(['actionSteps', 'feedback']);
 
-        if ($request->user_id) {
-            $query->whereHas('plan', function ($q) use ($request) {
-                $q->where('user_id', $request->user_id);
-            });
-         }
-
         if ($request->from) {
             $query->whereDate('start_date', '>=', $request->from);
         }
@@ -102,5 +96,18 @@ class SmartGoalController extends Controller
         return response()->json([
             'message' => 'Smart goal deleted successfully'
         ]);
+    }
+
+    public function showUserGoals($userId)
+    {
+        $goals = SmartGoal::with(['actionSteps', 'feedback'])->whereHas('plan', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })->get();
+
+        if ($goals->isEmpty()) {
+            return response()->json(['message' => 'No goals for this user found'], 404);
+        }
+
+        return response()->json($goals);
     }
 }

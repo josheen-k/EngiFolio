@@ -116,9 +116,9 @@
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
           <button class="btn btn-ql rounded-pill">Add a new reflection</button>
-          <button class="btn btn-ql rounded-pill">Edit profile</button>
+          <router-link to="/settings/profile/1" class="btn btn-ql rounded-pill">Edit profile</router-link>
           <button class="btn btn-ql rounded-pill btn-ql3">Add a new networking event</button>
-          <button class="btn btn-ql rounded-pill">Export profile</button>
+          <router-link to="/student/export" class="btn btn-ql rounded-pill">Export profile</router-link>
           <button class="btn btn-ql rounded-pill">Add a SMART goal</button>
         </div>
 
@@ -165,6 +165,11 @@
         goalsDone: "0/0",
         avgLevel: "---"
     });
+    const series = ref([0, 0, 0, 0, 0]);
+
+    // For calculating average level
+    const levelWeights = { "Emerging": 1, "Developing": 2, "Competent": 3, "Proficient": 4 };
+    const weightToLevel = ["Not Started", "Emerging", "Developing", "Competent", "Proficient"];
 
     const chartOptions = {
       labels: [
@@ -217,7 +222,7 @@
 
     const loadUserGoals = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/smart-goals?user_id=3`);
+        const response = await axios.get(`http://127.0.0.1:8000/api/user/smart-goals/3`);
         userGoals.value = response.data;
       } catch (error) {
         console.error("Error fetching goals:", error);
@@ -232,12 +237,29 @@
         await loadCompetencyIndicators();
         await loadUserGoals();
 
+        // Calculate the total weight based of the points for each number
+        const totalWeight = userCompetencies.value.reduce((acc, c) => acc + (levelWeights[c.level] || 0), 0);
+        // Calculate average by dividing weight by amount of competencies
+        const avgScore = competencyIndicators.value.length > 0 ? Math.round(totalWeight / competencyIndicators.value.length) : 0;
+
         stats.value = {
           totalReflections: userCompetencies.value.length,
           comptMastered: `${userCompetencies.value.filter(c => c.level === 'Competent' || c.level === 'Proficient').length}/${competencyIndicators.value.length}`,
-          goalsDone: `${userGoals.value.filter(c => c.status === 'in_progress').length}/${userGoals.value.length}`,
-          avgLevel: "Developing"
+          goalsDone: `${userGoals.value.filter(c => c.status === 'completed').length}/${userGoals.value.length}`,
+          avgLevel: weightToLevel[avgScore]
         }
+
+        series.value = [
+          competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
+          userCompetencies.value.filter(c => c.level === 'Emerging').length,
+          userCompetencies.value.filter(c => c.level === 'Developing').length,
+          userCompetencies.value.filter(c => c.level === 'Competent').length,
+          userCompetencies.value.filter(c => c.level === 'Proficient').length
+        ];
+
+
+
+
       } catch (error) {
         console.error("Error while fetching info:", error);
       } finally {
@@ -293,8 +315,6 @@ const recentAct = [
   '22 Mar 2026: Updated profile'
 ]
 
-const series = [2, 4, 3, 2, 1]
-// not started, emerging, developing, competent, proficient
 
 </script>
 
