@@ -9,7 +9,6 @@ import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
 import Networking from '@/pages/student/Networking.vue'
 import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
-
 import GoalsPage from '../pages/student/GoalsPage.vue'
 const routes = [
   {

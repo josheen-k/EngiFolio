@@ -7,7 +7,7 @@
             <ul class="navbar-nav flex-row gap-2">
                 <li class="nav-item"><router-link class="nav-link" active-class="active-link" :to="`/student/dashboard/${$route.params.id}`">Dashboard</router-link></li>
                 <li><router-link class="nav-link" active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`">Competencies</router-link></li>
-                <li><router-link class="nav-link" active-class="active-link" :to="`/student/career-planning/${$route.params.id}`">Goals</router-link></li>
+                <li><router-link class="nav-link" active-class="active-link" :to="`/goals/${$route.params.id}`">Goals</router-link></li>
                 <li><router-link class="nav-link" active-class="active-link" :to="`/student/networking/${$route.params.id}`">Networking</router-link></li>
                 <li><router-link class="nav-link" active-class="active-link" :to="`/student/career-development/${$route.params.id}`">CDL</router-link></li>
             </ul>
