@@ -14,6 +14,12 @@ class SmartGoalController extends Controller
     {
         $query = SmartGoal::with(['actionSteps', 'feedback']);
 
+        if ($request->user_id) {
+            $query->whereHas('plan', function ($q) use ($request) {
+                $q->where('user_id', $request->user_id);
+            });
+         }
+
         if ($request->from) {
             $query->whereDate('start_date', '>=', $request->from);
         }

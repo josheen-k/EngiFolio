@@ -1,8 +1,11 @@
 <template>
   <Navbar/>
 
-  <main class="container-xl py-5 px-4">
+  <main class="container-xl py-5 px-4" v-if="profile">
     <div class="row g-4 mb-4">
+      <h2 class="sec-title text-center" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
+      <h2 class="sec-title text-center" v-else-if="profile.first_name">Welcome, {{ profile.first_name }}</h2>
+      <h2 class="sec-title text-center" v-else>Welcome, {{ profile.last_name }}</h2>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center">Your Stats</h2>
 
@@ -129,12 +132,122 @@
     </div>
   </main>
 
+  <div v-else-if="loading" class="text-center py-5">
+		<div class="spinner-border" role="status"></div>
+		<p>Loading profile...</p>
+		<Footer />
+	</div>
+
+	<div v-else class="container py-5">
+		<div class="alert alert-warning" role="alert">Profile not found.</div>
+		<Footer />
+	</div>
+
   <Footer/>
 </template>
 
 <script setup>
-import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
+    import { ref, onMounted } from 'vue';
+    import { useRoute } from 'vue-router'
+    import axios from 'axios';
+    import Navbar from '@/components/Navbar.vue'
+    import Footer from '@/components/Footer.vue'
+
+    const route = useRoute();
+    const profile = ref(null);
+    const userCompetencies = ref([]);
+    const competencyIndicators = ref([]);
+    const userGoals = ref([]);
+    const loading = ref(true);
+    const stats = ref({
+        totalReflections: 0,
+        comptMastered: "0/0",
+        goalsDone: "0/0",
+        avgLevel: "---"
+    });
+
+    const chartOptions = {
+      labels: [
+        'Not Started',
+        'Emerging',
+        'Developing',
+        'Competent',
+        'Proficient'
+      ],
+      legend: {
+        position: 'bottom',
+        fontFamily: 'Maven Pro, sans-serif',
+        fontSize: '16px'
+      },
+      colors: [
+        '#e2dfd7', // not started
+        '#aba298', // emerging
+        '#b1bbb3', // developing
+        '#7c848c', // competent
+        '#333639'  // proficient
+      ]
+    }
+
+    const loadProfileData = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/profile/1`);
+        profile.value = response.data.profile || response.data;
+      } catch (error) {
+        console.error("Error while fetching profile info:", error);
+      }
+		};
+
+    const loadUserCompetencyData = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/competency-entries/3`);
+        userCompetencies.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching user competencies:", error);
+      }
+		};
+
+    const loadCompetencyIndicators = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/competency-indicators`);
+        competencyIndicators.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching competencies:", error);
+      }
+		};
+
+    const loadUserGoals = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/smart-goals?user_id=3`);
+        userGoals.value = response.data;
+      } catch (error) {
+        console.error("Error fetching goals:", error);
+      }
+    };
+
+    const loadData = async () => {
+      loading.value = true;
+      try {
+        await loadProfileData();
+        await loadUserCompetencyData();
+        await loadCompetencyIndicators();
+        await loadUserGoals();
+
+        stats.value = {
+          totalReflections: userCompetencies.value.length,
+          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Competent' || c.level === 'Proficient').length}/${competencyIndicators.value.length}`,
+          goalsDone: `${userGoals.value.filter(c => c.status === 'in_progress').length}/${userGoals.value.length}`,
+          avgLevel: "Developing"
+        }
+      } catch (error) {
+        console.error("Error while fetching info:", error);
+      } finally {
+          loading.value = false;
+      }
+  };
+
+    onMounted(() => {
+      	loadData();
+    })
 
 const focusItems = [
   {
@@ -180,37 +293,9 @@ const recentAct = [
   '22 Mar 2026: Updated profile'
 ]
 
-const stats = {
-  totalReflections: 14,
-  comptMastered: "3/16",
-  goalsDone: "6/10",
-  avgLevel: "Developing"
-}
-
 const series = [2, 4, 3, 2, 1]
 // not started, emerging, developing, competent, proficient
 
-const chartOptions = {
-  labels: [
-    'Not Started',
-    'Emerging',
-    'Developing',
-    'Competent',
-    'Proficient'
-  ],
-  legend: {
-    position: 'bottom',
-    fontFamily: 'Maven Pro, sans-serif',
-    fontSize: '16px'
-  },
-  colors: [
-    '#e2dfd7', // not started
-    '#aba298', // emerging
-    '#b1bbb3', // developing
-    '#7c848c', // competent
-    '#333639'  // proficient
-  ]
-}
 </script>
 
 <style scoped>

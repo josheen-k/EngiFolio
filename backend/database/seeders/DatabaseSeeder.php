@@ -226,6 +226,20 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(), 
                 'updated_at' => now()
             ],
+            [
+                'group_id' => 2, 
+                'display_id' => 'CAT2', 
+                'group_name' => 'Engineering Ability', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'group_id' => 3, 
+                'display_id' => 'CAT3', 
+                'group_name' => 'Professional Attributes', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
         ]);
 
         DB::table('competency_indicators')->insert([
@@ -233,9 +247,53 @@ class DatabaseSeeder extends Seeder
                 'indicator_id' => 1, 
                 'group_id' => 1, 
                 'display_id' => '1.1', 
-                'indicator_name' => 
-                'Theory Research', 
-                'description' => 'Theory base.', 
+                'indicator_name' => 'Theory Research', 
+                'description' => 'Comprehensive, theory based understanding of underpinning sciences.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'indicator_id' => 2, 
+                'group_id' => 1, 
+                'display_id' => '1.2', 
+                'indicator_name' => 'Mathematical Understanding', 
+                'description' => 'Conceptual understanding of mathematics and statistics.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'indicator_id' => 3, 
+                'group_id' => 2, 
+                'display_id' => '2.1', 
+                'indicator_name' => 'Problem Solving', 
+                'description' => 'Application of established engineering methods to complex problems.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'indicator_id' => 4, 
+                'group_id' => 2, 
+                'display_id' => '2.2', 
+                'indicator_name' => 'Engineering Design', 
+                'description' => 'Fluent application of engineering techniques and design processes.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'indicator_id' => 5, 
+                'group_id' => 3, 
+                'display_id' => '3.1', 
+                'indicator_name' => 'Ethical Conduct', 
+                'description' => 'Ethical conduct and professional accountability.', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'indicator_id' => 6, 
+                'group_id' => 3, 
+                'display_id' => '3.2', 
+                'indicator_name' => 'Effective Communication', 
+                'description' => 'Effective oral and written communication in professional domains.', 
                 'created_at' => now(), 
                 'updated_at' => now()
             ],
@@ -258,6 +316,45 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'entry_id' => 2, 
+                'user_id' => 3, 
+                'indicator_id' => 3, 
+                'experience_title' => 'Water Treatment Analysis', 
+                'associated_year' => 2026, 
+                'experience_tasks' => 'Chemical testing and flow calculation', 
+                'level' => 'Developing', 
+                'status' => 'Draft', 
+                'start_date' => '2026-04-05', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'entry_id' => 3, 
+                'user_id' => 3, 
+                'indicator_id' => 5, 
+                'experience_title' => 'Corporate Responsibility Seminar', 
+                'associated_year' => 2025, 
+                'experience_tasks' => 'Review of engineering ethics codes', 
+                'level' => 'Emerging', 
+                'status' => 'Submitted', 
+                'start_date' => '2025-11-12', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'entry_id' => 4, 
+                'user_id' => 3, 
+                'indicator_id' => 6, 
+                'experience_title' => 'Technical Report Writing', 
+                'associated_year' => 2026, 
+                'experience_tasks' => 'Drafting site safety documentation', 
+                'level' => 'Competent', 
+                'status' => 'Submitted', 
+                'start_date' => '2026-02-15', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'entry_id' => 5, 
                 'user_id' => 4, 
                 'indicator_id' => 1, 
                 'experience_title' => 

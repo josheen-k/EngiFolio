@@ -7,6 +7,8 @@ use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentLinkController;
 use App\Http\Controllers\SmartGoalController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
+use App\Http\Controllers\CompetencyEntryController;
+use App\Http\Controllers\CompetencyIndicatorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,9 +38,6 @@ Route::post('/link', [StudentLinkController::class, 'store']);
 Route::put('/link/{id}', [StudentLinkController::class, 'update']);
 Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
 
-// 
-Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
-
 
 // Smart Goal routes
 Route::get('/smart-goals', [SmartGoalController::class, 'index']);
@@ -49,3 +48,9 @@ Route::delete('/smart-goals/{id}', [SmartGoalController::class, 'destroy']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
+
+// Competency Entries
+Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'show']);
+
+// Competency Indicators
+Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);
