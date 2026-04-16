@@ -37,31 +37,31 @@ const routes = [
   },
 
     {
-    path: '/student/career-development',
+    path: '/student/career-development/:id',
     name: 'careerDevelopment',
     component: CareerDevelopment
   },
   
   {
-    path: '/student/career-planning',
+    path: '/student/career-planning/:id',
     name: 'careerPlanning',
     component: CareerPlanning
   },
 
   {
-    path: '/student/eaCompetency',
+    path: '/student/eaCompetency/:id',
     name: 'eaCompetency',
     component: EACompetency
   },
 
   {
-    path: '/student/networking',
+    path: '/student/networking/:id',
     name: 'networking',
     component: Networking
   },
 
   {
-    path: '/student/export',
+    path: '/student/export/:id',
     name: 'export',
     component: Export
   },
@@ -73,7 +73,7 @@ const routes = [
   },
 
   {
-  path: '/goals',
+  path: '/goals/:id',
   name: 'GoalsPage',
   component: GoalsPage
   }
