@@ -403,17 +403,18 @@ const deleteComment = async(id) => {
   align-items: center;
 ">
 
-  <!-- LEFT -->
   <div>
     <img src="/src/assets/Logo.png" alt="Adelaide University" style="height: 40px"/>
+
+    <div style="font-size: 14px;">
+     ©EngiFolio 2026
+  </div>
   </div>
 
-  <!-- CENTER -->
   <div style="max-width: 600px; text-align: center; font-size: 14px;">
     EngiFolio acknowledges the Kaurna people as the Traditional Owners of the Country where the city of Adelaide is situated today, and pays its respects to Elders past and present.
   </div>
 
-  <!-- RIGHT -->
   <div>
     <a href="#" style="color: white;">Privacy policy</a>
   </div>
