@@ -306,7 +306,7 @@ const deleteComment = async(id) => {
             left: 20px;
             padding: 10px 20px;
             background-color: #28a745;
-            border: none;
+            border: none; 
             color: white;
             font-size: 16px;
             cursor: pointer;">
