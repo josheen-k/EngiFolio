@@ -3,7 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\IndustryContactController;
 use App\Http\Controllers\StudentLinkController;
 use App\Http\Controllers\SmartGoalController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
@@ -25,13 +27,34 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/data', function () { 
+Route::get('/data', function () {
     return response()->json(['content' => 'Laravel 10 running']);
 });
+
+
+Route::get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users/{user}', [UserController::class, 'show']);
+Route::put('/users/{user}', [UserController::class, 'update']);
+Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
 
 // Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+Route::get('/industry_/{id}', [StudentProfileController::class, 'show']);
+
+Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+
+// Industry contacts/networking pages
+Route::get('/users/{user}/industry-contacts', [IndustryContactController::class, 'index']);
+Route::post('/users/{user}/industry-contacts', [IndustryContactController::class, 'store']);
+Route::get('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'show']);
+Route::put('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'update']);
+Route::delete('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'destroy']);
 
 // Student Profile Links
 Route::post('/link', [StudentLinkController::class, 'store']);

@@ -19,6 +19,11 @@ class IndustryContact extends Model
         'date_met',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'contact_id';
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
