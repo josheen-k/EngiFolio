@@ -7,43 +7,46 @@ use Illuminate\Http\Request;
 
 class GoalActionStepController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function store(Request $request, $goalId)
     {
-        //
+        $validated = $request->validate([
+            'step_description' => 'required|string',
+            'step_order' => 'nullable|integer',
+        ]);
+
+        $step = GoalActionStep::create([
+            'goal_id' => $goalId,
+            'step_description' => $validated['step_description'],
+            'step_order' => $validated['step_order'] ?? 0,
+        ]);
+
+        return response()->json($step, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function update(Request $request, $stepId)
     {
-        //
+        $step = GoalActionStep::findOrFail($stepId);
+
+        $validated = $request->validate([
+            'step_description' => 'required|string',
+            'step_order' => 'nullable|integer',
+        ]);
+
+        $step->update([
+            'step_description' => $validated['step_description'],
+            'step_order' => $validated['step_order'] ?? $step->step_order,
+        ]);
+
+        return response()->json($step);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(GoalActionStep $goalActionStep)
+    public function destroy($stepId)
     {
-        //
-    }
+        $step = GoalActionStep::findOrFail($stepId);
+        $step->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, GoalActionStep $goalActionStep)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(GoalActionStep $goalActionStep)
-    {
-        //
+        return response()->json([
+            'message' => 'Action step deleted successfully'
+        ]);
     }
 }
