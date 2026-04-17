@@ -129,6 +129,24 @@
           </li>
         </ul>
       </div>
+
+      <div class="row mt-5">
+        <div class="col-12">
+          <h2 class="sec-title text-center">Your Goals</h2>
+          <ul class="ps-5 activity-list" v-if="userGoals && userGoals.length > 0">
+            <li class="mb-3" v-for="goal in userGoals" :key="goal.goal_id">
+              <strong>{{ goal.status.replace('_', ' ').toUpperCase() }}:</strong> 
+              {{ goal.goal_description }} 
+              <span v-if="goal.end_date" class="text-muted">
+                (Target: {{ goal.end_date }})
+              </span>
+            </li>
+          </ul>
+          <div v-else class="ps-5 activity-list text-muted">
+            No goals currently logged.
+          </div>
+        </div>
+      </div>
     </div>
     <Footer/>
   </main>
