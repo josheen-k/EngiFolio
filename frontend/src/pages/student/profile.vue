@@ -32,13 +32,7 @@
     <body class="container-xl py-5" v-if="profile">
         <header class="mb-5">
             <div class="d-flex align-items-center gap-4">        
-                <img 
-                    :src="profile.profile_image_url || defaultAvatar" 
-                    @error="(e) => e.target.src = defaultAvatar" 
-                    alt="Profile Picture" 
-                    class="profile-pic"
-                    style="flex-shrink: 0;"
-                />
+                <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" class="profile-pic"style="flex-shrink: 0;"/>
 
                 <div class="text-start">
                     <h1 class="sec-title mb-0">{{profile.first_name}} {{profile.last_name}}</h1>
