@@ -5,20 +5,25 @@
     import Navbar from '@/components/Navbar.vue'
     import Footer from '@/components/Footer.vue'
 
-
     const router = useRouter();
     const route = useRoute();
 </script>
 
 <template>
-	<nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
-		<div class="logo">
-			<img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
-		</div>
-		<router-link to="/" class="btn btn-dark btn-signin px-4">Back to homepage</router-link>
-	</nav>
+    <nav class="nav-wrapper">
+        <div>
+            <router-link to="/">
+                <img class="navLogo" src="@/assets/Logo.png" alt="Adelaide University">
+            </router-link>
+        </div>
+        <div class="nav-bar">
+            <div class="nav-item">
+                <router-link to="/" class="btn-back-custom">Back to homepage</router-link>
+            </div>
+        </div>
+    </nav>
 
-	<div class="container py-5">
+    	<div class="container py-5">
 		<div class="row justify-content-center">
 			<div class="col-lg-10">
 				<header>
@@ -47,20 +52,67 @@
 				</footer>
 			</div>
 		</div>  
-	</div>
-	
+    </div>
+    
   <Footer />
 </template>
 
 <style scoped>
-.logo-img {
-  height: 2.5rem;
-  object-fit: contain;
+.nav-wrapper {
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #140f50;
+  padding: 0;
+}
+
+.navLogo {
+  height: 60px;
+  width: auto;
+  display: block;
+  padding: 10px 20px;
+}
+
+.nav-bar {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding-right: 20px;
+}
+
+.btn-back-custom {
+    background-color: #ffffff;
+    color: #140f50;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 25px;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-back-custom:hover {
+    background-color: #e0e0e0;
+    color: #140f50;
 }
 
 .btn {
     font-family: 'Montserrat Alternates', sans-serif;
     border-radius: 30px;
-    font-size: 1.25rem;
+}
+
+form .btn-primary:hover {
+    background-color: #1d9ecf;
 }
 </style>

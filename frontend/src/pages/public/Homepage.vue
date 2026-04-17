@@ -1,12 +1,17 @@
 <template>
     <div class="page"> 
-        <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
-
-            <div class="logo">
-                <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
+        <nav class="nav-wrapper">
+            <div>
+                <router-link to="/">
+                    <img class="navLogo" src="@/assets/Logo.png" alt="Adelaide University">
+                </router-link>
             </div>
 
-            <button class="btn btn-dark btn-signin px-4" @click="signIn">Sign in</button>
+            <div class="nav-bar">
+                <div class="nav-item">
+                    <button class="btn-signin-custom" @click="signIn">Sign in</button>
+                </div>
+            </div>
         </nav>
 
         <section class="container-lg py-5 mt-5">
@@ -120,9 +125,51 @@ export default {
     overflow-x: hidden;
 }
 
-.logo-img {
-  height: 2.5rem;
-  object-fit: contain;
+.nav-wrapper {
+  width: 100vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #140f50;
+  padding: 0;
+}
+
+.navLogo {
+  height: 60px;
+  width: auto;
+  display: block;
+  padding: 10px 20px;
+}
+
+.nav-bar {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+.btn-signin-custom {
+    background-color: #ffffff;
+    color: #140f50;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 25px;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-signin-custom:hover {
+    background-color: #e0e0e0;
 }
 
 .btn {

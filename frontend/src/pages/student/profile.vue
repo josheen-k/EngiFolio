@@ -19,7 +19,7 @@
 		} finally {
 			loading.value = false;
 		}
-		};
+	};
 
     onMounted(() => {
       	loadProfile();
@@ -32,7 +32,7 @@
     <body class="container-xl py-5" v-if="profile">
         <header class="mb-5">
             <div class="d-flex align-items-center gap-4">        
-                <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" class="profile-pic"style="flex-shrink: 0;"/>
+                <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" class="profile-pic"/>
 
                 <div class="text-start">
                     <h1 class="sec-title mb-0">{{profile.first_name}} {{profile.last_name}}</h1>
@@ -45,7 +45,7 @@
 
         <main class="row g-4 justify-content-center">
             <section class="mb-4">
-                <div class="card card-dark border-0 h-auto p-4">                        
+                <div class="card border-0 h-auto p-4">                        
                     <div class="card-header py-3">
                         <h5 class="sec-title">Academic Information</h5>
                     </div>
@@ -64,17 +64,17 @@
                 </div>
             </section>
 
-            <section class="mb-5">
-                <h2 class="sec-title">Personal Introduction</h2>
-                <p class="lead" style="white-space: pre-line;">{{ profile.personal_intro }}</p>
+            <section class="mb-5 card border-0 h-auto p-4">
+                <h2 class="sec-title card-header py-3">Personal Introduction</h2>
+                <p class="lead ps-3">{{ profile.personal_intro }}</p>
             </section>
 
-            <section class="mb-5">
-                <h2 class="sec-title">Professional Links</h2>
+            <section class="mb-5 card border-0 h-auto p-4">
+                <h2 class="sec-title card-header">Professional Links</h2>
                 <table class="table table-hover border-top">
                     <tbody>
                         <tr v-for="link in profile.links" :key="link.link_id">
-                            <td class="fw-semibold">{{ link.link_label }}</td>
+                            <td class="fw-semibold ps-3">{{ link.link_label }}</td>
                             <td><a :href="link.link_url" class="text-break">{{ link.link_url }}</a></td>
                         </tr>
                     </tbody>
@@ -107,7 +107,6 @@
 		font-family: 'Martel', serif;
 		font-size: 2.0rem;
 		color: #303030c5;
-		margin-bottom: 2rem;
 	}
 
 	.card-dark {

@@ -212,20 +212,6 @@ onMounted(() => {
 		background: #e6e6e6;
 	}
 
-	.focus-table {
-		font-family: 'Maven Pro', sans-serif;
-		font-size: 0.95rem;
-	}
-
-	.focus-table thead th {
-		font-family: 'Martian Mono', monospace;
-		color: #222222;
-		font-weight: 200;
-		font-size: 1.2rem;
-		background-color: #f1f1f1;
-		border-color: #d0d0d0;
-		margin: 5rem;
-	}
 
 	.btn-ql {
 		font-family: 'Montserrat Alternates', sans-serif;
