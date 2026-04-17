@@ -1,11 +1,16 @@
-
-
 <template>
   <div class="page">
 
-    <Navbar/>
+    <!-- NAVBAR (same as homepage) -->
+    <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
+      <div class="logo">
+        <img src="@/assets/engifolio-logo.png" class="logo-img" />
+      </div>
 
-    <!-- main-->
+      <button class="btn btn-dark btn-signin px-4">Dashboard</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
     <section class="container-lg py-5">
 
       <!-- Header -->
@@ -32,7 +37,7 @@
               <th>Company</th>
               <th>Progress Notes</th>
               <th>Date Met</th>
-              <th></th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -55,7 +60,7 @@
         </table>
       </div>
 
-      <!-- Form -->
+      <!-- FORM -->
       <div v-if="showForm" class="form-box">
 
         <h3>{{ editMode ? "Edit Contact" : "Add Contact" }}</h3>
@@ -84,15 +89,14 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import api from "@/services/api";
-import Navbar from '@/components/Navbar.vue';
 
 const userId = 2;
 
 const contacts = ref([]);
 const search = ref("");
 
-const showForm = ref(false); // to toggle between add/update form, whether to update it or not
-const editMode = ref(false); // false-reate a new contact, true- update an existing contact
+const showForm = ref(false);
+const editMode = ref(false);
 
 const form = ref({
   contact_id: null,

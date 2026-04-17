@@ -62,71 +62,88 @@
   <Navbar />
 
   <main class="container-xl py-5 px-4">
-    <div class="row mb-5">
-      <div class="col-12">
-        <h1 class="display-5 fw-bold mb-0">Export Your Portfolio</h1>
-      </div>
-    </div>
-
-    <div class="row g-4">
+    <div class="row justify-content-center">
       <div class="col-lg-8">
-        <section class="shadow-sm mb-4">
-          <div class="card-header py-3">
-            <h2 class="h5 mb-0 text-primary">Tick the boxes of the data you would like to be included:</h2>
-          </div>
-        </section>
+        <h1 class="sec-title mb-4">Export Your Portfolio</h1>
 
-        <section class="mb-4">
+        <div class="card card-dark border-0 p-4 mb-4">
+          <h2 class="sec-title mb-4" style="font-size: 1.25rem;">
+            Tick the boxes of the data you would like to be included:
+          </h2>
+
+          <div class="focus-table d-flex flex-column gap-3">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="profile" id="checkProfile">
               <label class="form-check-label" for="checkProfile">Profile</label>
             </div>
-        </section>
 
-        <section class="mb-4">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="competencies" id="checkComp">
               <label class="form-check-label" for="checkComp">Competencies</label>
             </div>
-        </section>
 
-        <section class="mb-4">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="networking" id="checkNet">
               <label class="form-check-label" for="checkNet">Networking</label>
             </div>
-        </section>
 
-        <section class="mb-4">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="goals" id="checkGoals">
               <label class="form-check-label" for="checkGoals">Goals</label>
             </div>
-        </section>
 
-        <section class="mb-4">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="stats" id="checkStats">
               <label class="form-check-label" for="checkStats">Stats</label>
             </div>
-        </section>
 
-        <hr />
+            <hr class="my-2" />
 
-        <section class="mb-5">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="allData" id="checkAll">
               <label class="form-check-label fw-bold" for="checkAll">All data</label>
             </div>
-        </section>
-      </div>
+          </div>
+        </div>
 
-      <div class="d-flex flex-column gap-2">
-          <button class="btn btn-primary" @click="exportData">Export Data</button>
-          <router-link to="/student/dashboard" class="btn btn-link text-muted btn-sm">Cancel</router-link>
+        <div class="d-flex gap-3 align-items-center">
+          <button class="btn btn-ql rounded-pill px-5" @click="exportData">Export Data</button>
+          <router-link to="/student/dashboard" class="btn btn-link text-muted btn-sm text-decoration-none">Cancel</router-link>
+        </div>
       </div>
     </div>
   </main>
 
   <Footer />
 </template>
+
+<style scoped>
+  .sec-title {
+    font-family: 'Martel', serif;
+    font-size: 2.0rem;
+    color: #303030c5;
+  }
+
+  .card-dark {
+    background: #f1f1f1;
+    border-radius: 8px;
+  }
+
+  .focus-table {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 0.95rem;
+  }
+
+  .btn-ql {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1rem;
+    color: #ffffff;
+    background: #555555;
+    padding: 0.5rem 1rem;
+  }
+
+  .btn-ql:hover {
+    color: #ffffff;
+    background: #333333;
+  }
+</style>

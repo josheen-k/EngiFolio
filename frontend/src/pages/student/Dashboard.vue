@@ -116,9 +116,9 @@
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
           <button class="btn btn-ql rounded-pill">Add a new reflection</button>
-          <router-link :to="'/settings/profile/' + route.params.id" class="btn btn-ql rounded-pill">Edit profile</router-link>
-          <button class="btn btn-ql rounded-pill btn-ql3">Add a new networking event</button>
-          <router-link to="/student/export" class="btn btn-ql rounded-pill">Export profile</router-link>
+          <router-link :to="`/settings/profile/${$route.params.id}`" class="btn btn-ql rounded-pill">Edit profile</router-link>
+          <router-link :to="`/student/networking/${$route.params.id}`" class="btn btn-ql rounded-pill">Add a new networking event</router-link>
+          <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-ql rounded-pill">Export profile</router-link>
           <button class="btn btn-ql rounded-pill">Add a SMART goal</button>
         </div>
 
@@ -128,6 +128,24 @@
             {{ act }}
           </li>
         </ul>
+      </div>
+
+      <div class="row mt-5">
+        <div class="col-12">
+          <h2 class="sec-title text-center">Your Goals</h2>
+          <ul class="ps-5 activity-list" v-if="userGoals && userGoals.length > 0">
+            <li class="mb-3" v-for="goal in userGoals" :key="goal.goal_id">
+              <strong>{{ goal.status.replace('_', ' ').toUpperCase() }}:</strong> 
+              {{ goal.goal_description }} 
+              <span v-if="goal.end_date" class="text-muted">
+                (Target: {{ goal.end_date }})
+              </span>
+            </li>
+          </ul>
+          <div v-else class="ps-5 activity-list text-muted">
+            No goals currently logged.
+          </div>
+        </div>
       </div>
     </div>
     <Footer/>

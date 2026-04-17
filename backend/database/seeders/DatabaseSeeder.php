@@ -85,6 +85,7 @@ class DatabaseSeeder extends Seeder
                 'degree_title' => 'Bachelor of Engineering', 
                 'specialisation' => 'Mechanical',
                 'personal_intro' => 'Focused on sustainable energy systems.',
+                'profile_image_url' => '/src/assets/sam.jpg',   
                 'created_at' => now(), 'updated_at' => now()
             ],
             [
@@ -95,6 +96,7 @@ class DatabaseSeeder extends Seeder
                 'degree_title' => 'Bachelor of Civil Engineering', 
                 'specialisation' => 'Structural',
                 'personal_intro' => 'Interested in earthquake-resistant urban design.',
+                'profile_image_url' => '/src/assets/kate.jpeg', 
                 'created_at' => now(), 'updated_at' => now()
             ],
         ]);
