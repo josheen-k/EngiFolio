@@ -58,61 +58,61 @@
 </template>
 
 <style scoped>
-.nav-wrapper {
-  width: 100vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #140f50;
-  padding: 0;
-}
+	.nav-wrapper {
+		width: 100vw;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background-color: #140f50;
+		padding: 0;
+	}
 
-.navLogo {
-  height: 60px;
-  width: auto;
-  display: block;
-  padding: 10px 20px;
-}
+	.navLogo {
+		height: 60px;
+		width: auto;
+		display: block;
+		padding: 10px 20px;
+	}
 
-.nav-bar {
-  display: flex;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  align-items: center;
-}
+	.nav-bar {
+		display: flex;
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		align-items: center;
+	}
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding-right: 20px;
-}
+	.nav-item {
+		display: flex;
+		align-items: center;
+		padding-right: 20px;
+	}
 
-.btn-back-custom {
-    background-color: #ffffff;
-    color: #140f50;
-    border: none;
-    border-radius: 30px;
-    padding: 8px 25px;
-    font-family: 'Montserrat Alternates', sans-serif;
-    font-weight: bold;
-    font-size: 1.1rem;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
+	.btn-back-custom {
+		background-color: #ffffff;
+		color: #140f50;
+		border: none;
+		border-radius: 30px;
+		padding: 8px 25px;
+		font-family: 'Montserrat Alternates', sans-serif;
+		font-weight: bold;
+		font-size: 1.1rem;
+		text-decoration: none;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+	}
 
-.btn-back-custom:hover {
-    background-color: #e0e0e0;
-    color: #140f50;
-}
+	.btn-back-custom:hover {
+		background-color: #e0e0e0;
+		color: #140f50;
+	}
 
-.btn {
-    font-family: 'Montserrat Alternates', sans-serif;
-    border-radius: 30px;
-}
+	.btn {
+		font-family: 'Montserrat Alternates', sans-serif;
+		border-radius: 30px;
+	}
 
-form .btn-primary:hover {
-    background-color: #1d9ecf;
-}
+	form .btn-primary:hover {
+		background-color: #1d9ecf;
+	}
 </style>

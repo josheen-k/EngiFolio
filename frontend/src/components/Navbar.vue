@@ -67,92 +67,92 @@ onClickOutside(dropdown, () => {
 </template>
 
 <style scoped>
-.nav-wrapper {
-  width: 100vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  background-color: #140f50;
-  padding: 0;
-}
+  .nav-wrapper {
+    width: 100vw;
+		display: flex;
+		justify-content: space-between;
+		align-items: stretch;
+		background-color: #140f50;
+		padding: 0;
+  }
 
-.nav-bar {
-  display: flex;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  align-items: center;
-}
+	.nav-bar {
+		display: flex;
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		align-items: center;
+	}
 
-.nav-item {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
+	.nav-item {
+		display: flex;
+		align-items: center;
+		position: relative;
+	}
 
-.nav-item a {
-  color: white;
-  font-family: "Roboto Serif", Helvetica, Arial, sans-serif;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  padding: 0 1.5rem;
-  transition: background-color 0.3s ease;
-  height: 60px;
-  font-weight: 510
-}
+	.nav-item a {
+		color: white;
+		font-family: "Roboto Serif", Helvetica, Arial, sans-serif;
+		text-decoration: none;
+		display: flex;
+		align-items: center;
+		padding: 0 1.5rem;
+		transition: background-color 0.3s ease;
+		height: 60px;
+		font-weight: 510
+	}
 
-.nav-item a:hover {
-  background-color: #020110; 
-}
+	.nav-item a:hover {
+		background-color: #020110; 
+	}
 
-.navLogo {
-  height: 60px;
-  width: auto;
-  display: block;
-  padding: 10px 20px;
-}
+	.navLogo {
+		height: 60px;
+		width: auto;
+		display: block;
+		padding: 10px 20px;
+	}
 
-.av-img {
-  width: 3.5rem;
-  height: 3.5rem;
-  object-fit: cover;
-  border: 2px solid #c5c5c5;
-  cursor: pointer;
-  margin: 0 20px;
-}
+	.av-img {
+		width: 3.5rem;
+		height: 3.5rem;
+		object-fit: cover;
+		border: 2px solid #c5c5c5;
+		cursor: pointer;
+		margin: 0 20px;
+	}
 
-.dd {
-  position: absolute;
-  right: 10px;
-  top: 100%;
-  width: 150px;
-  padding: 0.4rem;
-  background: #ffffff;
-  border: 1px solid #bebebe;
-  border-radius: 0.8rem;
-  box-shadow: 0 0.5rem 1.4rem rgba(0,0,0,0.3);
-  z-index: 1000;
-}
+	.dd {
+		position: absolute;
+		right: 10px;
+		top: 100%;
+		width: 150px;
+		padding: 0.4rem;
+		background: #ffffff;
+		border: 1px solid #bebebe;
+		border-radius: 0.8rem;
+		box-shadow: 0 0.5rem 1.4rem rgba(0,0,0,0.3);
+		z-index: 1000;
+	}
 
-.dd a.dd-item {
-  color: #444444;
-  font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 0.9rem;
-  display: block;
-  padding: 0.5rem 0.8rem;
-  text-align: center;
-  height: auto;
-  background-color: transparent;
-}
+	.dd a.dd-item {
+		color: #444444;
+		font-family: 'Montserrat Alternates', sans-serif;
+		font-size: 0.9rem;
+		display: block;
+		padding: 0.5rem 0.8rem;
+		text-align: center;
+		height: auto;
+		background-color: transparent;
+	}
 
-.dd a.dd-item:hover {
-  background-color: #f1f1f1;
-  color: #000000;
-  border-radius: 0.5rem;
-}
+	.dd a.dd-item:hover {
+		background-color: #f1f1f1;
+		color: #000000;
+		border-radius: 0.5rem;
+	}
 
-.dd a.dd-item.logout {
-  color: #ff746c;
-}
+	.dd a.dd-item.logout {
+		color: #ff746c;
+	}
 </style>

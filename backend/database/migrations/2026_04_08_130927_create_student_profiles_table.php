@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('degree_title', 255)->nullable();
             $table->string('specialisation', 255)->nullable();
             $table->text('personal_intro')->nullable();
-            $table->text('upcoming_actions')->nullable();
             $table->string('profile_image_url', 500)->nullable();
             $table->timestamps();
         });
