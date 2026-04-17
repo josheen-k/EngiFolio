@@ -5,7 +5,7 @@
 
     <Navbar/>
 
-    <!-- MAIN CONTENT -->
+    <!-- main-->
     <section class="container-lg py-5">
 
       <!-- Header -->
@@ -32,7 +32,7 @@
               <th>Company</th>
               <th>Progress Notes</th>
               <th>Date Met</th>
-              <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
 
@@ -55,7 +55,7 @@
         </table>
       </div>
 
-      <!-- FORM -->
+      <!-- Form -->
       <div v-if="showForm" class="form-box">
 
         <h3>{{ editMode ? "Edit Contact" : "Add Contact" }}</h3>
@@ -91,8 +91,8 @@ const userId = 2;
 const contacts = ref([]);
 const search = ref("");
 
-const showForm = ref(false);
-const editMode = ref(false);
+const showForm = ref(false); // to toggle between add/update form, whether to update it or not
+const editMode = ref(false); // false-reate a new contact, true- update an existing contact
 
 const form = ref({
   contact_id: null,
