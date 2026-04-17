@@ -132,7 +132,7 @@
             Edit profile
           </router-link>
 
-          <!-- ✅ INDUSTRY CONTACTS LINK -->
+          <!-- INDUSTRY CONTACTS LINK -->
           <router-link
             :to="`/student/industry-contacts/${route.params.id}`"
             class="btn btn-ql rounded-pill"
@@ -144,7 +144,7 @@
             Add a new networking event
           </button>
 
-          <router-link to="/student/export" class="btn btn-ql rounded-pill">
+          <router-link to="`/student/export/${route.params.id}`" class="btn btn-ql rounded-pill">
             Export profile
           </router-link>
 
