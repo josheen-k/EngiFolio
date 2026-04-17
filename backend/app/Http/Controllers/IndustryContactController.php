@@ -30,7 +30,7 @@ class IndustryContactController extends Controller
         'date_met' => 'nullable|date',
     ]);
 
-    $validated['user_id'] = $user;
+    $validated['user_id'] = $user; //manually sending the user id for now, once login/authenication systemis created, will integrate it
 
     $contact = IndustryContact::create($validated);
 
@@ -68,9 +68,7 @@ class IndustryContactController extends Controller
     public function destroy($user, IndustryContact $industryContact)
     {
         Log::info('Deleting contact with ID: ' . $industryContact->contact_id);
-
         $industryContact->delete();
-
         return response()->json(['message' => 'Deleted']);
     }
 }

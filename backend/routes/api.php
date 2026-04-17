@@ -49,6 +49,7 @@ Route::get('/industry_/{id}', [StudentProfileController::class, 'show']);
 
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 
+// Industry contacts/networking pages
 Route::get('/users/{user}/industry-contacts', [IndustryContactController::class, 'index']);
 Route::post('/users/{user}/industry-contacts', [IndustryContactController::class, 'store']);
 Route::get('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'show']);
