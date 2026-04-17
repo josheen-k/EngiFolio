@@ -269,6 +269,7 @@
           avgLevel: weightToLevel[avgScore]
         }
 
+        // For pi chart
         series.value = [
           competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
           userCompetencies.value.filter(c => c.level === 'Emerging').length,
@@ -276,9 +277,6 @@
           userCompetencies.value.filter(c => c.level === 'Competent').length,
           userCompetencies.value.filter(c => c.level === 'Proficient').length
         ];
-
-
-
 
       } catch (error) {
         console.error("Error while fetching info:", error);
