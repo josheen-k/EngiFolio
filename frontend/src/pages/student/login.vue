@@ -12,13 +12,13 @@
 <template>
     <nav class="nav-wrapper">
         <div>
-            <router-link to="/">
-                <img class="navLogo" src="@/assets/Logo.png" alt="Adelaide University">
-            </router-link>
+            <!-- <router-link to="/"> -->
+                <div class="navLogo"></div>
+            <!-- </router-link> -->
         </div>
         <div class="nav-bar">
             <div class="nav-item">
-                <router-link to="/" class="btn-back-custom">Back to homepage</router-link>
+                <router-link to="/" class="btn-back-custom">Go back</router-link>
             </div>
         </div>
     </nav>
@@ -68,11 +68,15 @@
 	}
 
 	.navLogo {
-		height: 60px;
-		width: auto;
-		display: block;
-		padding: 10px 20px;
-	}
+		width: 6.25rem;
+		height: 3.75rem;
+		margin: 0 1.5rem;
+		background: linear-gradient(45deg, #d9bebe, #6b6be4);
+		-webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
+		-webkit-mask-size: contain;
+		mask: url('@/assets/engiFolio.png') no-repeat center;
+		mask-size: contain;
+}
 
 	.nav-bar {
 		display: flex;
@@ -89,22 +93,21 @@
 	}
 
 	.btn-back-custom {
-		background-color: #ffffff;
-		color: #140f50;
+		/* background-color: #ffffff; */
+		color: #a7a7a7;
 		border: none;
 		border-radius: 30px;
-		padding: 8px 25px;
+		padding: 6px 18px;
 		font-family: 'Montserrat Alternates', sans-serif;
-		font-weight: bold;
-		font-size: 1.1rem;
+		font-size: 1.2rem;
 		text-decoration: none;
 		cursor: pointer;
-		transition: background-color 0.3s ease;
+		transition: color 0.3s ease;
 	}
 
 	.btn-back-custom:hover {
-		background-color: #e0e0e0;
-		color: #140f50;
+		/* background-color: #e0e0e0; */
+		color: #ffffff;
 	}
 
 	.btn {

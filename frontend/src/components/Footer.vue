@@ -5,9 +5,7 @@
 
     <div class="footer-content d-flex justify-content-between flex-wrap gap-3 px-4 px-md-5 py-4">
       <span>©EngiFolio 2026</span>
-      <div class="logo">
-        <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
-      </div>
+      <div class="logo-img"></div>
       <span><u>Privacy Policy</u></span>
     </div>
   </footer>
@@ -34,7 +32,12 @@ export default {
 }
 
 .logo-img {
-  height: 2.5rem;
-  object-fit: contain;
-}
+		width: 6.25rem;
+		height: 3.75rem;
+		background: linear-gradient(45deg, #d9bebe, #6b6be4);
+		-webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
+		-webkit-mask-size: contain;
+		mask: url('@/assets/engiFolio.png') no-repeat center;
+		mask-size: contain;
+	}
 </style>

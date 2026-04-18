@@ -148,21 +148,18 @@
         </div>
       </div>
     </div>
-    <Footer/>
   </main>
 
   <div v-else-if="loading" class="text-center py-5">
 		<div class="spinner-border" role="status"></div>
 		<p>Loading profile...</p>
-		<Footer />
 	</div>
 
 	<div v-else class="container py-5">
 		<div class="alert alert-warning" role="alert">Profile not found.</div>
-		<Footer />
 	</div>
 
-
+  <Footer/>
 </template>
 
 <script setup>
