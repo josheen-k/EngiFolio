@@ -8,13 +8,13 @@
         <span class="txt">{{ c.compt.length }}</span>
       </div>
 
-      <div v-if="c.open" class="row g-3">
-        <div class="col-12 col-md-6 col-lg-4 col-xl-4" v-for="compt in c.compt" :key="compt.id">
+      <div v-if="c.open" class="d-flex flex-wrap gap-3">
+        <div class="compt-wrap" v-for="compt in c.compt" :key="compt.id">
 
           <div class="card compt-card p-3">
             <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
 
-            <div class="d-flex align-items-center justify-content-between mb-2 gap-2">
+            <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
               <span class="reflecs rounded-pill px-3 py-1" :class="compt.reflec.length? 'reflecs-blue' : 'reflecs-red'">
                 {{ compt.reflec.length}} reflection{{ compt.reflec.length!==1? 's':'' }}
               </span>
@@ -23,8 +23,7 @@
               src="@/assets/plus-btn.png" @click="">
             </div>
 
-            <p class="txt mb-3">Highest: {{ getLvl(compt) }}</p>
-            <span class="open-txt" @click=""><u>OPEN</u></span>
+            <p class="txt-lvl mb-3">Highest level: {{ getLvl(compt) }}</p>
           </div>
         </div>
       </div>
@@ -65,6 +64,14 @@
         {
           id: '1.4',
           reflec: []
+        },
+        {
+          id: '1.5',
+          reflec: []
+        },
+        {
+          id: '1.6',
+          reflec: []
         }
       ]
     },
@@ -78,11 +85,11 @@
           reflec: []
         },
         {
-          id: '1.2',
+          id: '2.2',
           reflec: []
         },
         {
-          id: '1.3',
+          id: '2.3',
           reflec: []
         }
       ]
@@ -93,15 +100,15 @@
       open: false,
       compt: [
         {
-          id: '2.1',
+          id: '3.1',
           reflec: []
         },
         {
-          id: '1.2',
+          id: '3.2',
           reflec: []
         },
         {
-          id: '1.3',
+          id: '3.3',
           reflec: []
         }
       ]
@@ -151,9 +158,16 @@
   font-weight: 100;
 }
 
+.compt-wrap {
+  flex: 0 0 12.5rem;
+}
+
 .compt-card {
+  width: 220px;
+  height: 130px;
   border-radius: 1.5rem;
   border: 1px solid #bababa;
+  cursor: pointer;
 }
 
 .compt-card:hover {
@@ -168,6 +182,14 @@
 }
 
 .txt {
+  font-family: 'Maven Pro', sans-serif;
+  background-color: #e7e7e7;
+  border-radius: 50%;
+  font-size: smaller;
+  padding: 0.05rem 0.4rem;
+}
+
+.txt-lvl {
   font-family: 'Maven Pro', sans-serif;
 }
 
@@ -190,9 +212,5 @@
 
 .plus-btn:hover {
   transform: scale(1.1);
-}
-
-.open-txt {
-  cursor: pointer;
 }
 </style>
