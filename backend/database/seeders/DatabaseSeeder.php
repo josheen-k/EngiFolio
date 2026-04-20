@@ -349,7 +349,7 @@ class DatabaseSeeder extends Seeder
                 'experience_title' => 'Technical Report Writing', 
                 'associated_year' => 2026, 
                 'experience_tasks' => 'Drafting site safety documentation', 
-                'level' => 'Competent', 
+                'level' => 'Confident', 
                 'status' => 'Submitted', 
                 'start_date' => '2026-02-15', 
                 'created_at' => now(), 

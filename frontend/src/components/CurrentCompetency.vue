@@ -1,9 +1,57 @@
 <template>
   <div class="curr-compt">
-    <div class="mb-4" v-for="c in category" :key="c.key">
 
-      <div class="d-flex align-items-center gap-2 mb-3 category" @click="c.open=!c.open">
-        <img class="triangle" :class="{open: c.open}" src="@/assets/triangle.png">
+    <h1 class="compt-title" v-if="!selectedCompt">Current Competencies</h1>
+
+    <div v-if="selectedCompt" class="detail">
+
+      <div class="d-flex align-items-center">
+        <button class="btn btn-filter" @click="closeDetail">Go back</button>
+        <h2 class="compt-title">Competency {{ selectedCompt.id }}</h2>
+      </div>
+
+      <p class="fs-5">Category: <em>{{ selectedCompt.category }}</em></p>
+      <p class="fs-5">Description:</p>
+      <p class="detail-txt">{{ selectedCompt.description }}</p>
+
+      <p class="fs-5">Indicators:</p>
+      <ul class="ps-3">
+        <li class="detail-txt" v-for="(ind, i) in selectedCompt.indicators" :key="i">{{ ind }}</li>
+      </ul>
+
+      <div class="d-flex justify-content-between detail-stats">
+        <p class="fs-5">Total reflection entries you added: <em>{{ selectedCompt.reflec.length }}</em></p>
+        <p class="fs-5">Highest attainment level you reflected: <em>{{ getLvl(selectedCompt) }}</em></p>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center">
+        <h3>Your Entries</h3>
+        <div class="d-flex gap-3">
+          <button type="button" class="btn btn-filter">Add filter</button>
+          <button type="button" class="btn btn-add">Add new</button>
+        </div>
+      </div>
+
+      <div v-if="selectedCompt.reflec.length" class="row g-3">
+        <div v-for="(ref, i) in selectedCompt.reflec" :key="i" class="col-12 col-sm-6 col-lg-3">
+
+          <div>
+            <p>Reflection {{ i + 1 }}</p>
+            <div class="d-flex align-items-center">
+              <span>YEAR {{ ref.year }}</span>
+              <span>{{ ref.level }}</span>
+            </div>
+            <p>Last updated: {{ ref.date }}</p>
+          </div>
+        </div>
+      </div>
+      <p v-else>No reflection entries yet.</p>
+    </div>
+
+    <div v-else class="mb-4" v-for="c in category" :key="c.key">
+
+      <div class="d-flex align-items-center gap-2 mb-3 category" @click="c.open = !c.open">
+        <img class="triangle" :class="{ open: c.open }" src="@/assets/triangle.png">
         <span class="c-label">{{ c.label }}</span>
         <span class="txt">{{ c.compt.length }}</span>
       </div>
@@ -11,16 +59,17 @@
       <div v-if="c.open" class="d-flex flex-wrap gap-3">
         <div class="compt-wrap" v-for="compt in c.compt" :key="compt.id">
 
-          <div class="card compt-card p-3">
+          <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
             <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
 
             <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
-              <span class="reflecs rounded-pill px-3 py-1" :class="compt.reflec.length? 'reflecs-blue' : 'reflecs-red'">
-                {{ compt.reflec.length}} reflection{{ compt.reflec.length!==1? 's':'' }}
+              <span class="reflecs rounded-pill px-3 py-1"
+                :class="compt.reflec.length ? 'reflecs-blue' : 'reflecs-red'">
+                {{ compt.reflec.length }} reflection{{ compt.reflec.length !== 1 ? 's' : '' }}
               </span>
-              
-              <img class="plus-btn d-flex align-items-center justify-content-center" 
-              src="@/assets/plus-btn.png" @click="">
+
+              <img class="plus-btn d-flex align-items-center justify-content-center" src="@/assets/plus-btn.png"
+                @click="">
             </div>
 
             <p class="txt-lvl mb-3">Highest level: {{ getLvl(compt) }}</p>
@@ -32,103 +81,155 @@
 </template>
 
 <script setup>
-  import { onMounted, ref } from 'vue'
-  
-  // dummy data, need to connect this with backend to fetch details
-  const category= ref([
-    {
-      key: 'ksb',
-      label: 'KNOWLEDGE AND SKILL BASE',
-      open: false,
-      compt: [
-        {
-          id: '1.1',
-          reflec: [
-            { level: 'Developing'},
-            { level: 'Competent'},
-            { level: 'Proficient'}
-          ]
-        },
-        {
-          id: '1.2',
-          reflec: [
-            { level: 'Emerging'},
-            { level: 'Emerging'},
-            { level: 'Emerging'}
-          ]
-        },
-        {
-          id: '1.3',
-          reflec: []
-        },
-        {
-          id: '1.4',
-          reflec: []
-        },
-        {
-          id: '1.5',
-          reflec: []
-        },
-        {
-          id: '1.6',
-          reflec: []
-        }
-      ]
-    },
-    {
-      key: 'eaa',
-      label: 'ENGINEERING APPLICATION ABILITY',
-      open: false,
-      compt: [
-        {
-          id: '2.1',
-          reflec: []
-        },
-        {
-          id: '2.2',
-          reflec: []
-        },
-        {
-          id: '2.3',
-          reflec: []
-        }
-      ]
-    },
-    {
-      key: 'ppa',
-      label: 'PROFESSIONAL AND PERSONAL ATTRIBUTES',
-      open: false,
-      compt: [
-        {
-          id: '3.1',
-          reflec: []
-        },
-        {
-          id: '3.2',
-          reflec: []
-        },
-        {
-          id: '3.3',
-          reflec: []
-        }
-      ]
-    }
-  ]);
+import { onMounted, ref } from 'vue'
 
-  function getLvl(compt) {
-  if (!compt.reflec || compt.reflec.length===0) {
+const selectedCompt = ref(null)
+
+function openDetail(compt, categoryLabel) {
+  selectedCompt.value = {
+    id: compt.id,
+    category: categoryLabel,
+    reflec: compt.reflec ? compt.reflec : [],
+    description: compt.desc,
+    indicators: compt.indicators
+  }
+}
+
+function closeDetail() {
+  selectedCompt.value = null
+}
+
+// dummy data, need to connect this with backend to fetch details
+const category = ref([
+  {
+    key: 'ksb',
+    label: 'KNOWLEDGE AND SKILL BASE',
+    open: false, //by default
+    compt: [
+      {
+        id: '1.1',
+        desc: 'This is an example description of a competency',
+        indicators: [
+          'Indicator a',
+          'Indicator b',
+          'Indicator c'
+        ],
+        reflec: [
+          { level: 'Developing' },
+          { level: 'Confident' },
+          { level: 'Proficient' }
+        ]
+      },
+      {
+        id: '1.2',
+        desc: 'This is an example description of a competency',
+        indicators: [
+          'Indicator a',
+          'Indicator b',
+          'Indicator c'
+        ],
+        reflec: [
+          { level: 'Emerging' },
+          { level: 'Emerging' },
+          { level: 'Emerging' }
+        ]
+      },
+      {
+        id: '1.3',
+        desc: 'This is an example description of a competency',
+        indicators: [
+          'Indicator a',
+          'Indicator b',
+          'Indicator c'
+        ],
+        reflec: []
+      },
+      {
+        id: '1.4',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      },
+      {
+        id: '1.5',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      },
+      {
+        id: '1.6',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      }
+    ]
+  },
+  {
+    key: 'eaa',
+    label: 'ENGINEERING APPLICATION ABILITY',
+    open: false,
+    compt: [
+      {
+        id: '2.1',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      },
+      {
+        id: '2.2',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      },
+      {
+        id: '2.3',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      }
+    ]
+  },
+  {
+    key: 'ppa',
+    label: 'PROFESSIONAL AND PERSONAL ATTRIBUTES',
+    open: false,
+    compt: [
+      {
+        id: '3.1',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      },
+      {
+        id: '3.2',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      },
+      {
+        id: '3.3',
+        desc: 'This is an example description of a competency',
+        indicators: [],
+        reflec: []
+      }
+    ]
+  }
+]); // end of dummy data
+
+function getLvl(compt) {
+  if (!compt.reflec || compt.reflec.length === 0) {
     return 'Not Started';
   }
   const order = [
     'Not Started',
     'Emerging',
     'Developing',
-    'Competent',
-    'Proficient'
+    'Proficient',
+    'Confident'
   ];
   const reflecCopy = [...compt.reflec];
 
-  reflecCopy.sort((a, b)=> {
+  reflecCopy.sort((a, b) => {
     return order.indexOf(b.level) - order.indexOf(a.level)
   });
 
@@ -138,6 +239,19 @@
 </script>
 
 <style scoped>
+.curr-compt {
+  max-width: 90%;
+}
+
+.compt-title {
+  font-family: 'Martel', serif;
+  font-size: 2rem;
+  color: #2b2b2bc5;
+  font-weight: lighter;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .category {
   cursor: pointer;
 }
@@ -163,8 +277,8 @@
 }
 
 .compt-card {
-  width: 220px;
-  height: 130px;
+  width: 13.75rem;
+  height: 8.125rem;
   border-radius: 1.5rem;
   border: 1px solid #bababa;
   cursor: pointer;
@@ -212,5 +326,43 @@
 
 .plus-btn:hover {
   transform: scale(1.1);
+}
+
+.detail {
+  font-family: 'Maven Pro', sans-serif;
+  color: #222222;
+}
+
+.detail-txt {
+  color: #444444;
+}
+
+.detail-stats {
+  max-width: 90%;
+}
+
+.btn-filter {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.5rem;
+  font-size: 1rem;
+  background: #e6e6e6;
+}
+
+.btn-filter:hover {
+  background: #666666;
+  color: #ffffff;
+}
+
+.btn-add {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.5rem;
+  font-size: 1rem;
+  color: #ffffff;
+  background: #555555;
+}
+
+.btn-add:hover {
+  color: #ffffff;
+  background: #333333;
 }
 </style>

@@ -3,15 +3,13 @@
 
   <div class="d-flex p-4 side ms-3">
     <aside class="d-flex gap-4 flex-column pt-5 sidebar-wrap">
-      <div class="d-flex align-items-center gap-2 px-3 py-2 sidebar"
+      <div class="d-flex align-items-center gap-3 px-3 py-2 sidebar"
       :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
         <span class="dot rounded-circle" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
       </div>
     </aside>
 
     <main class="mt-5 main-area">
-      <h1 class="comp-title">{{currTitle}}</h1>
-
       <component :is="currComponent"/>
     </main>
   </div>
@@ -32,21 +30,6 @@ import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 const currTab = ref('CURRENT');
 const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED'];
 
-// dynamic titles based on current tab
-const currTitle = computed(()=> {
-  switch (currTab.value) {
-    case 'CURRENT':
-      return 'Current Competencies'
-    case 'DRAFTS':
-      return 'Draft Reflections'
-    case 'FEEDBACK':
-      return 'Feedback Recieved'
-    case 'DISCONTINUED':
-      return 'Discontinued Competencies'
-    default:
-      return 'Competencies'
-  }
-});
 // render components based on current tab
 const currComponent = computed(()=> {
   switch (currTab.value) {
@@ -71,7 +54,8 @@ const currComponent = computed(()=> {
 .sidebar-wrap {
   position: sticky;
   top: 30%;
-  width: 13%;
+  left: 5%;
+  width: 20%;
   height: fit-content;
 }
 
@@ -85,6 +69,7 @@ const currComponent = computed(()=> {
   font-size: 1.2rem;
   border-radius: 1.5rem;
   cursor: pointer;
+  width: 70%;
 }
 
 .sidebar-on {
@@ -100,14 +85,5 @@ const currComponent = computed(()=> {
 
 .dot-on {
   background: #88c2d2;
-}
-
-.comp-title {
-  font-family: 'Martel', serif;
-  font-size: 2rem;
-  color: #2b2b2bc5;
-  font-weight: lighter;
-  margin-bottom: 2rem;
-  text-align: center;
 }
 </style>
