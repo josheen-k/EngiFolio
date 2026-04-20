@@ -33,15 +33,16 @@
       </div>
 
       <div v-if="selectedCompt.reflec.length" class="row g-3">
-        <div v-for="(ref, i) in selectedCompt.reflec" :key="i" class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in selectedCompt.reflec" :key="i">
+          <div class="card compt-card p-3 h-70 reflection-card">
+            <p class="compt-label mb-2">{{ reflec.title }}</p>
 
-          <div>
-            <p>Reflection {{ i + 1 }}</p>
-            <div class="d-flex align-items-center">
-              <span>YEAR {{ ref.year }}</span>
-              <span>{{ ref.level }}</span>
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="reflecs rounded-pill px-3 py-1">{{ reflec.year===0 ? 'PRIOR':'YEAR ' + reflec.year }}</span>
+              <span class="txt-lvl">{{ reflec.level }}</span>
             </div>
-            <p>Last updated: {{ ref.date }}</p>
+
+            <p class="txt-lvl">Last updated: {{ reflec.date }}</p>
           </div>
         </div>
       </div>
@@ -115,9 +116,24 @@ const category = ref([
           'Indicator c'
         ],
         reflec: [
-          { level: 'Developing' },
-          { level: 'Confident' },
-          { level: 'Proficient' }
+          {
+            title: 'Experience 1',
+            year: 2,
+            level: 'Developing',
+            date: '2026-03-01'
+          },
+          {
+            title: 'Experience 2',
+            year: 3,
+            level: 'Confident',
+            date: '2026-04-10'
+          },
+          {
+            title: 'Experience 3',
+            year: 0,
+            level: 'Proficient',
+            date: '2026-04-15'
+          }
         ]
       },
       {
@@ -128,11 +144,7 @@ const category = ref([
           'Indicator b',
           'Indicator c'
         ],
-        reflec: [
-          { level: 'Emerging' },
-          { level: 'Emerging' },
-          { level: 'Emerging' }
-        ]
+        reflec: []
       },
       {
         id: '1.3',
