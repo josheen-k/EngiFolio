@@ -34,11 +34,11 @@
 
       <div v-if="selectedCompt.reflec.length" class="row g-3">
         <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in selectedCompt.reflec" :key="i">
-          <div class="card compt-card p-3 h-70 reflection-card">
+          <div class="card compt-card p-3 h-70 reflection-card" @click="openReflec(reflec, i)">
             <p class="compt-label mb-2">{{ reflec.title }}</p>
 
             <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="reflecs rounded-pill px-3 py-1">{{ reflec.year===0 ? 'PRIOR':'YEAR ' + reflec.year }}</span>
+              <span class="reflecs rounded-pill px-3 py-1">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
               <span class="txt-lvl">{{ reflec.level }}</span>
             </div>
 
@@ -79,26 +79,23 @@
       </div>
     </div>
   </div>
+
+  <ViewReflection :show="viewReflec.show" :reflec="viewReflec.reflec" :compt="viewReflec.compt" :index="viewReflec.index"
+  @close="closeReflec"/>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import ViewReflection from '@/components/ViewReflection.vue'
 
-const selectedCompt = ref(null)
+const selectedCompt = ref(null);
 
-function openDetail(compt, categoryLabel) {
-  selectedCompt.value = {
-    id: compt.id,
-    category: categoryLabel,
-    reflec: compt.reflec ? compt.reflec : [],
-    description: compt.desc,
-    indicators: compt.indicators
-  }
-}
-
-function closeDetail() {
-  selectedCompt.value = null
-}
+const viewReflec = ref({
+  show: false,
+  reflec: null,
+  compt: null,
+  index: null
+});
 
 // dummy data, need to connect this with backend to fetch details
 const category = ref([
@@ -228,6 +225,20 @@ const category = ref([
   }
 ]); // end of dummy data
 
+function openDetail(compt, cat) {
+  selectedCompt.value = {
+    id: compt.id,
+    category: cat,
+    reflec: compt.reflec ? compt.reflec : [],
+    description: compt.desc,
+    indicators: compt.indicators
+  }
+}
+
+function closeDetail() {
+  selectedCompt.value = null
+}
+
 function getLvl(compt) {
   if (!compt.reflec || compt.reflec.length === 0) {
     return 'Not Started';
@@ -247,6 +258,19 @@ function getLvl(compt) {
 
   const highestReflec = reflecCopy[0];
   return highestReflec.level;
+}
+
+function openReflec(reflec, index) {
+  viewReflec.value = {
+    show: true,
+    reflec,
+    compt: selectedCompt.value,
+    index
+  }
+}
+
+function closeReflec() {
+  viewReflec.value.show = false
 }
 </script>
 
