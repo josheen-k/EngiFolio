@@ -122,22 +122,24 @@
             <td>{{ goal.goal_description }}</td>
 
             <td class="steps-cell">
-              <ul v-if="getGoalSteps(goal).length" class="steps-list">
-                <li v-for="step in getVisibleSteps(goal)" :key="step.step_id">
-                  {{ step.step_description }}
-                </li>
-              </ul>
-              <p v-else class="no-steps-text">No steps</p>
+              <div class="steps-stack">
+                <ul v-if="getGoalSteps(goal).length" class="steps-list">
+                  <li v-for="step in getVisibleSteps(goal)" :key="step.step_id">
+                    {{ step.step_description }}
+                  </li>
+                </ul>
+                <p v-else class="no-steps-text">No steps</p>
 
-              <button
-                v-if="getHiddenStepsCount(goal) > 0"
-                class="btn btn-link view-more-btn p-0"
-                @click="toggleSteps(goal.goal_id)"
-              >
-                {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
-              </button>
+                <button
+                  v-if="getHiddenStepsCount(goal) > 0"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="toggleSteps(goal.goal_id)"
+                >
+                  {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
+                </button>
 
-              <button class="btn page-btn-success steps-edit-btn" @click="editSteps(goal)">Edit Steps</button>
+                <button class="btn page-btn-success steps-edit-btn" @click="editSteps(goal)">Edit Steps</button>
+              </div>
             </td>
 
             <td class="progress-cell">
@@ -819,6 +821,10 @@ const deleteGoal = async (goal) => {
 }
 
 .steps-cell {
+  vertical-align: top !important;
+}
+
+.steps-stack {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
