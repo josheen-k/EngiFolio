@@ -267,6 +267,7 @@
       </div>
     </div>
     </main>
+    <Footer />
   </div>
 </template>
 
@@ -274,6 +275,8 @@
 import { ref, onMounted, reactive, computed } from 'vue'
 import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
+
 
 const goals = ref([])
 const loading = ref(true)
