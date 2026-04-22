@@ -17,7 +17,7 @@
       </ul>
 
       <div class="d-flex justify-content-between detail-stats">
-        <p class="fs-5">Total reflection entries you added: <em>{{ selectedCompt.reflec.length }}</em></p>
+        <p class="fs-5">Total reflection entries you added: <em>{{ publishedOnly(selectedCompt).length }}</em></p>
         <p class="fs-5">Highest attainment level you reflected: <em>{{ getLvl(selectedCompt) }}</em></p>
       </div>
 
@@ -29,10 +29,10 @@
         </div>
       </div>
 
-      <div v-if="selectedCompt.reflec.length" class="row g-3">
-        <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in selectedCompt.reflec" :key="i">
-          <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, i)">
-
+      <!-- only show published reflections in the list-->
+      <div v-if="publishedOnly(selectedCompt).length" class="row g-3">
+        <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in publishedOnly(selectedCompt)" :key="i">
+          <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, selectedCompt.reflec.indexOf(reflec))">
             <p class="compt-label mb-2">{{ reflec.title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="reflecs rounded-pill">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
@@ -62,8 +62,9 @@
               <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
               <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
 
-                <span class="rounded-pill px-3 py-1" :class="compt.reflec.length ? 'reflecs-blue' : 'reflecs-red'">
-                {{ compt.reflec.length }} reflection{{ compt.reflec.length !== 1 ? 's' : '' }}
+                <!--counts published reflections only-->
+                <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
+                  {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
                 </span>
                 <img class="plus-btn" src="@/assets/plus-btn.png" @click.stop="openAdd(compt.id)"/>
               </div>
@@ -86,10 +87,14 @@
 import { onMounted, ref } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
-import { currentCategories, getLvl } from '@/useCompetencies.js'
+import { currentCategories, getLvl, publishedReflec } from '@/useCompetencies.js'
 
 const selectedCompt = ref(null);
 const categories = currentCategories // use shared data
+
+function publishedOnly(compt) {
+  return publishedReflec(compt)
+}
 
 function openDetail(compt, catLabel) {
   selectedCompt.value = {
@@ -97,7 +102,7 @@ function openDetail(compt, catLabel) {
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
-    indicators: compt.indicators,
+    indicators: compt.indicators
   }
 }
 
@@ -154,7 +159,9 @@ function openAdd(comptId = '') {
 
 function onAddReflec({ comptId, reflec }) {
   for (const cat of categories.value) {
-    const found = cat.compt.find(c => c.id===comptId)
+    const found = cat.compt.find(function (c) {
+      return c.id === comptId
+    })
     if (found) {
       found.reflec.push(reflec)
       break
@@ -265,7 +272,7 @@ function onAddReflec({ comptId, reflec }) {
 .reflecs-red {
   background: #ffe3e3;
   color: #b03030;
-    padding: 0.1rem 0.8rem;
+  padding: 0.1rem 0.8rem;
 }
 
 .reflecs {
