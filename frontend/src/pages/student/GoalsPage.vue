@@ -1,7 +1,7 @@
 <template>
   <div class="goals-page">
     <Navbar />
-    <main class="container-xl py-4 px-4 px-md-5">
+    <main class="container-xl py-4 px-4 px-md-5 goals-main">
       <section class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
           <h1 class="page-title mb-2">SMART Goals</h1>
@@ -18,12 +18,10 @@
           <textarea v-model="newGoalData.goal_description" required></textarea>
         </label>
         <label>
-          Timeline:
-          <input type="text" v-model="newGoalData.timeline" />
-        </label>
-        <label>
-          Progress Notes:
-          <textarea v-model="newGoalData.progress_notes"></textarea>
+          Progress Status:
+          <select v-model="newGoalData.status">
+            <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
+          </select>
         </label>
         <label>
           Learnings:
@@ -41,7 +39,7 @@
           Completion Notes:
           <textarea v-model="newGoalData.completion_notes"></textarea>
         </label>
-        <div class="d-flex gap-2 pt-1">
+        <div class="d-flex gap-2 pt-1 form-actions">
           <button type="submit" class="btn page-btn-primary">Create Goal</button>
           <button type="button" class="btn page-btn-outline" @click="cancelNewGoal">Cancel</button>
         </div>
@@ -56,12 +54,10 @@
           <textarea v-model="editGoalData.goal_description" required></textarea>
         </label>
         <label>
-          Timeline:
-          <input type="text" v-model="editGoalData.timeline" />
-        </label>
-        <label>
-          Progress Notes:
-          <textarea v-model="editGoalData.progress_notes"></textarea>
+          Progress Status:
+          <select v-model="editGoalData.status">
+            <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
+          </select>
         </label>
         <label>
           Learnings:
@@ -79,7 +75,7 @@
           Completion Notes:
           <textarea v-model="editGoalData.completion_notes"></textarea>
         </label>
-        <div class="d-flex gap-2 pt-1">
+        <div class="d-flex gap-2 pt-1 form-actions">
           <button type="submit" class="btn page-btn-primary">Update Goal</button>
           <button type="button" class="btn page-btn-outline" @click="cancelEditGoal">Cancel</button>
         </div>
@@ -89,68 +85,152 @@
     <div class="filter-section mb-4">
       <h2 class="filter-title mb-0">Date Range</h2>
 
-      <label>
-        From:
+      <label class="filter-field">
+        <span class="filter-label">From</span>
         <input type="date" v-model="fromDate" />
       </label>
 
-      <label>
-        To:
+      <label class="filter-field">
+        <span class="filter-label">To</span>
         <input type="date" v-model="toDate" />
       </label>
 
-      <button class="btn page-btn-outline" @click="loadGoals">Filter</button>
+      <button class="btn page-btn-outline filter-action-btn" @click="loadGoals">Filter</button>
     </div>
 
     <div v-if="loading" class="status-msg">Loading goals...</div>
     <div v-else-if="goals.length === 0" class="status-msg">No goals found.</div>
 
-    <table v-else class="table goals-table">
-      <thead>
-        <tr>
-          <th>SMART Goal</th>
-          <th>Action Steps</th>
-          <th>Timeline</th>
-          <th>Progress</th>
-          <th>Learnings</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Completed</th>
-          <th>Completion Notes</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <div v-else>
+      <div class="table-scroll desktop-goals-table">
+        <table class="goals-table">
+        <thead>
+          <tr>
+            <th>SMART Goal</th>
+            <th>Action Steps</th>
+            <th>Progress</th>
+            <th>Learnings</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Completion Notes</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
 
-      <tbody>
-        <tr v-for="goal in goals" :key="goal.goal_id">
-          <td>{{ goal.goal_description }}</td>
+          <tbody>
+          <tr v-for="goal in goals" :key="goal.goal_id">
+            <td>{{ goal.goal_description }}</td>
 
-          <td>
-            <ul v-if="getGoalSteps(goal).length">
-              <li v-for="step in getGoalSteps(goal)" :key="step.step_id">
-                {{ step.step_description }}
-              </li>
+            <td class="steps-cell">
+              <ul v-if="getGoalSteps(goal).length" class="steps-list">
+                <li v-for="step in getVisibleSteps(goal)" :key="step.step_id">
+                  {{ step.step_description }}
+                </li>
+              </ul>
+              <p v-else class="no-steps-text">No steps</p>
+
+              <button
+                v-if="getHiddenStepsCount(goal) > 0"
+                class="btn btn-link view-more-btn p-0"
+                @click="toggleSteps(goal.goal_id)"
+              >
+                {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
+              </button>
+
+              <button class="btn page-btn-success steps-edit-btn" @click="editSteps(goal)">Edit Steps</button>
+            </td>
+
+            <td class="progress-cell">
+              <select
+                class="status-select"
+                v-model="goal.status"
+                @focus="goal._previousStatus = goal.status"
+                @change="updateGoalStatus(goal)"
+              >
+                <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
+              </select>
+            </td>
+            <td>{{ goal.learnings }}</td>
+            <td>{{ goal.start_date }}</td>
+            <td>{{ goal.end_date }}</td>
+            <td class="completion-notes-cell">{{ goal.completion_notes || '-' }}</td>
+
+            <td class="actions-cell">
+              <div class="actions-stack">
+                <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
+                <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mobile-goals-list">
+        <article v-for="goal in goals" :key="`mobile-${goal.goal_id}`" class="mobile-goal-card">
+          <div class="mobile-goal-head">
+            <h3 class="mobile-goal-title">{{ goal.goal_description }}</h3>
+            <span class="mobile-status-badge" :class="getStatusClass(goal.status)">
+              {{ getStatusLabel(goal.status) }}
+            </span>
+          </div>
+
+          <div class="mobile-section">
+            <p class="mobile-label">Progress</p>
+            <select
+              class="status-select mobile-status-select"
+              v-model="goal.status"
+              @focus="goal._previousStatus = goal.status"
+              @change="updateGoalStatus(goal)"
+            >
+              <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
+            </select>
+          </div>
+
+          <div class="mobile-section">
+            <p class="mobile-label">Action Steps</p>
+            <ul v-if="getGoalSteps(goal).length" class="steps-list mobile-steps-list">
+              <li v-for="step in getVisibleSteps(goal)" :key="`mobile-step-${step.step_id}`">{{ step.step_description }}</li>
             </ul>
-            <span v-else>No steps</span>
+            <p v-else class="no-steps-text">No steps</p>
+            <button
+              v-if="getHiddenStepsCount(goal) > 0"
+              class="btn btn-link view-more-btn p-0"
+              @click="toggleSteps(goal.goal_id)"
+            >
+              {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
+            </button>
+            <button class="btn page-btn-success steps-edit-btn w-100 mt-2" @click="editSteps(goal)">Edit Steps</button>
+          </div>
 
-            <button class="btn page-btn-success mt-2" @click="editSteps(goal)">Edit Steps</button>
-          </td>
+          <div class="mobile-grid">
+            <div>
+              <p class="mobile-label">Start Date</p>
+              <p class="mobile-value">{{ goal.start_date || '-' }}</p>
+            </div>
+            <div>
+              <p class="mobile-label">End Date</p>
+              <p class="mobile-value">{{ goal.end_date || '-' }}</p>
+            </div>
+          </div>
 
-          <td>{{ goal.timeline }}</td>
-          <td>{{ goal.progress_notes }}</td>
-          <td>{{ goal.learnings }}</td>
-          <td>{{ goal.start_date }}</td>
-          <td>{{ goal.end_date }}</td>
-          <td>{{ goal.completion_date }}</td>
-          <td>{{ goal.completion_notes }}</td>
+          <div class="mobile-section">
+            <p class="mobile-label">Learnings</p>
+            <p class="mobile-value">{{ goal.learnings || '-' }}</p>
+          </div>
 
-          <td class="actions-cell">
-            <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
-            <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          <div class="mobile-section">
+            <p class="mobile-label">Completion Notes</p>
+            <p class="mobile-value">{{ goal.completion_notes || '-' }}</p>
+          </div>
+
+          <div class="mobile-actions">
+            <button class="btn page-btn-outline w-100" @click="editGoal(goal)">Edit</button>
+            <button class="btn page-btn-danger w-100" @click="deleteGoal(goal)">Delete</button>
+          </div>
+        </article>
+      </div>
+    </div>
 
     <div v-if="showStepModal" class="modal-backdrop" @click.self="closeStepModal">
       <div class="step-modal-card">
@@ -207,32 +287,63 @@ const planId = ref(null)
 const stepModalGoal = ref(null)
 const savingSteps = ref(false)
 const stepDrafts = ref([])
+const expandedStepsByGoal = ref({})
+const progressStatusOptions = [
+  { value: 'planned', label: 'Planned' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'on_hold', label: 'On Hold' }
+]
 const newGoalData = reactive({
   plan_id: null,
   goal_description: '',
-  timeline: '',
   progress_notes: '',
   learnings: '',
   start_date: '',
   end_date: '',
-  completion_date: '',
   completion_notes: '',
   status: 'planned'
 })
 const editGoalData = reactive({
   plan_id: null,
   goal_description: '',
-  timeline: '',
   progress_notes: '',
   learnings: '',
   start_date: '',
   end_date: '',
-  completion_date: '',
   completion_notes: '',
   status: 'planned'
 })
 
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
+const getStatusLabel = (statusValue) => {
+  const matched = progressStatusOptions.find((item) => item.value === statusValue)
+  return matched ? matched.label : statusValue
+}
+const getStatusClass = (statusValue) => {
+  if (statusValue === 'completed') return 'status-completed'
+  if (statusValue === 'in_progress') return 'status-in-progress'
+  if (statusValue === 'on_hold') return 'status-on-hold'
+  return 'status-planned'
+}
+const isStepsExpanded = (goalId) => Boolean(expandedStepsByGoal.value[goalId])
+const getVisibleSteps = (goal) => {
+  const steps = getGoalSteps(goal)
+  if (isStepsExpanded(goal.goal_id)) {
+    return steps
+  }
+  return steps.slice(0, 3)
+}
+const getHiddenStepsCount = (goal) => {
+  const hidden = getGoalSteps(goal).length - 3
+  return hidden > 0 ? hidden : 0
+}
+const toggleSteps = (goalId) => {
+  expandedStepsByGoal.value = {
+    ...expandedStepsByGoal.value,
+    [goalId]: !isStepsExpanded(goalId)
+  }
+}
 
 const loadGoals = async () => {
   try {
@@ -247,7 +358,6 @@ const loadGoals = async () => {
     if (toDate.value) {
       params.to = toDate.value
     }
-    // For testing, I cannot use port 8000 for some reason, so I am using 9000 instead. Please change it back to 8000 when you test it.
     const response = await axios.get('http://127.0.0.1:8000/api/smart-goals', {
       params
     })
@@ -299,12 +409,10 @@ const createGoal = async () => {
     Object.assign(newGoalData, {
       plan_id: planId.value,
       goal_description: '',
-      timeline: '',
       progress_notes: '',
       learnings: '',
       start_date: '',
       end_date: '',
-      completion_date: '',
       completion_notes: '',
       status: 'planned'
     })
@@ -322,12 +430,10 @@ const createGoal = async () => {
 const normalizeGoalPayload = (goal) => {
   return {
     ...goal,
-    timeline: goal.timeline || null,
     progress_notes: goal.progress_notes || null,
     learnings: goal.learnings || null,
     start_date: goal.start_date || null,
     end_date: goal.end_date || null,
-    completion_date: goal.completion_date || null,
     completion_notes: goal.completion_notes || null,
   }
 }
@@ -338,12 +444,10 @@ const cancelNewGoal = () => {
   Object.assign(newGoalData, {
     plan_id: planId.value,
     goal_description: '',
-    timeline: '',
     progress_notes: '',
     learnings: '',
     start_date: '',
     end_date: '',
-    completion_date: '',
     completion_notes: '',
     status: 'planned'
   })
@@ -356,12 +460,10 @@ const cancelEditGoal = () => {
   Object.assign(editGoalData, {
     plan_id: null,
     goal_description: '',
-    timeline: '',
     progress_notes: '',
     learnings: '',
     start_date: '',
     end_date: '',
-    completion_date: '',
     completion_notes: '',
     status: 'planned'
   })
@@ -443,17 +545,31 @@ const saveSteps = async () => {
   }
 }
 
+const updateGoalStatus = async (goal) => {
+  const previousStatus = goal._previousStatus ?? 'planned'
+  try {
+    await axios.put(`http://127.0.0.1:8000/api/smart-goals/${goal.goal_id}`, {
+      status: goal.status
+    })
+  } catch (error) {
+    goal.status = previousStatus
+    console.error('Error updating goal status:', error)
+    const errorMessage = error.response?.data?.message ||
+      Object.values(error.response?.data?.errors || {}).flat()[0] ||
+      'Failed to update goal status'
+    alert(`Failed to update goal status: ${errorMessage}`)
+  }
+}
+
 const editGoal = (goal) => {
   editingGoal.value = goal
   Object.assign(editGoalData, {
     plan_id: goal.plan_id,
     goal_description: goal.goal_description || '',
-    timeline: goal.timeline || '',
     progress_notes: goal.progress_notes || '',
     learnings: goal.learnings || '',
     start_date: goal.start_date || '',
     end_date: goal.end_date || '',
-    completion_date: goal.completion_date || '',
     completion_notes: goal.completion_notes || '',
     status: goal.status || 'planned'
   })
@@ -498,6 +614,16 @@ const deleteGoal = async (goal) => {
   background: #ffffff;
   font-family: 'Maven Pro', sans-serif;
   color: #2b2b2b;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.goals-main {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .page-title {
@@ -562,20 +688,38 @@ const deleteGoal = async (goal) => {
 }
 
 .filter-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 14.5rem) minmax(12rem, 14.5rem) auto;
+  align-items: end;
+  gap: 0.85rem 1rem;
   flex-wrap: wrap;
-  padding: 1.25rem;
+  padding: 1.1rem 1.25rem;
   border: 1px solid #e5e5e5;
   border-radius: 1.2rem;
-  background: #fafafa;
+  background: #fbfbfb;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.82rem;
+  color: #707070;
+  line-height: 1;
 }
 
 .filter-title {
   font-family: 'Martel', serif;
-  font-size: 1.35rem;
+  font-size: 1.95rem;
   color: #2b2b2b;
+  line-height: 1;
+  margin-right: 0.5rem;
+  align-self: center;
 }
 
 .status-msg {
@@ -587,30 +731,155 @@ const deleteGoal = async (goal) => {
 
 .goals-table {
   width: 100%;
-  border: 1px solid #dedede;
+  min-width: 1220px;
+  table-layout: auto;
+  border: 1px solid #dddddd;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
 }
 
 .goals-table th,
 .goals-table td {
   border-color: #e0e0e0;
-  padding: 0.85rem;
+  padding: 0.9rem 0.8rem;
   vertical-align: top;
   text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .goals-table th {
-  font-family: 'Martian Mono', monospace;
-  font-size: 0.9rem;
-  font-weight: 400;
-  background-color: #f1f1f1;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background-color: #f3f3f3;
   color: #333333;
+  letter-spacing: 0.02em;
+}
+
+.goals-table tbody tr:nth-child(even) {
+  background: #fcfcfc;
+}
+
+.goals-table tbody tr:hover {
+  background: #f8f8f8;
+}
+
+.goals-table tbody td {
+  border-bottom: 1px solid #e6e6e6;
+  background: transparent;
+}
+
+.goals-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.goals-table th:nth-child(1),
+.goals-table td:nth-child(1) {
+  min-width: 15rem;
+}
+
+.goals-table th:nth-child(2),
+.goals-table td:nth-child(2) {
+  min-width: 16rem;
+}
+
+.goals-table th:nth-child(3),
+.goals-table td:nth-child(3),
+.goals-table th:nth-child(4),
+.goals-table td:nth-child(4),
+.goals-table th:nth-child(7),
+.goals-table td:nth-child(7) {
+  min-width: 10rem;
+}
+
+.goals-table th:nth-child(5),
+.goals-table td:nth-child(5),
+.goals-table th:nth-child(6),
+.goals-table td:nth-child(6) {
+  min-width: 8.5rem;
+  white-space: nowrap;
+}
+
+.goals-table th:last-child,
+.goals-table td:last-child {
+  min-width: 9rem;
+}
+
+.steps-list {
+  margin: 0 0 0.4rem 0;
+  padding-left: 1.1rem;
+  max-height: 6.8rem;
+  overflow-y: auto;
+}
+
+.steps-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.steps-edit-btn {
+  margin-top: 0.15rem;
+}
+
+.view-more-btn {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.92rem;
+  color: #3f7ccf;
+  text-decoration: none;
+}
+
+.view-more-btn:hover {
+  color: #245ea8;
+  text-decoration: underline;
+}
+
+.no-steps-text {
+  margin: 0;
+}
+
+.status-select {
+  width: min(100%, 13rem);
+  min-width: 9rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  display: block;
+  margin: 0 auto;
+}
+
+.progress-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.completion-notes-cell {
+  min-width: 10rem;
+  vertical-align: middle !important;
 }
 
 .actions-cell {
+  vertical-align: middle !important;
+}
+
+.actions-stack {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 7.5rem;
+  gap: 0.55rem;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.actions-stack .btn {
+  width: 100%;
+  max-width: 11rem;
+  align-self: center;
 }
 
 .goal-form-card {
@@ -641,11 +910,20 @@ const deleteGoal = async (goal) => {
 
 .goal-form-card input,
 .goal-form-card textarea,
+.goal-form-card select,
 .filter-section input {
-  padding: 0.55rem 0.75rem;
+  padding: 0.58rem 0.75rem;
   border: 1px solid #d1d1d1;
   border-radius: 0.55rem;
   background: #ffffff;
+  min-height: 2.65rem;
+}
+
+.filter-action-btn {
+  min-height: 2.65rem;
+  padding-left: 1.1rem;
+  padding-right: 1.1rem;
+  align-self: end;
 }
 
 .goal-form-card textarea {
@@ -709,5 +987,230 @@ const deleteGoal = async (goal) => {
   border-radius: 0.75rem;
   resize: vertical;
   background: #ffffff;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.9rem;
+  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.06);
+}
+
+.desktop-goals-table {
+  display: block;
+}
+
+.mobile-goals-list {
+  display: none;
+}
+
+.mobile-goal-card {
+  border: 1px solid #e3e3e3;
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 0.95rem;
+  margin-bottom: 0.85rem;
+}
+
+.mobile-goal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.mobile-goal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.35;
+  font-family: 'Martel', serif;
+}
+
+.mobile-status-badge {
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  border: 1px solid #d7d7d7;
+}
+
+.status-planned {
+  background: #f5f5f5;
+  color: #555555;
+}
+
+.status-in-progress {
+  background: #e8f3ff;
+  color: #1f5ea8;
+}
+
+.status-completed {
+  background: #e8f7ed;
+  color: #256942;
+}
+
+.status-on-hold {
+  background: #fff3e2;
+  color: #8d5b1e;
+}
+
+.mobile-section {
+  margin-bottom: 0.75rem;
+}
+
+.mobile-label {
+  margin: 0 0 0.22rem 0;
+  font-size: 0.77rem;
+  color: #747474;
+  font-family: 'Montserrat Alternates', sans-serif;
+}
+
+.mobile-value {
+  margin: 0;
+  color: #2b2b2b;
+}
+
+.mobile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.mobile-steps-list {
+  max-height: 5.5rem;
+}
+
+.mobile-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+}
+
+@media (max-width: 992px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+  }
+
+  .filter-section {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+  }
+
+  .filter-title {
+    grid-column: 1 / -1;
+    margin-right: 0;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .filter-action-btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 768px) {
+  .goals-main {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+
+  .page-title {
+    font-size: 1.65rem;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .form-title {
+    font-size: 1.15rem;
+  }
+
+  .filter-title {
+    width: 100%;
+    font-size: 1.45rem;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .filter-section {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.95rem;
+  }
+
+  .filter-section .filter-field,
+  .filter-section .btn {
+    width: 100%;
+  }
+
+  .filter-action-btn {
+    grid-column: auto;
+    justify-self: stretch;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  .btn {
+    font-size: 0.88rem;
+    padding-top: 0.42rem;
+    padding-bottom: 0.42rem;
+  }
+
+  .actions-cell {
+    min-width: 6.5rem;
+  }
+
+  .actions-cell .btn {
+    width: 100%;
+  }
+
+  .modal-backdrop {
+    padding: 0.75rem;
+  }
+
+  .step-modal-card {
+    width: 100%;
+    max-height: 92vh;
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .step-row {
+    flex-direction: column;
+  }
+
+  .step-row .btn {
+    width: 100%;
+  }
+
+  .table-scroll {
+    border-radius: 0.75rem;
+    box-shadow: none;
+  }
+
+  .desktop-goals-table {
+    display: none;
+  }
+
+  .mobile-goals-list {
+    display: block;
+  }
+
+  .mobile-status-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
 }
 </style>
