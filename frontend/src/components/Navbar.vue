@@ -99,6 +99,7 @@ onClickOutside(dropdown, () => {
 	overflow-y: visible;
 	position: relative;
 	z-index: 1300;
+	overflow: visible
 }
 
 .nav-left {

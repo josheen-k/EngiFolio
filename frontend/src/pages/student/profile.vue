@@ -81,7 +81,7 @@
                 </table>
             </section>
 
-            <div class="d-flex gap-3 justify-content-center mt-4">
+            <div class="d-flex gap-3 justify-content-center mt-4 mb-5">
                 <router-link :to="{name: 'profile-settings', params:{ id: route.params.id }}" class="btn btn-ql rounded-pill px-5">Edit Profile</router-link>
                 <router-link class="btn btn-filter px-4" :to="`/student/dashboard/${$route.params.id}`">Back to Dashboard</router-link>
             </div>
