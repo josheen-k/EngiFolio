@@ -9,20 +9,22 @@
 
     const profileSelected = ref(false);
     const competenciesSelected = ref(false);
-    const networkingSelected = ref(false);
-    const careerPlanSelected = ref(false);
+    const networkingContactsSelected = ref(false);
+    const goalsSelected = ref(false);
     const allDataSelected = ref(false);
 
     // Data values
     const profile = ref(null);
     const userCompetencies = ref(null);
+    const contacts = ref(null);
+    const goals = ref(null);
 
     // Keeps track of whether values are selected or not
     watch(allDataSelected, (newValue) => {
         profileSelected.value = newValue;
         competenciesSelected.value = newValue;
-        networkingSelected.value = newValue;
-        careerPlanSelected.value = newValue;
+        networkingContactsSelected.value = newValue;
+        goalsSelected.value = newValue;
     });
 
     // Fetches the profile and adds the contents to the file
@@ -54,7 +56,6 @@
       }
     };
 
-
     // Fetches the competencies and adds the contents to the file
     const addCompetencies = async () => { 
       try {
@@ -64,33 +65,146 @@
         console.error("Error while fetching user competencies:", error);
       } finally {
         const formattedComp = ['"----- Competencies -----"']
+        
+        const compHeader = [
+          `"Competency Code"`,
+          `"EA Competency"`,
+          `"Competency Description"`,
+          `"Competency Link"`,
+          `"Experience Title"`,
+          `"Associated Year"`,
+          `"Experience Tasks"`,
+          `"Key Learnings"`,
+          `"Future Applications"`,
+          `"Level"`,
+          `"Status"`,
+          `"Start Date"`,
+          `"End Date"`
+        ].join(",");
+
+        formattedComp.push(compHeader);
 
         if (userCompetencies.value.length > 0) {
           userCompetencies.value.forEach(comp => {
-            const row = `"${comp.indicator_id}","${comp.experience_title}","${comp.level}","${comp.status}","${comp.associated_year}"`;
+            const row = [
+              `"${comp.indicator.display_id}"`,
+              `"${comp.indicator.indicator_name}"`,
+              `"${comp.indicator.description}"`,
+              `"${comp.indicator.indicator_link || ''}"`,
+              `"${comp.experience_title}"`,
+              `"${comp.associated_year}"`,
+              `"${comp.experience_tasks}"`,
+              `"${comp.key_learnings || ''}"`,
+              `"${comp.future_applications || ''}"`,
+              `"${comp.level}"`,
+              `"${comp.status}"`,
+              `"${comp.start_date}"`,
+              `"${comp.end_date || ''}"`
+            ].join(",");
             formattedComp.push(row);
           });
 
         }
+
+        formattedComp.push('\n\n');
         return formattedComp.join('\n');
       }
     };
 
-    // Fetches the networking information and adds the contents to the file
-    const addNetworking = async () => { 
-      const formattedNet = ['----- Networking -----\n\n']  
-      return formattedNet.join('\n');
+    // Fetches the networking contacts and adds the contents to the file
+    const addNetworkingContacts = async () => { 
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/users/${route.params.id}/industry-contacts`);
+        contacts.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching user contacts:", error);
+      } finally {
+        const formattedNet = ['----- Networking Contacts -----']
+        
+        const netHeader = [
+          `"Name"`,
+          `"Company"`,
+          `"Progress Notes"`,
+          `"Date Met"`,
+        ].join(",");
+
+        formattedNet.push(netHeader);
+
+        if (contacts.value.length > 0) {
+          contacts.value.forEach(contact => {
+            const row = [
+              `"${contact.contact_name}"`,
+              `"${contact.company || ''}"`,
+              `"${contact.progress_notes || ''}"`,
+              `"${contact.date_met || ''}"`,
+            ].join(",");
+            formattedNet.push(row);
+          });
+
+        }
+
+        formattedNet.push('\n\n');
+        return formattedNet.join('\n');
+      }    
     };
 
-    // Fetches the career plans and adds the contents to the file
-    const addCareerPlan = async () => { 
-      const formattedNet = ['----- Career Plan -----\n\n']  
-      return formattedNet.join('\n');
+    // Fetches the goals and adds the contents to the file
+    const addGoals = async () => { 
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/smart-goals/${route.params.id}`);
+        goals.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching user goals:", error);
+      } finally {
+        const formattedGoals = ['----- SMART Goals -----']
+        
+        const goalsHeader = [
+          `"Goal Description"`,
+          `"Timeline"`,
+          `"Progress Notes"`,
+          `"Learnings"`,
+          `"Start Date"`,
+          `"End Date"`,
+          `"Completion Date"`,
+          `"Completion Notes"`,
+          `"Steps"`,
+        ].join(",");
+
+        formattedGoals.push(goalsHeader);
+
+        if (goals.value && goals.value.length > 0) {
+          goals.value.forEach(goal => {
+            const row = [
+              `"${goal.goal_description}"`,
+              `"${goal.timeline || ''}"`,
+              `"${goal.progress_notes || ''}"`,
+              `"${goal.learnings || ''}"`,
+              `"${goal.start_date || ''}"`,
+              `"${goal.end_date || ''}"`,
+              `"${goal.completion_date || ''}"`,
+              `"${goal.completion_notes || ''}"`,
+              `"${goal.status || ''}"`,
+            ].join(",");
+
+            formattedGoals.push(row);
+
+            if (goal.action_steps && goal.action_steps.length > 0) {
+              goal.action_steps.forEach(step => {
+              formattedGoals.push(`"","","","","","","","","${step.step_order}. ${step.step_description}"`);
+          });
+        }
+          });
+
+        }
+
+        formattedGoals.push('\n\n');
+        return formattedGoals.join('\n');
+      }    
     };
 
 
     const exportData = async () => {
-        if (!profileSelected.value && !competenciesSelected.value && !networkingSelected.value && !careerPlanSelected.value) {
+        if (!profileSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
             alert("You must select at least one category to export");
             return;
         }
@@ -105,14 +219,14 @@
           const competencyData = await addCompetencies();
           exportCSV.push(competencyData);
         }
-        if (networkingSelected.value) {
-          const networkingData = await addNetworking();
+        if (networkingContactsSelected.value) {
+          const networkingData = await addNetworkingContacts();
           exportCSV.push(networkingData);
         }
         
-        if (careerPlanSelected.value) {
-          const careerPlanData = await addCareerPlan();
-          exportCSV.push(careerPlanData);
+        if (goalsSelected.value) {
+          const goalsData = await addGoals();
+          exportCSV.push(goalsData);
         }
 
         const exportContent = exportCSV.map(title => `${title}`).join("\n");
@@ -124,7 +238,7 @@
         const url = URL.createObjectURL(blob);
         
         link.setAttribute("href", url);
-        link.setAttribute("download", "portfolio_export.csv");
+        link.setAttribute("download", "engifolio_export.csv");
         link.style.visibility = 'hidden';
         
         // Create download link, click it then remove download link
@@ -137,8 +251,8 @@
         // Reset values after
         profileSelected.value = false;
         competenciesSelected.value = false;
-        networkingSelected.value = false;
-        careerPlanSelected.value = false;
+        networkingContactsSelected.value = false;
+        goalsSelected.value = false;
         allDataSelected.value = false;
     };
 
@@ -146,8 +260,8 @@
   onMounted(() => {
       profileSelected.value = false;
       competenciesSelected.value = false;
-      networkingSelected.value = false;
-      careerPlanSelected.value = false;
+      networkingContactsSelected.value = false;
+      goalsSelected.value = false;
       allDataSelected.value = false;
   });
 </script>
@@ -177,13 +291,13 @@
             </div>
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="networkingSelected" id="checkNet">
-              <label class="form-check-label" for="checkNet">Networking</label>
+              <input class="form-check-input" type="checkbox" v-model="networkingContactsSelected" id="checkNet">
+              <label class="form-check-label" for="checkNet">Networking Contacts</label>
             </div>
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="careerPlanSelected" id="checkCareerPlan">
-              <label class="form-check-label" for="checkCareerPlan">Career Plan</label>
+              <input class="form-check-input" type="checkbox" v-model="goalsSelected" id="checkGoals">
+              <label class="form-check-label" for="checkGoals">Smart Goals</label>
             </div>
 
             <hr class="my-2" />
