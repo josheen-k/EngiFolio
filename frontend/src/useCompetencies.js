@@ -288,15 +288,22 @@ export const discontinuedCategories = ref([
   }
 ])
 
+// return only saved/posted reflections 
+export function publishedReflec(compt) {
+  return compt.reflec.filter(function (r) {
+    return r.isDraft!== true
+  })
+}
 
 // get highest lvl from reflections
 export function getLvl(compt) {
-  if (!compt.reflec || compt.reflec.length===0) {
+  const published = publishedReflec(compt)
+  if (published.length === 0) {
     return 'Not Started'
   }
   const order = ['Not Started', 'Emerging', 'Developing', 'Proficient', 'Confident']
 
-  const sorted = [...compt.reflec].sort(function (a, b) {
+  const sorted = [...published].sort(function (a, b) {
     return order.indexOf(b.level) - order.indexOf(a.level)
   })
   return sorted[0].level

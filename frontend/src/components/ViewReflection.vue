@@ -239,14 +239,14 @@ const allCompts = computed(()=> getAllCompts())
 
 // edit form
 const ef = ref({
-  title: '', 
-  comptId: '', 
-  year: '', 
+  title: '',
+  comptId: '',
+  year: '',
   level: '',
-  startDate: '', 
-  endDate: '', 
-  tasks: '', 
-  learnings: '', 
+  startDate: '',
+  endDate: '',
+  tasks: '',
+  learnings: '',
   future: '',
   evidenceEntries: []
 })
@@ -330,7 +330,8 @@ function enterEdit() {
   editing.value = true
 }
 
-function saveEdit(asDraft = false) {
+function saveEdit(asDraft) {
+  const keepAsDraft = asDraft === true
   emit('save', {
     index: props.index,
     updated: {
@@ -344,7 +345,7 @@ function saveEdit(asDraft = false) {
       future: ef.value.future,
       evidenceEntries: ef.value.evidenceEntries,
       date: todayStr(),
-      isDraft: asDraft
+      isDraft: keepAsDraft
     }
   })
   editing.value = false
