@@ -184,16 +184,16 @@
     const series = ref([0, 0, 0, 0, 0]);
 
     // For calculating average level
-    const levelWeights = { "Emerging": 1, "Developing": 2, "Competent": 3, "Proficient": 4 };
-    const weightToLevel = ["Not Started", "Emerging", "Developing", "Competent", "Proficient"];
+    const levelWeights = { "Emerging": 1, "Developing": 2, "Proficient": 3, "Confident": 4 };
+    const weightToLevel = ["Not Started", "Emerging", "Developing", "Proficient", "Confident"];
 
     const chartOptions = {
       labels: [
         'Not Started',
         'Emerging',
         'Developing',
-        'Competent',
-        'Proficient'
+        'Proficient',
+        'Confident'
       ],
       legend: {
         position: 'bottom',
@@ -204,8 +204,8 @@
         '#e2dfd7', // not started
         '#aba298', // emerging
         '#b1bbb3', // developing
-        '#7c848c', // competent
-        '#333639'  // proficient
+        '#7c848c', // proficient
+        '#333639'  // confident
       ]
     }
 
@@ -261,7 +261,7 @@
 
         stats.value = {
           totalReflections: userCompetencies.value.length,
-          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Competent' || c.level === 'Proficient').length}/${competencyIndicators.value.length}`,
+          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Confident').length}/${competencyIndicators.value.length}`,
           goalsDone: `${userGoals.value.filter(c => c.status === 'completed').length}/${userGoals.value.length}`,
           avgLevel: weightToLevel[avgScore]
         }
@@ -271,8 +271,8 @@
           competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
           userCompetencies.value.filter(c => c.level === 'Emerging').length,
           userCompetencies.value.filter(c => c.level === 'Developing').length,
-          userCompetencies.value.filter(c => c.level === 'Competent').length,
-          userCompetencies.value.filter(c => c.level === 'Proficient').length
+          userCompetencies.value.filter(c => c.level === 'Proficient').length,
+          userCompetencies.value.filter(c => c.level === 'Confident').length
         ];
 
       } catch (error) {
