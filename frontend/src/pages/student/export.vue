@@ -7,37 +7,115 @@
 
     const route = useRoute();
 
-    const profile = ref(false);
-    const competencies = ref(false);
-    const networking = ref(false);
-    const goals = ref(false);
-    const stats = ref(false);
-    const allData = ref(false);
+    const profileSelected = ref(false);
+    const competenciesSelected = ref(false);
+    const networkingSelected = ref(false);
+    const careerPlanSelected = ref(false);
+    const allDataSelected = ref(false);
 
-    watch(allData, (newValue) => {
-        profile.value = newValue;
-        competencies.value = newValue;
-        networking.value = newValue;
-        goals.value = newValue;
-        stats.value = newValue;
+    // Data values
+    const profile = ref(null);
+    const userCompetencies = ref(null);
+
+    // Keeps track of whether values are selected or not
+    watch(allDataSelected, (newValue) => {
+        profileSelected.value = newValue;
+        competenciesSelected.value = newValue;
+        networkingSelected.value = newValue;
+        careerPlanSelected.value = newValue;
     });
 
-    const exportData = () => {
-        if (!profile.value && !competencies.value && !networking.value && !goals.value && !stats.value) {
+    // Fetches the profile and adds the contents to the file
+    const addProfile = async () => { 
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/profile/${route.params.id}`);
+        profile.value = response.data.profile || response.data;
+      } catch (error) {
+        console.error("Error while fetching profile:", error);
+      } finally {
+        const formattedProfile = [
+          '"----- Profile -----"',
+          `"Name:","${profile.value.first_name}","${profile.value.last_name}"`,
+          `"Preferred name:","${profile.value.preferred_name || profile.value.first_name}"`,
+          `"Degree:","${profile.value.degree_title}"`,
+          `"Specialisation:","${profile.value.specialisation}"`,
+          `"Personal Intro:","${profile.value.personal_intro}"`
+        ]
+
+        // Add all links for this profile
+        if (profile.value.links && profile.value.links.length > 0) {
+          profile.value.links.forEach(link => {
+            formattedProfile.push(`"${link.link_label}:","${link.link_url}"`);
+          });
+        }
+
+        formattedProfile.push('\n\n');
+        return formattedProfile.join('\n');
+      }
+    };
+
+
+    // Fetches the competencies and adds the contents to the file
+    const addCompetencies = async () => { 
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/competency-entries/${route.params.id}`);
+        userCompetencies.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching user competencies:", error);
+      } finally {
+        const formattedComp = ['"----- Competencies -----"']
+
+        if (userCompetencies.value.length > 0) {
+          userCompetencies.value.forEach(comp => {
+            const row = `"${comp.indicator_id}","${comp.experience_title}","${comp.level}","${comp.status}","${comp.associated_year}"`;
+            formattedComp.push(row);
+          });
+
+        }
+        return formattedComp.join('\n');
+      }
+    };
+
+    // Fetches the networking information and adds the contents to the file
+    const addNetworking = async () => { 
+      const formattedNet = ['----- Networking -----\n\n']  
+      return formattedNet.join('\n');
+    };
+
+    // Fetches the career plans and adds the contents to the file
+    const addCareerPlan = async () => { 
+      const formattedNet = ['----- Career Plan -----\n\n']  
+      return formattedNet.join('\n');
+    };
+
+
+    const exportData = async () => {
+        if (!profileSelected.value && !competenciesSelected.value && !networkingSelected.value && !careerPlanSelected.value) {
             alert("You must select at least one category to export");
             return;
         }
 
         // Add only selected fields
-        const selectedFields = [];
-        if (profile.value) selectedFields.push("Profile");
-        if (competencies.value) selectedFields.push("Competencies");
-        if (networking.value) selectedFields.push("Networking");
-        if (goals.value) selectedFields.push("Goals");
-        if (stats.value) selectedFields.push("Stats");
+        const exportCSV = [];
+        if (profileSelected.value) {
+          const profileData = await addProfile();
+          exportCSV.push(profileData);
+        };
+        if (competenciesSelected.value) {
+          const competencyData = await addCompetencies();
+          exportCSV.push(competencyData);
+        }
+        if (networkingSelected.value) {
+          const networkingData = await addNetworking();
+          exportCSV.push(networkingData);
+        }
+        
+        if (careerPlanSelected.value) {
+          const careerPlanData = await addCareerPlan();
+          exportCSV.push(careerPlanData);
+        }
 
-
-        const exportContent = selectedFields.map(title => `"${title}"`).join("\n");
+        const exportContent = exportCSV.map(title => `${title}`).join("\n");
 
         
         const blob = new Blob(["\ufeff", exportContent], { type: 'text/csv;charset=utf-8;' });
@@ -49,13 +127,29 @@
         link.setAttribute("download", "portfolio_export.csv");
         link.style.visibility = 'hidden';
         
+        // Create download link, click it then remove download link
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        alert("Data has been exported. Your download will begin shortly");
+        alert("Downloading exported data");
+
+        // Reset values after
+        profileSelected.value = false;
+        competenciesSelected.value = false;
+        networkingSelected.value = false;
+        careerPlanSelected.value = false;
+        allDataSelected.value = false;
     };
 
+  // Reset all ticked boxes on reload
+  onMounted(() => {
+      profileSelected.value = false;
+      competenciesSelected.value = false;
+      networkingSelected.value = false;
+      careerPlanSelected.value = false;
+      allDataSelected.value = false;
+  });
 </script>
 
 <template>
@@ -73,34 +167,29 @@
 
           <div class="focus-table d-flex flex-column gap-3">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="profile" id="checkProfile">
+              <input class="form-check-input" type="checkbox" v-model="profileSelected" id="checkProfile">
               <label class="form-check-label" for="checkProfile">Profile</label>
             </div>
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="competencies" id="checkComp">
+              <input class="form-check-input" type="checkbox" v-model="competenciesSelected" id="checkComp">
               <label class="form-check-label" for="checkComp">Competencies</label>
             </div>
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="networking" id="checkNet">
+              <input class="form-check-input" type="checkbox" v-model="networkingSelected" id="checkNet">
               <label class="form-check-label" for="checkNet">Networking</label>
             </div>
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="goals" id="checkGoals">
-              <label class="form-check-label" for="checkGoals">Goals</label>
-            </div>
-
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="stats" id="checkStats">
-              <label class="form-check-label" for="checkStats">Stats</label>
+              <input class="form-check-input" type="checkbox" v-model="careerPlanSelected" id="checkCareerPlan">
+              <label class="form-check-label" for="checkCareerPlan">Career Plan</label>
             </div>
 
             <hr class="my-2" />
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="allData" id="checkAll">
+              <input class="form-check-input" type="checkbox" v-model="allDataSelected" id="checkAll">
               <label class="form-check-label fw-bold" for="checkAll">All data</label>
             </div>
           </div>
@@ -108,7 +197,7 @@
 
         <div class="d-flex gap-3 align-items-center">
           <button class="btn btn-ql rounded-pill px-5" @click="exportData">Export Data</button>
-          <router-link to="/student/dashboard" class="btn btn-link text-muted btn-sm text-decoration-none">Cancel</router-link>
+          <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-link text-muted btn-sm text-decoration-none">Cancel</router-link>
         </div>
       </div>
     </div>

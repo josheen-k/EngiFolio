@@ -12,13 +12,30 @@ class StudentProfileController extends Controller
      */
     public function index()
     {
-        $profile = StudentProfile::with('links')->where('user_id', Auth::id())->first();
+        $profile = StudentProfile::with('links')->get();
 
-        if(!$profile) {
-            return response()->json(['error' => 'Profile was not found'], 404);
-        }
+        // No need for error checking as get never returns null
+        return response()->json($profile);      
+    }
 
-        return response()->json($profile);
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name'       => 'required|string|max:255',
+            'last_name'        => 'required|string|max:255',
+            'preferred_name'   => 'nullable|string|max:255',
+            'degree_title'     => 'nullable|string|max:255',
+            'specialisation'     => 'nullable|string|max:255',
+            'personal_intro'   => 'nullable|string',
+            'profile_image_url' => 'nullable|string|max:2048',
+        ]);
+
+        $profile = StudentProfile::create($validated);
+        
+        return response()->json($profile, 201);
     }
 
     /**
@@ -26,11 +43,8 @@ class StudentProfileController extends Controller
      */
     public function show($id)
     {
-        $studentProfile = StudentProfile::with('links')->find($id);
-
-        if (!$studentProfile) {
-            return response()->json(['message' => 'Profile not found'], 404);
-        }
+        // Fails if no profile is found
+        $studentProfile = StudentProfile::with('links')->findOrFail($id);
 
         return response()->json($studentProfile);
     }
@@ -42,6 +56,7 @@ class StudentProfileController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Fails if no profile is found
         $profile = \App\Models\StudentProfile::findOrFail($id);
 
         $validated = $request->validate([
@@ -54,16 +69,21 @@ class StudentProfileController extends Controller
             'profile_image_url' => 'nullable|string|max:2048',
         ]);
 
+        // Update profile with validated data
         $profile->update($validated);
 
-        return response()->json(['message' => 'Updated successfully', 'profile' => $profile]);
+        return response()->json(['message' => 'Profile updated successfully', 'profile' => $profile]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StudentProfile $studentProfile)
+    public function destroy($id)
     {
-        //
+        $profile  = StudentProfile::findOrFail($id);
+        $profile->delete();
+
+
+        return response()->json(['message' => 'Profile successfully deleted']);
     }
 }
