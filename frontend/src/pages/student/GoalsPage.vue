@@ -648,7 +648,8 @@ const deleteGoal = async (goal) => {
 
 .goals-main {
   width: 100%;
-  max-width: 100%;
+  /* max-width: 100%; */
+  max-width: 1280px; 
   overflow-x: hidden;
   box-sizing: border-box;
 }
