@@ -27,6 +27,8 @@ export const currentCategories = ref([
             learnings: 'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC.',
             future: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using "Content here, content here", making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text.',
             isDraft: false,
+            feedback: 'Good structure, but expand your analysis section.',
+            feedbackAuthor: 'Dr Smith',
             evidenceEntries: [
               {
                 type: 'url',
@@ -81,6 +83,8 @@ export const currentCategories = ref([
             learnings: '',
             future: '',
             isDraft: false,
+            feedback: 'Good structure, but expand your analysis section.',
+            feedbackAuthor: 'Dr Smith',
             evidenceEntries: [
               {
                 type: '',
@@ -214,18 +218,6 @@ export const currentCategories = ref([
     open: false,
     compt: [
       {
-        id: '3.1',
-        desc: 'This is an example description of a competency.',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '3.2',
-        desc: 'This is an example description of a competency.',
-        indicators: [],
-        reflec: []
-      },
-      {
         id: '3.3',
         desc: 'This is an example description of a competency.',
         indicators: [],
@@ -288,15 +280,22 @@ export const discontinuedCategories = ref([
   }
 ])
 
+// return only saved/posted reflections 
+export function publishedReflec(compt) {
+  return compt.reflec.filter(function (r) {
+    return r.isDraft!== true
+  })
+}
 
 // get highest lvl from reflections
 export function getLvl(compt) {
-  if (!compt.reflec || compt.reflec.length===0) {
+  const published = publishedReflec(compt)
+  if (published.length === 0) {
     return 'Not Started'
   }
   const order = ['Not Started', 'Emerging', 'Developing', 'Proficient', 'Confident']
 
-  const sorted = [...compt.reflec].sort(function (a, b) {
+  const sorted = [...published].sort(function (a, b) {
     return order.indexOf(b.level) - order.indexOf(a.level)
   })
   return sorted[0].level
