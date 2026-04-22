@@ -12,13 +12,13 @@ class StudentLinkController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(StudentLink::all());
     }
 
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'profile_id' => 'required|exists:student_profiles,profile_id',
@@ -29,6 +29,7 @@ public function store(Request $request)
         ]);
 
         $link = StudentLink::create($validated);
+
         return response()->json($link, 201);
     }
 
@@ -37,21 +38,18 @@ public function store(Request $request)
      */
     public function update(Request $request, $id)
     {
-        $link = \App\Models\StudentLink::findOrFail($id);
+        $link = StudentLink::findOrFail($id);
 
         $validated = $request->validate([
-            'profile_id' => 'required|exists:student_profiles,profile_id',
-            'link_type'          => 'nullable|string|max:255',
-            'link_label'         => 'required|string|max:255',
-            'link_url'           => 'required|url',
+            'profile_id'  => 'required|exists:student_profiles,profile_id',
+            'link_type'   => 'nullable|string|max:255',
+            'link_label'  => 'required|string|max:255',
+            'link_url'    => 'required|url',
         ]);
 
         $link->update($validated);
 
-        return response()->json([
-            'message' => 'Updated successfully',
-            'link' => $link
-        ]);
+        return response()->json(['message' => 'Link updated successfully', 'link' => $link]);
     }
 
     /**
@@ -59,6 +57,7 @@ public function store(Request $request)
      */
     public function destroy($id) {
         StudentLink::findOrFail($id)->delete();
+
         return response()->json(['message' => 'Link successfully deleted']);
     }
 }

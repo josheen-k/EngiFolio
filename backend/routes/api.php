@@ -44,11 +44,6 @@ Route::delete('/users/{user}', [UserController::class, 'destroy']);
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 
-Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
-
-Route::get('/industry_/{id}', [StudentProfileController::class, 'show']);
-
-Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 
 // Industry contacts/networking pages
 Route::get('/users/{user}/industry-contacts', [IndustryContactController::class, 'index']);
