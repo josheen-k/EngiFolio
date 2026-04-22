@@ -49,7 +49,7 @@ onClickOutside(dropdown, () => {
 						<router-link active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`" @click="closeMenu">Competencies</router-link>
 					</li>
 					<li class="nav-item">
-						<router-link active-class="active-link" :to="`/student/career-planning/${$route.params.id}`" @click="closeMenu">Goals</router-link>
+						<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">Goals</router-link>
 					</li>
 					<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
@@ -77,7 +77,7 @@ onClickOutside(dropdown, () => {
 		<div v-if="isMenuOpen" class="mobile-menu-panel">
 			<router-link active-class="active-link" :to="`/student/dashboard/${$route.params.id}`" @click="closeMenu">Dashboard</router-link>
 			<router-link active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`" @click="closeMenu">Competencies</router-link>
-			<router-link active-class="active-link" :to="`/student/career-planning/${$route.params.id}`" @click="closeMenu">Goals</router-link>
+			<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">Goals</router-link>
 			<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
 			<router-link active-class="active-link" :to="`/student/career-development/${$route.params.id}`" @click="closeMenu">CDL</router-link>
 		</div>
