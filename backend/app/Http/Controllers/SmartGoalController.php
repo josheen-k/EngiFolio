@@ -44,7 +44,7 @@ class SmartGoalController extends Controller
             'end_date' => 'nullable|date',
             'completion_date' => 'nullable|date',
             'completion_notes' => 'nullable|string',
-            'status' => 'required|string',
+            'status' => 'required|in:planned,in_progress,completed,on_hold',
         ]);
 
         $smartGoal = SmartGoal::create($validated);
@@ -79,7 +79,7 @@ class SmartGoalController extends Controller
             'end_date' => 'nullable|date',
             'completion_date' => 'nullable|date',
             'completion_notes' => 'nullable|string',
-            'status' => 'sometimes|required|string',
+            'status' => 'sometimes|required|in:planned,in_progress,completed,on_hold',
         ]);
 
         $smartGoal->update($validated);
