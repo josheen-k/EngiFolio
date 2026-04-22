@@ -255,7 +255,7 @@ function saveAsDraft() {
   inset: 0;
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(0.375rem);
-  z-index: 2;
+  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
