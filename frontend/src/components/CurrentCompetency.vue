@@ -1,17 +1,14 @@
 <template>
   <div class="curr-compt">
-
-    <h1 class="compt-title" v-if="!selectedCompt">Current Competencies</h1>
-
     <div v-if="selectedCompt" class="detail">
 
-      <div class="d-flex align-items-center">
+      <div class="btn-title-wrap">
         <button class="btn btn-filter" @click="closeDetail">Go back</button>
-        <h2 class="compt-title">Competency {{ selectedCompt.id }}</h2>
+        <h2 class="compt-title mb-0">Competency {{ selectedCompt.id }}</h2>
       </div>
 
       <p class="fs-5">Category: <em>{{ selectedCompt.category }}</em></p>
-      <p class="fs-5">Description:</p>
+      <p class="fs-5 mb-1">Description:</p>
       <p class="detail-txt">{{ selectedCompt.description }}</p>
 
       <p class="fs-5">Indicators:</p>
@@ -24,56 +21,54 @@
         <p class="fs-5">Highest attainment level you reflected: <em>{{ getLvl(selectedCompt) }}</em></p>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center">
-        <h3>Your Entries</h3>
+      <div class="d-flex justify-content-between align-items-center my-3">
+        <h3 class="entry-title">Your Entries</h3>
         <div class="d-flex gap-3">
           <button type="button" class="btn btn-filter">Add filter</button>
-          <button type="button" class="btn btn-add">Add new</button>
+          <button type="button" class="btn btn-add" @click="openAdd(selectedCompt.id)">Add new</button>
         </div>
       </div>
 
       <div v-if="selectedCompt.reflec.length" class="row g-3">
         <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in selectedCompt.reflec" :key="i">
-          <div class="card compt-card p-3 h-70 reflection-card" @click="openReflec(reflec, i)">
-            <p class="compt-label mb-2">{{ reflec.title }}</p>
+          <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, i)">
 
+            <p class="compt-label mb-2">{{ reflec.title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="reflecs rounded-pill px-3 py-1">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
+              <span class="reflecs rounded-pill">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
               <span class="txt-lvl">{{ reflec.level }}</span>
             </div>
-
-            <p class="txt-lvl">Last updated: {{ reflec.date }}</p>
+            <p class="txt-lvl mb-0">Last updated: {{ reflec.date }}</p>
           </div>
         </div>
       </div>
-      <p v-else>No reflection entries yet.</p>
+      <p v-else class="text-secondary">No reflection entries yet.</p>
     </div>
 
-    <div v-else class="mb-4" v-for="c in category" :key="c.key">
+    <div v-else>
+      <h1 class="compt-title">Current Competencies</h1>
 
-      <div class="d-flex align-items-center gap-2 mb-3 category" @click="c.open = !c.open">
-        <img class="triangle" :class="{ open: c.open }" src="@/assets/triangle.png">
-        <span class="c-label">{{ c.label }}</span>
-        <span class="txt">{{ c.compt.length }}</span>
-      </div>
+      <div class="mb-4" v-for="c in categories" :key="c.key">
+        <div class="d-flex align-items-center gap-2 mb-3 category" @click="c.open = !c.open">
+          <img class="triangle" :class="{ open: c.open }" src="@/assets/triangle.png"/>
+          <span class="c-label">{{ c.label }}</span>
+          <span class="txt">{{ c.compt.length }}</span>
+        </div>
 
-      <div v-if="c.open" class="d-flex flex-wrap gap-3">
-        <div class="compt-wrap" v-for="compt in c.compt" :key="compt.id">
+        <div v-if="c.open" class="d-flex flex-wrap gap-3">
+          <div class="compt-wrap" v-for="compt in c.compt" :key="compt.id">
+            <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
 
-          <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
-            <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
+              <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
+              <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
 
-            <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
-              <span class="reflecs rounded-pill px-3 py-1"
-                :class="compt.reflec.length ? 'reflecs-blue' : 'reflecs-red'">
+                <span class="rounded-pill px-3 py-1" :class="compt.reflec.length ? 'reflecs-blue' : 'reflecs-red'">
                 {{ compt.reflec.length }} reflection{{ compt.reflec.length !== 1 ? 's' : '' }}
-              </span>
-
-              <img class="plus-btn d-flex align-items-center justify-content-center" src="@/assets/plus-btn.png"
-                @click="">
+                </span>
+                <img class="plus-btn" src="@/assets/plus-btn.png" @click.stop="openAdd(compt.id)"/>
+              </div>
+              <p class="txt-lvl mb-0">Highest level: {{ getLvl(compt) }}</p>
             </div>
-
-            <p class="txt-lvl mb-3">Highest level: {{ getLvl(compt) }}</p>
           </div>
         </div>
       </div>
@@ -81,157 +76,28 @@
   </div>
 
   <ViewReflection :show="viewReflec.show" :reflec="viewReflec.reflec" :compt="viewReflec.compt" :index="viewReflec.index"
-  @close="closeReflec"/>
+  @close="closeReflec" @save="onSaveReflec" @delete="onDeleteReflec"/>
+
+  <AddReflection :show="addModal.show" :initialComptId="addModal.comptId" 
+  @close="addModal.show = false" @add="onAddReflec"/>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
+import AddReflection from '@/components/AddReflection.vue'
+import { currentCategories, getLvl } from '@/useCompetencies.js'
 
 const selectedCompt = ref(null);
+const categories = currentCategories // use shared data
 
-const viewReflec = ref({
-  show: false,
-  reflec: null,
-  compt: null,
-  index: null
-});
-
-// dummy data, need to connect this with backend to fetch details
-const category = ref([
-  {
-    key: 'ksb',
-    label: 'KNOWLEDGE AND SKILL BASE',
-    open: false, //by default
-    compt: [
-      {
-        id: '1.1',
-        desc: 'This is an example description of a competency',
-        indicators: [
-          'Indicator a',
-          'Indicator b',
-          'Indicator c'
-        ],
-        reflec: [
-          {
-            title: 'Experience 1',
-            year: 2,
-            level: 'Developing',
-            date: '2026-03-01'
-          },
-          {
-            title: 'Experience 2',
-            year: 3,
-            level: 'Confident',
-            date: '2026-04-10'
-          },
-          {
-            title: 'Experience 3',
-            year: 0,
-            level: 'Proficient',
-            date: '2026-04-15'
-          }
-        ]
-      },
-      {
-        id: '1.2',
-        desc: 'This is an example description of a competency',
-        indicators: [
-          'Indicator a',
-          'Indicator b',
-          'Indicator c'
-        ],
-        reflec: []
-      },
-      {
-        id: '1.3',
-        desc: 'This is an example description of a competency',
-        indicators: [
-          'Indicator a',
-          'Indicator b',
-          'Indicator c'
-        ],
-        reflec: []
-      },
-      {
-        id: '1.4',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '1.5',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '1.6',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      }
-    ]
-  },
-  {
-    key: 'eaa',
-    label: 'ENGINEERING APPLICATION ABILITY',
-    open: false,
-    compt: [
-      {
-        id: '2.1',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '2.2',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '2.3',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      }
-    ]
-  },
-  {
-    key: 'ppa',
-    label: 'PROFESSIONAL AND PERSONAL ATTRIBUTES',
-    open: false,
-    compt: [
-      {
-        id: '3.1',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '3.2',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '3.3',
-        desc: 'This is an example description of a competency',
-        indicators: [],
-        reflec: []
-      }
-    ]
-  }
-]); // end of dummy data
-
-function openDetail(compt, cat) {
+function openDetail(compt, catLabel) {
   selectedCompt.value = {
     id: compt.id,
-    category: cat,
-    reflec: compt.reflec ? compt.reflec : [],
+    category: catLabel,
+    reflec: compt.reflec,
     description: compt.desc,
-    indicators: compt.indicators
+    indicators: compt.indicators,
   }
 }
 
@@ -239,26 +105,13 @@ function closeDetail() {
   selectedCompt.value = null
 }
 
-function getLvl(compt) {
-  if (!compt.reflec || compt.reflec.length === 0) {
-    return 'Not Started';
-  }
-  const order = [
-    'Not Started',
-    'Emerging',
-    'Developing',
-    'Proficient',
-    'Confident'
-  ];
-  const reflecCopy = [...compt.reflec];
-
-  reflecCopy.sort((a, b) => {
-    return order.indexOf(b.level) - order.indexOf(a.level)
-  });
-
-  const highestReflec = reflecCopy[0];
-  return highestReflec.level;
-}
+//detailed reflection view
+const viewReflec = ref({ 
+  show: false, 
+  reflec: null, 
+  compt: null, 
+  index: null 
+})
 
 function openReflec(reflec, index) {
   viewReflec.value = {
@@ -271,6 +124,42 @@ function openReflec(reflec, index) {
 
 function closeReflec() {
   viewReflec.value.show = false
+}
+
+function onSaveReflec({ index, updated }) {
+  if (selectedCompt.value) {
+    Object.assign(selectedCompt.value.reflec[index], updated)
+  }
+}
+
+function onDeleteReflec(index) {
+  if (selectedCompt.value) {
+    selectedCompt.value.reflec.splice(index, 1)
+  }
+  viewReflec.value.show = false
+}
+
+// add reflection popup 
+const addModal = ref({ 
+  show: false, 
+  comptId: '' 
+})
+
+function openAdd(comptId = '') {
+  addModal.value = { 
+    show: true, 
+    comptId 
+  }
+}
+
+function onAddReflec({ comptId, reflec }) {
+  for (const cat of categories.value) {
+    const found = cat.compt.find(c => c.id===comptId)
+    if (found) {
+      found.reflec.push(reflec)
+      break
+    }
+  }
 }
 </script>
 
@@ -286,6 +175,19 @@ function closeReflec() {
   font-weight: lighter;
   margin-bottom: 2rem;
   text-align: center;
+}
+
+.btn-title-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.btn-title-wrap>.btn {
+  position: absolute;
+  left: 0;
 }
 
 .category {
@@ -314,14 +216,25 @@ function closeReflec() {
 
 .compt-card {
   width: 13.75rem;
-  height: 8.125rem;
+  min-height: 8.125rem;
   border-radius: 1.5rem;
   border: 1px solid #bababa;
   cursor: pointer;
+  transition: box-shadow 0.2s ease;
 }
 
 .compt-card:hover {
   box-shadow: 0 0.25rem 0.75rem #e5e5e5;
+}
+
+.reflec-card {
+  width: 100%;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.reflec-card:hover {
+  box-shadow: 0 0.25rem 0.75rem #e5e5e5;
+  transform: translateY(-2px);
 }
 
 .compt-label {
@@ -344,13 +257,20 @@ function closeReflec() {
 }
 
 .reflecs-blue {
-  background: #bfe9f7;
+  background: #e2f8ff;
   color: #1a6a86;
+  padding: 0.1rem 0.8rem;
 }
 
 .reflecs-red {
-  background: #f5c0c0;
+  background: #ffe3e3;
   color: #b03030;
+    padding: 0.1rem 0.8rem;
+}
+
+.reflecs {
+  background: #e6e6e6;
+  padding: 0.1rem 0.8rem;
 }
 
 .plus-btn {
@@ -362,6 +282,12 @@ function closeReflec() {
 
 .plus-btn:hover {
   transform: scale(1.1);
+}
+
+.entry-title {
+  font-family: 'Martian Mono', monospace;
+  font-weight: 200;
+  font-size: 1.5rem;
 }
 
 .detail {
