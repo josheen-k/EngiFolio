@@ -81,6 +81,8 @@ export const currentCategories = ref([
             learnings: '',
             future: '',
             isDraft: false,
+            feedback: 'Good structure, but expand your analysis section.',
+            feedbackAuthor: 'Dr Smith',
             evidenceEntries: [
               {
                 type: '',
@@ -213,18 +215,6 @@ export const currentCategories = ref([
     label: 'PROFESSIONAL AND PERSONAL ATTRIBUTES',
     open: false,
     compt: [
-      {
-        id: '3.1',
-        desc: 'This is an example description of a competency.',
-        indicators: [],
-        reflec: []
-      },
-      {
-        id: '3.2',
-        desc: 'This is an example description of a competency.',
-        indicators: [],
-        reflec: []
-      },
       {
         id: '3.3',
         desc: 'This is an example description of a competency.',
