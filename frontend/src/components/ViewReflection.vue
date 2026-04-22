@@ -46,22 +46,26 @@
           <!-- evidence-->
           <div>
             <p class="section-label">Evidence:</p>
-              <div v-for="(ev, i) in reflec.evidenceEntries.filter(e=> e.value || e.fileName)" :key="i"
-              class="d-flex align-items-center gap-3 mb-2">
+            <div v-for="(ev, i) in reflec.evidenceEntries.filter(e=> e.value || e.fileName)" :key="i"
+            class="d-flex align-items-center gap-3 mb-2">
 
-                <span class="ev-label">{{ evLabel(ev.type) }}:</span>
-                <span class="evidence-pill">
-                  <a v-if="ev.type==='url'" :href="ev.value">{{ ev.value }}</a>
-                  <span v-else>{{ ev.fileName || ev.value }}</span>
-                </span>
-              </div>
+              <span class="ev-label">{{ evLabel(ev.type) }}:</span>
+              <span class="evidence-pill">
+                <a v-if="ev.type==='url'" :href="ev.value">{{ ev.value }}</a>
+                <span v-else>{{ ev.fileName || ev.value }}</span>
+              </span>
             </div>
+          </div>
 
           <!-- feedback received -->
           <div>
-            <p class="section-label">Feedback Received:
-              <span class="body-txt ms-2">{{ reflec.feedback || 'No feedback received yet' }}</span>
-            </p>
+            <p class="section-label">Feedback Received:</p>
+            <div v-if="reflec.feedback" class="feedback-received">
+              <span class="feedback-author">{{ reflec.feedbackAuthor }} commented:</span>
+              <p class="feedback-received-txt">{{ reflec.feedback }}</p>
+            </div>
+            <!-- no feedback yet-->
+            <p v-else class="body-txt">No feedback received yet</p>
           </div>
         </div>
 
@@ -620,5 +624,25 @@ function doDelete() {
 .btn-add:hover {
   background: #333333;
   color: #ffffff;
+}
+
+.feedback-received {
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+}
+
+.feedback-author {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444444;
+}
+.feedback-received-txt {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #666666;
+  line-height: 1.6;
+  margin-bottom: 0;
 }
 </style>
