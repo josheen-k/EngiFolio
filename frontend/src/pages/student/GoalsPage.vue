@@ -83,7 +83,10 @@
     </div>
 
     <div class="filter-section mb-4">
-      <h2 class="filter-title mb-0">Date Range</h2>
+      <div class="filter-title-wrap">
+        <h2 class="filter-title mb-0">Date Range</h2>
+        <p class="filter-hint mb-0">Filtering is based on Start Date.</p>
+      </div>
 
       <label class="filter-field">
         <span class="filter-label">From</span>
@@ -747,8 +750,21 @@ const deleteGoal = async (goal) => {
   font-size: 1.95rem;
   color: #2b2b2b;
   line-height: 1;
-  margin-right: 0.5rem;
-  align-self: center;
+  margin-right: 0;
+  align-self: flex-start;
+}
+
+.filter-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.filter-hint {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.78rem;
+  color: #6d6d6d;
+  line-height: 1.3;
 }
 
 .status-msg {
@@ -1147,6 +1163,10 @@ const deleteGoal = async (goal) => {
     grid-column: 1 / -1;
     margin-right: 0;
     margin-bottom: 0.25rem !important;
+  }
+
+  .filter-title-wrap {
+    grid-column: 1 / -1;
   }
 
   .filter-action-btn {

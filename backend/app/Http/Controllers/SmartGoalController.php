@@ -21,7 +21,7 @@ class SmartGoalController extends Controller
         }
 
         if ($request->to) {
-            $query->whereDate('end_date', '<=', $request->to);
+            $query->whereDate('start_date', '<=', $request->to);
         }
 
         $smartGoals = $query->orderBy('created_at', 'desc')->get();
