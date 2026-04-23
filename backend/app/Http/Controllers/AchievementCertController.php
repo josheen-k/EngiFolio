@@ -12,7 +12,7 @@ class AchievementCertController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(AchievementCert::all());
     }
 
     /**
@@ -20,15 +20,17 @@ class AchievementCertController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'title'       => 'required|string|max:255',
+            'body'        => 'nullable|text',
+            'file_path'   => 'nullable|string|max:500',
+            'issued_date'     => 'nullable|string|max:255',
+            'expiry_date'     => 'nullable|string|max:255',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(AchievementCert $achievementCert)
-    {
-        //
+        $cert = AchievementCert::create($validated);
+        
+        return response()->json($cert, 201);
     }
 
     /**

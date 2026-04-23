@@ -12,7 +12,9 @@ class CdlModuleController extends Controller
      */
     public function index()
     {
-        //
+        $module = CdlModuleProfile::with('studentProgress')->get();
+
+        return response()->json($module);     
     }
 
     /**

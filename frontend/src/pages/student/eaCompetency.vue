@@ -25,6 +25,7 @@ import CurrentCompetency from '@/components/CurrentCompetency.vue';
 import DraftReflections from '@/components/DraftReflections.vue';
 import FeedbackReflections from '@/components/FeedbackReflections.vue';
 import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
+import api from "@/services/api";
 
 // different tabs in side pannel
 const currTab = ref('CURRENT');

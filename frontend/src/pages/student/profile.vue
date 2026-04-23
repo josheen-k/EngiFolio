@@ -1,10 +1,10 @@
 <script setup>
     import { ref, onMounted } from 'vue';
     import { useRoute } from 'vue-router'
-    import axios from 'axios';
     import Navbar from '@/components/Navbar.vue'
     import Footer from '@/components/Footer.vue'
 	import defaultAvatar from '@/assets/default.jpg';
+    import api from "@/services/api";
 
     const route = useRoute();
     const profile = ref(null);
@@ -12,7 +12,7 @@
 
     const loadProfile = async () => {
 		try {
-			const response = await axios.get(`http://127.0.0.1:8000/api/profile/${route.params.id}`);
+			const response = await api.get(`/profile/${route.params.id}`);
 			profile.value = response.data.profile || response.data;
 		} catch (error) {
 			console.error("Error while fetching profile:", error);

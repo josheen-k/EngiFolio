@@ -1,9 +1,9 @@
 <script setup>
     import { ref, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
-    import axios from 'axios';
     import Navbar from '@/components/Navbar.vue'
     import Footer from '@/components/Footer.vue'
+    import api from "@/services/api";
 
     const route = useRoute();
 
@@ -30,7 +30,7 @@
     // Fetches the profile and adds the contents to the file
     const addProfile = async () => { 
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/profile/${route.params.id}`);
+        const response = await api.get(`/profile/${route.params.id}`);
         profile.value = response.data.profile || response.data;
       } catch (error) {
         console.error("Error while fetching profile:", error);
@@ -59,7 +59,7 @@
     // Fetches the competencies and adds the contents to the file
     const addCompetencies = async () => { 
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/competency-entries/${route.params.id}`);
+        const response = await api.get(`/competency-entries/${route.params.id}`);
         userCompetencies.value = response.data;
       } catch (error) {
         console.error("Error while fetching user competencies:", error);
@@ -114,7 +114,7 @@
     // Fetches the networking contacts and adds the contents to the file
     const addNetworkingContacts = async () => { 
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/users/${route.params.id}/industry-contacts`);
+        const response = await api.get(`/users/${route.params.id}/industry-contacts`);
         contacts.value = response.data;
       } catch (error) {
         console.error("Error while fetching user contacts:", error);
@@ -151,7 +151,7 @@
     // Fetches the goals and adds the contents to the file
     const addGoals = async () => { 
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/career-plans/${route.params.id}`);
+        const response = await api.get(`/career-plans/${route.params.id}`);
         plan.value = response.data;
       } catch (error) {
         console.error("Error while fetching user goals:", error);

@@ -1,9 +1,9 @@
 <script setup>
   import { ref, onMounted } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import axios from 'axios';
   import Navbar from '@/components/Navbar.vue'
   import Footer from '@/components/Footer.vue'
+  import api from "@/services/api";
 
   const router = useRouter();
   const route = useRoute();
@@ -13,7 +13,7 @@
   const loadProfile = async () => {
     // Get profile data, throw error if unsuccessful
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/profile/${route.params.id}`);
+      const response = await  api.get(`/profile/${route.params.id}`);
       profile.value = response.data.profile || response.data;
     } catch (error) {
       console.error("Error while fetching profile:", error);
@@ -42,21 +42,21 @@
   };
 
   const saveChanges = async () => {
-    await axios.put(`http://127.0.0.1:8000/api/profile/${route.params.id}`, profile.value);
+    await  api.put(`/profile/${route.params.id}`, profile.value);
 
     for (const link of profile.value.links) {
       // Check if link is empty
       if (link.link_url.trim() === '') {
         if (link.link_id) {
-          await axios.delete(`http://127.0.0.1:8000/api/link/${link.link_id}`);
+          await api.delete(`/link/${link.link_id}`);
         }
       } else {
         if (link.link_id) {
           // Update link
-          await axios.put(`http://127.0.0.1:8000/api/link/${link.link_id}`, link);
+          await api.put(`/link/${link.link_id}`, link);
         } else {
           // Create link
-          await axios.post(`http://127.0.0.1:8000/api/link`, link);
+          await api.post(`/link`, link);
         }
       }
     }

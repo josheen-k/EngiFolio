@@ -3,6 +3,7 @@
   import { useRouter } from 'vue-router'
   import axios from 'axios';
   import Navbar from '@/components/Navbar.vue'
+  import api from "@/services/api";
 
   const router = useRouter();
 

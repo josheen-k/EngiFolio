@@ -2,6 +2,7 @@
   import { onMounted, ref } from 'vue'
   import axios from 'axios'
   import Navbar from '@/components/Navbar.vue'
+  import api from "@/services/api";
 
   const message = ref('Waiting for Laravel...')
 
