@@ -204,8 +204,8 @@
         '#e2dfd7', // not started
         '#aba298', // emerging
         '#b1bbb3', // developing
-        '#7c848c', // confident
-        '#333639'  // proficient
+        '#7c848c', // proficient
+        '#333639'  // confident
       ]
     }
 
@@ -261,7 +261,7 @@
 
         stats.value = {
           totalReflections: userCompetencies.value.length,
-          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Confident' || c.level === 'Proficient').length}/${competencyIndicators.value.length}`,
+          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Confident').length}/${competencyIndicators.value.length}`,
           goalsDone: `${userGoals.value.filter(c => c.status === 'completed').length}/${userGoals.value.length}`,
           avgLevel: weightToLevel[avgScore]
         }
@@ -270,8 +270,8 @@
           competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
           userCompetencies.value.filter(c => c.level === 'Emerging').length,
           userCompetencies.value.filter(c => c.level === 'Developing').length,
-          userCompetencies.value.filter(c => c.level === 'Confident').length,
-          userCompetencies.value.filter(c => c.level === 'Proficient').length
+          userCompetencies.value.filter(c => c.level === 'Proficient').length,
+          userCompetencies.value.filter(c => c.level === 'Confident').length
         ];
 
 
