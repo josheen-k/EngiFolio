@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\NetworkingEventController;
 use App\Http\Controllers\NetworkingEventCommentController;
+use App\Http\Controllers\NetworkingEventQuestionController;
+use App\Http\Controllers\StudentProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\StudentProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,15 +30,12 @@ Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 
-use App\Http\Controllers\NetworkingEventController;
-use App\Http\Controllers\NetworkingEventQuestionController;
-
 //Event
 Route::get('/networking-events', [NetworkingEventController::class, 'index']);
 Route::post('/networking-events', [NetworkingEventController::class, 'store']);
-Route::get('networking-events/{networkingEvent}', [NetworkingEventController::class, 'show']);
-Route::put('networking-events/{networkingEvent}', [NetworkingEventController::class, 'update']);
-Route::delete('networking-events/{networkingEvent}', [NetworkingEventController::class, 'destroy']);
+Route::get('/networking-events/{networkingEvent}', [NetworkingEventController::class, 'show']);
+Route::put('/networking-events/{networkingEvent}', [NetworkingEventController::class, 'update']);
+Route::delete('/networking-events/{networkingEvent}', [NetworkingEventController::class, 'destroy']);
 
 //Questions
 Route::get('/networking-events/{id}/questions', [NetworkingEventQuestionController::class, 'index']);
