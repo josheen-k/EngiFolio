@@ -10,7 +10,7 @@ class NetworkingEventQuestion extends Model
     use HasFactory;
 
     protected $table = 'networking_event_questions';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'question_id';
     protected $fillable = [
         'event_id',
         'question_text',
