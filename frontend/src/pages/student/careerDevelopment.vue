@@ -5,7 +5,7 @@
   import Navbar from '@/components/Navbar.vue'
 
   const router = useRouter();
-
+ 
   onMounted(() => {
 
 });
