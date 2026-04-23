@@ -119,7 +119,7 @@
       } catch (error) {
         console.error("Error while fetching user contacts:", error);
       } finally {
-        const formattedNet = ['----- Networking Contacts -----']
+        const formattedNet = ['"----- Networking Contacts -----"']
         
         const netHeader = [
           `"Name"`,
@@ -156,7 +156,7 @@
       } catch (error) {
         console.error("Error while fetching user goals:", error);
       } finally {
-        const formattedGoals = ['----- Goals -----']
+        const formattedGoals = ['"----- Goals -----"']
         
         const goalsHeader = [
           `"Goal Description"`,
@@ -304,7 +304,8 @@
 
             <div class="form-check">
               <input class="form-check-input" type="checkbox" v-model="allDataSelected" id="checkAll">
-              <label class="form-check-label fw-bold" for="checkAll">All data</label>
+              <label v-if="!allDataSelected" class="form-check-label fw-bold" for="checkAll">All data</label>
+              <label v-else class="form-check-label fw-bold" for="checkAll">Unselect all data</label>
             </div>
           </div>
         </div>
@@ -348,5 +349,34 @@
   .btn-ql:hover {
     color: #ffffff;
     background: #333333;
+  }
+
+  .form-check-input {
+    width: 1.25em;
+    height: 1.25em;
+    cursor: pointer;
+  }
+
+  .form-check-label {
+    cursor: pointer;
+    padding-left: 0.5rem;
+    font-weight: 500;
+  }
+
+  .form-check-input:hover,
+  .form-check-input:focus {
+    border-color: #111a27;
+    box-shadow: none;
+  }
+
+  .form-check-input:checked:focus {
+    background-color: #111a27;
+    border-color: #111a27;
+    box-shadow: 0 0 0 0.25rem rgba(30, 46, 71, 0.25);
+  }
+
+  .form-check-input:checked {
+    background-color: #111a27;
+    border-color: #111a27;
   }
 </style>
