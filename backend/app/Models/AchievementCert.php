@@ -19,7 +19,6 @@ class AchievementCert extends Model
         'body',
         'file_path',
         'issued_date',
-        'expiry_date',
     ];
 
     public function user()

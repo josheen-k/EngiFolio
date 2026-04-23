@@ -1,56 +1,90 @@
+<template>
+  <Navbar/>
+
+  <div class="d-flex p-4 side ms-3">
+    <aside class="d-flex gap-4 flex-column pt-5 sidebar-wrap">
+      <div class="d-flex align-items-center gap-3 px-3 py-2 sidebar"
+      :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
+        <span class="dot rounded-circle" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
+      </div>
+    </aside>
+
+    <main class="mt-5 main-area">
+      <component :is="currComponent"/>
+    </main>
+  </div>
+
+  <Footer/>
+</template>
+
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router'
-  import axios from 'axios';
-  import Navbar from '@/components/Navbar.vue'
+import { ref, computed } from 'vue'
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
+import CurrentCompetency from '@/components/CurrentCompetency.vue';
+import DraftReflections from '@/components/DraftReflections.vue';
+import FeedbackReflections from '@/components/FeedbackReflections.vue';
+import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
+import api from "@/services/api";
 
-  const router = useRouter();
+// different tabs in side pannel
+const currTab = ref('CURRENT');
+const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED'];
 
-  onMounted(() => {
-
+// render components based on current tab
+const currComponent = computed(()=> {
+  switch (currTab.value) {
+    case 'CURRENT':
+      return CurrentCompetency
+    case 'DRAFTS':
+      return DraftReflections
+    case 'FEEDBACK':
+      return FeedbackReflections
+    case 'DISCONTINUED':
+      return DiscontinuedCompetency
+  }
 });
 </script>
 
-<template>
-  <Navbar/>
-  <div class="container">
-    <div class="p-5">
-        <h3>EA Competency</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    </div>
-  </div>
-</template>
+<style scoped>
+.side {
+  min-height: 100vh;
+  gap: 4rem;
+}
 
-<style>
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 50vh;
-      background-color: #f8f9fa;
-    }
+.sidebar-wrap {
+  position: sticky;
+  top: 30%;
+  left: 5%;
+  width: 20%;
+  height: fit-content;
+}
 
-    .profilePic {
-      height: 120px;
-      width: 120px;
-      object-fit: cover;
-      border-radius: 50%;
-      margin: 0 auto 20px auto;
-      border: 4px solid #f0f2f5;
-      padding: 0;
-    }
+.main-area {
+  flex: 1;
+  min-width: 0;
+}
 
-    h3, h6 {
-      font-weight: 700;
-      color: #2c3e50;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
+.sidebar{
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.2rem;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  width: 70%;
+}
 
-    p {
-      color: #6c757d;
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-    }
+.sidebar-on {
+  background: #f3f3f3;
+  color: #222222;
+}
+
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  background: #e0e0e0;
+}
+
+.dot-on {
+  background: #88c2d2;
+}
 </style>

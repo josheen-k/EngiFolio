@@ -19,7 +19,6 @@ class StudentProfile extends Model
         'degree_title',
         'specialisation',
         'personal_intro',
-        'upcoming_actions',
         'profile_image_url',
     ];
 

@@ -23,5 +23,15 @@ class User extends Model
     {
         return $this->hasOne(StudentProfile::class, 'user_id');
     }
+    public function getRouteKeyName()
+    {
+     return 'user_id';
+    }
+
+    public function industryContacts()
+    {
+        return $this->hasMany(IndustryContact::class, 'user_id', 'user_id');
+    }
+
 }
 

@@ -10,9 +10,12 @@ class CareerDevelopmentPlanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Get current user's career development plans
+        // For now, without auth, we'll return all plans (you may need to add auth later)
+        $plans = CareerDevelopmentPlan::all();
+        return response()->json($plans);
     }
 
     /**
@@ -26,9 +29,12 @@ class CareerDevelopmentPlanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CareerDevelopmentPlan $careerDevelopmentPlan)
+    public function show($id)
     {
-        //
+        // Return plan with all attached smart goals
+        $plan = CareerDevelopmentPlan::with(['smartGoals.actionSteps'])->where('user_id', $id)->firstOrFail();
+        
+        return response()->json($plan);
     }
 
     /**

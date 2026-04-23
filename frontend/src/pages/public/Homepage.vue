@@ -1,12 +1,17 @@
 <template>
     <div class="page">
-        <nav class="navbar px-4 px-md-5 py-3 d-flex justify-content-between align-items-center">
-
-            <div class="logo">
-                <img src="@/assets/engifolio-logo.png" alt="EngiFolio" class="logo-img" />
+        <nav class="nav-wrapper">
+            <div>
+                <!-- <router-link to="/"> -->
+                    <div class="navLogo"></div>
+                <!-- </router-link> -->
             </div>
 
-            <button class="btn btn-dark btn-signin px-4">Sign in</button>
+            <div class="nav-bar">
+                <div class="nav-item">
+                    <button class="btn-signin-custom" @click="signIn">Sign in</button>
+                </div>
+            </div>
         </nav>
 
         <section class="container-lg py-5 mt-5">
@@ -103,6 +108,11 @@ export default {
             ],
         };
     },
+    methods: {
+        signIn() {
+            this.$router.push('/login');
+        }
+    }
 };
 </script>
 
@@ -115,15 +125,64 @@ export default {
     overflow-x: hidden;
 }
 
-.logo-img {
-  height: 2.5rem;
-  object-fit: contain;
+.nav-wrapper {
+    width: 100vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #140f50;
+    padding: 0;
+}
+
+.navLogo {
+    width: 6.25rem;
+    height: 3.75rem;
+    margin: 0 1.5rem;
+    background: linear-gradient(45deg, #d9bebe, #6b6be4);
+    -webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
+    -webkit-mask-size: contain;
+    mask: url('@/assets/engiFolio.png') no-repeat center;
+    mask-size: contain;
+}
+
+.nav-bar {
+    display: flex;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+}
+
+.btn-signin-custom {
+    /* background-color: #ffffff; */
+    background: transparent;
+    color: #a7a7a7;
+    border: none;
+    border-radius: 30px;
+    padding: 6px 18px;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1.2rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.btn-signin-custom:hover {
+    /* background-color: #e0e0e0; */
+    color: #ffffff;
 }
 
 .btn {
     font-family: 'Montserrat Alternates', sans-serif;
     border-radius: 30px;
     font-size: 1.25rem;
+    background-color: none;
 }
 
 .hero-tag {

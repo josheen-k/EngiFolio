@@ -1,8 +1,11 @@
 <template>
   <Navbar/>
 
-  <main class="container-xl py-5 px-4">
+  <main class="container-xl py-5 px-4" v-if="profile">
     <div class="row g-4 mb-4">
+      <h2 class="sec-title text-center" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
+      <h2 class="sec-title text-center" v-else-if="profile.first_name">Welcome, {{ profile.first_name }}</h2>
+      <h2 class="sec-title text-center" v-else>Welcome, {{ profile.last_name }}</h2>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center">Your Stats</h2>
 
@@ -113,9 +116,9 @@
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
           <button class="btn btn-ql rounded-pill">Add a new reflection</button>
-          <button class="btn btn-ql rounded-pill">Edit profile</button>
-          <button class="btn btn-ql rounded-pill btn-ql3">Add a new networking event</button>
-          <button class="btn btn-ql rounded-pill">Export profile</button>
+          <router-link :to="`/settings/profile/${$route.params.id}`" class="btn btn-ql rounded-pill">Edit profile</router-link>
+          <router-link :to="`/student/networking/${$route.params.id}`" class="btn btn-ql rounded-pill">Add a new networking event</router-link>
+          <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-ql rounded-pill">Export profile</router-link>
           <button class="btn btn-ql rounded-pill">Add a SMART goal</button>
         </div>
 
@@ -126,15 +129,169 @@
           </li>
         </ul>
       </div>
+
+      <div class="row mt-5">
+        <div class="col-12">
+          <h2 class="sec-title text-center">Your Goals</h2>
+          <ul class="ps-5 activity-list" v-if="userGoals && userGoals.length > 0">
+            <li class="mb-3" v-for="goal in userGoals" :key="goal.goal_id">
+              <strong>{{ goal.status.replace('_', ' ').toUpperCase() }}:</strong> 
+              {{ goal.goal_description }} 
+              <span v-if="goal.end_date" class="text-muted">
+                (Target: {{ goal.end_date }})
+              </span>
+            </li>
+          </ul>
+          <div v-else class="ps-5 activity-list text-muted">
+            No goals currently logged.
+          </div>
+        </div>
+      </div>
     </div>
   </main>
+
+  <div v-else-if="loading" class="text-center py-5">
+		<div class="spinner-border" role="status"></div>
+		<p>Loading profile...</p>
+	</div>
+
+	<div v-else class="container py-5">
+		<div class="alert alert-warning" role="alert">Profile not found.</div>
+	</div>
 
   <Footer/>
 </template>
 
 <script setup>
-import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
+    import { ref, onMounted, watch } from 'vue';
+    import { useRoute } from 'vue-router'
+    import Navbar from '@/components/Navbar.vue'
+    import Footer from '@/components/Footer.vue'
+    import api from "@/services/api";
+
+    const route = useRoute();
+    const profile = ref(null);
+    const userCompetencies = ref([]);
+    const competencyIndicators = ref([]);
+    const userGoals = ref([]);
+    const loading = ref(true);
+    const stats = ref({
+        totalReflections: 0,
+        comptMastered: "0/0",
+        goalsDone: "0/0",
+        avgLevel: "---"
+    });
+    const series = ref([0, 0, 0, 0, 0]);
+
+    // For calculating average level
+    const levelWeights = { "Emerging": 1, "Developing": 2, "Proficient": 3, "Confident": 4 };
+    const weightToLevel = ["Not Started", "Emerging", "Developing", "Proficient", "Confident"];
+
+    const chartOptions = {
+      labels: [
+        'Not Started',
+        'Emerging',
+        'Developing',
+        'Proficient',
+        'Confident'
+      ],
+      legend: {
+        position: 'bottom',
+        fontFamily: 'Maven Pro, sans-serif',
+        fontSize: '16px'
+      },
+      colors: [
+        '#e2dfd7', // not started
+        '#aba298', // emerging
+        '#b1bbb3', // developing
+        '#7c848c', // proficient
+        '#333639'  // confident
+      ]
+    }
+
+    const loadProfileData = async () => {
+      try {
+        const response = await api.get(`/profile/${route.params.id}`);
+        profile.value = response.data.profile || response.data;
+      } catch (error) {
+        console.error("Error while fetching profile info:", error);
+      }
+		};
+
+    const loadUserCompetencyData = async () => {
+      try {
+        const response = await api.get(`/competency-entries/${route.params.id}`);
+        userCompetencies.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching user competencies:", error);
+      }
+		};
+
+    const loadCompetencyIndicators = async () => {
+      try {
+        const response = await api.get(`/competency-indicators`);
+        competencyIndicators.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching competencies:", error);
+      }
+		};
+
+    const loadUserGoals = async () => {
+      try {
+        const response = await api.get(`/user/smart-goals/${route.params.id}`);
+        userGoals.value = response.data;
+      } catch (error) {
+        console.error("Error fetching goals:", error);
+      }
+    };
+
+    const loadData = async () => {
+      loading.value = true;
+      const id = route.params.id;
+      try {
+        await loadProfileData();
+        await loadUserCompetencyData();
+        await loadCompetencyIndicators();
+        await loadUserGoals();
+
+        // Calculate the total weight based of the points for each number
+        const totalWeight = userCompetencies.value.reduce((acc, c) => acc + (levelWeights[c.level] || 0), 0);
+        // Calculate average by dividing weight by amount of competencies
+        const avgScore = competencyIndicators.value.length > 0 ? Math.round(totalWeight / competencyIndicators.value.length) : 0;
+
+        stats.value = {
+          totalReflections: userCompetencies.value.length,
+          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Confident').length}/${competencyIndicators.value.length}`,
+          goalsDone: `${userGoals.value.filter(c => c.status === 'completed').length}/${userGoals.value.length}`,
+          avgLevel: weightToLevel[avgScore]
+        }
+
+        series.value = [
+          competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
+          userCompetencies.value.filter(c => c.level === 'Emerging').length,
+          userCompetencies.value.filter(c => c.level === 'Developing').length,
+          userCompetencies.value.filter(c => c.level === 'Proficient').length,
+          userCompetencies.value.filter(c => c.level === 'Confident').length
+        ];
+
+
+
+
+      } catch (error) {
+        console.error("Error while fetching info:", error);
+      } finally {
+          loading.value = false;
+      }
+    };
+
+    onMounted(() => {
+      	loadData();
+    })
+
+    watch(() => route.params.id, () => {
+      loadData();
+    });
+
 
 const focusItems = [
   {
@@ -180,37 +337,7 @@ const recentAct = [
   '22 Mar 2026: Updated profile'
 ]
 
-const stats = {
-  totalReflections: 14,
-  comptMastered: "3/16",
-  goalsDone: "6/10",
-  avgLevel: "Developing"
-}
 
-const series = [2, 4, 3, 2, 1]
-// not started, emerging, developing, competent, proficient
-
-const chartOptions = {
-  labels: [
-    'Not Started',
-    'Emerging',
-    'Developing',
-    'Competent',
-    'Proficient'
-  ],
-  legend: {
-    position: 'bottom',
-    fontFamily: 'Maven Pro, sans-serif',
-    fontSize: '16px'
-  },
-  colors: [
-    '#e2dfd7', // not started
-    '#aba298', // emerging
-    '#b1bbb3', // developing
-    '#7c848c', // competent
-    '#333639'  // proficient
-  ]
-}
 </script>
 
 <style scoped>
@@ -245,7 +372,7 @@ const chartOptions = {
 
 .stat-data {
   font-family: 'Martian Mono', monospace;
-  font-size: 2.1rem;
+  font-size: 1.8rem;
   font-weight: 300;
   color: #606060;
 }

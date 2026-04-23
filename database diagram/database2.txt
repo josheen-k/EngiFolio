@@ -48,10 +48,10 @@ Table users {
 Table student_profiles {
   profile_id bigint [pk, increment]
   user_id bigint [not null, unique, ref: - users.user_id, note: 'On delete: cascade']
-  first_name varchar(100) [not null]
+  first_name varchar(100)
   preferred_name varchar(100) [note: 'Optional display name']
   last_name varchar(100) [not null]
-  degree_title varchar(255) [not null]
+  degree_title varchar(255)
   specialization varchar(255)
   personal_intro text
   upcoming_actions text [note: 'Future personal development actions']
@@ -65,9 +65,8 @@ Table student_links {
   link_id bigint [pk, increment]
   profile_id bigint [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
   link_type varchar(25) [note: "CHECK (link_type IN ('linkedin', 'resume', 'cover_letter', 'github', 'portfolio', 'other'))", not null]
-  link_label varchar(100) [not null, note: 'Display label shown to users']
+  link_label varchar(100) [note: 'Display label shown to users']
   link_url varchar(500) [not null]
-  display_order int [not null, default: 1]
   created_at datetime [not null]
   updated_at datetime [not null]
 
@@ -80,7 +79,7 @@ Table student_links {
 Table elevator_pitches {
   pitch_id bigint [pk, increment]
   user_id bigint [not null, unique, ref: - users.user_id, note: 'On delete: cascade']
-  pitch_text text [not null]
+  pitch_text text
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -92,7 +91,6 @@ Table achievement_cert {
   body text [note: 'Upload awards, scholarships, or other certificates that demonstrate your academic or extracurricular success.']
   file_path varchar(500) [note: 'if applicable']
   issued_date date
-  expiry_date date
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -125,6 +123,8 @@ Table job_resources {
   title varchar(255) [not null]
   body text [note: 'Store responses to selection criteria, interview practice videos, or other supporting materials for job applications.']
   file_path varchar(500) [note: 'if applicable']
+  created_at datetime [not null]
+  updated_at datetime [not null]
 }
 
 /*
@@ -246,10 +246,6 @@ Table industry_contact_methods {
   method_value varchar(500) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
-
-  indexes {
-    (contact_id, method_type, method_value) [unique]
-  }
 }
 
 /*
@@ -280,6 +276,7 @@ Table competency_indicators {
   indicator_id bigint [pk, increment]
   group_id bigint [not null, ref: > competency_groups.group_id]
   display_id varchar(20) [not null, unique]
+  indicator_name varchar(255) [not null]
   description text [not null]
   indicator_link varchar(500) [note: 'Reference link for this indicator']
   discontinued_date date
@@ -297,12 +294,12 @@ Table competency_entries {
   experience_title varchar(255) [not null, note: 'Short title of the experience']
   associated_year int [not null, note: 'Academic year']
   experience_tasks text [not null, note: 'Description of experience and tasks']
-  key_learnings text [not null, note: 'Key learnings from that experience']
-  future_applications text [not null, note: 'How the learning will be apllied in future']
+  key_learnings text [note: 'Key learnings from that experience']
+  future_applications text [note: 'How the learning will be apllied in future']
 
-  level varchar(25) [note: "CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Competent'))", not null]
+  level varchar(25) [note: "CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Confident'))", not null]
   status varchar(25) [note: "CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))", not null, default: 'draft']
-  start_date date
+  start_date date [not null]
   end_date date
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -365,7 +362,7 @@ Table competency_feedback {
 Table mentor_student_mapping {
   mapping_id bigint [pk, increment]
   staff_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
-  student_id bigint [not null, ref: > users.user_id]
+  student_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
   assigned_at datetime [not null]
 
   indexes {
@@ -392,7 +389,7 @@ Table cdl_modules {
 Table student_cdl_progress {
   progress_id bigint [pk, increment]
   user_id bigint [not null, ref: > users.user_id, note: 'On delete: cascade']
-  cdl_id bigint [not null, ref: > cdl_modules.cdl_id]
+  cdl_id bigint [not null, ref: > cdl_modules.cdl_id, note: 'On delete: cascade']
   status varchar(25) [note: "CHECK (status IN ('Not Started', 'In Progress', 'Completed''))", not null, default: 'not_started']
   progress_percentage int [not null, default: 0, note: 'Should be validated as 0-100 in application logic']
   last_accessed_at datetime
@@ -413,7 +410,7 @@ Table student_cdl_progress {
 // Logs important admin actions for accountability
 Table system_audit_logs {
   log_id bigint [pk, increment]
-  admin_id bigint [ref: > users.user_id]
+  admin_id bigint [ref: > users.user_id, note: 'On delete: set null']
   action_type varchar(100) [not null]
   target_table varchar(100) [not null]
   target_row_id bigint [not null]

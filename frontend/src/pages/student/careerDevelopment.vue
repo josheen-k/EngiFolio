@@ -3,6 +3,7 @@
   import { useRouter } from 'vue-router'
   import axios from 'axios';
   import Navbar from '@/components/Navbar.vue'
+  import api from "@/services/api";
 
   const router = useRouter();
  
@@ -24,7 +25,7 @@
     <h5>Year 1</h5>
     <h6>Professional Interests</h6>
     <p>List specific roles, industries, or fields you are currently interested in.</p>
-    
+
     <h6>Employers of Interest</h6>
     <ul>
         <li>First Value</li>
