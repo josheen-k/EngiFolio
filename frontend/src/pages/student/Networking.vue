@@ -443,7 +443,7 @@ async function deleteEvent(id) {
 
 function editQuestion(eventId, question) {
   questionDrafts.value[eventId] = question.question_text
-  editingQuestionIds.value[eventId] = question.id
+  editingQuestionIds.value[eventId] = question.question_id
   questionEditSnapshots.value[eventId] = question.question_text
 }
 
@@ -862,7 +862,7 @@ function goToToday() {
                 </div>
 
                 <ul v-if="event.questions && event.questions.length" class="item-list">
-                  <li v-for="question in event.questions" :key="question.id" class="list-item">
+                  <li v-for="question in event.questions" :key="question.question_id" class="list-item">
                     <span>{{ question.question_text }}</span>
                     <div class="list-actions">
                       <button class="ghost-button small-button" @click="editQuestion(event.event_id, question)">
@@ -870,7 +870,7 @@ function goToToday() {
                       </button>
                       <button
                         class="delete-button small-button"
-                        @click="deleteQuestion(event.event_id, question.id)"
+                        @click="deleteQuestion(event.event_id, question.question_id)"
                       >
                         Delete
                       </button>
