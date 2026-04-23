@@ -1,17 +1,15 @@
 <template>
   <Navbar/>
 
-  <div class="d-flex gap-4 p-4">
-    <aside class="d-flex gap-2 flex-column pt-5">
-      <div class="d-flex align-items-center gap-2 px-3 py-2 sidebar"
+  <div class="d-flex p-4 side ms-3">
+    <aside class="d-flex gap-4 flex-column pt-5 sidebar-wrap">
+      <div class="d-flex align-items-center gap-3 px-3 py-2 sidebar"
       :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
         <span class="dot rounded-circle" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
       </div>
     </aside>
 
-    <main>
-      <h1 class="comp-title">{{currTitle}}</h1>
-
+    <main class="mt-5 main-area">
       <component :is="currComponent"/>
     </main>
   </div>
@@ -32,21 +30,6 @@ import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 const currTab = ref('CURRENT');
 const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED'];
 
-// dynamic titles based on current tab
-const currTitle = computed(()=> {
-  switch (currTab.value) {
-    case 'CURRENT':
-      return 'Current Competencies'
-    case 'DRAFTS':
-      return 'Draft Reflections'
-    case 'FEEDBACK':
-      return 'Feedback Recieved'
-    case 'DISCONTINUED':
-      return 'Discontinued Competencies'
-    default:
-      return 'Competencies'
-  }
-});
 // render components based on current tab
 const currComponent = computed(()=> {
   switch (currTab.value) {
@@ -63,11 +46,30 @@ const currComponent = computed(()=> {
 </script>
 
 <style scoped>
+.side {
+  min-height: 100vh;
+  gap: 4rem;
+}
+
+.sidebar-wrap {
+  position: sticky;
+  top: 30%;
+  left: 5%;
+  width: 20%;
+  height: fit-content;
+}
+
+.main-area {
+  flex: 1;
+  min-width: 0;
+}
+
 .sidebar{
   font-family: 'Maven Pro', sans-serif;
   font-size: 1.2rem;
   border-radius: 1.5rem;
   cursor: pointer;
+  width: 70%;
 }
 
 .sidebar-on {
@@ -83,13 +85,5 @@ const currComponent = computed(()=> {
 
 .dot-on {
   background: #88c2d2;
-}
-
-.comp-title {
-  font-family: 'Martel', serif;
-  font-size: 2rem;
-  color: #2b2b2bc5;
-  font-weight: lighter;
-  margin-bottom: 2rem;
 }
 </style>
