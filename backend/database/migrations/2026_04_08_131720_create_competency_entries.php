@@ -29,7 +29,7 @@ return new class extends Migration
             $table->index(['user_id', 'indicator_id', 'status'], 'entries_user_indicator_status_index');
         });
 
-        DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_level CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Competent'))");
+        DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_level CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Confident'))");
         DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_status CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))");
     }
 

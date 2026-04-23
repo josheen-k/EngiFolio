@@ -98,7 +98,7 @@ onClickOutside(dropdown, () => {
 	overflow-x: hidden;
 	overflow-y: visible;
 	position: relative;
-	z-index: 1300;
+	z-index: 3;
 	overflow: visible
 }
 
@@ -110,7 +110,7 @@ onClickOutside(dropdown, () => {
 	position: fixed;
 	inset: 0;
 	background: rgba(0, 0, 0, 0.12);
-	z-index: 1100;
+	z-index: 2;
 }
 
 .mobile-menu-panel {
@@ -147,7 +147,7 @@ onClickOutside(dropdown, () => {
 	padding: 0.3rem;
 	margin-left: 0.2rem;
 	position: relative;
-	z-index: 1300;
+	z-index: 3;
 	cursor: pointer;
 }
 
@@ -205,7 +205,7 @@ onClickOutside(dropdown, () => {
 	border: 1px solid #bebebe;
 	border-radius: 0.8rem;
 	box-shadow: 0 0.5rem 1.4rem rgba(0, 0, 0, 0.3);
-	z-index: 1000;
+	z-index: 1;
 }
 
 .dd a.dd-item {
@@ -298,7 +298,7 @@ onClickOutside(dropdown, () => {
 		border: 1px solid #2a246d;
 		border-radius: 0.65rem;
 		padding: 0.35rem;
-		z-index: 1250;
+		z-index: 2;
 		box-shadow: 0 0.6rem 1.5rem rgba(0, 0, 0, 0.26);
 	}
 

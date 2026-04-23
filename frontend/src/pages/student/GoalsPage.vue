@@ -102,6 +102,7 @@
     <div v-else-if="goals.length === 0" class="status-msg">No goals found.</div>
 
     <div v-else>
+      <!-- Desktop/tablet table view -->
       <div class="table-scroll desktop-goals-table">
         <table class="goals-table">
         <thead>
@@ -168,6 +169,7 @@
         </table>
       </div>
 
+      <!-- Mobile card view (enabled at <= 768px) -->
       <div class="mobile-goals-list">
         <article v-for="goal in goals" :key="`mobile-${goal.goal_id}`" class="mobile-goal-card">
           <div class="mobile-goal-head">
@@ -280,6 +282,7 @@ import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
 
 
+// Page-level reactive state used by forms, filters, and modal dialogs.
 const goals = ref([])
 const loading = ref(true)
 const fromDate = ref('')
@@ -293,6 +296,7 @@ const stepModalGoal = ref(null)
 const savingSteps = ref(false)
 const stepDrafts = ref([])
 const expandedStepsByGoal = ref({})
+// value is sent to backend, label is displayed in UI.
 const progressStatusOptions = [
   { value: 'planned', label: 'Planned' },
   { value: 'in_progress', label: 'In Progress' },
@@ -320,6 +324,7 @@ const editGoalData = reactive({
   status: 'planned'
 })
 
+// Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
 const getStatusLabel = (statusValue) => {
   const matched = progressStatusOptions.find((item) => item.value === statusValue)
@@ -332,6 +337,7 @@ const getStatusClass = (statusValue) => {
   return 'status-planned'
 }
 const isStepsExpanded = (goalId) => Boolean(expandedStepsByGoal.value[goalId])
+// Show only the first 3 steps by default unless the goal is expanded.
 const getVisibleSteps = (goal) => {
   const steps = getGoalSteps(goal)
   if (isStepsExpanded(goal.goal_id)) {
@@ -339,10 +345,12 @@ const getVisibleSteps = (goal) => {
   }
   return steps.slice(0, 3)
 }
+// Compute how many steps are hidden behind the "View more" button.
 const getHiddenStepsCount = (goal) => {
   const hidden = getGoalSteps(goal).length - 3
   return hidden > 0 ? hidden : 0
 }
+// Toggle expanded/collapsed state for a specific goal's step list.
 const toggleSteps = (goalId) => {
   expandedStepsByGoal.value = {
     ...expandedStepsByGoal.value,
@@ -354,6 +362,7 @@ const loadGoals = async () => {
   try {
     loading.value = true
 
+    // Build optional date-range query params from filter inputs.
     const params = {}
 
     if (fromDate.value) {
@@ -367,6 +376,7 @@ const loadGoals = async () => {
       params
     })
 
+    // Update table data with the latest goals from API.
     goals.value = response.data
   } catch (error) {
     console.error('Error while fetching goals:', error)
@@ -379,6 +389,7 @@ const loadPlanId = async () => {
   try {
     const response = await axios.get('http://127.0.0.1:8000/api/career-plans')
     if (response.data && response.data.length > 0) {
+      // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
       newGoalData.plan_id = response.data[0].plan_id
     } else {
@@ -391,6 +402,7 @@ const loadPlanId = async () => {
   }
 }
 
+// Initialize required data as soon as the page is mounted.
 onMounted(() => {
   loadPlanId()
   loadGoals()
@@ -400,6 +412,7 @@ const newGoal = () => {
   showNewGoalForm.value = true
 }
 
+// Create a new goal, then reset the form and refresh list state.
 const createGoal = async () => {
   if (!newGoalData.plan_id) {
     alert('Please create a Career Development Plan first')
@@ -407,6 +420,7 @@ const createGoal = async () => {
   }
 
   try {
+    // Normalize form values (e.g., empty optional fields) before sending to API.
     const payload = normalizeGoalPayload(newGoalData)
     await axios.post('http://127.0.0.1:8000/api/smart-goals', payload)
     showNewGoalForm.value = false
@@ -433,6 +447,7 @@ const createGoal = async () => {
 }
 
 const normalizeGoalPayload = (goal) => {
+  // Convert optional empty form fields to null so backend validation/database handling stays consistent.
   return {
     ...goal,
     progress_notes: goal.progress_notes || null,
@@ -474,6 +489,7 @@ const cancelEditGoal = () => {
   })
 }
 
+// Open step editor modal and clone/sort existing step data into local draft state.
 const editSteps = (goal) => {
   stepModalGoal.value = goal
   // Laravel serializes relations as snake_case in JSON responses.
@@ -503,6 +519,7 @@ const addStep = () => {
   })
 }
 
+// Keep step order sequential after deleting a draft row.
 const removeStep = (index) => {
   stepDrafts.value.splice(index, 1)
   stepDrafts.value.forEach((step, orderIndex) => {
@@ -520,6 +537,7 @@ const closeStepModal = () => {
   stepDrafts.value = []
 }
 
+// Save all steps in one request so backend can safely replace the set atomically.
 const saveSteps = async () => {
   if (!stepModalGoal.value) {
     return
@@ -550,6 +568,7 @@ const saveSteps = async () => {
   }
 }
 
+// Optimistically update status from dropdown; revert on API failure.
 const updateGoalStatus = async (goal) => {
   const previousStatus = goal._previousStatus ?? 'planned'
   try {
@@ -566,6 +585,7 @@ const updateGoalStatus = async (goal) => {
   }
 }
 
+// Populate edit form with existing row data and open edit section.
 const editGoal = (goal) => {
   editingGoal.value = goal
   Object.assign(editGoalData, {
@@ -581,6 +601,7 @@ const editGoal = (goal) => {
   showEditGoalForm.value = true
 }
 
+// Persist edited goal, then close editor and refresh table data.
 const updateGoal = async () => {
   try {
     const payload = normalizeGoalPayload(editGoalData)
@@ -598,6 +619,7 @@ const updateGoal = async () => {
   }
 }
 
+// Delete selected goal after user confirmation and refresh table.
 const deleteGoal = async (goal) => {
   if (confirm(`Are you sure you want to delete this goal: ${goal.goal_description}?`)) {
     try {
@@ -626,7 +648,8 @@ const deleteGoal = async (goal) => {
 
 .goals-main {
   width: 100%;
-  max-width: 100%;
+  /* max-width: 100%; */
+  max-width: 1280px; 
   overflow-x: hidden;
   box-sizing: border-box;
 }
@@ -735,6 +758,7 @@ const deleteGoal = async (goal) => {
 }
 
 .goals-table {
+  /* Wide desktop table is intentionally scrollable in its wrapper to preserve readable column widths. */
   width: 100%;
   min-width: 1220px;
   table-layout: auto;
@@ -783,11 +807,13 @@ const deleteGoal = async (goal) => {
 
 .goals-table th:nth-child(1),
 .goals-table td:nth-child(1) {
+  /* Column 1: SMART Goal */
   min-width: 15rem;
 }
 
 .goals-table th:nth-child(2),
 .goals-table td:nth-child(2) {
+  /* Column 2: Action Steps */
   min-width: 16rem;
 }
 
@@ -797,6 +823,7 @@ const deleteGoal = async (goal) => {
 .goals-table td:nth-child(4),
 .goals-table th:nth-child(7),
 .goals-table td:nth-child(7) {
+  /* Columns 3,4,7: Progress, Learnings, Completion Notes */
   min-width: 10rem;
 }
 
@@ -804,6 +831,7 @@ const deleteGoal = async (goal) => {
 .goals-table td:nth-child(5),
 .goals-table th:nth-child(6),
 .goals-table td:nth-child(6) {
+  /* Columns 5,6: Start Date, End Date */
   min-width: 8.5rem;
   white-space: nowrap;
 }
@@ -1010,6 +1038,7 @@ const deleteGoal = async (goal) => {
   display: block;
 }
 
+/* Keep mobile cards hidden on larger screens. */
 .mobile-goals-list {
   display: none;
 }
@@ -1126,6 +1155,7 @@ const deleteGoal = async (goal) => {
 }
 
 @media (max-width: 768px) {
+  /* Phone layout: switch from table to card-based rendering. */
   .goals-main {
     padding-left: 0.9rem !important;
     padding-right: 0.9rem !important;
