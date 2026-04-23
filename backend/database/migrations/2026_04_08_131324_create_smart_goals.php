@@ -15,16 +15,18 @@ return new class extends Migration
             $table->id('goal_id');
             $table->foreignId('plan_id')->constrained('career_development_plans', 'plan_id')->onDelete('cascade');
             $table->text('goal_description');
-            $table->text('timeline');
-            $table->text('progress_notes');
-            $table->text('learnings');
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->text('timeline')->nullable();
+            $table->text('progress_notes')->nullable();
+            $table->text('learnings')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->date('completion_date')->nullable();
             $table->text('completion_notes')->nullable();
-            $table->enum('status',['planned', 'in_progress', 'completed'])->default('planned');
+            $table->enum('status', ['planned', 'in_progress', 'completed'])->default('planned');
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE smart_goals ADD CONSTRAINT check_smart_goals CHECK (status IN ('planned', 'in_progress', 'completed'))");
     }
 
     /**

@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('system_audit_logs', function (Blueprint $table) {
             $table->id('log_id');
-            $table->foreignId('admin_id')->nullable()->constrained('users', 'user_id');
+            $table->foreignId('admin_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->string('action_type', 100);
             $table->string('target_table', 100);
-            $table->integer('target_row_id');
-            $table->text('previous_value_snapshot');
-            $table->text('new_value_snapshot');
+            $table->unsignedBigInteger('target_row_id');
+            $table->text('previous_value_snapshot')->nullable();
+            $table->text('new_value_snapshot')->nullable();
             $table->timestamps();
         });
     }

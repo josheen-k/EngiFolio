@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id('attainment_cert_id');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->string('title', 255);
-            $table->text('body');
-            $table->string('file_path', 500);
+            $table->text('body')->nullable();
+            $table->string('file_path', 500)->nullable();
             $table->date('issued_date')->nullable();
             $table->date('expiry_date')->nullable();
             $table->timestamps();

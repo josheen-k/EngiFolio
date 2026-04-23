@@ -18,18 +18,19 @@ return new class extends Migration
             $table->string('experience_title', 255);
             $table->integer('associated_year');
             $table->text('experience_tasks');
-            $table->text('key_learnings');
-            $table->text('future_applications');
-
-            $table->enum('level', ['Emerging', 'Developing', 'Proficient', 'Competent']);
-
-            $table->enum('status',['Draft', 'Submitted', 'Reviewed'])->default('Draft');
+            $table->text('key_learnings')->nullable();
+            $table->text('future_applications')->nullable();
+            $table->string('level', 25);
+            $table->string('status', 25)->default('Draft');
             $table->date('start_date');
-            $table->date('end_date');
+            $table->date('end_date')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'indicator_id', 'status'], 'entries_user_indicator_status_index');
         });
+
+        DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_level CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Confident'))");
+        DB::statement("ALTER TABLE competency_entries ADD CONSTRAINT check_status CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))");
     }
 
     /**

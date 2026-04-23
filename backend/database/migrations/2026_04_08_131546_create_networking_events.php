@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users', 'user_id')->nullOnDelete();
             $table->string('event_name', 255);
             $table->dateTime('event_datetime');
-            $table->string('location', 255);
-            $table->text('details');
+            $table->string('location', 255)->nullable();
+            $table->text('details')->nullable();
             $table->timestamps();
         });
     }

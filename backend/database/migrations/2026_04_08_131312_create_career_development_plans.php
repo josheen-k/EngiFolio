@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id('plan_id');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->integer('plan_year');
-            $table->text('professional_interests');
-            $table->text('employers_of_interest');
-            $table->text('networking_plan');
-            $table->text('personal_values');
-            $table->text('extracurriculars');
-            $table->text('development_focus');
+            $table->text('professional_interests')->nullable();
+            $table->text('employers_of_interest')->nullable();
+            $table->text('networking_plan')->nullable();
+            $table->text('personal_values')->nullable();
+            $table->text('extracurriculars')->nullable();
+            $table->text('development_focus')->nullable();
             $table->unique(['user_id', 'plan_year']);
             $table->timestamps();
         });
