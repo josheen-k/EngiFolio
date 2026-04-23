@@ -45,9 +45,8 @@ In the second terminal run:
 `cd frontend`
 `npm run dev`
 
-<<<<<<< HEAD
-=======
+
 ## Populating The Database
 To populate the database with set sample data, run this command from the backend folder.
 `php artisan migrate:fresh --seed`
->>>>>>> origin/main
+
