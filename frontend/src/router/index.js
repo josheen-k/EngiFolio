@@ -6,6 +6,7 @@ import ProfileSettings from '../pages/student/profileSettings.vue'
 import EACompetency from '../pages/student/eaCompetency.vue'
 import CareerPlanning from '../pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
+import Event from '@/pages/student/Event.vue'
 import Networking from '@/pages/student/Networking.vue'
 
 const routes = [
@@ -55,6 +56,12 @@ const routes = [
     path: '/student/networking',
     name: 'networking',
     component: Networking
+  },
+
+  {
+    path: '/student/event',
+    name: 'event',
+    component: Event
   }
 ]
 
