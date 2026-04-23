@@ -17,7 +17,7 @@
     const profile = ref(null);
     const userCompetencies = ref(null);
     const contacts = ref(null);
-    const goals = ref(null);
+    const plan = ref(null);
 
     // Keeps track of whether values are selected or not
     watch(allDataSelected, (newValue) => {
@@ -151,12 +151,12 @@
     // Fetches the goals and adds the contents to the file
     const addGoals = async () => { 
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/smart-goals/${route.params.id}`);
-        goals.value = response.data;
+        const response = await axios.get(`http://127.0.0.1:8000/api/career-plans/${route.params.id}`);
+        plan.value = response.data;
       } catch (error) {
         console.error("Error while fetching user goals:", error);
       } finally {
-        const formattedGoals = ['----- SMART Goals -----']
+        const formattedGoals = ['----- Goals -----']
         
         const goalsHeader = [
           `"Goal Description"`,
@@ -172,8 +172,8 @@
 
         formattedGoals.push(goalsHeader);
 
-        if (goals.value && goals.value.length > 0) {
-          goals.value.forEach(goal => {
+        if (plan.value.smart_goals && plan.value.smart_goals.length > 0) {
+          plan.value.smart_goals.forEach(goal => {
             const row = [
               `"${goal.goal_description}"`,
               `"${goal.timeline || ''}"`,

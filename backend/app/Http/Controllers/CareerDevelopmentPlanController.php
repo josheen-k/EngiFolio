@@ -29,9 +29,12 @@ class CareerDevelopmentPlanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CareerDevelopmentPlan $careerDevelopmentPlan)
+    public function show($id)
     {
-        //
+        // Return plan with all attached smart goals
+        $plan = CareerDevelopmentPlan::with(['smartGoals.actionSteps'])->where('user_id', $id)->firstOrFail();
+        
+        return response()->json($plan);
     }
 
     /**

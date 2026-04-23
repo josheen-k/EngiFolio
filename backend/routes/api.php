@@ -72,6 +72,7 @@ Route::delete('/action-steps/{stepId}', [GoalActionStepController::class, 'destr
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
+Route::get('/career-plans/{id}', [CareerDevelopmentPlanController::class, 'show']);
 
 // Competency Entries
 Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'show']);
