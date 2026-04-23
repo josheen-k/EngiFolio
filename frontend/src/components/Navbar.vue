@@ -54,9 +54,9 @@ onClickOutside(dropdown, () => {
 					<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
 					</li>
-					<li class="nav-item">
-						<router-link active-class="active-link" :to="`/student/career-development/${$route.params.id}`" @click="closeMenu">CDL</router-link>
-					</li>
+					<!-- <li class="nav-item"> -->
+						<!-- <router-link active-class="active-link" :to="`/student/career-development/${$route.params.id}`" @click="closeMenu">CDL</router-link> -->
+					<!-- </li> -->
 				</ul>
 			</div>
 
