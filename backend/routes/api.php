@@ -1,19 +1,20 @@
 <?php
 
-use App\Http\Controllers\NetworkingEventController;
-use App\Http\Controllers\NetworkingEventCommentController;
-use App\Http\Controllers\NetworkingEventQuestionController;
-use App\Http\Controllers\StudentProfileController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\IndustryContactController;
-use App\Http\Controllers\StudentLinkController;
-use App\Http\Controllers\SmartGoalController;
-use App\Http\Controllers\GoalActionStepController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
 use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
+use App\Http\Controllers\GoalActionStepController;
+use App\Http\Controllers\IndustryContactController;
+use App\Http\Controllers\NetworkingEventCommentController;
+use App\Http\Controllers\NetworkingEventController;
+use App\Http\Controllers\NetworkingEventQuestionController;
+use App\Http\Controllers\SmartGoalController;
+use App\Http\Controllers\StudentLinkController;
+use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes

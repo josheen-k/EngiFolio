@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->text('comment_text');
-            $table->timestamps();
-
-            $table->foreign('event_id')->references('event_id')->on('networking_events')->onDelete('cascade');
+  
+            $table->foreignId('event_id')->nullable()->constrained('networking_events', 'event_id')->nullOnDelete();
         });
     }
 
