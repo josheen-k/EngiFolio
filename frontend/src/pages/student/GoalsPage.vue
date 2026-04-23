@@ -789,7 +789,7 @@ const deleteGoal = async (goal) => {
 .goals-table td {
   border-color: #e0e0e0;
   padding: 0.9rem 0.8rem;
-  vertical-align: top;
+  vertical-align: middle;
   text-align: left;
   overflow-wrap: anywhere;
   word-break: break-word;
