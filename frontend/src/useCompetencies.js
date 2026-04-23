@@ -283,7 +283,7 @@ export const discontinuedCategories = ref([
 // return only saved/posted reflections 
 export function publishedReflec(compt) {
   return compt.reflec.filter(function (r) {
-    return r.isDraft!== true
+    return r.isDraft == false
   })
 }
 
