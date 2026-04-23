@@ -297,7 +297,7 @@ Table competency_entries {
   key_learnings text [note: 'Key learnings from that experience']
   future_applications text [note: 'How the learning will be apllied in future']
 
-  level varchar(25) [note: "CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Competent'))", not null]
+  level varchar(25) [note: "CHECK (level IN ('Emerging', 'Developing', 'Proficient', 'Confident'))", not null]
   status varchar(25) [note: "CHECK (status IN ('Draft', 'Submitted', 'Reviewed'))", not null, default: 'draft']
   start_date date [not null]
   end_date date
