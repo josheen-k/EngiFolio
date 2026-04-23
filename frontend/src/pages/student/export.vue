@@ -84,7 +84,7 @@
 
         formattedComp.push(compHeader);
 
-        if (userCompetencies.value.length > 0) {
+        if (userCompetencies.value && userCompetencies.value.length > 0) {
           userCompetencies.value.forEach(comp => {
             const row = [
               `"${comp.indicator.display_id}"`,
