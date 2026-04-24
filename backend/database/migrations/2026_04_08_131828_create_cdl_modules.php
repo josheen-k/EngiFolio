@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('cdl_modules', function (Blueprint $table) {
             $table->id('cdl_id');
-            $table->string('title', 255);
+            $table->string('title', 100);
             $table->text('description')->nullable();
-            $table->string('module_url', 500)->nullable();
+            $table->string('module_url', 255)->nullable();
             $table->timestamps();
         });
     }

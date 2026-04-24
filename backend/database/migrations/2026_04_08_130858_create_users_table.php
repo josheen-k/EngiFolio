@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id('user_id');
             $table->foreignId('role_id')->constrained('roles', 'role_id');
-            $table->string('username', 100)->unique();
-            $table->string('email', 255)->unique();
+            $table->string('username', 32)->unique();
+            $table->string('email', 254)->unique();
             $table->string('password_hash', 255);
-            $table->string('account_status', 25)->default('active');
+            $table->string('account_status', 20)->default('active');
             $table->timestamps();
         });
 

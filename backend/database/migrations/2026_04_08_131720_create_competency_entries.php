@@ -20,8 +20,8 @@ return new class extends Migration
             $table->text('experience_tasks');
             $table->text('key_learnings')->nullable();
             $table->text('future_applications')->nullable();
-            $table->string('level', 25);
-            $table->string('status', 25)->default('Draft');
+            $table->string('level', 15);
+            $table->string('status', 15)->default('Draft');
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->timestamps();

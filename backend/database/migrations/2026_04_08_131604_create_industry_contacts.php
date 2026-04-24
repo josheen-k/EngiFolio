@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('industry_contacts', function (Blueprint $table) {
             $table->id('contact_id');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->string('contact_name', 255);
-            $table->string('company', 255)->nullable();
+            $table->string('contact_name', 100);
+            $table->string('company', 100)->nullable();
             $table->text('progress_notes')->nullable();
             $table->date('date_met')->nullable();
             $table->timestamps();

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('link_id');
             $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
             $table->string('link_type', 25);
-            $table->string('link_label', 100)->nullable();
+            $table->string('link_label', 60)->nullable();
             $table->string('link_url', 500);
             $table->unique(['profile_id', 'link_type', 'link_url']);
             $table->timestamps();

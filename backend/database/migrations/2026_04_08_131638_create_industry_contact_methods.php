@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('method_id');
             $table->foreignId('contact_id')->constrained('industry_contacts', 'contact_id')->onDelete('cascade');
             $table->string('method_type', 25);
-            $table->string('method_value', 500);
+            $table->string('method_value', 255);
             $table->timestamps();
         });
 
