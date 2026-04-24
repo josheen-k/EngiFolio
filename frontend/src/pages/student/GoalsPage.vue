@@ -280,7 +280,6 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
-import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
 import api from "@/services/api";
@@ -376,7 +375,7 @@ const loadGoals = async () => {
     if (toDate.value) {
       params.to = toDate.value
     }
-    const response = await axios.get('http://127.0.0.1:8000/api/smart-goals', {
+    const response = await api.get('/smart-goals', {
       params
     })
 
@@ -391,7 +390,7 @@ const loadGoals = async () => {
 
 const loadPlanId = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/api/career-plans')
+    const response = await api.get('/career-plans')
     if (response.data && response.data.length > 0) {
       // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
@@ -426,7 +425,7 @@ const createGoal = async () => {
   try {
     // Normalize form values (e.g., empty optional fields) before sending to API.
     const payload = normalizeGoalPayload(newGoalData)
-    await axios.post('http://127.0.0.1:8000/api/smart-goals', payload)
+    await api.post('/smart-goals', payload)
     showNewGoalForm.value = false
     // Reset form
     Object.assign(newGoalData, {
@@ -554,7 +553,7 @@ const saveSteps = async () => {
   try {
     savingSteps.value = true
 
-    await axios.put(`http://127.0.0.1:8000/api/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
+    await api.put(`/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
       steps: normalizedSteps.map((step_description) => ({ step_description }))
     })
 
@@ -576,7 +575,7 @@ const saveSteps = async () => {
 const updateGoalStatus = async (goal) => {
   const previousStatus = goal._previousStatus ?? 'planned'
   try {
-    await axios.put(`http://127.0.0.1:8000/api/smart-goals/${goal.goal_id}`, {
+    await api.put(`/smart-goals/${goal.goal_id}`, {
       status: goal.status
     })
   } catch (error) {
@@ -609,7 +608,7 @@ const editGoal = (goal) => {
 const updateGoal = async () => {
   try {
     const payload = normalizeGoalPayload(editGoalData)
-    await axios.put(`http://127.0.0.1:8000/api/smart-goals/${editingGoal.value.goal_id}`, payload)
+    await api.put(`/smart-goals/${editingGoal.value.goal_id}`, payload)
     showEditGoalForm.value = false
     editingGoal.value = null
     loadGoals() // Refresh the list
@@ -627,7 +626,7 @@ const updateGoal = async () => {
 const deleteGoal = async (goal) => {
   if (confirm(`Are you sure you want to delete this goal: ${goal.goal_description}?`)) {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/smart-goals/${goal.goal_id}`)
+      await api.delete(`/smart-goals/${goal.goal_id}`)
       loadGoals() // Refresh the list
       alert('Goal deleted successfully!')
     } catch (error) {
