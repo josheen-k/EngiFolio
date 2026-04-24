@@ -274,16 +274,13 @@
       </div>
     </div>
     </main>
-    <Footer />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
 import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
 import api from "@/services/api";
-
 
 // Page-level reactive state used by forms, filters, and modal dialogs.
 const goals = ref([])

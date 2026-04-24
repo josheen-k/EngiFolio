@@ -158,15 +158,12 @@
 	<div v-else class="container py-5">
 		<div class="alert alert-warning" role="alert">Profile not found.</div>
 	</div>
-
-  <Footer/>
 </template>
 
 <script setup>
     import { ref, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
-    import Footer from '@/components/Footer.vue'
     import api from "@/services/api";
 
     const route = useRoute();
@@ -409,7 +406,7 @@ const recentAct = [
 }
 
 .btn-filter:hover {
-  background: #666666;
+  background: #142a93;
   color: #ffffff;
 }
 
@@ -444,7 +441,7 @@ const recentAct = [
   font-family: 'Montserrat Alternates', sans-serif;
   font-size: 1rem;
   color: #ffffff;
-  background: #555555;
+  background: #142a93;
   padding: 0.5rem 1rem;
 }
 
@@ -454,7 +451,7 @@ const recentAct = [
 
 .btn-ql:hover {
   color: #ffffff;
-  background: #333333;
+  background: #140F50;
 }
 
 .activity-list {

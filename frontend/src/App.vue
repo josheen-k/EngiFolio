@@ -2,6 +2,7 @@
   import { onMounted, ref } from 'vue'
   import axios from 'axios'
   import { useRouter } from 'vue-router'
+  import Footer from '@/components/Footer.vue';
 
   const isLoggedIn = ref(false);
   const router = useRouter();
@@ -19,4 +20,5 @@
 
 <template>
   <router-view :key="$route.fullPath" />
+  <Footer/>
 </template>

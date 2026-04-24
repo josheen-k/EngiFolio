@@ -2,7 +2,6 @@
     import { ref, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
-    import Footer from '@/components/Footer.vue'
     import api from "@/services/api";
 
     const route = useRoute();
@@ -317,8 +316,6 @@
       </div>
     </div>
   </main>
-
-  <Footer />
 </template>
 
 <style scoped>

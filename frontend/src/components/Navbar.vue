@@ -93,7 +93,7 @@ onClickOutside(dropdown, () => {
 	display: flex;
 	justify-content: space-between;
 	align-items: stretch;
-	background-color: #130f4d;
+	background-color: #140F50;
 	padding: 0;
 	overflow-x: hidden;
 	overflow-y: visible;

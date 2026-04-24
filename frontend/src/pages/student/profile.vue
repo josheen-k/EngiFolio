@@ -2,7 +2,6 @@
     import { ref, onMounted } from 'vue';
     import { useRoute } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
-    import Footer from '@/components/Footer.vue'
 	import defaultAvatar from '@/assets/default.jpg';
     import api from "@/services/api";
 
@@ -86,19 +85,15 @@
                 <router-link class="btn btn-filter px-4" :to="`/student/dashboard/${$route.params.id}`">Back to Dashboard</router-link>
             </div>
         </main>
-
-        <Footer />
     </body>
 
     <div v-else-if="loading" class="text-center py-5">
         <div class="spinner-border" role="status"></div>
         <p>Loading profile...</p>
-        <Footer />
     </div>
 
     <div v-else class="container py-5">
         <div class="alert alert-warning" role="alert">Profile not found.</div>
-        <Footer />
     </div>
 </template>
 

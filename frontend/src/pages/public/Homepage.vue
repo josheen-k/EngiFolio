@@ -60,18 +60,14 @@
                 </div>
             </div>
         </section>
-
-        <Footer />
-
     </div>
 </template>
 
 <script>
 import Divider from '@/components/Divider.vue';
-import Footer from '@/components/Footer.vue';
 export default {
     name: 'Homepage',
-    components: { Divider, Footer },
+    components: { Divider },
     data() {
         return {
             features: [
@@ -196,7 +192,7 @@ export default {
 }
 
 .hero-highlight {
-    color: #1d9ecf;
+    color: #142a93;
     font-family: 'Kode Mono', monospace;
     font-size: 2.8rem;
 }

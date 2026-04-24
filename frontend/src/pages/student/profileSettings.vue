@@ -2,7 +2,6 @@
   import { ref, onMounted } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import Navbar from '@/components/Navbar.vue'
-  import Footer from '@/components/Footer.vue'
   import api from "@/services/api";
 
   const router = useRouter();
@@ -176,13 +175,10 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    
-    <Footer />
   </body>
 
   <div v-else class="container py-5 text-center">
     <p class="text-muted small">Loading settings...</p>
-    <Footer />
   </div>
 </template>
 
