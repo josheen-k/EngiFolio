@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('career_development_plans', function (Blueprint $table) {
             $table->id('plan_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
             $table->integer('plan_year');
             $table->text('professional_interests')->nullable();
             $table->text('employers_of_interest')->nullable();
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('personal_values')->nullable();
             $table->text('extracurriculars')->nullable();
             $table->text('development_focus')->nullable();
-            $table->unique(['user_id', 'plan_year']);
+            $table->unique(['profile_id', 'plan_year']);
             $table->timestamps();
         });
     }

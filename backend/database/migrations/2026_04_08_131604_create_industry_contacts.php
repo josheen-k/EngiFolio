@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('industry_contacts', function (Blueprint $table) {
             $table->id('contact_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
             $table->string('contact_name', 100);
             $table->string('company', 100)->nullable();
             $table->text('progress_notes')->nullable();
