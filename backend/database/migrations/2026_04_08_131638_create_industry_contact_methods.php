@@ -14,12 +14,10 @@ return new class extends Migration
         Schema::create('industry_contact_methods', function (Blueprint $table) {
             $table->id('method_id');
             $table->foreignId('contact_id')->constrained('industry_contacts', 'contact_id')->onDelete('cascade');
-            $table->string('method_type', 25);
+            $table->foreignId('method_type_id')->constrained('contact_method_types', 'contact_method_type_id');
             $table->string('method_value', 255);
             $table->timestamps();
         });
-
-        DB::statement("ALTER TABLE industry_contact_methods ADD CONSTRAINT check_contact_method CHECK (method_type IN ('phone', 'email', 'linkedin', 'website', 'other'))");
     }
 
     /**

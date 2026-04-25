@@ -20,13 +20,13 @@ return new class extends Migration
             $table->text('experience_tasks');
             $table->text('key_learnings')->nullable();
             $table->text('future_applications')->nullable();
-            $table->string('level', 15);
-            $table->string('status', 15)->default('Draft');
+            $table->foreignId('entry_level_id')->constrained('competency_entry_levels', 'entry_level_id');
+            $table->foreignId('entry_status_id')->constrained('competency_entry_statuses', 'entry_status_id');
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->timestamps();
 
-            $table->index(['profile_id', 'indicator_id', 'status'], 'entries_user_indicator_status_index');
+            $table->index(['profile_id', 'indicator_id', 'entry_status_id']);
         });
     }
 
