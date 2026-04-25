@@ -23,8 +23,8 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'role_id' => 'required|exists:roles,role_id',
-            'username' => 'required|string|max:100|unique:users',
-            'email' => 'required|email|unique:users',
+            'username' => 'required|string|max:9|unique:users',
+            'email' => 'required|email|max:254|unique:users',
             'password' => 'required|min:6',
         ]);
 
@@ -33,7 +33,7 @@ class UserController extends Controller
             'username' => $validated['username'],
             'email' => $validated['email'],
             'password_hash' => Hash::make($validated['password']),
-            'account_status' => 'active',
+            'account_status' => 1,
         ]);
 
         return response()->json($user, 201);

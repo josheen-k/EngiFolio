@@ -24,8 +24,8 @@ class IndustryContactController extends Controller
     public function store(Request $request, $user)
 {
     $validated = $request->validate([
-        'contact_name' => 'required|string',
-        'company' => 'nullable|string|max:255',
+        'contact_name' => 'required|string|max:100',
+        'company' => 'nullable|string|max:100',
         'progress_notes' => 'nullable|string',
         'date_met' => 'nullable|date',
     ]);

@@ -21,11 +21,11 @@ class AchievementCertController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'body'        => 'nullable|text',
-            'file_path'   => 'nullable|string|max:500',
-            'issued_date'     => 'nullable|string|max:255',
-            'expiry_date'     => 'nullable|string|max:255',
+            'user_id'     => 'required|exists:users,user_id', 
+            'title'       => 'required|string|max:100',
+            'body'        => 'nullable|string',
+            'file_path'   => 'nullable|string|max:255',
+            'issued_date' => 'nullable|date',
         ]);
 
         $cert = AchievementCert::create($validated);

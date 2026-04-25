@@ -22,8 +22,8 @@ class StudentLinkController extends Controller
     {
         $validated = $request->validate([
             'profile_id' => 'required|exists:student_profiles,profile_id',
-            'link_type'          => 'nullable|string|max:255',
-            'link_label'         => 'required|string|max:255',
+            'link_type'          => 'nullable|string|max:25',
+            'link_label'         => 'required|string|max:60',
             'link_url'           => 'required|url',
             'display_order'      => 'nullable|integer',
         ]);

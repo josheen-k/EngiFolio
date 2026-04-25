@@ -24,13 +24,14 @@ class StudentProfileController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'first_name'       => 'required|string|max:255',
-            'last_name'        => 'required|string|max:255',
-            'preferred_name'   => 'nullable|string|max:255',
-            'degree_title'     => 'nullable|string|max:255',
-            'specialisation'     => 'nullable|string|max:255',
+            'user_id' => 'required|exists:users,user_id',
+            'first_name'       => 'required|string|max:50',
+            'last_name'        => 'required|string|max:50',
+            'preferred_name'   => 'nullable|string|max:50',
+            'degree_title'     => 'nullable|string|max:40',
+            'specialisation'     => 'nullable|string|max:60',
             'personal_intro'   => 'nullable|string',
-            'profile_image_url' => 'nullable|string|max:2048',
+            'profile_image_url' => 'nullable|string|max:255',
         ]);
 
         $profile = StudentProfile::create($validated);
@@ -60,13 +61,13 @@ class StudentProfileController extends Controller
         $profile = \App\Models\StudentProfile::findOrFail($id);
 
         $validated = $request->validate([
-            'first_name'       => 'required|string|max:255',
-            'last_name'        => 'required|string|max:255',
-            'preferred_name'   => 'nullable|string|max:255',
-            'degree_title'     => 'nullable|string|max:255',
-            'specialisation'     => 'nullable|string|max:255',
+            'first_name'       => 'required|string|max:50',
+            'last_name'        => 'required|string|max:50',
+            'preferred_name'   => 'nullable|string|max:50',
+            'degree_title'     => 'nullable|string|max:40',
+            'specialisation'     => 'nullable|string|max:60',
             'personal_intro'   => 'nullable|string',
-            'profile_image_url' => 'nullable|string|max:2048',
+            'profile_image_url' => 'nullable|string|max:255',
         ]);
 
         // Update profile with validated data
