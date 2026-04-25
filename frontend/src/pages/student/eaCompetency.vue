@@ -13,14 +13,11 @@
       <component :is="currComponent"/>
     </main>
   </div>
-
-  <Footer/>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import Navbar from '@/components/Navbar.vue';
-import Footer from '@/components/Footer.vue';
 import CurrentCompetency from '@/components/CurrentCompetency.vue';
 import DraftReflections from '@/components/DraftReflections.vue';
 import FeedbackReflections from '@/components/FeedbackReflections.vue';

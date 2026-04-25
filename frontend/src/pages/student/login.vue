@@ -1,6 +1,5 @@
 <script setup>
     import { useRouter, useRoute } from 'vue-router';
-    import Footer from '@/components/Footer.vue'
 
     const router = useRouter();
     const route = useRoute();
@@ -50,8 +49,6 @@
 			</div>
 		</div>  
     </div>
-    
-  <Footer />
 </template>
 
 <style scoped>
