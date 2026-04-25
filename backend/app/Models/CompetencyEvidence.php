@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class competency_evidence extends Model
+class CompetencyEvidence extends Model
 {
     use HasFactory;
 
@@ -19,11 +19,11 @@ class competency_evidence extends Model
 
     public function type()
     {
-        return $this->belongsTo(CompetencyEvidenceType::class, 'evidence_type_id');
+        return $this->belongsTo(CompetencyEvidenceType::class, 'evidence_type_id', 'evidence_type_id');
     }
 
     public function entry()
     {
-        return $this->belongsTo(CompetencyEntry::class, 'entry_id');
+        return $this->belongsTo(CompetencyEntry::class, 'entry_id', 'entry_id');
     }
 }

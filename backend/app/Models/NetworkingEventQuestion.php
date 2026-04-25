@@ -19,6 +19,6 @@ class NetworkingEventQuestion extends Model
 
     public function networkingEvent()
     {
-        return $this->belongsTo(NetworkingEvent::class, 'event_id');
+        return $this->belongsTo(NetworkingEvent::class, 'event_id', 'event_id');
     }
 }

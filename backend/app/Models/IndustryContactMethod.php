@@ -13,12 +13,17 @@ class IndustryContactMethod extends Model
     protected $primaryKey = 'method_id';
     protected $fillable = [
         'contact_id',
-        'contact_method',
+        'method_type_id',
         'method_value',
     ];
 
     public function industryContact()
     {
-        return $this->belongsTo(IndustryContact::class, 'contact_id');
+        return $this->belongsTo(IndustryContact::class, 'contact_id', 'contact_id');
+    }
+
+    public function methodType()
+    {
+        return $this->belongsTo(ContactMethodType::class, 'method_type_id', 'contact_method_type_id');
     }
 }

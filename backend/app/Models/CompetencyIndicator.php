@@ -21,11 +21,11 @@ class CompetencyIndicator extends Model
 
     public function group()
     {
-        return $this->belongsTo(CompetencyGroup::class, 'group_id');
+        return $this->belongsTo(CompetencyGroup::class, 'group_id', 'group_id');
     }
 
     public function entries()
     {
-        return $this->hasMany(CompetencyEntry::class, 'indicator_id');
+        return $this->hasMany(CompetencyEntry::class, 'indicator_id', 'indicator_id');
     }
 }

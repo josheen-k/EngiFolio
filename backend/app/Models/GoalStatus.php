@@ -5,12 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class goal_statuses extends Model
+class GoalStatus extends Model
 {
     use HasFactory;
 
+    protected $table = 'goal_statuses';
     protected $primaryKey = 'goal_status_id';
     protected $fillable = [
-        'status'
+        'goal_status'
     ];
+
+    public function goals()
+    {
+        return $this->hasMany(SmartGoal::class, 'goal_status_id', 'goal_status_id');
+    }
 }

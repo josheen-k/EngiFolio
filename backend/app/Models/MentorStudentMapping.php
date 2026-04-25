@@ -13,7 +13,7 @@ class MentorStudentMapping extends Model
     protected $primaryKey = 'mapping_id';
     protected $fillable = [
         'staff_id',
-        'student_id',
+        'profile_id',
         'assigned_at',
     ];
 
@@ -22,8 +22,8 @@ class MentorStudentMapping extends Model
         return $this->belongsTo(User::class, 'staff_id', 'user_id');
     }
 
-    public function student()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'student_id', 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 }

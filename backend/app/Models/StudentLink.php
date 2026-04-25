@@ -13,14 +13,18 @@ class StudentLink extends Model
     protected $primaryKey = 'link_id';
     protected $fillable = [
         'profile_id',
-        'link_type',
+        'link_type_id',
         'link_label',
         'link_url',
-        'display_order',
     ];
 
     public function studentProfile()
     {
-        return $this->belongsTo(StudentProfile::class, 'profile_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
+    }
+
+    public function linkType()
+    {
+        return $this->belongsTo(LinkType::class, 'link_type_id', 'link_type_id');
     }
 }
