@@ -626,7 +626,7 @@ function onAddReflec({ comptId, reflec }) {
   color: #ffffff;
 }
 
-.btn-add, .btn-add-sm {
+.btn-add {
   font-family: 'Montserrat Alternates', sans-serif;
   border-radius: 1.5rem;
   font-size: 1rem;
@@ -634,12 +634,12 @@ function onAddReflec({ comptId, reflec }) {
   background: #555555;
 }
 
-.btn-add:hover, .btn-add-sm:hover {
+.btn-add:hover {
   color: #ffffff;
   background: #333333;
 }
 
-.btn-filter-sm, .btn-add-sm {
+.btn-filter-sm {
   font-size: 0.8rem !important;
 }
 </style>
