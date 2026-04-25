@@ -1,5 +1,6 @@
 <template>
   <div class="curr-compt">
+    <!--compt detailed view-->
     <div v-if="selectedCompt" class="detail">
 
       <div class="btn-title-wrap">
@@ -23,16 +24,71 @@
 
       <div class="d-flex justify-content-between align-items-center my-3">
         <h3 class="entry-title">Your Entries</h3>
-        <div class="d-flex gap-3">
-          <button type="button" class="btn btn-filter">Add filter</button>
+        <div class="d-flex gap-2 align-items-center">
+
+          <!-- sort control -->
+          <div class="filter-wrap" ref="sortRef">
+            <button class="btn btn-filter" @click="sortDdOpen = !sortDdOpen">Sort</button>
+
+            <div v-if="sortDdOpen" class="filter-dd">
+              <p class="filter-heading">Sort by</p>
+              <div class="d-flex flex-column gap-1 mb-3">
+                <label class="filter-option" v-for="opt in sortByOptions" :key="opt.value">
+                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"/>{{ opt.label }}
+                </label>
+              </div>
+
+              <p class="filter-heading">Order</p>
+              <div class="d-flex flex-column gap-1">
+                <label class="filter-option">
+                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>Ascending
+                </label>
+                <label class="filter-option">
+                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>Descending
+                </label>
+              </div>
+
+              <div class="d-flex gap-2 mt-3 justify-content-end">
+                <button class="btn btn-filter-sm" @click="clearSort">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- reflection filter control -->
+          <div class="filter-wrap" ref="reflecFilterRef">
+            <button class="btn btn-filter" @click="reflecFilterDdOpen = !reflecFilterDdOpen">
+            {{ hasActiveReflecFilter ? 'See filters' : 'Add filter' }}
+            </button>
+
+            <div v-if="reflecFilterDdOpen" class="filter-dd">
+              <p class="filter-heading">Year</p>
+              <div class="d-flex flex-column gap-1 mb-3">
+                <label class="filter-option" v-for="opt in yearOptions" :key="opt.value">
+                  <input type="checkbox" :value="opt.value" v-model="reflecFilterYear" class="filter-radio"/>{{ opt.label }}
+                </label>
+              </div>
+
+              <p class="filter-heading">Attainment level</p>
+              <div class="d-flex flex-column gap-1">
+                <label class="filter-option" v-for="opt in levelOptions" :key="opt.value">
+                  <input type="checkbox" :value="opt.value" v-model="reflecFilterLevel" class="filter-radio"/>{{ opt.label }}
+                </label>
+              </div>
+
+              <div class="d-flex gap-2 mt-3 justify-content-end">
+                <button class="btn btn-filter-sm" @click="clearReflecFilter">Clear</button>
+              </div>
+            </div>
+          </div>
           <button type="button" class="btn btn-add" @click="openAdd(selectedCompt.id)">Add new</button>
         </div>
       </div>
 
-      <!-- only show published reflections in the list-->
-      <div v-if="publishedOnly(selectedCompt).length" class="row g-3">
-        <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in publishedOnly(selectedCompt)" :key="i">
-          <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, selectedCompt.reflec.indexOf(reflec))">
+      <!-- filtered + sorted reflection entries -->
+      <div v-if="processedReflec.length" class="row g-3">
+        <div class="col-12 col-sm-6 col-lg-3" v-for="reflec in processedReflec" :key="reflec._rawIndex">
+          <div class="card compt-card p-3 h-70 reflec-card"
+            @click="openReflec(reflec, reflec._rawIndex)">
             <p class="compt-label mb-2">{{ reflec.title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="reflecs rounded-pill">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
@@ -45,6 +101,7 @@
       <p v-else class="text-secondary">No reflection entries yet.</p>
     </div>
 
+    <!--all compt view-->
     <div v-else>
       <!-- title row with add filter button -->
       <div class="title-row">
@@ -72,7 +129,6 @@
 
             <div class="d-flex gap-2 mt-3 justify-content-end">
               <button class="btn btn-filter-sm" @click="clearFilter()">Clear</button>
-              <button class="btn btn-add-sm" @click="ddOpen = false">Apply</button>
             </div>
           </div>
         </div>
@@ -124,8 +180,7 @@ import { onClickOutside } from '@vueuse/core';
 const selectedCompt = ref(null);
 const categories = currentCategories // use shared data
 
-
-// filter options
+// filter options for competencies
 const filterRef = ref(null)
 const ddOpen = ref(false)
 const filterReflec = ref('all')
@@ -146,7 +201,7 @@ const levelOptions = [
 ]
 
 const hasActiveFilter = computed(function () {
-  return filterReflec.value !== 'all' || filterLevel.value.length>0
+  return filterReflec.value !== 'all' || filterLevel.value.length > 0
 })
 
 function toggleDd() {
@@ -188,7 +243,107 @@ function filteredCompts(category) {
   })
 }
 
+// filter & sort for reflec entries
+// reflec entry sirt
+const sortRef = ref(null)
+const sortDdOpen = ref(false)
+const sortBy = ref('date')
+const sortOrder = ref('desc')  // 'asc'  | 'desc'
+
+const sortByOptions = [
+  { value: 'date', label: 'Date' },
+  { value: 'name', label: 'Title (A–Z)' }
+]
+
+function clearSort() {
+  sortBy.value = 'date'
+  sortOrder.value = 'desc'
+  sortDdOpen.value = false
+}
+
+onClickOutside(sortRef, function () {
+  sortDdOpen.value = false
+})
+
+//reflec entry filter
+const reflecFilterRef = ref(null)
+const reflecFilterDdOpen = ref(false)
+const reflecFilterYear = ref([])
+const reflecFilterLevel = ref([])
+
+const yearOptions = [
+  { value: 0, label: 'Prior to degree' },
+  { value: 1, label: 'Year 1' },
+  { value: 2, label: 'Year 2' },
+  { value: 3, label: 'Year 3' },
+  { value: 4, label: 'Year 4' }
+]
+
+const hasActiveReflecFilter = computed(function () {
+  return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
+})
+
+function clearReflecFilter() {
+  reflecFilterYear.value = []
+  reflecFilterLevel.value = []
+  reflecFilterDdOpen.value = false
+}
+
+onClickOutside(reflecFilterRef, function () {
+  reflecFilterDdOpen.value = false
+})
+
+const processedReflec = computed(() => {
+  if (!selectedCompt.value) {
+    return []
+  }
+  let list = publishedOnly(selectedCompt.value)
+
+  // filter by year
+  if (reflecFilterYear.value.length > 0) {
+    list = list.filter(r => reflecFilterYear.value.includes(r.year))
+  }
+
+  // filter by level
+  if (reflecFilterLevel.value.length > 0) {
+    list = list.filter(r => reflecFilterLevel.value.includes(r.level))
+  }
+
+  // sort
+  list = list.sort((a, b) => {
+    if (sortBy.value === 'name') {
+      if (sortOrder.value === 'asc') {
+        return (a.title || '').localeCompare(b.title || '')
+      } else {
+        return (b.title || '').localeCompare(a.title || '')
+      }
+    }
+
+    //date parsing dd/mm/yyyy format
+    function parseDate(str) {
+      if (!str) {
+        return 0
+      }
+      const [day, month, year] = str.split('/')
+      return new Date(year, month-1, day)
+    }
+    const da = parseDate(a.date)
+    const db = parseDate(b.date)
+
+    if (sortOrder.value === 'asc') {
+      return da-db
+    } else {
+      return db-da
+    }
+  })
+  return list
+})
+
 function openDetail(compt, catLabel) {
+  // reset reflection filters and sort when opening new compt
+  clearReflecFilter()
+  clearSort()
+
   selectedCompt.value = {
     id: compt.id,
     category: catLabel,
@@ -285,13 +440,17 @@ function onAddReflec({ comptId, reflec }) {
 }
 
 .filter-wrap {
-  position: absolute;
-  right: 0;
-  top: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
+}
+
+.title-row>.filter-wrap {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .filter-dd {
