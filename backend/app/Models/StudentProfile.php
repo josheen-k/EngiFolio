@@ -31,4 +31,9 @@ class StudentProfile extends Model
     {
         return $this->hasMany(StudentLink::class, 'profile_id');
     }
+
+    public function actions()
+    {
+        return $this->hasMany(StudentAction::class, 'student_profile_id', 'profile_id');
+    }
 }

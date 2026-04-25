@@ -34,13 +34,13 @@ Table users {
   email varchar(254) [not null, unique]
   password_hash varchar(255) [not null]
   role_id bigint [not null, ref: > roles.role_id]
-  account_status_id bigint [not null, ref: > account_status.account_status_id, note: "On delete: restrict"]
+  account_status_id bigint [not null, ref: > account_statuses.account_status_id, note: "On delete: restrict"]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
 
 // Stores the account statuses that are available
-Table account_status {
+Table account_statuses {
   account_status_id bigint [pk, increment]
   account_status varchar(20) [not null, default: 'active', note: "active, disabled"]
   created_at datetime [not null]
@@ -64,6 +64,15 @@ Table student_profiles {
   personal_intro text
   upcoming_actions text [note: 'Future personal development actions']
   profile_image_url varchar(255)
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+// Log student actions
+Table student_actions {
+  student_action_id bigint [pk, increment]
+  student_profile biging [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
+  action varchar(100) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
