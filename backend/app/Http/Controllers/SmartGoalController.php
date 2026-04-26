@@ -163,10 +163,7 @@ class SmartGoalController extends Controller
         // Return user goals in the same persisted order used by the main goals list.
         $goals = SmartGoal::with(['actionSteps', 'feedback'])->whereHas('plan', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
-            })
-            ->orderBy('goal_order')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            })->get();
 
         if ($goals->isEmpty()) {
             return response()->json(['message' => 'No goals for this user found'], 404);
