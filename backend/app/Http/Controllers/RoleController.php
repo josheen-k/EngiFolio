@@ -8,11 +8,12 @@ use Illuminate\Http\Request;
 class RoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of all roles.
      */
     public function index()
     {
-        //
+        $roles = Role::all();
+        return response()->json($roles);
     }
 
     /**

@@ -12,7 +12,7 @@ class StudentProfileController extends Controller
      */
     public function index()
     {
-        $profile = StudentProfile::with('links')->get();
+        $profile = StudentProfile::with(['user', 'links'])->get();
 
         // No need for error checking as get never returns null
         return response()->json($profile);      

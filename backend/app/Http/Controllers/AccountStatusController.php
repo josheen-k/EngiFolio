@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 class AccountStatusController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of all the statuses
      */
     public function index()
     {
-        return response()->json(AccountStatusController::all());
+        $statuses = AccountStatus::all();
+        return response()->json($statuses);
     }
 
     /**
@@ -19,7 +20,14 @@ class AccountStatusController extends Controller
      */
     public function store(Request $request)
     {
+        // Make sure request fits the database constraints and is unique
+        $validated = $request->validate([
+            'account_status' => 'required|string|max:20|unique:account_statuses,account_status',
+        ]);
 
+        $status = AchievementCert::create($validated);
+        
+        return response()->json($status, 201);
     }
 
     /**

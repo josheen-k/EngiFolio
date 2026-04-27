@@ -81,21 +81,8 @@ Table student_actions {
 Table student_links {
   link_id bigint [pk, increment]
   profile_id bigint [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
-  link_type_id bigint [not null, ref: > link_types.link_type_id, note: "On delete: cascade"]
   link_label varchar(100) [note: 'Display label shown to users']
   link_url varchar(500) [not null]
-  created_at datetime [not null]
-  updated_at datetime [not null]
-
-  indexes {
-    (profile_id, link_type_id, link_url) [unique]
-  }
-}
-
-// Stores the link types that a profile can contain
-Table link_types {
-  link_type_id bigint [pk, increment]
-  link_type varchar(25) [note: "linkedin, resume, cover_letter, github, portfolio, other", not null]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -267,21 +254,11 @@ Table industry_contacts {
 Table industry_contact_methods {
   method_id bigint [pk, increment]
   contact_id bigint [not null, ref: > industry_contacts.contact_id, note: 'On delete: cascade']
-  method_type_id bigint [not null, ref: > contact_method_type.contact_method_type_id, note: 'On delete: restrict']
+  method_type varchar(25)
   method_value varchar(255) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
-
-// Stores the particular contact methods that can be stored
-Table contact_method_type {
-  contact_method_type_id bigint [pk, increment]
-  method_type varchar(25) [note: "phone, email, linkedin, website, other", not null]
-  field_size int [not null]
-  created_at datetime [not null]
-  updated_at datetime [not null]
-}
-
 
 // =====================================================
 // COMPETENCY TRACKING
