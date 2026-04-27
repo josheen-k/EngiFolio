@@ -13,9 +13,7 @@ class StudentProfile extends Model
     protected $primaryKey = 'profile_id';
     protected $fillable = [
         'user_id',
-        'first_name',
         'preferred_name',
-        'last_name',
         'degree_title',
         'specialisation',
         'personal_intro',

@@ -15,6 +15,8 @@ class User extends Model
         'role_id',
         'username',
         'email',
+        'first_name',
+        'last_name',
         'password_hash',
         'account_status',
     ];

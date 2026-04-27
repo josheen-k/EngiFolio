@@ -25,8 +25,6 @@ class StudentProfileController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,user_id',
-            'first_name'       => 'required|string|max:50',
-            'last_name'        => 'required|string|max:50',
             'preferred_name'   => 'nullable|string|max:50',
             'degree_title'     => 'nullable|string|max:40',
             'specialisation'     => 'nullable|string|max:60',
@@ -61,8 +59,6 @@ class StudentProfileController extends Controller
         $profile = \App\Models\StudentProfile::findOrFail($id);
 
         $validated = $request->validate([
-            'first_name'       => 'required|string|max:50',
-            'last_name'        => 'required|string|max:50',
             'preferred_name'   => 'nullable|string|max:50',
             'degree_title'     => 'nullable|string|max:40',
             'specialisation'     => 'nullable|string|max:60',

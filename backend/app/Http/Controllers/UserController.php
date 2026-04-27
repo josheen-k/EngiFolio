@@ -25,6 +25,8 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,role_id',
             'username' => 'required|string|max:9|unique:users',
             'email' => 'required|email|max:254|unique:users',
+            'first_name'       => 'sometimes|string|max:50',
+            'last_name'        => 'required|string|max:50',
             'password' => 'required|min:6',
         ]);
 
@@ -32,6 +34,8 @@ class UserController extends Controller
             'role_id' => $validated['role_id'],
             'username' => $validated['username'],
             'email' => $validated['email'],
+            'first_name'       => $validated['first_name'],
+            'last_name'        => $validated['last_name'],
             'password_hash' => Hash::make($validated['password']),
             'account_status' => 1,
         ]);
@@ -53,11 +57,13 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'role_id' => 'sometimes|exists:roles,role_id',
-            'username' => 'sometimes|string|max:100|unique:users,username,' . $user->user_id . ',user_id',
-            'email' => 'sometimes|email|unique:users,email,' . $user->user_id . ',user_id',
-            'password' => 'sometimes|min:6',
-            'account_status' => 'sometimes|in:active,disabled'
+            'role_id' => 'required|exists:roles,role_id',
+            'username' => 'required|string|max:100|unique:users,username,' . $user->user_id . ',user_id',
+            'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
+            'first_name'       => 'sometimes|string|max:50',
+            'last_name'        => 'required|string|max:50',
+            'password' => 'required|min:6',
+            'account_status_id' => 'required|exists:account_statuses,account_status_id'
         ]);
 
         if (isset($validated['password'])) {

@@ -41,15 +41,15 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('users')->insert([
-            ['user_id' => 1, 'username' => 'a123456', 'email' => 'alex.smith@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'role_id' => 3, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 2, 'username' => 'a789012', 'email' => 'kate.brown@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'role_id' => 3, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 3, 'username' => 'admin1', 'email' => 'admin1@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'role_id' => 1, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 4, 'username' => 'tutor1', 'email' => 'jane@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'role_id' => 2, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 1, 'username' => 'a123456', 'email' => 'alex.smith@adelaide.edu.au', 'first_name' => 'Alex', 'last_name' => 'Smith', 'password_hash' => Hash::make('password'), 'role_id' => 3, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 2, 'username' => 'a789012', 'email' => 'kate.brown@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'first_name' => 'Kate', 'last_name' => 'Brown', 'role_id' => 3, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 3, 'username' => 'admin1', 'email' => 'admin1@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'first_name' => 'Joe', 'last_name' => 'Bloggs', 'role_id' => 1, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 4, 'username' => 'tutor1', 'email' => 'jane@adelaide.edu.au', 'password_hash' => Hash::make('password'), 'first_name' => 'Jane', 'last_name' => 'Doe',  'role_id' => 2, 'account_status_id' => 1, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('student_profiles')->insert([
-            ['profile_id' => 1, 'user_id' => 1, 'first_name' => 'Alex', 'last_name' => 'Smith', 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems.', 'profile_image_url' => '/src/assets/sam.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['profile_id' => 2, 'user_id' => 2, 'first_name' => 'Kate', 'last_name' => 'Brown', 'degree_title' => 'Bachelor of Civil Engineering', 'specialisation' => 'Structural', 'personal_intro' => 'Interested in earthquake-resistant urban design.', 'profile_image_url' => '/src/assets/kate.jpeg', 'created_at' => now(), 'updated_at' => now()],
+            ['profile_id' => 1, 'user_id' => 1, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems.', 'profile_image_url' => '/src/assets/sam.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['profile_id' => 2, 'user_id' => 2, 'degree_title' => 'Bachelor of Civil Engineering', 'specialisation' => 'Structural', 'personal_intro' => 'Interested in earthquake-resistant urban design.', 'profile_image_url' => '/src/assets/kate.jpeg', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('student_links')->insert([
