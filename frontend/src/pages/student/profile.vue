@@ -34,7 +34,7 @@
                 <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" class="profile-pic"/>
 
                 <div class="text-start">
-                    <h1 class="sec-title mb-0">{{profile.first_name}} {{profile.last_name}}</h1>
+                    <h1 class="sec-title mb-0">{{profile.user.first_name}} {{profile.user.last_name}}</h1>
                     <p class="stat-title mb-0" v-if="profile.preferred_name">
                         Preferred Name: {{ profile.preferred_name }}
                     </p>

@@ -43,7 +43,7 @@ class StudentProfileController extends Controller
     public function show($id)
     {
         // Fails if no profile is found
-        $studentProfile = StudentProfile::with('links')->findOrFail($id);
+        $studentProfile = StudentProfile::with('links', 'user')->findOrFail($id);
 
         return response()->json($studentProfile);
     }
@@ -58,16 +58,20 @@ class StudentProfileController extends Controller
         // Fails if no profile is found
         $profile = \App\Models\StudentProfile::findOrFail($id);
 
+        // Validate all data coming in
         $validated = $request->validate([
             'preferred_name'   => 'nullable|string|max:50',
             'degree_title'     => 'nullable|string|max:40',
             'specialisation'     => 'nullable|string|max:60',
             'personal_intro'   => 'nullable|string',
             'profile_image_url' => 'nullable|string|max:255',
+            'user.first_name'   => 'required|string|max:50',
+            'user.last_name'    => 'required|string|max:50',
         ]);
 
         // Update profile with validated data
         $profile->update($validated);
+        $profile->user->update($request->input('user'));
 
         return response()->json(['message' => 'Profile updated successfully', 'profile' => $profile]);
     }

@@ -69,6 +69,8 @@
 onMounted(() => {
   loadProfile();
 })
+
+
 </script>
 
 <template>
@@ -98,11 +100,11 @@ onMounted(() => {
               <div class="row g-3">
                 <div class="col-md-4">
                   <label class="form-label fw-bold">First Name</label>
-                  <input v-model="profile.first_name" class="form-control form-control-lg"/>
+                  <input v-model="profile.user.first_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-bold">Last Name</label>
-                  <input v-model="profile.last_name" class="form-control form-control-lg"/>
+                  <input v-model="profile.user.last_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-bold">Preferred Name</label>

@@ -17,43 +17,16 @@ class RoleController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'role_name' => 'required|string|max:25|unique:roles,role_name'
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Role $role)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Role $role)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Role $role)
-    {
-        //
+        $role = Role::create($validated);
+        return response()->json($role, 201);
     }
 
     /**
@@ -61,6 +34,13 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        //
+        // Check to see if any users have the role before deleting
+        if ($role->users()->count() > 0) {
+            return response()->json(['Cannot delete role: role assigned to users'], 422);
+        }
+
+        $role->delete();
+
+        return response()->json(['message' => 'Role deleted successfully'], 200);
     }
 }
