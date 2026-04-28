@@ -11,7 +11,7 @@ class CompetencyEntryLevel extends Model
 
     use HasFactory;
 
-    protected $table = 'competency_levels'; 
+    protected $table = 'competency_entry_levels'; 
     protected $primaryKey = 'entry_level_id';
     protected $fillable = [
         'competency_level'

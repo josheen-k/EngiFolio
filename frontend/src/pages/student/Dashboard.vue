@@ -4,8 +4,8 @@
   <main class="container-xl py-5 px-4" v-if="profile">
     <div class="row g-4 mb-4">
       <h2 class="sec-title text-center" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
-      <h2 class="sec-title text-center" v-else-if="profile.first_name">Welcome, {{ profile.first_name }}</h2>
-      <h2 class="sec-title text-center" v-else>Welcome, {{ profile.last_name }}</h2>
+      <h2 class="sec-title text-center" v-else-if="profile.user.first_name">Welcome, {{ profile.user.first_name }}</h2>
+      <h2 class="sec-title text-center" v-else>Welcome, {{ profile.user.last_name }}</h2>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center">Your Stats</h2>
 
@@ -135,7 +135,7 @@
           <h2 class="sec-title text-center">Your Goals</h2>
           <ul class="ps-5 activity-list" v-if="userGoals && userGoals.length > 0">
             <li class="mb-3" v-for="goal in userGoals" :key="goal.goal_id">
-              <strong>{{ goal.status.replace('_', ' ').toUpperCase() }}:</strong> 
+              <strong>{{ (goal.status?.status || 'planned').replace('_', ' ').toUpperCase() }}:</strong>
               {{ goal.goal_description }} 
               <span v-if="goal.end_date" class="text-muted">
                 (Target: {{ goal.end_date }})
@@ -242,6 +242,15 @@
       }
     };
 
+    const loadUserActions = async () => {
+      try {
+        const response = await api.get(`/user/smart-goals/${route.params.id}`);
+        userGoals.value = response.data;
+      } catch (error) {
+        console.error("Error fetching goals:", error);
+      }
+    };
+
     const loadData = async () => {
       loading.value = true;
       const id = route.params.id;
@@ -256,19 +265,21 @@
         // Calculate average by dividing weight by amount of competencies
         const avgScore = competencyIndicators.value.length > 0 ? Math.round(totalWeight / competencyIndicators.value.length) : 0;
 
+        // Made some changes here
         stats.value = {
           totalReflections: userCompetencies.value.length,
-          comptMastered: `${userCompetencies.value.filter(c => c.level === 'Confident').length}/${competencyIndicators.value.length}`,
-          goalsDone: `${userGoals.value.filter(c => c.status === 'completed').length}/${userGoals.value.length}`,
+          comptMastered: `${userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Confident').length}/${competencyIndicators.value.length}`,
+          goalsDone: `${userGoals.value.filter(g => g.status?.status === 'completed').length}/${userGoals.value.length}`,
           avgLevel: weightToLevel[avgScore]
         }
 
+        // Find the amount of each competency level
         series.value = [
           competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
-          userCompetencies.value.filter(c => c.level === 'Emerging').length,
-          userCompetencies.value.filter(c => c.level === 'Developing').length,
-          userCompetencies.value.filter(c => c.level === 'Proficient').length,
-          userCompetencies.value.filter(c => c.level === 'Confident').length
+          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Emerging').length,
+          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Developing').length,
+          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Proficient').length,
+          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Confident').length
         ];
 
 

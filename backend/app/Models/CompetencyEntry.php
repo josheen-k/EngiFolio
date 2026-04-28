@@ -12,7 +12,7 @@ class CompetencyEntry extends Model
     protected $table = 'competency_entries';
     protected $primaryKey = 'entry_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'indicator_id',
         'experience_title',
         'associated_year',
@@ -27,7 +27,7 @@ class CompetencyEntry extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
+        return $this->belongsTo(User::class, 'profile_id', 'profile_id');
     }
 
     public function indicator()

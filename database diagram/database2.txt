@@ -71,7 +71,7 @@ Table student_profiles {
 // Log student actions
 Table student_actions {
   student_action_id bigint [pk, increment]
-  student_profile bigint [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
+  profile_id bigint [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
   action varchar(100) [not null]
   created_at datetime [not null]
   updated_at datetime [not null]

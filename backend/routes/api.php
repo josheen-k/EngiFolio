@@ -43,6 +43,7 @@ Route::delete('/users/{user}', [UserController::class, 'destroy']);
 // Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+Route::get('/profileDash/{id}', [StudentProfileController::class, 'getDashboardInfo']);
 
 
 // Industry contacts/networking pages
