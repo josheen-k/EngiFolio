@@ -80,3 +80,5 @@ Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'show'
 
 // Competency Indicators
 Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);
+
+Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);

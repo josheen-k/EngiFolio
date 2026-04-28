@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\StudentProfile;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class StudentProfileController extends Controller
 {
@@ -95,4 +97,24 @@ class StudentProfileController extends Controller
 
         return response()->json($studentProfile);
     }
+
+public function exportPdf(Request $request, $id)
+{
+    $profile = StudentProfile::with([
+        'user', 
+        'competencyEntries.indicator', 
+        'competencyEntries.entryLevel',  
+        'competencyEntries.entryStatus'
+    ])->findOrFail($id);
+
+    $selections = $request->input('selections', []);
+
+// Remove 'pdf.' because the file is not in a subfolder
+$pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('portfolio', [
+    'profile' => $profile, 
+    'selections' => $selections
+]);
+    
+    return $pdf->download("portfolio.pdf");
+}
 }

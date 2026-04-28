@@ -26,6 +26,34 @@
         goalsSelected.value = newValue;
     });
 
+
+    const exportToPdf = async () => {
+    try {
+        const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
+            selections: {
+                profile: profileSelected.value,
+                competencies: competenciesSelected.value,
+                networking: networkingContactsSelected.value,
+                goals: goalsSelected.value
+            }
+        }, { responseType: 'blob' });
+
+        // Standard JS "Blob" download logic
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `portfolio_export.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        
+        alert("PDF Downloaded successfully");
+    } catch (error) {
+        console.error("PDF Export failed:", error);
+        alert("There was an error generating your PDF.");
+    }
+};
     // Fetches the profile and adds the contents to the file
     const addProfile = async () => { 
       try {
@@ -36,7 +64,7 @@
       } finally {
         const formattedProfile = [
           '"----- Profile -----"',
-          `"Name:","${profile.value.first_name}","${profile.value.last_name}"`,
+          `"Name:","${profile.user,value.first_name}","${profile.user.value.last_name}"`,
           `"Preferred name:","${profile.value.preferred_name || profile.value.first_name}"`,
           `"Degree:","${profile.value.degree_title}"`,
           `"Specialisation:","${profile.value.specialisation}"`,
@@ -311,6 +339,7 @@
 
         <div class="d-flex gap-3 align-items-center">
           <button class="btn btn-ql rounded-pill px-5" @click="exportData">Export Data</button>
+          <button class="btn btn-primary rounded-pill px-5" @click="exportToPdf">Export PDF</button>
           <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-link text-muted btn-sm text-decoration-none">Cancel</router-link>
         </div>
       </div>

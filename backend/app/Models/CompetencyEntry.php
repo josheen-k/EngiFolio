@@ -30,11 +30,6 @@ class CompetencyEntry extends Model
         return $this->belongsTo(User::class, 'profile_id', 'profile_id');
     }
 
-    public function indicator()
-    {
-        return $this->belongsTo(CompetencyIndicator::class, 'indicator_id', 'indicator_id');
-    }
-
     public function feedback()
     {
         return $this->hasMany(CompetencyFeedback::class, 'entry_id', 'entry_id');
@@ -43,6 +38,10 @@ class CompetencyEntry extends Model
     public function evidence()
     {
         return $this->hasMany(CompetencyEvidence::class, 'entry_id', 'entry_id');
+    }
+    public function indicator()
+    {
+        return $this->belongsTo(CompetencyIndicator::class, 'indicator_id', 'indicator_id');
     }
 
     public function entryLevel()
