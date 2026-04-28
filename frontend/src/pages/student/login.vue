@@ -1,8 +1,5 @@
 <script setup>
-    import { ref, onMounted } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
-    import axios from 'axios';
-    import Footer from '@/components/Footer.vue'
 
     const router = useRouter();
     const route = useRoute();
@@ -52,8 +49,6 @@
 			</div>
 		</div>  
     </div>
-    
-  <Footer />
 </template>
 
 <style scoped>

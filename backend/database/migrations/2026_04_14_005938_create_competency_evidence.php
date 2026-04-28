@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('competency_evidence', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('entry_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->string('evidence_type', 25);
+            $table->id('evidence_id');
+            $table->foreignId('entry_id')->constrained('competency_entries', 'entry_id')->onDelete('cascade');
+            $table->string('evidence_type', 15);
             $table->string('evidence_value', 500);
             $table->unique(['entry_id']);
             $table->timestamps();

@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class AchievementCert extends Model
 {
     use HasFactory;
-    use HasFactory;
 
     protected $table = 'achievement_cert';
     protected $primaryKey = 'achievement_cert_id';

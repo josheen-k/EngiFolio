@@ -32,7 +32,7 @@ class CareerDevelopmentPlanController extends Controller
     public function show($id)
     {
         // Return plan with all attached smart goals
-        $plan = CareerDevelopmentPlan::with(['smartGoals.actionSteps'])->where('user_id', $id)->firstOrFail();
+        $plan = CareerDevelopmentPlan::with(['smartGoals.actionSteps'])->where('user_id', $id)->findOrFail();
         
         return response()->json($plan);
     }

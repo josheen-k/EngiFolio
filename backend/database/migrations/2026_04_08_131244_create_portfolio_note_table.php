@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('portfolio_note', function (Blueprint $table) {
             $table->id('portfolio_note_id');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->string('title', 255);
+            $table->string('title', 60);
             $table->text('body')->nullable();
-            $table->string('file_path', 500)->nullable();
+            $table->string('file_path', 255)->nullable();
             $table->timestamps();
         });
     }
