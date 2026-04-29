@@ -12,6 +12,8 @@ use App\Http\Controllers\GoalActionStepController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
 use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
+use App\Http\Controllers\AchievementCertController;
+use App\Http\Controllers\AttainmentCertController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,3 +85,13 @@ Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'ind
 
 // Export profile data as pdf
 Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);
+
+// Achievement certificates
+Route::post('/achievement-cert', [AchievementCertController::class, 'store']);
+Route::put('/achievement-cert/{id}', [AchievementCertController::class, 'update']);
+Route::delete('/achievement-cert/{id}', [AchievementCertController::class, 'destroy']);
+
+// Attainment certificates
+Route::post('/attainment-cert', [AttainmentCertController::class, 'store']);
+Route::put('/attainment-cert/{id}', [AttainmentCertController::class, 'update']);
+Route::delete('/attainment-cert/{id}', [AttainmentCertController::class, 'destroy']);
