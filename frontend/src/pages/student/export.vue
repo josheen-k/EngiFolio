@@ -29,6 +29,7 @@
 
     const exportToPdf = async () => {
     try {
+        // Send selections to backend
         const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
             selections: {
                 profile: profileSelected.value,

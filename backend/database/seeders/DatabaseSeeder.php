@@ -22,9 +22,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('goal_statuses')->insert([
-            ['goal_status_id' => 1, 'status' => 'planned', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_status_id' => 2, 'status' => 'in_progress', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_status_id' => 3, 'status' => 'completed', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_status_id' => 1, 'status' => 'Planned', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_status_id' => 2, 'status' => 'In progress', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_status_id' => 3, 'status' => 'Completed', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('competency_entry_levels')->insert([
