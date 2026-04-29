@@ -13,6 +13,11 @@
             alt="LinkedIn"
           /> -->
           <h2 class="page-title">Industry Contacts</h2>
+
+          <duv class="networking-switch">
+            <RouterLink :to="`/student/networking/${route.params.id ||1}`" class="switch-pill"> Events Calender </RouterLink>
+            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill active"> Industry Contacts</RouterLink>
+          </duv>
         </div>
 
         <button class="btn btn-dark btn-main" @click="openForm">
@@ -151,12 +156,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import api from "@/services/api";
 
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
 
+const route = useRoute();
 const userId = 2;
 
 const contacts = ref([]);
@@ -423,6 +430,28 @@ const deleteContact = async (id) => {
 .btn-row {
   display: flex;
   gap: 10px;
+}
+
+.networking-switch {
+  display: inline-flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.switch-pill {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d6e0ea;
+  text-decoration: none;
+  color: #4e6577;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.switch-pill.active {
+  background: #172334;
+  color: #fff;
+  border-color: #172334;
 }
 </style>
 

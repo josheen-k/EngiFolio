@@ -58,7 +58,7 @@ const routes = [
   {
     path: '/student/networking/:id',
     name: 'networking',
-    component: Networking
+    component: Event
   },
   {
     path: '/student/event',
@@ -79,6 +79,11 @@ const routes = [
     path: '/goals/:id',
     name: 'GoalsPage',
     component: GoalsPage
+  },
+  {
+    path: '/student/networking/contacts/:id',
+    name: 'networking-contacts',
+    component: Networking
   }
 ]
 

@@ -2,8 +2,9 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
-import Logo from '@/assets/Logo.png'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const miniWeekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const monthOptions = [
@@ -43,6 +44,7 @@ const yearScrollContainer = ref(null)
 
 const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
+const contacts = ref([])
 let confirmResolver = null
 let syncingYearScroll = false
 let yearScrollFrameId = null
@@ -53,6 +55,7 @@ function createEmptyEvent(date = '') {
     date,
     location: '',
     details: '',
+    contact_ids: [],
   }
 }
 
@@ -177,7 +180,15 @@ const fetchEvents = async () => {
   events.value = response.data
 }
 
-onMounted(fetchEvents)
+const fetchContacts = async () => {
+  const response = await axios.get(`${apiBaseUrl}/users/2/industry-contacts`)
+  contacts.value = response.data
+}
+
+onMounted(() => {
+  fetchEvents()
+  fetchContacts()
+})
 
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
@@ -414,6 +425,7 @@ function editEvent(event) {
     date: normalizeEventDate(event.event_datetime),
     location: event.location,
     details: event.details,
+    contact_ids: event.contacts ? event.contacts.map(contact => contact.contact_id) : [],
   }
   newEvent.value = { ...eventEditSnapshot.value }
   showEventDetails.value = false
@@ -590,6 +602,7 @@ function goToToday() {
     centerYearScroll()
   }
 }
+
 </script>
 
 <template>
@@ -605,6 +618,10 @@ function goToToday() {
             Tap a date to add a new event, or open an event day to review its details,
             questions, and comments.
           </p>
+          <div class="networking-switch">
+            <RouterLink :to="`/student/networking/${route.params.id || 1}`" class="switch-pill active"> Events Calendar</RouterLink>
+            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill"> Industry Contacts</RouterLink>
+          </div>
         </div>
 
         <button class="action-button" @click="openCreateForm()">
@@ -782,8 +799,18 @@ function goToToday() {
               v-model="newEvent.details"
               rows="5"
               placeholder="What is this event about, and what do you want to remember?"
-            />
+            ></textarea>
           </label>
+          <div class="field field-full">
+            <span>Related Contacts</span>
+            <div v-if="contacts.length" class="contact-picker">
+              <label v-for="contact in contacts" :key="contact.contact_id" class="contact-option">
+                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids">
+                <span>{{ contact.contact_name }}</span>
+              </label>
+            </div>
+            <p v-else>No contacts available</p>
+          </div>
         </div>
 
         <div class="modal-actions">
@@ -834,6 +861,16 @@ function goToToday() {
               <p>{{ event.details || 'No event details added yet.' }}</p>
             </div>
 
+            <div class="detail-row">
+              <span class="detail-label">Related Contacts</span>
+              <ul v-if="event.contacts && event.contacts.length" class="contact-list">
+                <li v-for="contact in event.contacts" :key="contact.contact_id" class="contact-list-item">
+                  <span class="contact-name">{{ contact.contact_name }}</span>
+                  <span v-if="contact.company" class="contact-company">{{ contact.company }}</span>
+                </li>
+              </ul>
+              <p v-else class="contact-empty">No related contacts added yet.</p>
+            </div>
             <div class="detail-columns">
               <div class="detail-panel">
                 <div class="panel-header">
@@ -892,7 +929,7 @@ function goToToday() {
                     rows="3"
                     placeholder="Add notes or reflections after the event"
                     @input="commentDrafts[event.event_id] = $event.target.value"
-                  />
+                  ></textarea>
                   <div class="inline-actions">
                     <button class="action-button small-button" @click="submitComment(event.event_id)">
                       {{ editingCommentIds[event.event_id] ? 'Update' : 'Add' }}
@@ -956,22 +993,7 @@ function goToToday() {
     </div>
   </main>
 
-  <footer class="page-footer">
-    <div class="footer-brand">
-      <img :src="Logo" alt="Adelaide University" class="footer-logo" />
-      <div class="footer-copy">©EngiFolio 2026</div>
-    </div>
 
-    <div class="footer-acknowledgement">
-      EngiFolio acknowledges the Kaurna people as the Traditional Owners of the
-      Country where the city of Adelaide is situated today, and pays its respects
-      to Elders past and present.
-    </div>
-
-    <div>
-      <a href="#" class="footer-link">Privacy policy</a>
-    </div>
-  </footer>
 </template>
 
 <style scoped>
@@ -1524,10 +1546,7 @@ function goToToday() {
 
 .detail-row p,
 .detail-panel p,
-.detail-panel li,
-.footer-acknowledgement,
-.footer-copy,
-.footer-link {
+.detail-panel li {
   color: #4e6577;
   line-height: 1.6;
 }
@@ -1615,47 +1634,6 @@ function goToToday() {
   color: #13202c;
 }
 
-.page-footer {
-  position: relative;
-  width: 100%;
-  background: #0b1a5e;
-  color: #ffffff;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.footer-brand {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
-  min-width: 12rem;
-}
-
-.footer-logo {
-  height: 2.5rem;
-}
-
-.footer-acknowledgement {
-  flex: 1;
-  max-width: 44rem;
-  margin: 0 auto;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.footer-copy {
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.footer-link {
-  color: #ffffff;
-  text-decoration: none;
-}
-
 @media (max-width: 1100px) {
   .calendar-toolbar,
   .calendar-actions {
@@ -1671,7 +1649,6 @@ function goToToday() {
 @media (max-width: 900px) {
   .page-header,
   .event-detail-top,
-  .page-footer,
   .list-item {
     flex-direction: column;
     align-items: stretch;
@@ -1711,15 +1688,6 @@ function goToToday() {
     padding: 1rem;
     padding-bottom: 2rem;
   }
-
-  .page-footer {
-    padding: 1rem;
-  }
-
-  .footer-acknowledgement {
-    text-align: center;
-    margin: 0;
-  }
 }
 
 @media (max-width: 640px) {
@@ -1757,4 +1725,66 @@ function goToToday() {
     min-height: 70vh;
   }
 }
+
+.contact-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  color: #4e6577;
+}
+
+.contact-list-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #e7eef5;
+}
+
+.contact-list-item:last-child {
+  border-bottom: 0;
+}
+
+.contact-name {
+  font-weight: 600;
+  color: #243746;
+}
+
+.contact-company {
+  color: #6b8293;
+}
+
+.contact-company::before {
+  content: "\2014";
+  margin-right: 0.35rem;
+}
+
+.contact-empty {
+  color: #6b8293;
+  font-style: italic;
+}
+
+.networking-switch {
+  display: inline-flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.switch-pill {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d6e0ea;
+  text-decoration: none;
+  color: #4e6577;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.switch-pill.active {
+  background:#172334;
+  color: #fff;
+  border-color: #172334;
+}
+
 </style>

@@ -13,7 +13,7 @@ class NetworkingEventController extends Controller
     public function index()
     {
         //
-        return NetworkingEvent::with(['questions','comments'])->get();
+        return NetworkingEvent::with(['questions','comments','contacts'])->get();
     }
 
     /**
@@ -22,13 +22,24 @@ class NetworkingEventController extends Controller
     public function store(Request $request)
     {
         //
-        return NetworkingEvent::create([
-            'user_id' => null,
-            'event_name' => $request->name,
-            'event_datetime' => $request->date,
-            'location' => $request->location,
-            'details' => $request->details,
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'date' => ['required', 'date'],
+            'location' => ['nullable', 'string', 'max:100'],
+            'details' => ['nullable', 'string'],
+            'contact_ids' => ['nullable', 'array'],
+            'contact_ids.*' => ['exists:industry_contacts,contact_id'],
         ]);
+        $event = NetworkingEvent::create([
+            'user_id' => null,
+            'event_name' => $validated['name'],
+            'event_datetime' => $validated['date'],
+            'location' => $validated['location'] ?? null,
+            'details' => $validated['details'] ?? null,
+        ]);
+
+        $event->contacts()->sync($validated['contact_ids'] ?? []);
+        return $event->load(['questions','comments','contacts']);
     }
 
     /**
@@ -37,7 +48,7 @@ class NetworkingEventController extends Controller
     public function show($id)
     {
         //
-        return NetworkingEvent::with('questions')->findOrFail($id);
+        return NetworkingEvent::with(['questions','comments','contacts'])->findOrFail($id);
     }
 
     /**
@@ -46,14 +57,23 @@ class NetworkingEventController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'date' => ['required', 'date'],
+            'location' => ['nullable', 'string', 'max:100'],
+            'details' => ['nullable', 'string'],
+            'contact_ids' => ['nullable', 'array'],
+            'contact_ids.*' => ['exists:industry_contacts,contact_id'],
+        ]);      
         $event = NetworkingEvent::findOrFail($id);
         $event->update([
-            'event_name' => $request->name,
-            'event_datetime' => $request->date,
-            'location' => $request->location,
-            'details' => $request->details,
+            'event_name' => $validated['name'],
+            'event_datetime' => $validated['date'],
+            'location' => $validated['location'] ?? null,
+            'details' => $validated['details'] ?? null,
         ]);
-        return $event;
+        $event->contacts()->sync($validated['contact_ids'] ?? []);
+        return $event->load(['questions', 'comments', 'contacts']);
     }
 
     /**

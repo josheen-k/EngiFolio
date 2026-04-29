@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\NetworkingEventQuestion;
 use App\Models\User;
+use App\Models\IndustryContact;
 
 class NetworkingEvent extends Model
 {
@@ -34,6 +35,11 @@ class NetworkingEvent extends Model
     public function comments()
     {
         return $this->hasMany(NetworkingEventComment::class, 'event_id', 'event_id');
+    }
+
+    public function contacts()
+    {
+        return $this->belongsToMany(IndustryContact::class, 'networking_event_contacts', 'event_id', 'contact_id');
     }
 }
 
