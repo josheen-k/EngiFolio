@@ -12,6 +12,7 @@ import Networking from '@/pages/student/Networking.vue'
 import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '../pages/student/GoalsPage.vue'
+import goalFeedback from '@/pages/staff/goalFeedback.vue'
 const routes = [
   {
     path: '/',
@@ -77,6 +78,12 @@ const routes = [
   path: '/goals/:id',
   name: 'GoalsPage',
   component: GoalsPage
+  },
+
+  {
+    path: '/staff/goal-feedback',
+    name: 'goalFeedback',
+    component: goalFeedback
   }
 
 ]
