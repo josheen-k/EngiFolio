@@ -767,6 +767,16 @@ const updateGoalStatus = async (goal) => {
     await api.put(`/smart-goals/${goal.goal_id}`, {
       status: goal.status
     })
+
+    // When a goal is marked completed, place it at the end of the list.
+    if (goal.status === 'completed') {
+      const previousGoals = [...goals.value]
+      const reorderedGoals = moveGoalToEnd(goal.goal_id)
+      if (reorderedGoals) {
+        goals.value = reorderedGoals
+        await persistGoalOrder(previousGoals)
+      }
+    }
   } catch (error) {
     goal.status = previousStatus
     console.error('Error updating goal status:', error)

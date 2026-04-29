@@ -1,0 +1,402 @@
+<script setup>
+import { computed, ref } from 'vue'
+import Navbar from '@/components/Navbar.vue'
+
+const searchQuery = ref('')
+const statusFilter = ref('all')
+
+const users = ref([
+  { id: 'STU-1001', name: 'Alex Chen', email: 'alex.chen@engifolio.edu', role: 'Student', status: 'active', goals: 8, completedGoals: 2, updatedAt: '2026-04-28' },
+  { id: 'STU-1002', name: 'Mia Patel', email: 'mia.patel@engifolio.edu', role: 'Student', status: 'active', goals: 6, completedGoals: 4, updatedAt: '2026-04-27' },
+  { id: 'STU-1003', name: 'Noah Wang', email: 'noah.wang@engifolio.edu', role: 'Student', status: 'at_risk', goals: 3, completedGoals: 0, updatedAt: '2026-04-24' },
+  { id: 'ADM-9001', name: 'Sarah Lin', email: 'sarah.lin@engifolio.edu', role: 'Admin', status: 'active', goals: 0, completedGoals: 0, updatedAt: '2026-04-29' }
+])
+
+const filteredUsers = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  return users.value.filter((user) => {
+    const matchesStatus = statusFilter.value === 'all' || user.status === statusFilter.value
+    const matchesQuery =
+      query.length === 0 ||
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.id.toLowerCase().includes(query)
+    return matchesStatus && matchesQuery
+  })
+})
+
+const totalUsers = computed(() => users.value.length)
+const activeUsers = computed(() => users.value.filter((user) => user.status === 'active').length)
+const atRiskUsers = computed(() => users.value.filter((user) => user.status === 'at_risk').length)
+const totalGoals = computed(() => users.value.reduce((sum, user) => sum + user.goals, 0))
+
+const getStatusLabel = (status) => {
+  if (status === 'active') return 'Active'
+  if (status === 'at_risk') return 'At Risk'
+  if (status === 'inactive') return 'Inactive'
+  return status
+}
+
+const getStatusClass = (status) => {
+  if (status === 'active') return 'status-active'
+  if (status === 'at_risk') return 'status-at-risk'
+  return 'status-inactive'
+}
+</script>
+
+<template>
+  <div class="admin-page">
+    <Navbar />
+
+    <main class="container-xl py-4 px-4 px-md-5 admin-main">
+      <section class="page-header mb-4">
+        <div>
+          <h1 class="page-title mb-2">Admin Console</h1>
+          <p class="page-subtitle mb-0">Manage users, monitor progress, and quickly identify students who need support.</p>
+        </div>
+      </section>
+
+      <section class="stats-grid mb-4">
+        <article class="stat-card">
+          <p class="stat-label">Total Users</p>
+          <p class="stat-value">{{ totalUsers }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Active Users</p>
+          <p class="stat-value">{{ activeUsers }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">At Risk</p>
+          <p class="stat-value">{{ atRiskUsers }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Total Goals Logged</p>
+          <p class="stat-value">{{ totalGoals }}</p>
+        </article>
+      </section>
+
+      <section class="panel-card mb-4">
+        <div class="panel-head">
+          <h2 class="panel-title mb-0">User Management</h2>
+          <div class="filters-wrap">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="filter-input"
+              placeholder="Search by name, email, or ID"
+            />
+            <select v-model="statusFilter" class="filter-select">
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="at_risk">At Risk</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Goals</th>
+                <th>Completed</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in filteredUsers" :key="user.id">
+                <td>
+                  <p class="user-name mb-0">{{ user.name }}</p>
+                  <p class="user-email mb-0">{{ user.email }}</p>
+                </td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <span class="status-pill" :class="getStatusClass(user.status)">
+                    {{ getStatusLabel(user.status) }}
+                  </span>
+                </td>
+                <td>{{ user.goals }}</td>
+                <td>{{ user.completedGoals }}</td>
+                <td>{{ user.updatedAt }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button type="button" class="btn page-btn-outline">View</button>
+                    <button type="button" class="btn page-btn-primary">Edit</button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="filteredUsers.length === 0">
+                <td colspan="7" class="empty-state">No users match this filter.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel-card quick-actions">
+        <h2 class="panel-title">Quick Actions</h2>
+        <div class="quick-action-grid">
+          <button type="button" class="btn page-btn-primary">Create Announcement</button>
+          <button type="button" class="btn page-btn-outline">Export Summary</button>
+          <button type="button" class="btn page-btn-outline">Send Reminder Emails</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
+
+<style scoped>
+.admin-page {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  color: #2b2b2b;
+}
+
+.admin-main {
+  max-width: 1280px;
+}
+
+.page-title {
+  font-family: 'Martel', serif;
+  font-size: 2.4rem;
+  color: #2b2b2b;
+  line-height: 1.15;
+}
+
+.page-subtitle {
+  font-size: 1.08rem;
+  color: #656565;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.stat-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  background: #fbfbfb;
+}
+
+.stat-label {
+  margin: 0;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.82rem;
+  color: #707070;
+}
+
+.stat-value {
+  margin: 0.35rem 0 0;
+  font-family: 'Martel', serif;
+  font-size: 1.9rem;
+}
+
+.panel-card {
+  border: 1px solid #e3e3e3;
+  border-radius: 1.2rem;
+  background: #fafafa;
+  padding: 1rem 1.1rem;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.panel-title {
+  margin: 0;
+  font-family: 'Martel', serif;
+  font-size: 1.35rem;
+  color: #2b2b2b;
+}
+
+.filters-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.filter-input,
+.filter-select {
+  min-height: 2.5rem;
+  border: 1px solid #d1d1d1;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-family: 'Maven Pro', sans-serif;
+}
+
+.filter-input {
+  min-width: 16rem;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.9rem;
+  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.06);
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 860px;
+  border: 1px solid #dddddd;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.82rem 0.75rem;
+  border-bottom: 1px solid #e6e6e6;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  background: #f3f3f3;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.86rem;
+  color: #333333;
+  font-weight: 500;
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background: #fcfcfc;
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+.user-email {
+  color: #6c6c6c;
+  font-size: 0.92rem;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid #d7d7d7;
+  font-size: 0.78rem;
+}
+
+.status-active {
+  background: #e8f7ed;
+  color: #256942;
+}
+
+.status-at-risk {
+  background: #fff3e2;
+  color: #8d5b1e;
+}
+
+.status-inactive {
+  background: #f5f5f5;
+  color: #555555;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.btn {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.6rem;
+  font-size: 0.9rem;
+}
+
+.page-btn-primary {
+  background: #2b2b2b;
+  color: #ffffff;
+  border: 1px solid #2b2b2b;
+}
+
+.page-btn-primary:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.page-btn-outline {
+  background: #ffffff;
+  color: #2b2b2b;
+  border: 1px solid #cfcfcf;
+}
+
+.page-btn-outline:hover {
+  background: #f3f3f3;
+}
+
+.empty-state {
+  text-align: center;
+  color: #707070;
+  padding: 1rem;
+}
+
+.quick-actions .panel-title {
+  margin-bottom: 0.7rem;
+}
+
+.quick-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+@media (max-width: 992px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-input {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-main {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+
+  .page-title {
+    font-size: 1.65rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
