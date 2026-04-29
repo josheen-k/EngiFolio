@@ -7,17 +7,15 @@ use Illuminate\Http\Request;
 
 class GoalFeedbackController extends Controller
 {
-    // // Display a listing of the resource.
-    // public function index($goalID)
-    // {
-    //     //
-    //     // return response()->json(
-    //     //     GoalFeedback::where('goal_id','=', $goalID)->get()
-    //     // );
-    //     return response()->json(
-    //         GoalFeedback::get()
-    //     );
-    // }
+    // Display a listing of the resource.
+    public function index()
+    {
+        //
+        // return response()->json(
+        //     GoalFeedback::where('goal_id','=', $goalID)->get()
+        // );
+        return response()->json(GoalFeedback::all());
+    }
 
     // Store a newly created resource in storage.
     public function store(Request $request, $goalID/*, $staffID*/)

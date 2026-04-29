@@ -179,6 +179,17 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
+        // Add feedback to a smart goal
+        DB::table('goal_feedback')->insert([
+            [
+                'goal_id' => 2,
+                'staff_id' => 4,
+                'feedback_content' => 'Add action steps',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ]);
+
         // Add some industry contacts to the networking pages
         DB::table('industry_contacts')->insert([
             [
