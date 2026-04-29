@@ -72,11 +72,11 @@ Route::put('/action-steps/{stepId}', [GoalActionStepController::class, 'update']
 Route::delete('/action-steps/{stepId}', [GoalActionStepController::class, 'destroy']);
 
 // Staff SMART Goal feedback routes
-Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'index']);
+// Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'index']);
 Route::post('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'store']);
-Route::get('/smart-goals/{goalID}/feedback/{feedbackID}', [GoalFeedbackController::class, 'show']);
-Route::put('/smart-goals/{goalID}/feedback/{feedbackID}', [GoalFeedbackController::class, 'update']);
-Route::delete('/smart-goals/{goalID}/feedback/{feedbackID}', [GoalFeedbackController::class, 'destroy']);
+Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'show']);
+Route::put('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'update']);
+Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'destroy']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);

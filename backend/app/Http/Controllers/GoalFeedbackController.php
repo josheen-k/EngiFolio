@@ -7,19 +7,27 @@ use Illuminate\Http\Request;
 
 class GoalFeedbackController extends Controller
 {
-    // Display a listing of the resource.
-    public function index($goalID)
-    {
-        //
-        return response()->json(
-            GoalFeedback::where('goal_id','=', $goalID)->get()
-        );
-    }
+    // // Display a listing of the resource.
+    // public function index($goalID)
+    // {
+    //     //
+    //     // return response()->json(
+    //     //     GoalFeedback::where('goal_id','=', $goalID)->get()
+    //     // );
+    //     return response()->json(
+    //         GoalFeedback::get()
+    //     );
+    // }
 
     // Store a newly created resource in storage.
     public function store(Request $request, $goalID/*, $staffID*/)
     {
-        
+        // ensure feedback does not already exist for this goal
+        $goalFeedbackCheck = GoalFeedback::where('goal_id','=', $goalID)->get();
+        if (!$goalFeedbackCheck->isEmpty()) {
+            return response()->json(['message' => 'Error: Feedback already exists', $goalFeedbackCheck]);
+        }
+
         $validated = $request->validate([
             'staff_id' => 'required|integer',
             'feedback_content' => 'required|string',
@@ -27,7 +35,6 @@ class GoalFeedbackController extends Controller
 
         $goalFeedback = GoalFeedback::create([
             'goal_id' => $goalID,
-            // 'staff_id' => $staffID,
             'staff_id' => $validated['staff_id'],
             'feedback_content' => $validated['feedback_content'],
         ]);
@@ -36,34 +43,54 @@ class GoalFeedbackController extends Controller
     }
 
     // Display the specified resource.
-    public function show(/*GoalFeedback $goalFeedback*/ $goalID, $feedbackID)
+    public function show(/*GoalFeedback $goalFeedback*/ $goalID/*, $feedbackID*/)
     {
         // $goalFeedback = GoalFeedback::findOrFail($feedbackID);
-        $goalFeedback = GoalFeedback::where('goal_id','=', $goalID)->where('feedback_id','=', $feedbackID)->get();
+
+        // check feedback with goal id exists
+        $goalFeedback = GoalFeedback::where('goal_id','=', $goalID)->get();
         if ($goalFeedback->isEmpty()) {
-            return response()->json(['message' => 'Error: Corresponding goal or feedback not found'], 404);
+            return response()->json(['message' => 'Error: Goal or feedback not found'], 404);
         }
 
         return response()->json($goalFeedback);
     }
 
     // Update the specified resource in storage.
-    public function update(Request $request/*, GoalFeedback $goalFeedback*/, $goalID, $feedbackID)
+    public function update(Request $request/*, GoalFeedback $goalFeedback*/, $goalID/*, $feedbackID*/)
     {
-        $goalFeedback = GoalFeedback::findOrFail($feedbackID);
+        // $goalFeedback = GoalFeedback::findOrFail($feedbackID);
 
+        // check feedback with goal id exists
+        // $goalFeedback = GoalFeedback::where('goal_id','=', $goalID)->get();
+
+        if (GoalFeedback::where('goal_id','=', $goalID)->get()->isEmpty()) {
+            return response()->json(['message' => 'Error: Goal or feedback not found'], 404);
+        }
+        // $goalFeedback = GoalFeedback::find
+
+        // validate request
         $validated = $request->validate([
             'feedback_content' => 'required|string',
         ]);
 
-        $goalFeedback->update($validated);
+        GoalFeedback::where('goal_id','=', $goalID)->update(['feedback_content' => $validated['feedback_content']]);
 
-        return response()->json($goalFeedback);
+        // // update feedback
+        // $goalFeedback->update(['feedback_content' => $validated['feedback_content']]);
+
+        return response()->json(GoalFeedback::where('goal_id','=', $goalID)->get());
     }
 
     // Remove the specified resource from storage.
-    public function destroy(GoalFeedback $goalFeedback, $goalID)
+    public function destroy(/*GoalFeedback $goalFeedback,*/ $goalID)
     {
+        // check feedback with goal id exists
+        $goalFeedback = GoalFeedback::where('goal_id','=', $goalID)->get();
+        if ($goalFeedback->isEmpty()) {
+            return response()->json(['message' => 'Error: Goal or feedback not found'], 404);
+        }
+
         $goalFeedback->delete();
         return response()->json(['message' => 'Goal feedback deleted successfully']);
     }
