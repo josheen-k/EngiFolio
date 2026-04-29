@@ -1240,35 +1240,36 @@ const deleteGoal = async (goal) => {
 }
 
 .action-icon-btn {
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2rem;
+  height: 2rem;
   border: none;
-  border-radius: 999px;
-  background: #ececec;
+  background: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: background-color 0.16s ease, transform 0.16s ease;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .action-icon-image {
-  width: 1rem;
-  height: 1rem;
+  width: 2rem;
+  height: 2rem;
   object-fit: contain;
 }
 
 .action-icon-btn:hover {
-  background: #dfdfdf;
+  transform: scale(1.1);
 }
 
 .action-icon-btn:focus-visible {
   outline: 2px solid #9db8e6;
   outline-offset: 2px;
+  border-radius: 999px;
 }
 
 .action-icon-btn:active {
-  transform: translateY(1px);
+  transform: scale(1.05);
 }
 
 .goal-form-card {
