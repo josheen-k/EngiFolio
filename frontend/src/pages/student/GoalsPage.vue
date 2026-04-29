@@ -166,7 +166,15 @@
                   {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
                 </button>
 
-                <button class="btn page-btn-success steps-edit-btn" @click="editSteps(goal)">Edit Steps</button>
+                <button
+                  type="button"
+                  class="action-icon-btn steps-edit-icon-btn"
+                  aria-label="Edit action steps"
+                  title="Edit Steps"
+                  @click="editSteps(goal)"
+                >
+                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
               </div>
             </td>
 
@@ -187,8 +195,24 @@
 
             <td class="actions-cell">
               <div class="actions-stack">
-                <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
-                <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
+                <button
+                  type="button"
+                  class="action-icon-btn"
+                  aria-label="Edit goal"
+                  title="Edit"
+                  @click="editGoal(goal)"
+                >
+                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  class="action-icon-btn"
+                  aria-label="Delete goal"
+                  title="Delete"
+                  @click="deleteGoal(goal)"
+                >
+                  <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
               </div>
             </td>
           </tr>
@@ -244,7 +268,15 @@
             >
               {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
             </button>
-            <button class="btn page-btn-success steps-edit-btn w-100 mt-2" @click="editSteps(goal)">Edit Steps</button>
+            <button
+              type="button"
+              class="action-icon-btn steps-edit-icon-btn mt-2"
+              aria-label="Edit action steps"
+              title="Edit Steps"
+              @click="editSteps(goal)"
+            >
+              <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+            </button>
           </div>
 
           <div class="mobile-grid">
@@ -318,6 +350,8 @@
 import { ref, onMounted, reactive, computed } from 'vue'
 import Navbar from '@/components/Navbar.vue'
 import api from "@/services/api";
+import editIcon from '@/assets/edit.png'
+import deleteIcon from '@/assets/delete.png'
 
 // Page-level reactive state used by forms, filters, and modal dialogs.
 const goals = ref([])
@@ -1151,6 +1185,10 @@ const deleteGoal = async (goal) => {
   margin-top: 0.15rem;
 }
 
+.steps-edit-icon-btn {
+  margin-top: 0.15rem;
+}
+
 .view-more-btn {
   font-family: 'Maven Pro', sans-serif;
   font-size: 0.92rem;
@@ -1195,16 +1233,42 @@ const deleteGoal = async (goal) => {
 
 .actions-stack {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.55rem;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
 }
 
-.actions-stack .btn {
-  width: 100%;
-  max-width: 11rem;
-  align-self: center;
+.action-icon-btn {
+  width: 2.35rem;
+  height: 2.35rem;
+  border: none;
+  border-radius: 999px;
+  background: #ececec;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.16s ease, transform 0.16s ease;
+}
+
+.action-icon-image {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+}
+
+.action-icon-btn:hover {
+  background: #dfdfdf;
+}
+
+.action-icon-btn:focus-visible {
+  outline: 2px solid #9db8e6;
+  outline-offset: 2px;
+}
+
+.action-icon-btn:active {
+  transform: translateY(1px);
 }
 
 .goal-form-card {
