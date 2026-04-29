@@ -77,8 +77,7 @@ const routes = [
   path: '/goals/:id',
   name: 'GoalsPage',
   component: GoalsPage
-  }
-
+  },
 ]
 
 const router = createRouter({

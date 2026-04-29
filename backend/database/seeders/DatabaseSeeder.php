@@ -125,5 +125,69 @@ class DatabaseSeeder extends Seeder
             ['staff_id' => 4, 'profile_id' => 1, 'assigned_at' => now(), 'created_at' => now(), 'updated_at' => now()],
             ['staff_id' => 4, 'profile_id' => 2, 'assigned_at' => now(), 'created_at' => now(), 'updated_at' => now()],
         ]);
+
+        DB::table('achievement_certs')->insert([
+            [
+                'profile_id' => 1, 
+                'title' => 'Dean\'s Merit List 2025', 
+                'body' => 'Recognized for outstanding academic achievement in the Faculty of Engineering, Computer and Mathematical Sciences.', 
+                'file_path' => '/uploads/certs/deans_list_alex.pdf', 
+                'issued_date' => '2025-12-10', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1, 
+                'title' => 'Sustainable Energy Innovation Prize', 
+                'body' => 'Awarded by Engineers Australia for the best undergraduate project on solar-thermal storage systems.', 
+                'file_path' => '/uploads/certs/innovation_prize.pdf', 
+                'issued_date' => '2026-03-15', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 2, 
+                'title' => 'Civil Engineering Scholarship', 
+                'body' => 'Structural Engineering Industry Excellence Scholarship for high-performing female students.', 
+                'file_path' => '/uploads/certs/scholarship_kate.pdf', 
+                'issued_date' => '2026-02-01', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
+
+        // 10. ATTAINMENT CERTIFICATES
+        DB::table('attainment_certs')->insert([
+            [
+                'profile_id' => 1, 
+                'title' => 'Construction White Card', 
+                'body' => 'General Construction Induction (CPCCWHS1001) required for all industrial site visits.', 
+                'file_path' => '/uploads/attain/white_card_alex.pdf', 
+                'issued_date' => '2025-05-20', 
+                'expiry_date' => null, // Typically doesn't expire
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1, 
+                'title' => 'First Aid + CPR', 
+                'body' => 'HLTAID011 Provide First Aid. Includes emergency response training for remote work sites.', 
+                'file_path' => '/uploads/attain/first_aid_alex.pdf', 
+                'issued_date' => '2026-01-10', 
+                'expiry_date' => '2029-01-10', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 2, 
+                'title' => 'Working at Heights', 
+                'body' => 'Safety certification for structural site inspections and scaffolding access.', 
+                'file_path' => '/uploads/attain/heights_kate.pdf', 
+                'issued_date' => '2026-04-15', 
+                'expiry_date' => '2028-04-15', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+        ]);
     }
 }

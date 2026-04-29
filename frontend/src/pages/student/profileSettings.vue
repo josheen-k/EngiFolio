@@ -22,45 +22,43 @@
     }
   };
 
+  // Adds an empty link to the frontend profile data when add link is clicked
   const addLink = () => {
-  profile.value.links.push({
-    link_label: '',
-    link_url: '',
-    profile_id: route.params.id
-  });
-};
+    profile.value.links.push({
+      link_label: '',
+      link_url: '',
+      profile_id: route.params.id
+    });
+  };
 
 const removeLink = (index) => {
   const link = profile.value.links[index];
-  
-  // If the link has an ID, it exists in the DB. 
-  // Store the ID so we can call the delete API on save.
-  if (link.link_id) {
-    linksToDelete.value.push(link.link_id);
-  }
-  
-  // Remove from UI array
-  profile.value.links.splice(index, 1);
-};
+    if (link.link_id) {
+      linksToDelete.value.push(link.link_id);
+    }
+    
+    profile.value.links.splice(index, 1);
+  };
 
 
 const saveChanges = async () => {
   try {
-    // 1. Save the main profile
+    // Saves the main profile
     await api.put(`/profile/${route.params.id}`, profile.value);
 
-    // 2. Handle Deletions first
+    // Deletes the required links
     const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
 
     // 3. Handle Updates and Creations
     const upsertPromises = profile.value.links.map(link => {
-      // Don't save empty rows
+      // Ignore empty rows
       if (!link.link_url || link.link_url.trim() === '') return null;
 
+      // Create or update the link
       if (link.link_id) {
-        return api.put(`/link/${link.link_id}`, link); // Update
+        return api.put(`/link/${link.link_id}`, link);
       } else {
-        return api.post(`/link`, link); // Create
+        return api.post(`/link`, link);
       }
     }).filter(p => p !== null);
 
@@ -148,38 +146,37 @@ onMounted(() => {
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="stat-title mb-0">Professional Links</h5>
                 <button @click="addLink" class="btn  btn-ql rounded-pill px-4">Add New Link</button>
-              </div>
-              
-  <div class="row g-3">
-    <div v-for="(link, index) in profile.links" :key="index" class="col-12 border-bottom border-secondary pb-3 mb-2">
-      <div class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Link Title</label>
-          <input v-model="link.link_label" class="form-control"/>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-bold">URL</label>
-          <input v-model="link.link_url" class="form-control"/>
-        </div>
-        <div class="col-md-2">
-          <button @click="removeLink(index)" class="btn btn-filter px-4" title="Remove Link">
-          Delete</button>
-        </div>
-      </div>
-    </div>
-
-                <div v-if="profile.links.length === 0" class="text-center py-3">
-                  <p class="text-muted small mb-0">No links to show</p>
+              </div>       
+              <div class="row g-3">
+                <div v-for="(link, index) in profile.links" :key="index" class="col-12 border-bottom border-secondary pb-3 mb-2">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Link Title</label>
+                      <input v-model="link.link_label" class="form-control"/>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">URL</label>
+                      <input v-model="link.link_url" class="form-control"/>
+                    </div>
+                    <div class="col-md-2">
+                      <button @click="removeLink(index)" class="btn btn-filter px-4" title="Remove Link">
+                      Delete</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            
-            <footer class="border-top pt-4 d-flex justify-content-end gap-2">
-              <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
-              <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
-            </footer>
+            <div v-if="profile.links.length === 0" class="text-center py-3">
+              <p class="text-muted small mb-0">No links to show</p>
+            </div>
           </div>
         </div>
+            
+        <footer class="border-top pt-4 d-flex justify-content-end gap-2">
+          <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
+          <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
+        </footer>
+
       </div>
     </div>
   </body>

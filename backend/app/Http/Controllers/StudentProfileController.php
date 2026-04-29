@@ -45,7 +45,7 @@ class StudentProfileController extends Controller
     public function show($id)
     {
         // Fails if no profile is found
-        $studentProfile = StudentProfile::with('links', 'user')->findOrFail($id);
+        $studentProfile = StudentProfile::with('links', 'user', 'achievementCerts', 'attainmentCerts')->findOrFail($id);
 
         return response()->json($studentProfile);
     }
