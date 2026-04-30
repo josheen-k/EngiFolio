@@ -95,3 +95,9 @@ Route::delete('/achievement-cert/{id}', [AchievementCertController::class, 'dest
 Route::post('/attainment-cert', [AttainmentCertController::class, 'store']);
 Route::put('/attainment-cert/{id}', [AttainmentCertController::class, 'update']);
 Route::delete('/attainment-cert/{id}', [AttainmentCertController::class, 'destroy']);
+
+// Goal status
+Route::get('/goal-status', [GoalStatusesController::class, 'index']);
+Route::post('/goal-status', [GoalStatusesController::class, 'store']);
+Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
+Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);

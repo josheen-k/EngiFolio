@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->date('completion_date')->nullable();
             $table->text('completion_notes')->nullable();
-            $table->foreignId('goal_status_id')->constrained('goal_statuses', 'goal_status_id')->onDelete('restrict');
+            $table->foreignId('goal_status_id')->nullable()->constrained('goal_statuses', 'goal_status_id')->onDelete('set null');
             $table->timestamps();
         });
     }

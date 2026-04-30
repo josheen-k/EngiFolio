@@ -180,7 +180,7 @@ Table smart_goals {
   end_date date
   completion_date date
   completion_notes text
-  goal_status_id bigint [not null, ref: > goal_statuses.goal_status_id, note: 'On delete: restrict']
+  goal_status_id bigint [ref: > goal_statuses.goal_status_id, note: 'On delete: restrict']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
