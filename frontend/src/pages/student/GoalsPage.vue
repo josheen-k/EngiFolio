@@ -110,6 +110,7 @@
         <table class="goals-table">
         <thead>
           <tr>
+            <th class="drag-col-header"></th>
             <th>SMART Goal</th>
             <th>Action Steps</th>
             <th>Progress</th>
@@ -122,7 +123,30 @@
           </thead>
 
           <tbody>
-          <tr v-for="goal in goals" :key="goal.goal_id">
+          <tr
+            v-for="goal in goals"
+            :key="goal.goal_id"
+            :class="{
+              'goal-row-dragging': draggedGoalId === goal.goal_id,
+              'goal-row-drop-target': hoveredGoalId === goal.goal_id && draggedGoalId !== goal.goal_id
+            }"
+            @dragenter.prevent="onGoalDragEnter(goal)"
+            @dragleave="onGoalDragLeave(goal)"
+            @dragover.prevent
+            @drop="onGoalDrop(goal)"
+          >
+            <td class="drag-handle-cell">
+              <button
+                type="button"
+                class="drag-handle-btn"
+                draggable="true"
+                aria-label="Drag to reorder goal"
+                @dragstart="onGoalDragStart($event, goal)"
+                @dragend="onGoalDragEnd"
+              >
+                <span class="drag-handle-icon" aria-hidden="true">⋮⋮</span>
+              </button>
+            </td>
             <td>{{ goal.goal_description }}</td>
 
             <td class="steps-cell">
@@ -166,6 +190,19 @@
                 <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
                 <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
               </div>
+            </td>
+          </tr>
+          <tr v-if="goals.length > 1" class="drop-to-end-row">
+            <td
+              class="drop-to-end-cell"
+              :class="{ 'drop-to-end-active': isEndDropZoneActive }"
+              :colspan="9"
+              @dragenter.prevent="onEndDropDragEnter"
+              @dragleave="onEndDropDragLeave"
+              @dragover.prevent
+              @drop="onGoalDropToEnd"
+            >
+              Drop here to move goal to bottom
             </td>
           </tr>
           </tbody>
@@ -296,6 +333,14 @@ const stepModalGoal = ref(null)
 const savingSteps = ref(false)
 const stepDrafts = ref([])
 const expandedStepsByGoal = ref({})
+// Tracks the currently dragged goal to drive reorder and visual states.
+const draggedGoalId = ref(null)
+// Prevents concurrent reorder requests from overlapping.
+const isReorderingGoals = ref(false)
+// Highlights the row currently hovered as a potential drop target.
+const hoveredGoalId = ref(null)
+// Highlights the dedicated drop zone that moves a goal to the end.
+const isEndDropZoneActive = ref(false)
 // value is sent to backend, label is displayed in UI.
 const progressStatusOptions = [
   { value: 'planned', label: 'Planned' },
@@ -376,12 +421,159 @@ const loadGoals = async () => {
       params
     })
 
-    // Update table data with the latest goals from API.
-    goals.value = response.data
+    // Respect persisted backend order, with created_at as a stable tiebreaker.
+    goals.value = [...response.data].sort((a, b) => {
+      const aOrder = a.goal_order ?? Number.MAX_SAFE_INTEGER
+      const bOrder = b.goal_order ?? Number.MAX_SAFE_INTEGER
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder
+      }
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0)
+    })
   } catch (error) {
     console.error('Error while fetching goals:', error)
   } finally {
     loading.value = false
+  }
+}
+
+const onGoalDragStart = (event, goal) => {
+  if (isReorderingGoals.value) {
+    event.preventDefault()
+    return
+  }
+
+  draggedGoalId.value = goal.goal_id
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', String(goal.goal_id))
+}
+
+const onGoalDragEnter = (goal) => {
+  if (isReorderingGoals.value || draggedGoalId.value === null) {
+    return
+  }
+  hoveredGoalId.value = goal.goal_id
+  isEndDropZoneActive.value = false
+}
+
+const onGoalDragLeave = (goal) => {
+  if (hoveredGoalId.value === goal.goal_id) {
+    hoveredGoalId.value = null
+  }
+}
+
+const onGoalDrop = async (targetGoal) => {
+  if (isReorderingGoals.value || draggedGoalId.value === null || draggedGoalId.value === targetGoal.goal_id) {
+    return
+  }
+
+  const previousGoals = [...goals.value]
+  // Reorder in memory first for immediate feedback, then persist to backend.
+  const reorderedGoals = moveGoalBefore(draggedGoalId.value, targetGoal.goal_id)
+  draggedGoalId.value = null
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+
+  if (!reorderedGoals) {
+    return
+  }
+
+  goals.value = reorderedGoals
+  await persistGoalOrder(previousGoals)
+}
+
+const onGoalDropToEnd = async () => {
+  if (isReorderingGoals.value || draggedGoalId.value === null) {
+    return
+  }
+
+  const previousGoals = [...goals.value]
+  // Dedicated drop zone enables moving a goal to the absolute bottom.
+  const reorderedGoals = moveGoalToEnd(draggedGoalId.value)
+  draggedGoalId.value = null
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+
+  if (!reorderedGoals) {
+    return
+  }
+
+  goals.value = reorderedGoals
+  await persistGoalOrder(previousGoals)
+}
+
+const onEndDropDragEnter = () => {
+  if (isReorderingGoals.value || draggedGoalId.value === null) {
+    return
+  }
+  isEndDropZoneActive.value = true
+  hoveredGoalId.value = null
+}
+
+const onEndDropDragLeave = () => {
+  isEndDropZoneActive.value = false
+}
+
+const onGoalDragEnd = () => {
+  draggedGoalId.value = null
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+}
+
+const moveGoalBefore = (sourceGoalId, targetGoalId) => {
+  const sourceIndex = goals.value.findIndex((goal) => goal.goal_id === sourceGoalId)
+  const targetIndex = goals.value.findIndex((goal) => goal.goal_id === targetGoalId)
+
+  if (sourceIndex === -1 || targetIndex === -1) {
+    return null
+  }
+
+  const nextGoals = [...goals.value]
+  const [movedGoal] = nextGoals.splice(sourceIndex, 1)
+  const insertIndex = sourceIndex < targetIndex ? targetIndex : targetIndex
+  nextGoals.splice(insertIndex, 0, movedGoal)
+
+  // Rebuild sequential order values expected by the reorder API.
+  return nextGoals.map((goal, index) => ({
+    ...goal,
+    goal_order: index + 1
+  }))
+}
+
+const moveGoalToEnd = (sourceGoalId) => {
+  const sourceIndex = goals.value.findIndex((goal) => goal.goal_id === sourceGoalId)
+  if (sourceIndex === -1) {
+    return null
+  }
+
+  const nextGoals = [...goals.value]
+  const [movedGoal] = nextGoals.splice(sourceIndex, 1)
+  nextGoals.push(movedGoal)
+
+  // Rebuild sequential order values expected by the reorder API.
+  return nextGoals.map((goal, index) => ({
+    ...goal,
+    goal_order: index + 1
+  }))
+}
+
+const persistGoalOrder = async (previousGoals) => {
+  try {
+    isReorderingGoals.value = true
+    // Persist only IDs in their final order; backend maps index -> goal_order.
+    await api.put('/smart-goals/reorder', {
+      goal_ids: goals.value.map((goal) => goal.goal_id)
+    })
+  } catch (error) {
+    // Roll back UI order if save fails so client/server stay consistent.
+    goals.value = previousGoals
+    console.error('Error reordering goals:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to reorder goals'
+    alert(`Failed to reorder goals: ${errorMessage}`)
+  } finally {
+    isReorderingGoals.value = false
   }
 }
 
@@ -809,6 +1001,35 @@ const deleteGoal = async (goal) => {
   background: #f8f8f8;
 }
 
+.goal-row-dragging {
+  opacity: 0.55;
+}
+
+.goals-table tbody tr.goal-row-drop-target td {
+  background: #eef5ff;
+}
+
+.drop-to-end-row td {
+  border-bottom: none;
+}
+
+.drop-to-end-cell {
+  text-align: center;
+  color: #7a7a7a;
+  font-size: 0.86rem;
+  font-family: 'Montserrat Alternates', sans-serif;
+  padding: 0.6rem 0.8rem;
+  border-top: 1px dashed #d8d8d8;
+  background: #fafafa;
+  transition: all 0.15s ease;
+}
+
+.drop-to-end-active {
+  background: #eef5ff;
+  border-top-color: #99bfff;
+  color: #3c5d9e;
+}
+
 .goals-table tbody td {
   border-bottom: 1px solid #e6e6e6;
   background: transparent;
@@ -820,31 +1041,42 @@ const deleteGoal = async (goal) => {
 
 .goals-table th:nth-child(1),
 .goals-table td:nth-child(1) {
-  /* Column 1: SMART Goal */
-  min-width: 15rem;
+  /* Column 1: Drag Handle */
+  min-width: 3rem;
+  width: 3rem;
 }
 
 .goals-table th:nth-child(2),
 .goals-table td:nth-child(2) {
-  /* Column 2: Action Steps */
-  min-width: 16rem;
+  /* Column 2: SMART Goal */
+  min-width: 15rem;
 }
 
 .goals-table th:nth-child(3),
-.goals-table td:nth-child(3),
+.goals-table td:nth-child(3) {
+  /* Column 3: Action Steps */
+  min-width: 16rem;
+}
+
 .goals-table th:nth-child(4),
 .goals-table td:nth-child(4),
-.goals-table th:nth-child(7),
-.goals-table td:nth-child(7) {
-  /* Columns 3,4,7: Progress, Learnings, Completion Notes */
+.goals-table th:nth-child(5),
+.goals-table td:nth-child(5),
+.goals-table th:nth-child(8),
+.goals-table td:nth-child(8) {
+  /* Columns 4,5,8: Progress, Learnings, Completion Notes */
   min-width: 10rem;
 }
 
-.goals-table th:nth-child(5),
-.goals-table td:nth-child(5),
 .goals-table th:nth-child(6),
 .goals-table td:nth-child(6) {
-  /* Columns 5,6: Start Date, End Date */
+  /* Columns 6,7: Start Date, End Date */
+  min-width: 8.5rem;
+  white-space: nowrap;
+}
+
+.goals-table th:nth-child(7),
+.goals-table td:nth-child(7) {
   min-width: 8.5rem;
   white-space: nowrap;
 }
@@ -859,6 +1091,39 @@ const deleteGoal = async (goal) => {
   padding-left: 1.1rem;
   max-height: 6.8rem;
   overflow-y: auto;
+}
+
+.drag-col-header {
+  width: 3rem;
+}
+
+.drag-handle-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.drag-handle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.35rem;
+  cursor: grab;
+  color: #7a7a7a;
+  line-height: 1;
+}
+
+.drag-handle-btn:hover {
+  background: #f0f0f0;
+  color: #5f5f5f;
+}
+
+.drag-handle-btn:active {
+  cursor: grabbing;
+}
+
+.drag-handle-icon {
+  font-size: 1.05rem;
+  letter-spacing: -0.1rem;
 }
 
 .steps-cell {
