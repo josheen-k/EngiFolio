@@ -14,7 +14,11 @@ class NetworkingEventComment extends Model
 
     protected $fillable = [
         'event_id',
-        'comment_text'
+        'comment_text',
+        'comment_type',
+        'link_url',
+        'file_path',
+        'file_name',
     ];
 
     public function event()

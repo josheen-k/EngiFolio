@@ -4,6 +4,7 @@ import axios from 'axios'
 import Navbar from '@/components/Navbar.vue'
 import { useRoute } from 'vue-router'
 
+
 const route = useRoute()
 const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const miniWeekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -56,6 +57,15 @@ function createEmptyEvent(date = '') {
     location: '',
     details: '',
     contact_ids: [],
+  }
+}
+
+function createEmptyCommentDraft(){
+  return{
+    comment_type: '',
+    link_url: '',
+    file: null,
+    file_name: '',
   }
 }
 
@@ -139,7 +149,10 @@ function getQuestionDraft(eventId) {
 }
 
 function getCommentDraft(eventId) {
-  return commentDrafts.value[eventId] || ''
+  if(!commentDrafts.value[eventId]) {
+    commentDrafts.value[eventId] = createEmptyCommentDraft()
+  }
+  return commentDrafts.value[eventId]
 }
 
 function clearQuestionEditor(eventId) {
@@ -149,7 +162,7 @@ function clearQuestionEditor(eventId) {
 }
 
 function clearCommentEditor(eventId) {
-  commentDrafts.value[eventId] = ''
+  commentDrafts.value[eventId] = createEmptyCommentDraft()
   editingCommentIds.value[eventId] = null
   commentEditSnapshots.value[eventId] = null
 }
@@ -515,41 +528,74 @@ async function deleteQuestion(eventId, questionId) {
 }
 
 function editComment(eventId, comment) {
-  commentDrafts.value[eventId] = comment.comment_text
+  const draft = {
+    comment_type: comment.comment_type || '',
+    link_url: comment.link_url || '',
+    file: null,
+    file_name: comment.file_name || '',
+  }
+  commentDrafts.value[eventId] = {...draft}
   editingCommentIds.value[eventId] = comment.id
-  commentEditSnapshots.value[eventId] = comment.comment_text
+  commentEditSnapshots.value[eventId] = {...draft}
+}
+
+function handleCommentFileChange(eventId, fileList) {
+  const draft = getCommentDraft(eventId)
+  const file = fileList?.[0] || null
+
+  draft.file = file
+  draft.file_name = file ? file.name : ''
+
 }
 
 async function submitComment(eventId) {
-  const commentText = getCommentDraft(eventId).trim()
+  const draft = getCommentDraft(eventId)
   const editingId = editingCommentIds.value[eventId]
-
-  if (!commentText) {
+  if(!draft.comment_type) {
     return
   }
-
-  if (editingId) {
+  if(draft.comment_type === 'link' && !draft.link_url.trim()) {
+    return
+  }
+  if((draft.comment_type === 'image' || draft.comment_type === 'video') && !draft.file && !draft.file_name){
+    return
+  }
+  if(editingId){
     const shouldUpdate = await openConfirmDialog({
       title: 'Confirm update',
       message: 'Save these changes to this comment?',
       confirmLabel: 'Update',
       cancelLabel: 'Undo',
     })
-
-    if (!shouldUpdate) {
-      commentDrafts.value[eventId] = commentEditSnapshots.value[eventId] || ''
-      return
+  if (!shouldUpdate){
+    commentDrafts.value[eventId] = commentEditSnapshots.value[eventId]?{...commentEditSnapshots.value[eventId]}:createEmptyCommentDraft()
+    return
     }
-
-    await axios.put(`${apiBaseUrl}/comments/${editingId}`, {
-      comment: commentText,
-    })
-  } else {
-    await axios.post(`${apiBaseUrl}/networking-events/${eventId}/comments`, {
-      comment: commentText,
-    })
   }
 
+  const formData = new FormData()
+  formData.append('comment_type', draft.comment_type)
+
+  if((draft.comment_type === 'link')){
+    formData.append('link_url', draft.link_url.trim())
+  }
+  if((draft.comment_type === 'image' || draft.comment_type === 'video') && draft.file) {
+    formData.append('file', draft.file)
+  }
+
+  if(editingId){
+    await axios.post(`${apiBaseUrl}/comments/${editingId}?_method=PUT`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  } else {
+    await axios.post(`${apiBaseUrl}/networking-events/${eventId}/comments`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  }
   await fetchEvents()
   clearCommentEditor(eventId)
 }
@@ -923,13 +969,56 @@ function goToToday() {
                   <span class="panel-count">{{ event.comments?.length || 0 }}</span>
                 </div>
 
-                <div class="inline-editor">
-                  <textarea
-                    :value="getCommentDraft(event.event_id)"
-                    rows="3"
-                    placeholder="Add notes or reflections after the event"
-                    @input="commentDrafts[event.event_id] = $event.target.value"
-                  ></textarea>
+                <div class="inline-editor comment-evidence-editor">
+                  <div class="comment-evidence-grid">
+                    <div class="comment-evidence-field">
+                      <label class="detail-label">Evidence type</label>
+                      <select v-model="getCommentDraft(event.event_id).comment_type">
+                        <option value="">Select evidence type</option>
+                        <option value="link">Link</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                      </select>
+                    </div>
+
+                    <div class="comment-evidence-field comment-evidence-input">
+                      <label class="detail-label">Evidence input</label>
+
+                      <input
+                        v-if="!getCommentDraft(event.event_id).comment_type"
+                        disabled
+                        placeholder="Select a type first"
+                      />
+
+                      <input
+                        v-else-if="getCommentDraft(event.event_id).comment_type === 'link'"
+                        v-model="getCommentDraft(event.event_id).link_url"
+                        type="url"
+                        placeholder="https://example.com"
+                      />
+
+                      <div v-else class="upload-zone">
+                        <input
+                          type="file"
+                          :accept="getCommentDraft(event.event_id).comment_type === 'image'
+                            ? 'image/*'
+                            : 'video/*'"
+                          @change="handleCommentFileChange(event.event_id, $event.target.files)"
+                        />
+
+                        <p v-if="!getCommentDraft(event.event_id).file_name">
+                          {{
+                            getCommentDraft(event.event_id).comment_type === 'image'
+                              ? 'Upload an image file'
+                              : 'Upload a video file'
+                          }}
+                        </p>
+
+                        <p v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="inline-actions">
                     <button class="action-button small-button" @click="submitComment(event.event_id)">
                       {{ editingCommentIds[event.event_id] ? 'Update' : 'Add' }}
@@ -946,7 +1035,26 @@ function goToToday() {
 
                 <ul v-if="event.comments && event.comments.length" class="item-list">
                   <li v-for="comment in event.comments" :key="comment.id" class="list-item">
-                    <span>{{ comment.comment_text }}</span>
+                    <div class="comment-display">
+                      <a
+                        v-if="comment.comment_type === 'link'"
+                        :href="comment.link_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ comment.link_url }}
+                      </a>
+                      <a
+                        v-else-if="comment.file_path"
+                        :href="`http://127.0.0.1:8000/storage/${comment.file_path}`"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ comment.file_name || 'Open file' }}
+                      </a>
+                      <span v-else>No file available.</span>
+                    </div>
+
                     <div class="list-actions">
                       <button class="ghost-button small-button" @click="editComment(event.event_id, comment)">
                         Edit
