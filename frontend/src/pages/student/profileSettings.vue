@@ -67,6 +67,8 @@ const saveChanges = async () => {
     
     // Clear the delete tracking for next time
     linksToDelete.value = [];
+
+    await api.post(`/student-actions/new`, {action: "Updated profile", student_profile_id: route.params.id});
     
     router.push({ name: 'profile', params: { id: route.params.id } });
   } catch (error) {

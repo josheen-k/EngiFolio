@@ -10,9 +10,15 @@ class CompetencyEntryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($profileId)
     {
-        //
+        $entries = CompetencyEntry::with('indicator', 'entryLevel')->where('profile_id', $profileId)->get();
+
+        if ($entries->isEmpty()) {
+            return response()->json(['message' => 'No comptencies for this user found'], 404);
+        }
+
+        return response()->json($entries);
     }
 
     /**
@@ -26,15 +32,9 @@ class CompetencyEntryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($profileId)
+    public function show()
     {
-        $entries = CompetencyEntry::with('indicator', 'entryLevel')->where('profile_id', $profileId)->get();
 
-        if ($entries->isEmpty()) {
-            return response()->json(['message' => 'No comptencies for this user found'], 404);
-        }
-
-        return response()->json($entries);
     }
 
     /**

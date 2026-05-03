@@ -123,11 +123,14 @@
         </div>
 
         <h2 class="sec-title text-center mt-5">Recent Activity</h2>
-        <ul class="ps-5 activity-list">
-          <li class="mb-3" v-for="act in recentAct" :key="act">
-            {{ act }}
-          </li>
-        </ul>
+        <div v-if="recentAct.length > 0">
+          <ul class="ps-5 activity-list">
+            <li class="mb-3" v-for="act in recentAct" :key="act">
+              {{ formatDate(act.created_at) }} - {{ act.action }}
+            </li>
+          </ul>
+        </div>
+        <p v-else class="text-center">No recent activity</p>
       </div>
 
       <div class="row mt-5">
@@ -180,6 +183,9 @@
     });
     const series = ref([0, 0, 0, 0, 0]);
 
+
+    const recentAct = ref([]);
+
     // For calculating average level
     const levelWeights = { "Emerging": 1, "Developing": 2, "Proficient": 3, "Confident": 4 };
     const weightToLevel = ["Not Started", "Emerging", "Developing", "Proficient", "Confident"];
@@ -205,6 +211,19 @@
         '#333639'  // confident
       ]
     }
+
+    // For formatting the date used by recent activity
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        
+        return date.toLocaleDateString('en-AU') + ', ' + 
+              date.toLocaleTimeString('en-AU', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: true 
+              }).toLowerCase();
+      };
 
     const loadProfileData = async () => {
       try {
@@ -244,10 +263,10 @@
 
     const loadUserActions = async () => {
       try {
-        const response = await api.get(`/user/smart-goals/${route.params.id}`);
-        userGoals.value = response.data;
+        const response = await api.get(`/student-actions/recent/${route.params.id}`);
+        recentAct.value = response.data;
       } catch (error) {
-        console.error("Error fetching goals:", error);
+        console.error("Error fetching recent actions:", error);
       }
     };
 
@@ -259,6 +278,7 @@
         await loadUserCompetencyData();
         await loadCompetencyIndicators();
         await loadUserGoals();
+        await loadUserActions();
 
         // Calculate the total weight based of the points for each number
         const totalWeight = userCompetencies.value.reduce((acc, c) => acc + (levelWeights[c.level] || 0), 0);
@@ -337,15 +357,6 @@ const focusItems = [
     level: 'Emerging'
   },
 ]
-
-const recentAct = [
-  '2 Apr 2026: Added reflection for competency 1.2',
-  '1 Apr 2026: Updated goal: Do 3 mini projects',
-  '25 Mar 2026: Deleted goal: Improve teamwork',
-  '22 Mar 2026: Updated profile'
-]
-
-
 </script>
 
 <style scoped>

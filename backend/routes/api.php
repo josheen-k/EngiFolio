@@ -14,6 +14,7 @@ use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
+use App\Http\Controllers\StudentActionsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,7 +81,7 @@ Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
 Route::get('/career-plans/{id}', [CareerDevelopmentPlanController::class, 'show']);
 
 // Competency Entries
-Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'show']);
+Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'index']);
 
 // Competency Indicators
 Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);
@@ -103,3 +104,7 @@ Route::get('/goal-status', [GoalStatusesController::class, 'index']);
 Route::post('/goal-status', [GoalStatusesController::class, 'store']);
 Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
 Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
+
+// Student actions
+Route::get('/student-actions/recent/{id}', [StudentActionsController::class, 'getRecentActions']);
+Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
