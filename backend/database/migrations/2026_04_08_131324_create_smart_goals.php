@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('completion_date')->nullable();
             $table->text('completion_notes')->nullable();
             $table->foreignId('goal_status_id')->nullable()->constrained('goal_statuses', 'goal_status_id')->onDelete('set null');
+            $table->unsignedInteger('goal_order')->default(0);
             $table->timestamps();
         });
     }
