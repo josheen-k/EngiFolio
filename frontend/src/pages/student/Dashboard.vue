@@ -417,7 +417,7 @@ const recentAct = [
 }
 
 .btn-filter:hover {
-  background: #142a93;
+  background: #333333;
   color: #ffffff;
 }
 
@@ -452,7 +452,7 @@ const recentAct = [
   font-family: 'Montserrat Alternates', sans-serif;
   font-size: 1rem;
   color: #ffffff;
-  background: #142a93;
+  background: #555555;
   padding: 0.5rem 1rem;
 }
 
@@ -462,7 +462,7 @@ const recentAct = [
 
 .btn-ql:hover {
   color: #ffffff;
-  background: #140F50;
+  background: #333333;
 }
 
 .activity-list {

@@ -64,6 +64,8 @@ Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
 // Smart Goal routes
 Route::get('/smart-goals', [SmartGoalController::class, 'index']);
 Route::post('/smart-goals', [SmartGoalController::class, 'store']);
+// Keep this static route above /smart-goals/{id} so "reorder" is not matched as an ID.
+Route::put('/smart-goals/reorder', [SmartGoalController::class, 'reorder']);
 Route::get('/smart-goals/{id}', [SmartGoalController::class, 'show']);
 Route::put('/smart-goals/{id}', [SmartGoalController::class, 'update']);
 Route::delete('/smart-goals/{id}', [SmartGoalController::class, 'destroy']);

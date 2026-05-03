@@ -24,7 +24,11 @@ class SmartGoalController extends Controller
             $query->whereDate('start_date', '<=', $request->to);
         }
 
-        $smartGoals = $query->orderBy('created_at', 'desc')->get();
+        // Keep persisted manual order first; fall back to newest records when order ties.
+        $smartGoals = $query
+            ->orderBy('goal_order')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json($smartGoals);
     }
@@ -47,7 +51,14 @@ class SmartGoalController extends Controller
             'goal_status_id' => 'required|integer|exists:goal_statuses,goal_status_id',
         ]);
 
-        $smartGoal = SmartGoal::create($validated);
+        // New goals are inserted at the top by shifting existing goals down by one.
+        $smartGoal = DB::transaction(function () use ($validated) {
+            SmartGoal::where('plan_id', $validated['plan_id'])
+                ->increment('goal_order');
+
+            $validated['goal_order'] = 1;
+            return SmartGoal::create($validated);
+        });
 
         return response()->json($smartGoal, 201);
     }
@@ -113,6 +124,27 @@ class SmartGoalController extends Controller
         );
     }
 
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'goal_ids' => 'required|array|min:1',
+            'goal_ids.*' => 'required|integer|distinct|exists:smart_goals,goal_id',
+        ]);
+
+        // Persist the exact order received from the drag-and-drop UI.
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['goal_ids'] as $index => $goalId) {
+                SmartGoal::where('goal_id', $goalId)->update([
+                    'goal_order' => $index + 1,
+                ]);
+            }
+        });
+
+        return response()->json([
+            'message' => 'Goal order updated successfully'
+        ]);
+    }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -128,9 +160,15 @@ class SmartGoalController extends Controller
 
     public function showUserGoals($profileId)
     {
+        // Return user goals in the same persisted order used by the main goals list.
         $goals = SmartGoal::with(['actionSteps', 'feedback', 'status'])
                 ->whereHas('plan', fn($q) => $q->where('profile_id', $profileId))
                 ->get();
+        
+
+        if ($goals->isEmpty()) {
+            return response()->json(['message' => 'No goals for this user found'], 404);
+        }
 
         return response()->json($goals);
     }

@@ -22,6 +22,8 @@ class SmartGoal extends Model
         'completion_date',
         'completion_notes',
         'goal_status_id',
+        // Used by manual drag-and-drop ordering on the SMART Goals page.
+        'goal_order',
     ];
 
     public function plan()
