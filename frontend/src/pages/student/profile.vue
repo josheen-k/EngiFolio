@@ -1,18 +1,18 @@
 <template>
   <Navbar/>
 
-  <div class="d-flex p-4 side ms-3">
-    <aside class="d-flex gap-4 flex-column pt-5 sidebar-wrap">
-      <div class="d-flex align-items-center gap-3 px-3 py-2 sidebar"
-      :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
-        <span class="dot rounded-circle" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
-      </div>
-    </aside>
-
-    <main class="mt-5 main-area">
-      <component :is="currComponent"/>
-    </main>
+  <!--using toggle instead of sidebar cause there's only 2 views -->
+  <div class="toggle">
+    <div class="toggle-line">
+      <button class="toggle-btn" :class="{active: currTab === 'PROFILE' }" @click="currTab = 'PROFILE'">Profile</button>
+      <button class="toggle-btn" :class="{ active: currTab === 'CERTIFICATIONS' }" @click="currTab = 'CERTIFICATIONS'">Certifications</button>
+      <!--slidingpill -->
+      <div class="toggle-pill" :class="currTab === 'CERTIFICATIONS' ? 'pill-right' : 'pill-left'"></div>
+    </div>
   </div>
+  <main class="main-area">
+    <component :is="currComponent"/>
+  </main>
 </template>
 
 <script setup>
@@ -40,45 +40,59 @@ const currComponent = computed(()=> {
 </script>
 
 <style scoped>
-.side {
-  min-height: 100vh;
-  gap: 4rem;
+.toggle {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 0.5rem;
 }
 
-.sidebar-wrap {
-  position: sticky;
-  top: 30%;
-  left: 5%;
-  width: 20%;
-  height: fit-content;
+.toggle-line {
+  position: relative;
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 2rem;
+  padding: 0.3rem;
+  gap: 0;
 }
 
-.main-area {
-  flex: 1;
-  min-width: 0;
+.toggle-pill {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  width: calc(50% - 0.3rem);
+  background: #ffffff;
+  border-radius: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.25s ease;
+  pointer-events: none;
 }
 
-.sidebar{
-  font-family: 'Maven Pro', sans-serif;
-  font-size: 1.2rem;
-  border-radius: 1.5rem;
+.pill-left {
+  transform: translateX(0);
+}
+
+.pill-right {
+  transform: translateX(calc(100%));
+}
+
+.toggle-btn {
+  position: relative;
+  z-index: 1;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.95rem;
+  color: #888888;
+  background: transparent;
+  border: none;
+  padding: 0.45rem 1.5rem 0.45rem 3rem;
   cursor: pointer;
-  width: 70%;
+  transition: color 0.2s ease;
 }
 
-.sidebar-on {
-  background: #f3f3f3;
+.toggle-btn.active {
   color: #222222;
 }
 
-.dot {
-  width: 0.7rem;
-  height: 0.7rem;
-  background: #e0e0e0;
-  flex-shrink: 0;
-}
-
-.dot-on {
-  background: #88c2d2;
+.main-area {
+  padding: 1rem 1.5rem 3rem;
 }
 </style>
