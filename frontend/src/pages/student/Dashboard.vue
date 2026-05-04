@@ -187,10 +187,6 @@
     const compLevels = ref([]);
     const recentAct = ref([]);
 
-    // For calculating average level
-    const levelWeights = { "Emerging": 1, "Developing": 2, "Proficient": 3, "Confident": 4 };
-    const weightToLevel = ["Not Started", "Emerging", "Developing", "Proficient", "Confident"];
-
     const chartOptions = ref({
       labels: [],
       legend: {
@@ -331,20 +327,35 @@
         await loadCompetencyIndicatorsWithCount();
         await updateChart();
 
-        // Calculate the total weight based of the points for each number
-        const totalWeight = userCompetencies.value.reduce((acc, c) => acc + (levelWeights[c.level] || 0), 0);
+        // Calculate the total weight based of the weight of each competency
+        const totalWeight = focusItems.value.reduce((acc, item) => {
+            const weight = Number(item.highest_entry?.competency_level_weighting) || 0;
+            return acc + weight;
+        }, 0);
+
         // Calculate average by dividing weight by amount of competencies
         const avgScore = competencyIndicators.value.length > 0 ? Math.round(totalWeight / competencyIndicators.value.length) : 0;
+
+        // Get average level from competency levels using the weight
+        let displayLevel = "Not Started";
+        if (avgScore > 0) {
+          try {
+            const levelResponse = await api.get(`/competency-levels-by-weight/${avgScore}`);
+            displayLevel = levelResponse.data.competency_level;
+          } catch (error) {
+            console.error("Could not fetch average level:", error);
+          }
+        }
 
         // Filter all competencies above a level 3 and count
         const masteredCount = focusItems.value.filter(item => item.highest_entry?.competency_level_weighting > 3).length;
 
-        // Made some changes here
+        // Stats that are to be displayed to the dashboard
         stats.value = {
           totalReflections: userCompetencies.value.length,
           comptMastered: `${masteredCount}/${competencyIndicators.value.length}`,
-          goalsDone: `${userGoals.value.filter(g => g.status?.status === 'completed').length}/${userGoals.value.length}`,
-          avgLevel: weightToLevel[avgScore]
+          goalsDone: `${userGoals.value.filter(g => g.status?.goal_status_id === 3).length}/${userGoals.value.length}`,
+          avgLevel: displayLevel
         }
 
       } catch (error) {

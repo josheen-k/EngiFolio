@@ -113,3 +113,4 @@ Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
 
 // Competency Entry Levels
 Route::get('/competency-levels', [CompetencyEntryLevelsController::class, 'index']);
+Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsController::class, 'getLevelByWeighting']);
