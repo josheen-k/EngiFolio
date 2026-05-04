@@ -12,12 +12,12 @@ class ElevatorPitch extends Model
     protected $table = 'elevator_pitches';
     protected $primaryKey = 'pitch_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'pitch_text',
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Profile::class, 'profile_id');
     }
 }

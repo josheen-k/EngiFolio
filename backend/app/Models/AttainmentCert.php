@@ -9,10 +9,10 @@ class AttainmentCert extends Model
 {
     use HasFactory;
 
-    protected $table = 'attainment_cert';
+    protected $table = 'attainment_certs';
     protected $primaryKey = 'attainment_cert_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'title',
         'body',
         'file_path',
@@ -20,8 +20,8 @@ class AttainmentCert extends Model
         'expiry_date',
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 }

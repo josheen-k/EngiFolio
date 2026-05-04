@@ -12,20 +12,20 @@ class NetworkingEvent extends Model
     protected $table = 'networking_events';
     protected $primaryKey = 'event_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'event_name',
         'event_datetime',
         'location',
         'details',
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Profile::class, 'profile_id', 'profile_id');
     }
 
     public function questions()
     {
-        return $this->hasMany(NetworkingEventQuestion::class, 'event_id');
+        return $this->hasMany(NetworkingEventQuestion::class, 'event_id', 'event_id');
     }
 }

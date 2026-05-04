@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('competency_evidence', function (Blueprint $table) {
+        Schema::create('competency_evidences', function (Blueprint $table) {
             $table->id('evidence_id');
             $table->foreignId('entry_id')->constrained('competency_entries', 'entry_id')->onDelete('cascade');
-            $table->string('evidence_type', 15);
+            $table->foreignId('evidence_type_id')->constrained('competency_evidence_types', 'evidence_type_id')->onDelete('restrict');
             $table->string('evidence_value', 500);
-            $table->unique(['entry_id']);
             $table->timestamps();
         });
-
-        DB::statement("ALTER TABLE competency_evidence ADD CONSTRAINT check_evidence_type CHECK (evidence_type IN ('url', 'file'))");
     }
 
     /**
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('competency_evidence');
+        Schema::dropIfExists('competency_evidences');
     }
 };

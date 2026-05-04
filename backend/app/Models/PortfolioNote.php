@@ -9,18 +9,18 @@ class PortfolioNote extends Model
 {
     use HasFactory;
 
-    protected $table = 'portfolio_note';
+    protected $table = 'portfolio_notes';
     protected $primaryKey = 'portfolio_note_id';
 
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'title',
         'body',
         'file_path',
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 }

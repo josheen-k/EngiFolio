@@ -8,6 +8,7 @@
   const route = useRoute();
   const profile = ref(null);
   const loading = ref(true);
+  const linksToDelete = ref([]);
 
   const loadProfile = async () => {
     // Get profile data, throw error if unsuccessful
@@ -21,46 +22,58 @@
     }
   };
 
-  const getLink = (type) => {
-    if (!profile.value) return { link_url: '' };
-  
-    // Match link type
-    let found = profile.value.links.find(l => l.link_type === type);
-    if (!found) {
-      // Create the object structure if not found
-      found = { 
-        link_type: type, 
-        link_label: type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        link_url: '', 
-        profile_id: route.params.id 
-      };
-      // Add to profile
-      profile.value.links.push(found);
-    }
-    return found;
+  // Adds an empty link to the frontend profile data when add link is clicked
+  const addLink = () => {
+    profile.value.links.push({
+      link_label: '',
+      link_url: '',
+      profile_id: route.params.id
+    });
   };
 
-  const saveChanges = async () => {
-    await  api.put(`/profile/${route.params.id}`, profile.value);
+const removeLink = (index) => {
+  const link = profile.value.links[index];
+    if (link.link_id) {
+      linksToDelete.value.push(link.link_id);
+    }
+    
+    profile.value.links.splice(index, 1);
+  };
 
-    for (const link of profile.value.links) {
-      // Check if link is empty
-      if (link.link_url.trim() === '') {
-        if (link.link_id) {
-          await api.delete(`/link/${link.link_id}`);
-        }
+
+const saveChanges = async () => {
+  try {
+    // Saves the main profile
+    await api.put(`/profile/${route.params.id}`, profile.value);
+
+    // Deletes the required links
+    const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
+
+    // 3. Handle Updates and Creations
+    const upsertPromises = profile.value.links.map(link => {
+      // Ignore empty rows
+      if (!link.link_url || link.link_url.trim() === '') return null;
+
+      // Create or update the link
+      if (link.link_id) {
+        return api.put(`/link/${link.link_id}`, link);
       } else {
-        if (link.link_id) {
-          // Update link
-          await api.put(`/link/${link.link_id}`, link);
-        } else {
-          // Create link
-          await api.post(`/link`, link);
-        }
+        return api.post(`/link`, link);
       }
-    }
+    }).filter(p => p !== null);
+
+    // Execute all API calls
+    await Promise.all([...deletePromises, ...upsertPromises]);
+    
+    // Clear the delete tracking for next time
+    linksToDelete.value = [];
+    
     router.push({ name: 'profile', params: { id: route.params.id } });
-  };
+  } catch (error) {
+    console.error("Save failed:", error);
+    alert("There was an error saving your changes.");
+  }
+};
 
   const cancel = () => {
       router.push({ name: 'profile', params: { id: route.params.id } });
@@ -69,6 +82,8 @@
 onMounted(() => {
   loadProfile();
 })
+
+
 </script>
 
 <template>
@@ -98,11 +113,11 @@ onMounted(() => {
               <div class="row g-3">
                 <div class="col-md-4">
                   <label class="form-label fw-bold">First Name</label>
-                  <input v-model="profile.first_name" class="form-control form-control-lg"/>
+                  <input v-model="profile.user.first_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-bold">Last Name</label>
-                  <input v-model="profile.last_name" class="form-control form-control-lg"/>
+                  <input v-model="profile.user.last_name" class="form-control form-control-lg"/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-bold">Preferred Name</label>
@@ -128,51 +143,40 @@ onMounted(() => {
             </div>
 
             <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
-              <h5 class="stat-title mb-4">Professional Links</h5>
-              
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">LinkedIn</label>
-                  <div class="input-group">
-                    <input v-model="getLink('linkedin').link_url" class="form-control"/>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">GitHub</label>
-                  <div class="input-group">
-                    <input v-model="getLink('github').link_url" class="form-control"/>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">Resume Link</label>
-                  <div class="input-group">
-                    <input v-model="getLink('resume').link_url" class="form-control"/>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">Portfolio / Website</label>
-                  <div class="input-group">
-                    <input v-model="getLink('portfolio').link_url" class="form-control"/>
-                  </div>
-                </div>
-
-                <div class="col-6">
-                  <label class="form-label fw-bold">Cover Letter Link</label>
-                  <div class="input-group">
-                    <input v-model="getLink('cover_letter').link_url" class="form-control"/>
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="stat-title mb-0">Professional Links</h5>
+                <button @click="addLink" class="btn  btn-ql rounded-pill px-4">Add New Link</button>
+              </div>       
+              <div class="row g-3">
+                <div v-for="(link, index) in profile.links" :key="index" class="col-12 border-bottom border-secondary pb-3 mb-2">
+                  <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Link Title</label>
+                      <input v-model="link.link_label" class="form-control"/>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">URL</label>
+                      <input v-model="link.link_url" class="form-control"/>
+                    </div>
+                    <div class="col-md-2">
+                      <button @click="removeLink(index)" class="btn btn-filter px-4" title="Remove Link">
+                      Delete</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <footer class="border-top pt-4 d-flex justify-content-end gap-2">
-              <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
-              <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
-            </footer>
+            <div v-if="profile.links.length === 0" class="text-center py-3">
+              <p class="text-muted small mb-0">No links to show</p>
+            </div>
           </div>
         </div>
+            
+        <footer class="border-top pt-4 d-flex justify-content-end gap-2">
+          <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
+          <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
+        </footer>
+
       </div>
     </div>
   </body>

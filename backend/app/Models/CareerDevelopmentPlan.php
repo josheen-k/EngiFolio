@@ -12,7 +12,7 @@ class CareerDevelopmentPlan extends Model
     protected $table = 'career_development_plans';
     protected $primaryKey = 'plan_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'plan_year',
         'professional_interests',
         'employers_of_interest',
@@ -22,13 +22,13 @@ class CareerDevelopmentPlan extends Model
         'development_focus',
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 
     public function smartGoals()
     {
-        return $this->hasMany(SmartGoal::class, 'plan_id');
+        return $this->hasMany(SmartGoal::class, 'plan_id', 'plan_id');
     }
 }
