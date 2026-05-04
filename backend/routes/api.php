@@ -15,6 +15,7 @@ use App\Http\Controllers\CompetencyIndicatorController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
 use App\Http\Controllers\StudentActionsController;
+use App\Http\Controllers\CompetencyEntryLevelsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +86,7 @@ Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'index
 
 // Competency Indicators
 Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);
+Route::get('/student-competency-indicators/{id}', [CompetencyIndicatorController::class, 'competenciesForStudents']);
 
 // Export profile data as pdf
 Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);
@@ -108,3 +110,6 @@ Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy'
 // Student actions
 Route::get('/student-actions/recent/{id}', [StudentActionsController::class, 'getRecentActions']);
 Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
+
+// Competency Entry Levels
+Route::get('/competency-levels', [CompetencyEntryLevelsController::class, 'index']);

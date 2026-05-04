@@ -28,10 +28,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('competency_entry_levels')->insert([
-            ['entry_level_id' => 1, 'competency_level' => 'Emerging', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_level_id' => 2, 'competency_level' => 'Developing', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_level_id' => 3, 'competency_level' => 'Proficient', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_level_id' => 4, 'competency_level' => 'Confident', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 1, 'competency_level' => 'Emerging', 'competency_level_weighting' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 2, 'competency_level' => 'Developing', 'competency_level_weighting' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 3, 'competency_level' => 'Proficient', 'competency_level_weighting' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 4, 'competency_level' => 'Confident', 'competency_level_weighting' => 4, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('competency_entry_statuses')->insert([
@@ -72,7 +72,6 @@ class DatabaseSeeder extends Seeder
             ['goal_id' => 2, 'plan_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // 6. NETWORKING
         DB::table('industry_contacts')->insert([
             ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Robert Ford', 'company' => 'Westworld Robotics', 'date_met' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 2, 'profile_id' => 2, 'contact_name' => 'Sarah Connor', 'company' => 'Cyberdyne Systems', 'date_met' => '2026-01-20', 'created_at' => now(), 'updated_at' => now()],
@@ -83,7 +82,6 @@ class DatabaseSeeder extends Seeder
             ['contact_id' => 2, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/sconnor', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // 7. COMPETENCIES
         DB::table('competency_groups')->insert([
             ['group_id' => 1, 'display_id' => 'CAT1', 'group_name' => 'Knowledge Base', 'created_at' => now(), 'updated_at' => now()],
             ['group_id' => 2, 'display_id' => 'CAT2', 'group_name' => 'Engineering Application Ability', 'created_at' => now(), 'updated_at' => now()],
@@ -116,7 +114,6 @@ class DatabaseSeeder extends Seeder
             ['entry_id' => 2, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Bridge Project', 'associated_year' => 1, 'experience_tasks' => 'CAD work', 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // 8. OTHER
         DB::table('cdl_modules')->insert([
             ['cdl_id' => 1, 'title' => 'Ethics', 'description' => 'Ethics 101', 'created_at' => now(), 'updated_at' => now()],
         ]);
@@ -156,7 +153,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 10. ATTAINMENT CERTIFICATES
         DB::table('attainment_certs')->insert([
             [
                 'profile_id' => 1, 
@@ -164,7 +160,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'General Construction Induction (CPCCWHS1001) required for all industrial site visits.', 
                 'file_path' => '/uploads/attain/white_card_alex.pdf', 
                 'issued_date' => '2025-05-20', 
-                'expiry_date' => null, // Typically doesn't expire
+                'expiry_date' => null,
                 'created_at' => now(), 
                 'updated_at' => now()
             ],

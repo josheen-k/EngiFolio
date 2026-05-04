@@ -28,4 +28,13 @@ class CompetencyIndicator extends Model
     {
         return $this->hasMany(CompetencyEntry::class, 'indicator_id', 'indicator_id');
     }
+
+    // Called by the controller to find the highest weighted entry
+    public function highestEntry()
+    {
+        // Return the first entry when joining entries to entry levels and ordering from highest weight first
+        return $this->hasOne(CompetencyEntry::class, 'indicator_id', 'indicator_id')
+            ->join('competency_entry_levels', 'competency_entries.entry_level_id', '=', 'competency_entry_levels.entry_level_id')
+            ->orderByDesc('competency_entry_levels.competency_level_weighting');
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompetencyIndicator;
+use App\Models\CompetencyEntry;
 use Illuminate\Http\Request;
 
 class CompetencyIndicatorController extends Controller
@@ -47,5 +48,19 @@ class CompetencyIndicatorController extends Controller
     public function destroy(CompetencyIndicator $competencyIndicator)
     {
         //
+    }
+
+    // Retrieves all competencies and count of how many entries the student has for each and highest level
+    public function competenciesForStudents($profileId)
+    {
+        // Count the amount of entries the student has for each competency
+        $indicators = CompetencyIndicator::withCount(['entries' => function ($query) use ($profileId) {
+            $query->where('profile_id', $profileId);}])
+        // Call function that calculates the highest entry by level weighting
+        ->with(['highestEntry' => function ($query) use ($profileId) {
+            $query->where('profile_id', $profileId);
+        }])->get();
+
+        return response()->json($indicators);
     }
 }

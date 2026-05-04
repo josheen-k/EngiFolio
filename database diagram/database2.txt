@@ -299,7 +299,7 @@ Table competency_entries {
   associated_year int [not null, note: 'Academic year']
   experience_tasks text [not null, note: 'Description of experience and tasks']
   key_learnings text [note: 'Key learnings from that experience']
-  future_applications text [note: 'How the learning will be apllied in future']
+  future_applications text [note: 'How the learning will be applied in future']
 
   entry_level_id bigint [not null, ref: > competency_entry_levels.entry_level_id, note: "On delete: restrict"]
   entry_status_id bigint [not null, ref: > competency_entry_statuses.entry_status_id, note: "On delete: restrict"]
@@ -313,6 +313,7 @@ Table competency_entries {
 Table competency_entry_levels {
   entry_level_id bigint [pk, increment]
   competency_level varchar(15) [not null, note: "Emerging, Developing, Proficient, Confident"]
+  competency_level_weighting int [not null, unique]
   created_at datetime [not null]
   updated_at datetime [not null]
 }

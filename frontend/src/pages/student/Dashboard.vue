@@ -73,11 +73,6 @@
 
         </div>
 
-        <div class="mt-3">
-          <button class="btn btn-filter px-4">
-            Filter by year
-          </button>
-        </div>
       </div>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center mb-3">Attainment Level Distribution</h2>
@@ -101,12 +96,17 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in focusItems" :key="item.id">
-                <td><a href="#" class="table-link">{{ item.id }}</a></td>
-                <td>{{ item.description }}</td>
-                <td class="text-center">{{ item.entries }}</td>
-                <td class="text-center">{{ item.level }}</td>
-              </tr>
+              <template v-for="item in focusItems" :key="item.indicator_id">
+                <tr v-if="!item.highest_entry || item.highest_entry.competency_level_weighting < 2">
+                  <td><a href="#" class="table-link">{{ item.display_id }}</a></td>
+                  <td>{{ item.description }}</td>
+                  <td class="text-center">{{ item.entries_count || 0 }}</td>            
+                  <td class="text-center">
+                    <div v-if="item.highest_entry">{{ item.highest_entry.competency_level }}</div>
+                    <div v-else class="text-muted">Not started</div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -138,7 +138,7 @@
           <h2 class="sec-title text-center">Your Goals</h2>
           <ul class="ps-5 activity-list" v-if="userGoals && userGoals.length > 0">
             <li class="mb-3" v-for="goal in userGoals" :key="goal.goal_id">
-              <strong>{{ (goal.status?.status || 'planned').replace('_', ' ').toUpperCase() }}:</strong>
+              <strong>{{ (goal.status?.status || 'planned').toUpperCase() }}:</strong>
               {{ goal.goal_description }} 
               <span v-if="goal.end_date" class="text-muted">
                 (Target: {{ goal.end_date }})
@@ -183,21 +183,16 @@
     });
     const series = ref([0, 0, 0, 0, 0]);
 
-
+    const focusItems = ref([]);
+    const compLevels = ref([]);
     const recentAct = ref([]);
 
     // For calculating average level
     const levelWeights = { "Emerging": 1, "Developing": 2, "Proficient": 3, "Confident": 4 };
     const weightToLevel = ["Not Started", "Emerging", "Developing", "Proficient", "Confident"];
 
-    const chartOptions = {
-      labels: [
-        'Not Started',
-        'Emerging',
-        'Developing',
-        'Proficient',
-        'Confident'
-      ],
+    const chartOptions = ref({
+      labels: [],
       legend: {
         position: 'bottom',
         fontFamily: 'Maven Pro, sans-serif',
@@ -210,7 +205,7 @@
         '#7c848c', // proficient
         '#333639'  // confident
       ]
-    }
+    })
 
     // For formatting the date used by recent activity
     const formatDate = (dateString) => {
@@ -252,12 +247,30 @@
       }
 		};
 
+    const loadCompetencyIndicatorsWithCount = async () => {
+      try {
+        const response = await api.get(`/student-competency-indicators/${route.params.id}`);
+        focusItems.value = response.data;
+      } catch (error) {
+        console.error("Error while fetching competencies:", error);
+      }
+		};
+
     const loadUserGoals = async () => {
       try {
-        const response = await api.get(`/user/smart-goals/${route.params.id}`);
-        userGoals.value = response.data;
+        const response = await api.get(`/career-plans/${route.params.id}`);
+        const plans = response.data || [];
+
+
+        userGoals.value = plans.flatMap(plan => plan.smart_goals || plan.smartGoals || []);
+        
+        // Make sure array exists or else set empty array
+        if (!Array.isArray(userGoals.value)) {
+            userGoals.value = [];
+        }
       } catch (error) {
         console.error("Error fetching goals:", error);
+        userGoals.value = [];
       }
     };
 
@@ -270,40 +283,69 @@
       }
     };
 
+    // Update the chart with values
+    const updateChart = async () => {
+      try {
+          const response = await api.get(`/competency-levels`);
+          const levels = response.data;
+
+          // Add the number of not started competencies to the count
+          const counts = [
+            focusItems.value.filter(item => !item.highest_entry).length
+          ];
+
+          // Get labels for chart using the competency levels that can be selected
+          compLevels.value = [
+            'Not started', 
+            ...response.data.map(item => item.competency_level)
+          ];
+
+          // Add labels to chart
+          chartOptions.value = {
+            ...chartOptions.value,
+            labels: compLevels.value
+          };
+
+          // Go through each level and find out how many of the competencies are at this level
+          levels.forEach(level => {
+            const count = focusItems.value.filter(item => item.highest_entry?.competency_level === level.competency_level).length;   
+
+            counts.push(count);
+          });
+
+          series.value = counts;
+
+      } catch (error) {
+          console.error("Failed to load chart data:", error);
+      }
+    };
+
     const loadData = async () => {
       loading.value = true;
-      const id = route.params.id;
       try {
         await loadProfileData();
         await loadUserCompetencyData();
         await loadCompetencyIndicators();
         await loadUserGoals();
         await loadUserActions();
+        await loadCompetencyIndicatorsWithCount();
+        await updateChart();
 
         // Calculate the total weight based of the points for each number
         const totalWeight = userCompetencies.value.reduce((acc, c) => acc + (levelWeights[c.level] || 0), 0);
         // Calculate average by dividing weight by amount of competencies
         const avgScore = competencyIndicators.value.length > 0 ? Math.round(totalWeight / competencyIndicators.value.length) : 0;
 
+        // Filter all competencies above a level 3 and count
+        const masteredCount = focusItems.value.filter(item => item.highest_entry?.competency_level_weighting > 3).length;
+
         // Made some changes here
         stats.value = {
           totalReflections: userCompetencies.value.length,
-          comptMastered: `${userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Confident').length}/${competencyIndicators.value.length}`,
+          comptMastered: `${masteredCount}/${competencyIndicators.value.length}`,
           goalsDone: `${userGoals.value.filter(g => g.status?.status === 'completed').length}/${userGoals.value.length}`,
           avgLevel: weightToLevel[avgScore]
         }
-
-        // Find the amount of each competency level
-        series.value = [
-          competencyIndicators.value.length - (new Set(userCompetencies.value.map(c => c.indicator_id))).size,
-          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Emerging').length,
-          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Developing').length,
-          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Proficient').length,
-          userCompetencies.value.filter(c => c.entry_level?.competency_level === 'Confident').length
-        ];
-
-
-
 
       } catch (error) {
         console.error("Error while fetching info:", error);
@@ -319,44 +361,6 @@
     watch(() => route.params.id, () => {
       loadData();
     });
-
-
-const focusItems = [
-  {
-    id: '1.2',
-    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
-    entries: 0,
-    level: 'Emerging'
-  },
-
-  {
-    id: '1.2',
-    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
-    entries: 0,
-    level: 'Emerging'
-  },
-
-  {
-    id: '1.2',
-    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
-    entries: 0,
-    level: 'Emerging'
-  },
-
-  {
-    id: '1.2',
-    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
-    entries: 0,
-    level: 'Emerging'
-  },
-
-  {
-    id: '1.2',
-    description: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
-    entries: 0,
-    level: 'Emerging'
-  },
-]
 </script>
 
 <style scoped>
