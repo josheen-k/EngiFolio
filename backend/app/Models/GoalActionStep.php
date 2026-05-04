@@ -19,6 +19,6 @@ class GoalActionStep extends Model
 
     public function smartGoal()
     {
-        return $this->belongsTo(SmartGoal::class, 'goal_id');
+        return $this->belongsTo(SmartGoal::class, 'goal_id', 'goal_id');
     }
 }

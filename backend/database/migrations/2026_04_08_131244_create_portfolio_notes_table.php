@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('attainment_cert', function (Blueprint $table) {
-            $table->id('attainment_cert_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->string('title', 100);
+        Schema::create('portfolio_notes', function (Blueprint $table) {
+            $table->id('portfolio_note_id');
+            $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
+            $table->string('title', 60);
             $table->text('body')->nullable();
             $table->string('file_path', 255)->nullable();
-            $table->date('issued_date')->nullable();
-            $table->date('expiry_date')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('attainment_cert');
+        Schema::dropIfExists('portfolio_note');
     }
 };

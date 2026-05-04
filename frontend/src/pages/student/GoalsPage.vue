@@ -173,8 +173,8 @@
             <td class="progress-cell">
               <select
                 class="status-select"
-                v-model="goal.status"
-                @focus="goal._previousStatus = goal.status"
+                v-model="goal.status.status"
+                @focus="goal._previousStatus = goal.status.status"
                 @change="updateGoalStatus(goal)"
               >
                 <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -214,8 +214,8 @@
         <article v-for="goal in goals" :key="`mobile-${goal.goal_id}`" class="mobile-goal-card">
           <div class="mobile-goal-head">
             <h3 class="mobile-goal-title">{{ goal.goal_description }}</h3>
-            <span class="mobile-status-badge" :class="getStatusClass(goal.status)">
-              {{ getStatusLabel(goal.status) }}
+            <span class="mobile-status-badge" :class="getStatusClass(goal.status.status)">
+              {{ getStatusLabel(goal.status.status) }}
             </span>
           </div>
 
@@ -223,8 +223,8 @@
             <p class="mobile-label">Progress</p>
             <select
               class="status-select mobile-status-select"
-              v-model="goal.status"
-              @focus="goal._previousStatus = goal.status"
+              v-model="goal.status.status"
+              @focus="goal._previousStatus = goal.status.status"
               @change="updateGoalStatus(goal)"
             >
               <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -346,7 +346,6 @@ const progressStatusOptions = [
   { value: 'planned', label: 'Planned' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'completed', label: 'Completed' },
-  { value: 'on_hold', label: 'On Hold' }
 ]
 const newGoalData = reactive({
   plan_id: null,
@@ -625,7 +624,7 @@ const createGoal = async () => {
       start_date: '',
       end_date: '',
       completion_notes: '',
-      status: 'planned'
+      goal_status_id: 1,
     })
     loadGoals() // Refresh the list
     alert('Goal created successfully!')
@@ -765,10 +764,10 @@ const updateGoalStatus = async (goal) => {
   const previousStatus = goal._previousStatus ?? 'planned'
   try {
     await api.put(`/smart-goals/${goal.goal_id}`, {
-      status: goal.status
+      status: goal.status.status
     })
   } catch (error) {
-    goal.status = previousStatus
+    goal.status.status = previousStatus
     console.error('Error updating goal status:', error)
     const errorMessage = error.response?.data?.message ||
       Object.values(error.response?.data?.errors || {}).flat()[0] ||
@@ -788,7 +787,7 @@ const editGoal = (goal) => {
     start_date: goal.start_date || '',
     end_date: goal.end_date || '',
     completion_notes: goal.completion_notes || '',
-    status: goal.status || 'planned'
+    goal_status_id: goal.status.status || 'planned'
   })
   showEditGoalForm.value = true
 }

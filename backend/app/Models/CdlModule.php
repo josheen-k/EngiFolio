@@ -16,9 +16,4 @@ class CdlModule extends Model
         'description',
         'module_url',
     ];
-
-    public function studentProgress()
-    {
-        return $this->hasMany(StudentCdlProgress::class, 'cdl_id');
-    }
 }

@@ -14,7 +14,7 @@ class SmartGoalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SmartGoal::with(['actionSteps', 'feedback']);
+        $query = SmartGoal::with(['actionSteps', 'feedback', 'status']);
 
         if ($request->from) {
             $query->whereDate('start_date', '>=', $request->from);
@@ -48,7 +48,7 @@ class SmartGoalController extends Controller
             'end_date' => 'nullable|date',
             'completion_date' => 'nullable|date',
             'completion_notes' => 'nullable|string',
-            'status' => 'required|in:planned,in_progress,completed,on_hold',
+            'goal_status_id' => 'required|integer|exists:goal_statuses,goal_status_id',
         ]);
 
         // New goals are inserted at the top by shifting existing goals down by one.
@@ -158,12 +158,13 @@ class SmartGoalController extends Controller
         ]);
     }
 
-    public function showUserGoals($userId)
+    public function showUserGoals($profileId)
     {
         // Return user goals in the same persisted order used by the main goals list.
-        $goals = SmartGoal::with(['actionSteps', 'feedback'])->whereHas('plan', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })->get();
+        $goals = SmartGoal::with(['actionSteps', 'feedback', 'status'])
+                ->whereHas('plan', fn($q) => $q->where('profile_id', $profileId))
+                ->get();
+        
 
         if ($goals->isEmpty()) {
             return response()->json(['message' => 'No goals for this user found'], 404);

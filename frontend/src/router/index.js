@@ -12,7 +12,8 @@ import Networking from '@/pages/student/Networking.vue'
 import Event from '@/pages/student/Event.vue'
 import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
-import GoalsPage from '../pages/student/GoalsPage.vue'
+import GoalsPage from '@/pages/student/GoalsPage.vue'
+import CertificationSettings from '@/pages/student/editCerts.vue'
 
 const routes = [
   {
@@ -80,11 +81,19 @@ const routes = [
     name: 'GoalsPage',
     component: GoalsPage
   },
+
   {
     path: '/student/networking/contacts/:id',
     name: 'networking-contacts',
     component: Networking
-  }
+  },
+
+  {
+    path: '/certification-settings/:id',
+    name: 'certificationSettings',
+    component: CertificationSettings
+  },
+  
 ]
 
 const router = createRouter({

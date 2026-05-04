@@ -1,0 +1,40 @@
+[33m773cb68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbackend[m[33m, [m[1;31morigin/backend[m[33m)[m HEAD@{0}: pull --tags origin backend: Fast-forward
+[33m5e2d504[m HEAD@{1}: reset: moving to HEAD~1
+[33m6264556[m HEAD@{2}: reset: moving to HEAD~1
+[33m5cd109d[m HEAD@{3}: reset: moving to HEAD~1
+[33m773cb68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbackend[m[33m, [m[1;31morigin/backend[m[33m)[m HEAD@{4}: commit: Experimenting with exports
+[33m5cd109d[m HEAD@{5}: commit: Reverting my changes to database as it made it too complex for now.
+[33m6264556[m HEAD@{6}: commit: Fixed database again. Hopefully will update this time.
+[33m5e2d504[m HEAD@{7}: commit: Almost got everything fixed. Just need to fix goal statuses.
+[33m251a055[m HEAD@{8}: pull --tags origin backend: Fast-forward
+[33m6b3c0f5[m HEAD@{9}: checkout: moving from main to backend
+[33mcc2ce42[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;31morigin/CompetencyPage[m[33m, [m[1;32mmain[m[33m)[m HEAD@{10}: pull --tags origin main: Fast-forward
+[33m0c7aa1c[m HEAD@{11}: pull: Fast-forward
+[33m6b3c0f5[m HEAD@{12}: checkout: moving from backend to main
+[33m6b3c0f5[m HEAD@{13}: merge main: Fast-forward
+[33m0cfd77b[m HEAD@{14}: checkout: moving from main to backend
+[33m6b3c0f5[m HEAD@{15}: reset: moving to origin/main
+[33mc755eea[m HEAD@{16}: commit: Removed action steps from profile and profile settings
+[33m3716de8[m HEAD@{17}: checkout: moving from BradenCRUD to main
+[33m956e329[m[33m ([m[1;31morigin/BradenCRUD[m[33m, [m[1;32mBradenCRUD[m[33m)[m HEAD@{18}: checkout: moving from main to BradenCRUD
+[33m3716de8[m HEAD@{19}: checkout: moving from BradenCRUD to main
+[33m956e329[m[33m ([m[1;31morigin/BradenCRUD[m[33m, [m[1;32mBradenCRUD[m[33m)[m HEAD@{20}: checkout: moving from main to BradenCRUD
+[33m3716de8[m HEAD@{21}: commit: Minor change to footer
+[33m0cfd77b[m HEAD@{22}: checkout: moving from backend to main
+[33m0cfd77b[m HEAD@{23}: checkout: moving from main to backend
+[33m0cfd77b[m HEAD@{24}: checkout: moving from BradenCRUD to main
+[33m956e329[m[33m ([m[1;31morigin/BradenCRUD[m[33m, [m[1;32mBradenCRUD[m[33m)[m HEAD@{25}: checkout: moving from main to BradenCRUD
+[33m0cfd77b[m HEAD@{26}: merge backend: Fast-forward
+[33m46f9fa7[m HEAD@{27}: checkout: moving from backend to main
+[33m0cfd77b[m HEAD@{28}: commit: Backend link fixed.
+[33m46f9fa7[m HEAD@{29}: checkout: moving from main to backend
+[33m46f9fa7[m HEAD@{30}: checkout: moving from backend to main
+[33m46f9fa7[m HEAD@{31}: pull --tags origin backend: Fast-forward
+[33m2f15e0e[m HEAD@{32}: checkout: moving from main to backend
+[33m46f9fa7[m HEAD@{33}: pull --tags origin main: Fast-forward
+[33mc0a7149[m HEAD@{34}: checkout: moving from backend to main
+[33m2f15e0e[m HEAD@{35}: checkout: moving from BradenCRUD to backend
+[33m956e329[m[33m ([m[1;31morigin/BradenCRUD[m[33m, [m[1;32mBradenCRUD[m[33m)[m HEAD@{36}: checkout: moving from main to BradenCRUD
+[33mc0a7149[m HEAD@{37}: pull --tags origin main: Fast-forward
+[33mf1b965d[m HEAD@{38}: pull --tags origin main: Fast-forward
+[33m0e88004[m HEAD@{39}: clone: from https://github.com/josheen-k/EngiFolio.git

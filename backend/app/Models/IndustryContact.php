@@ -13,7 +13,7 @@ class IndustryContact extends Model
     protected $table = 'industry_contacts';
     protected $primaryKey = 'contact_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'contact_name',
         'company',
         'progress_notes',
@@ -25,14 +25,14 @@ class IndustryContact extends Model
         return 'contact_id';
     }
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 
     public function contactMethods()
     {
-        return $this->hasMany(IndustryContactMethod::class, 'contact_id');
+        return $this->hasMany(IndustryContactMethod::class, 'contact_id', 'contact_id');
     }
 
     public function events()

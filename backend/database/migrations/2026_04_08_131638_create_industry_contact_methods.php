@@ -18,8 +18,6 @@ return new class extends Migration
             $table->string('method_value', 255);
             $table->timestamps();
         });
-
-        DB::statement("ALTER TABLE industry_contact_methods ADD CONSTRAINT check_contact_method CHECK (method_type IN ('phone', 'email', 'linkedin', 'website', 'other'))");
     }
 
     /**

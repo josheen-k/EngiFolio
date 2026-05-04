@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('role_id')->constrained('roles', 'role_id');
             $table->string('username', 9)->unique();
             $table->string('email', 254)->unique();
+            $table->string('first_name', 50)->nullable();
+            $table->string('last_name', 50);
             $table->string('password_hash', 255);
-            $table->string('account_status', 20)->default('active');
+            $table->foreignId('account_status_id')->constrained('account_statuses', 'account_status_id')->default(1);
             $table->timestamps();
         });
-
-        DB::statement("ALTER TABLE users ADD CONSTRAINT check_account_status CHECK (account_status IN ('active', 'disabled'))");
     }
 
     /**

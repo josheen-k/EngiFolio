@@ -20,6 +20,6 @@ class CompetencyGroup extends Model
 
     public function indicators()
     {
-        return $this->hasMany(CompetencyIndicator::class, 'group_id');
+        return $this->hasMany(CompetencyIndicator::class, 'group_id', 'group_id');
     }
 }

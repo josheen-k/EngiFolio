@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\AchievementCertController;
+use App\Http\Controllers\AttainmentCertController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
 use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
 use App\Http\Controllers\GoalActionStepController;
+use App\Http\Controllers\GoalStatusesController;
 use App\Http\Controllers\IndustryContactController;
 use App\Http\Controllers\NetworkingEventCommentController;
 use App\Http\Controllers\NetworkingEventController;
@@ -14,6 +17,7 @@ use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +47,7 @@ Route::delete('/users/{user}', [UserController::class, 'destroy']);
 // Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
+Route::get('/profileDash/{id}', [StudentProfileController::class, 'getDashboardInfo']);
 
 // Industry contacts/networking pages
 Route::get('/users/{user}/industry-contacts', [IndustryContactController::class, 'index']);
@@ -98,3 +103,23 @@ Route::get('/networking-events/{id}/comments', [NetworkingEventCommentController
 Route::post('/networking-events/{id}/comments', [NetworkingEventCommentController::class, 'store']);
 Route::put('/comments/{id}', [NetworkingEventCommentController::class, 'update']);
 Route::delete('/comments/{id}', [NetworkingEventCommentController::class, 'destroy']);
+
+// Export profile data as pdf
+Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);
+
+// Achievement certificates
+Route::post('/achievement-cert', [AchievementCertController::class, 'store']);
+Route::put('/achievement-cert/{id}', [AchievementCertController::class, 'update']);
+Route::delete('/achievement-cert/{id}', [AchievementCertController::class, 'destroy']);
+
+// Attainment certificates
+Route::post('/attainment-cert', [AttainmentCertController::class, 'store']);
+Route::put('/attainment-cert/{id}', [AttainmentCertController::class, 'update']);
+Route::delete('/attainment-cert/{id}', [AttainmentCertController::class, 'destroy']);
+
+// Goal status
+Route::get('/goal-status', [GoalStatusesController::class, 'index']);
+Route::post('/goal-status', [GoalStatusesController::class, 'store']);
+Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
+Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
+

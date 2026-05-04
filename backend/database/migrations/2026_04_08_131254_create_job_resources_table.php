@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('job_resources', function (Blueprint $table) {
-            $table->id('job_resources_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->id('job_resource_id');
+            $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
             $table->string('title', 60);
             $table->text('body')->nullable();
             $table->string('file_path', 255)->nullable();
