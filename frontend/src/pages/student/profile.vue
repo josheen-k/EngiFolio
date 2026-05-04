@@ -10,7 +10,7 @@
       <div class="toggle-pill" :class="currTab === 'CERTIFICATIONS' ? 'pill-right' : 'pill-left'"></div>
     </div>
   </div>
-  <main class="mt-5 main-area">
+  <main class="main-area">
     <component :is="currComponent"/>
   </main>
 </template>

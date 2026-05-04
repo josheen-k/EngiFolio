@@ -1,89 +1,80 @@
-<script setup>
-    import { ref, onMounted } from 'vue';
-    import { useRoute } from 'vue-router'
-    import Navbar from '@/components/Navbar.vue'
-	import defaultAvatar from '@/assets/default.jpg';
-    import api from "@/services/api";
-
-    const route = useRoute();
-    const profile = ref(null);
-    const loading = ref(true);
-
-    const loadProfile = async () => {
-		try {
-			const response = await api.get(`/profile/${route.params.id}`);
-			profile.value = response.data.profile || response.data;
-		} catch (error) {
-			console.error("Error while fetching profile:", error);
-		} finally {
-			loading.value = false;
-		}
-	};
-
-    onMounted(() => {
-      	loadProfile();
-    })
-</script>
-
 <template>
-    <body class="container-xl py-5" v-if="profile">
-        <header class="mb-5">
-            <div class="d-flex align-items-center gap-4">        
-                <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" class="profile-pic"/>
-
-                <div class="text-start">
-                    <h1 class="sec-title mb-0">{{profile.user.first_name}} {{profile.user.last_name}}</h1>
-                    <p class="stat-title mb-0" v-if="profile.preferred_name">
-                        Preferred Name: {{ profile.preferred_name }}
-                    </p>
-                </div>
+    <div class="profile-wrap" v-if="profile">
+        <!--header row: left (name+avatar), right (academic info card)-->
+        <div class="header-row">
+            <!--preferred name above av -->
+            <div class="av-col">
+                <h1 class="sec-title mb-3">{{ profile.preferred_name || profile.user.first_name }}</h1>
+                <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar"
+                    alt="Profile Picture" class="profile-pic" />
             </div>
-        </header>
 
-        <main class="row g-4 justify-content-center">
-            <section class="mb-4">
-                <div class="card border-0 h-auto p-4">                        
-                    <div class="card-header py-3">
-                        <h5 class="sec-title">Academic Information</h5>
+            <!--academic card-->
+            <div class="academic-col">
+                <h2 class="sec-title mb-3">Academic Information</h2>
+                <div class="academic-card">
+                    <div class="info-row mb-4">
+                        <div class="info">
+                            <span class="info-label">First name</span>
+                            <span class="info-value">{{ profile.user.first_name }}</span>
+                        </div>
+                        <div class="info">
+                            <span class="info-label">Last name</span>
+                            <span class="info-value">{{ profile.user.last_name }}</span>
+                        </div>
+                        <div class="info">
+                            <span class="info-label">Preferred name</span>
+                            <span class="info-value">{{ profile.preferred_name || '—' }}</span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <label class="table-link text-uppercase d-block">Degree</label>
-                                <p class="lead">{{ profile.degree_title }}</p>
-                            </div>
-                            <div class="col-sm-6">
-                                <label class="table-link text-uppercase d-block">Specialisation</label>
-                                <p class="lead">{{ profile.specialisation }}</p>
-                            </div>
+
+                    <!-- bottom row: degree, specialisation -->
+                    <div class="info-row">
+                        <div class="info">
+                            <span class="info-label">Degree undertaking</span>
+                            <span class="info-value">{{ profile.degree_title }}</span>
+                        </div>
+                        <div class="info">
+                            <span class="info-label">Specialisation&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span class="info-value">{{ profile.specialisation }}</span>
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <section class="mb-5 card border-0 h-auto p-4">
-                <h2 class="sec-title card-header py-3">Personal Introduction</h2>
-                <p class="lead ps-3">{{ profile.personal_intro }}</p>
-            </section>
-
-            <section class="mb-5 card border-0 h-auto p-4">
-                <h2 class="sec-title card-header">Professional Links</h2>
-                <table class="table table-hover border-top">
-                    <tbody>
-                        <tr v-for="link in profile.links" :key="link.link_id">
-                            <td class="fw-semibold ps-3">{{ link.link_label }}</td>
-                            <td><a :href="link.link_url" class="text-break">{{ link.link_url }}</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <div class="d-flex gap-3 justify-content-center mt-4 mb-5">
-                <router-link :to="{name: 'profile-settings', params:{ id: route.params.id }}" class="btn btn-ql rounded-pill px-5">Edit Profile</router-link>
-                <router-link class="btn btn-filter px-4" :to="`/student/dashboard/${$route.params.id}`">Back to Dashboard</router-link>
             </div>
-        </main>
-    </body>
+        </div>
+
+        <!--personal intro-->
+        <section class="mb-5">
+            <h2 class="sec-title text-center mb-4">Personal Introduction</h2>
+            <div class="intro-card">
+                <img src="@/assets/quote-open.png" alt="quote-open" class="quote-img quote-open" />
+                <p class="intro-txt">{{ profile.personal_intro }}</p>
+                <img src="@/assets/quote-close.png" alt="quote-close" class="quote-img quote-close" />
+            </div>
+        </section>
+
+        <!--links-->
+        <section class="mb-5">
+            <h2 class="sec-title mb-4">Professional Links</h2>
+            <div class="d-flex flex-column gap-3">
+                <div class="link-row" v-for="link in profile.links" :key="link.link_id">
+                    <span class="link-label">{{ link.link_label }}</span>
+                    <div class="link">
+                        <div class="connect-line"></div>
+                        <div class="connect-dot"></div>
+                    </div>
+                    <a :href="link.link_url" class="link-url">{{ link.link_url }}</a>
+                </div>
+            </div>
+        </section>
+
+        <!--buttons-->
+        <div class="d-flex gap-3 justify-content-center">
+            <button class="btn btn-filter">Export Data</button>
+            <router-link :to="{ name: 'profile-settings', params: { id: route.params.id } }" class="btn btn-ql">Edit
+                Profile</router-link>
+        </div>
+    </div>
 
     <div v-else-if="loading" class="text-center py-5">
         <div class="spinner-border" role="status"></div>
@@ -95,54 +86,213 @@
     </div>
 </template>
 
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router'
+import defaultAvatar from '@/assets/placeholder-av.webp';
+import api from "@/services/api";
+
+const route = useRoute();
+const profile = ref(null);
+const loading = ref(true);
+
+const loadProfile = async () => {
+    try {
+        const response = await api.get(`/profile/${route.params.id}`);
+        profile.value = response.data.profile || response.data;
+    } catch (error) {
+        console.error("Error while fetching profile:", error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(() => {
+    loadProfile();
+})
+</script>
+
 <style scoped>
-	.sec-title {
-		font-family: 'Martel', serif;
-		font-size: 2.0rem;
-		color: #303030c5;
-	}
+.profile-wrap {
+    max-width: 60%;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
 
-	.card-dark {
-		background: #f1f1f1;
-	}
+.header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 3rem;
+    margin-bottom: 3.5rem;
+}
 
-	.btn-filter {
-		font-family: 'Montserrat Alternates', sans-serif;
-		border-radius: 1.5rem;
-		font-weight: lighter;
-		background: #e6e6e6;
-	}
+.av-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 13rem;
+}
 
-	.focus-table {
-		font-family: 'Maven Pro', sans-serif;
-		font-size: 0.95rem;
-	}
+.profile-pic {
+    width: 10.5rem;
+    height: 10.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2.5px solid #dddddd;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
 
-	.btn-ql {
-		font-family: 'Montserrat Alternates', sans-serif;
-		font-size: 1rem;
-		color: #ffffff;
-		background: #555555;
-		padding: 0.5rem 1rem;
-	}
+.academic-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-	.btn-ql:hover {
-		color: #ffffff;
-		background: #333333;
-	}
+.sec-title {
+    font-family: 'Martel', serif;
+    font-size: 2.0rem;
+    color: #303030c5;
+}
 
-	.btn-filter:hover {
-		background: #666666;
-		color: #ffffff;
-	}
+.academic-card {
+    background: #f7f7f7;
+    border: 1px solid #cccccc;
+    border-radius: 2rem;
+    padding: 1.5rem 1.75rem;
+}
 
-	.profile-pic {
-		width: 150px;
-		height: 150px; 
-		border-radius: 50%;
-		object-fit: cover;   
-		border: 3px solid #f1f1f1; 
-		background-color: #fff;
-		box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-	}
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 5rem;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.info-label {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 0.9rem;
+    color: #888888;
+}
+
+.info-value {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1.1rem;
+    color: #4f4f4f;
+}
+
+.intro-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 2rem;
+    padding: 2.5rem 3.5rem;
+    text-align: center;
+}
+
+.intro-txt {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1rem;
+    color: #888888;
+    line-height: 1.8;
+    margin: 0;
+}
+
+.quote-img {
+    position: absolute;
+    width: 2rem;
+    height: auto;
+    opacity: 65%;
+}
+
+.quote-open {
+    top: 1.1rem;
+    left: 1.4rem;
+}
+
+.quote-close {
+    bottom: 1.1rem;
+    right: 1.4rem;
+}
+
+.link-row {
+    display: flex;
+    align-items: center;
+}
+
+.link-label {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1rem;
+    color: #707070;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 2rem;
+    padding: 0.45rem 1.4rem;
+    min-width: 12rem;
+    text-align: center;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    flex: 0.6;
+}
+
+.connect-line {
+    flex: 1;
+    height: 1px;
+    background: #cccccc;
+}
+
+.connect-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: #bbbbbb;
+    flex-shrink: 0;
+}
+
+.link-url {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1rem;
+    color: #444444;
+    border: 1px solid #cccccc;
+    border-radius: 2rem;
+    padding: 0.45rem 1.4rem;
+    text-decoration: none;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-filter {
+    font-family: 'Montserrat Alternates', sans-serif;
+    border-radius: 1.5rem;
+    background: #e6e6e6;
+    padding: 0.5rem 2rem;
+}
+
+.btn-ql {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1rem;
+    color: #ffffff;
+    background: #555555;
+    border-radius: 1.5rem;
+    padding: 0.5rem 2rem;
+}
+
+.btn-ql:hover {
+    color: #ffffff;
+    background: #333333;
+}
+
+.btn-filter:hover {
+    background: #666666;
+    color: #ffffff;
+}
 </style>
