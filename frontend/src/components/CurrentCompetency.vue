@@ -12,11 +12,6 @@
       <p class="fs-5 mb-1">Description:</p>
       <p class="detail-txt">{{ selectedCompt.description }}</p>
 
-      <p class="fs-5">Indicators:</p>
-      <ul class="ps-3">
-        <li class="detail-txt" v-for="(ind, i) in selectedCompt.indicators" :key="i">{{ ind }}</li>
-      </ul>
-
       <div class="d-flex justify-content-between detail-stats">
         <p class="fs-5">Total reflection entries you added: <em>{{ publishedOnly(selectedCompt).length }}</em></p>
         <p class="fs-5">Highest attainment level you reflected: <em>{{ getLvl(selectedCompt) }}</em></p>
@@ -216,7 +211,6 @@ function clearFilter() {
 
 onClickOutside(filterRef, function () {
   ddOpen.value = false;
-  dropdownOpen.value = false
 });
 
 function publishedOnly(compt) {
@@ -349,7 +343,6 @@ function openDetail(compt, catLabel) {
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
-    indicators: compt.indicators
   }
 }
 
