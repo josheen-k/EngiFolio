@@ -238,7 +238,7 @@ function filteredCompts(category) {
 }
 
 // filter & sort for reflec entries
-// reflec entry sirt
+// reflec entry sort
 const sortRef = ref(null)
 const sortDdOpen = ref(false)
 const sortBy = ref('date')

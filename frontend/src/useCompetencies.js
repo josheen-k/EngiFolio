@@ -10,11 +10,6 @@ export const currentCategories = ref([
       {
         id: '1.1',
         desc: 'This is an example description of a competency.',
-        indicators: [
-          'Indicator a',
-          'Indicator b',
-          'Indicator c'
-        ],
         reflec: [
           {
             title: 'Lab Report Analysis',
@@ -66,11 +61,6 @@ export const currentCategories = ref([
       {
         id: '1.2',
         desc: 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.',
-        indicators: [
-          'Engages with the engineering discipline at a phenomenological level',
-          'Applies sciences and engineering fundamentals to systematic investigation',
-          'Innovative solution of complex problems and broader aspects of engineering practice'
-        ],
         reflec: [
           {
             title: 'First Year Project',
@@ -279,6 +269,8 @@ export const discontinuedCategories = ref([
     ]
   }
 ])
+
+
 
 // return only saved/posted reflections 
 export function publishedReflec(compt) {
