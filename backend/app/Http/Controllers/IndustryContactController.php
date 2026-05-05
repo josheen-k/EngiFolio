@@ -11,10 +11,10 @@ class IndustryContactController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index($user)
+    public function index($profileId)
     {
         return response()->json(
-            IndustryContact::where('user_id', $user)->get()
+            IndustryContact::where('profile_id', $profileId)->get()
         );
     }
 

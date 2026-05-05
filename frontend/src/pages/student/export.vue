@@ -28,32 +28,52 @@
 
 
     const exportToPdf = async () => {
-    try {
-        // Send selections to backend
-        const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
-            selections: {
-                profile: profileSelected.value,
-                competencies: competenciesSelected.value,
-                networking: networkingContactsSelected.value,
-                goals: goalsSelected.value
-            }
-        }, { responseType: 'blob' });
+  // 1. Selection Validation
+  if (!profileSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
+    alert("You must select at least one category to export");
+    return;
+  }
 
-        // Standard JS "Blob" download logic
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `portfolio_export.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        
-        alert("PDF Downloaded successfully");
-    } catch (error) {
-        console.error("PDF Export failed:", error);
-        alert("There was an error generating your PDF.");
+  try {
+    const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
+      selections: {
+        profile: profileSelected.value,
+        competencies: competenciesSelected.value,
+        networking: networkingContactsSelected.value,
+        goals: goalsSelected.value
+      }
+    }, { 
+      responseType: 'blob',
+      // Optional: ensures headers are handled correctly
+      headers: { 'Accept': 'application/pdf' } 
+    });
+
+    // 2. Check if the returned blob is actually a PDF
+    if (response.data.type !== 'application/pdf') {
+      // If the backend sent JSON (error) instead of a PDF
+      const text = await response.data.text();
+      const errorData = JSON.parse(text);
+      throw new Error(errorData.message || "Backend failed to generate PDF");
     }
+
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `portfolio_export_${route.params.id}.pdf`);
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    alert("PDF Downloaded successfully");
+  } catch (error) {
+    console.error("PDF Export failed:", error);
+    alert("There was an error generating your PDF. Please ensure the backend service is running.");
+  }
 };
     // Fetches the profile and adds the contents to the file
     const addProfile = async () => { 
@@ -63,10 +83,14 @@
       } catch (error) {
         console.error("Error while fetching profile:", error);
       } finally {
+
+        const firstName = profile.value.user?.first_name || '';
+        const lastName = profile.value.user?.last_name || '';
+
         const formattedProfile = [
           '"----- Profile -----"',
-          `"Name:","${profile.user,value.first_name}","${profile.user.value.last_name}"`,
-          `"Preferred name:","${profile.value.preferred_name || profile.value.first_name}"`,
+          `"Name:","${firstName}","${lastName}"`,
+          `"Preferred name:","${profile.value.preferred_name || firstName}"`,
           `"Degree:","${profile.value.degree_title}"`,
           `"Specialisation:","${profile.value.specialisation}"`,
           `"Personal Intro:","${profile.value.personal_intro}"`
@@ -158,7 +182,7 @@
 
         formattedNet.push(netHeader);
 
-        if (contacts.value.length > 0) {
+        if (contacts.value && contacts.value.length > 0) {
           contacts.value.forEach(contact => {
             const row = [
               `"${contact.contact_name}"`,
@@ -180,7 +204,8 @@
     const addGoals = async () => { 
       try {
         const response = await api.get(`/career-plans/${route.params.id}`);
-        plan.value = response.data;
+        const data = response.data;
+        plan.value = Array.isArray(data) ? data[0] : data;
       } catch (error) {
         console.error("Error while fetching user goals:", error);
       } finally {

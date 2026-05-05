@@ -10,9 +10,11 @@ class CompetencyGroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+        public function index()
     {
-        //
+        $groups = CompetencyGroup::get(); 
+
+        return response()->json($groups);    
     }
 
     /**

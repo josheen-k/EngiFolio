@@ -48,3 +48,7 @@ In the second terminal run:
 ## Populating The Database
 To populate the database with set sample data, run this command from the backend folder.
 `php artisan migrate:fresh --seed`
+
+## Install For PDF Export
+To install requirements for PDF Exports run this command in the backend folder
+`composer require barryvdh/laravel-dompdf`
