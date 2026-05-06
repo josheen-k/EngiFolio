@@ -146,6 +146,33 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
+                'profile_id' => 1,
+                'title' => 'University Scholarship for Academic Excellence',
+                'body' => 'Awarded a merit-based scholarship for maintaining a GPA above 6.5 throughout the academic year.',
+                'file_path' => '/uploads/certs/scholarship_2024.pdf',
+                'issued_date' => '2024-02-01',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1,
+                'title' => 'Best Team Project – Software Engineering',
+                'body' => 'Recognized for leading a team to deliver a scalable web application using modern development practices.',
+                'file_path' => '/uploads/certs/team_project_award.pdf',
+                'issued_date' => '2025-06-05',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1,
+                'title' => 'Volunteer Recognition Award',
+                'body' => 'Acknowledged for contributing over 100 hours to STEM outreach programs for high school students.',
+                'file_path' => '/uploads/certs/volunteer_award.pdf',
+                'issued_date' => '2023-11-18',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
                 'profile_id' => 2, 
                 'title' => 'Civil Engineering Scholarship', 
                 'body' => 'Structural Engineering Industry Excellence Scholarship for high-performing female students.', 
