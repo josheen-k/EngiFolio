@@ -168,7 +168,7 @@ onMounted(() => {
 
 <style scoped>
 .main-section {
-    max-width: 80%;
+    max-width: 85%;
     margin: 0 auto;
     padding: 3rem 1.5rem;
 }
@@ -211,13 +211,13 @@ onMounted(() => {
 }
 
 .card-prev {
-    transform: translate(-50%, -50%) translateX(-90%) scale(0.7);
+    transform: translate(-50%, -50%) translateX(-95%) scale(0.7);
     opacity: 0.5;
     z-index: 2;
 }
 
 .card-next {
-    transform: translate(-50%, -50%) translateX(90%) scale(0.7);
+    transform: translate(-50%, -50%) translateX(95%) scale(0.7);
     opacity: 0.5;
     z-index: 2;
 }
