@@ -3,51 +3,52 @@
 namespace App\Http\Controllers;
 
 use App\Models\IndustryContact;
+use App\Models\StudentProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class IndustryContactController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index($user)
     {
+        $profile = StudentProfile::where('user_id', $user)->first();
+
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+
         return response()->json(
-            IndustryContact::where('user_id', $user)->get()
+            IndustryContact::where('profile_id', $profile->profile_id)->get()
         );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request, $user)
-{
-    $validated = $request->validate([
-        'contact_name' => 'required|string|max:100',
-        'company' => 'nullable|string|max:100',
-        'progress_notes' => 'nullable|string',
-        'date_met' => 'nullable|date',
-    ]);
+    {
+        $profile = StudentProfile::where('user_id', $user)->first();
 
-    $validated['user_id'] = $user; //manually sending the user id for now, once login/authenication systemis created, will integrate it
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
 
-    $contact = IndustryContact::create($validated);
+        $validated = $request->validate([
+            'contact_name' => 'required|string|max:100',
+            'company' => 'nullable|string|max:100',
+            'progress_notes' => 'nullable|string',
+            'date_met' => 'nullable|date',
+        ]);
 
-    return response()->json($contact, 201);
-}
+        $validated['profile_id'] = $profile->profile_id;
 
-    /**
-     * Display the specified resource.
-     */
+        $contact = IndustryContact::create($validated);
+
+        return response()->json($contact, 201);
+    }
+
     public function show($user, IndustryContact $industryContact)
     {
         return response()->json($industryContact);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $user, IndustryContact $industryContact)
     {
         $validated = $request->validate([
@@ -62,13 +63,12 @@ class IndustryContactController extends Controller
         return response()->json($industryContact);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($user, IndustryContact $industryContact)
     {
         Log::info('Deleting contact with ID: ' . $industryContact->contact_id);
+
         $industryContact->delete();
+
         return response()->json(['message' => 'Deleted']);
     }
 }

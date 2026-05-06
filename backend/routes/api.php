@@ -10,10 +10,11 @@ use App\Http\Controllers\StudentLinkController;
 use App\Http\Controllers\SmartGoalController;
 use App\Http\Controllers\GoalActionStepController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
-use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
+use App\Http\Controllers\CompetencyEntryController;
+use App\Http\Controllers\CompetencyFeedbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,3 +104,18 @@ Route::get('/goal-status', [GoalStatusesController::class, 'index']);
 Route::post('/goal-status', [GoalStatusesController::class, 'store']);
 Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
 Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
+
+// Competency Indicators
+Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);
+
+// Competency Entries
+Route::get('/users/{user}/competency-entries', [CompetencyEntryController::class, 'index']);
+Route::post('/users/{user}/competency-entries', [CompetencyEntryController::class, 'store']);
+Route::get('/users/{user}/competency-entries/{entry}', [CompetencyEntryController::class, 'show']);
+Route::put('/users/{user}/competency-entries/{entry}', [CompetencyEntryController::class, 'update']);
+Route::delete('/users/{user}/competency-entries/{entry}', [CompetencyEntryController::class, 'destroy']);
+
+// Competency Feedback
+Route::get('/competency-entries/{entry}/feedback', [CompetencyFeedbackController::class, 'index']);
+Route::post('/competency-entries/{entry}/feedback', [CompetencyFeedbackController::class, 'store']);
+
