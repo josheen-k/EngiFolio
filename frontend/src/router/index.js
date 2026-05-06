@@ -13,6 +13,7 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
+import AdminPage from '@/pages/student/admin.vue'
 const routes = [
   {
     path: '/',
@@ -78,6 +79,11 @@ const routes = [
     path: '/goals/:id',
     name: 'GoalsPage',
     component: GoalsPage
+  },
+  {
+    path: '/admin/:id',
+    name: 'admin',
+    component: AdminPage
   },
 
   {
