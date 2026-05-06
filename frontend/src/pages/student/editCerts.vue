@@ -24,7 +24,7 @@
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
-              <input v-model="cert.title" class="field-input form-control" placeholder="example: Dean's Award" />
+              <input v-model="cert.title" class="field-input form-control" placeholder="eg: Dean's Award" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
@@ -213,7 +213,7 @@ const saveChanges = async () => {
     attainmentCertsToDelete.value = [];
     
     // Redirect back to the view page
-    router.push({ name: 'profile', params: { id: route.params.id } });
+    router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
   } catch (error) {
     console.error("Save failed:", error);
     alert("There was an error saving your certifications.");
@@ -221,7 +221,7 @@ const saveChanges = async () => {
 };
 
   const cancel = () => {
-      router.push({ name: 'profile', params: { id: route.params.id } });
+      router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
   };
 
 onMounted(() => {
