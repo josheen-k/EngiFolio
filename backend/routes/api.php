@@ -108,3 +108,6 @@ Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy'
 
 // Admin dashboard
 Route::get('/admin/users-overview', [AdminController::class, 'usersOverview']);
+// Admin user management actions.
+Route::post('/admin/users', [AdminController::class, 'createUser']);
+Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);

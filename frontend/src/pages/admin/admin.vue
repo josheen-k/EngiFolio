@@ -9,6 +9,21 @@ const searchQuery = ref('')
 const users = ref([])
 const loading = ref(false)
 const loadError = ref('')
+const creatingUser = ref(false)
+const deletingUserId = ref(null)
+const actionError = ref('')
+const actionSuccess = ref('')
+
+const newUser = ref({
+  // Role mapping in this project: 1 = Admin, 2 = Staff, 3 = Student.
+  // Defaulting to Student because that's the most common account type to create.
+  role_id: 3,
+  username: '',
+  email: '',
+  first_name: '',
+  last_name: '',
+  password: ''
+})
 
 const stats = ref({
   totalUsers: 0,
@@ -70,6 +85,36 @@ onMounted(() => {
   fetchUsersOverview()
 })
 
+const resetCreateForm = () => {
+  // Keep the same default role after each successful creation.
+  newUser.value = {
+    role_id: 3,
+    username: '',
+    email: '',
+    first_name: '',
+    last_name: '',
+    password: ''
+  }
+}
+
+const createUser = async () => {
+  try {
+    creatingUser.value = true
+    actionError.value = ''
+    actionSuccess.value = ''
+    // Backend expects role_id, names, email, and plaintext password for hashing server-side.
+    await api.post('/admin/users', newUser.value)
+    actionSuccess.value = 'User created successfully.'
+    resetCreateForm()
+    await fetchUsersOverview()
+  } catch (error) {
+    console.error('Failed to create user:', error)
+    actionError.value = error.response?.data?.message || 'Failed to create user'
+  } finally {
+    creatingUser.value = false
+  }
+}
+
 const viewUser = (user) => {
   if (!user.profile_id) {
     alert('This user does not have a student profile yet.')
@@ -84,6 +129,28 @@ const editUser = (user) => {
     return
   }
   router.push(`/settings/profile/${user.profile_id}`)
+}
+
+const deleteUser = async (user) => {
+  // Simple confirmation guard for a destructive operation.
+  const confirmed = window.confirm(`Delete user ${user.username || user.email}? This cannot be undone.`)
+  if (!confirmed) {
+    return
+  }
+
+  try {
+    deletingUserId.value = user.user_id
+    actionError.value = ''
+    actionSuccess.value = ''
+    await api.delete(`/admin/users/${user.user_id}`)
+    actionSuccess.value = 'User deleted successfully.'
+    await fetchUsersOverview()
+  } catch (error) {
+    console.error('Failed to delete user:', error)
+    actionError.value = error.response?.data?.message || 'Failed to delete user'
+  } finally {
+    deletingUserId.value = null
+  }
 }
 </script>
 
@@ -116,6 +183,28 @@ const editUser = (user) => {
           <p class="stat-label">Open Goals</p>
           <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
         </article>
+      </section>
+
+      <section class="panel-card mb-4">
+        <h2 class="panel-title mb-3">Create User</h2>
+        <form class="create-user-form" @submit.prevent="createUser">
+          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
+          <select v-model.number="newUser.role_id" class="filter-select" required>
+            <option :value="1">Admin</option>
+            <option :value="2">Staff</option>
+            <option :value="3">Student</option>
+          </select>
+          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="Username (max 9 chars)" maxlength="9" required />
+          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
+          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
+          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
+          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
+          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
+            {{ creatingUser ? 'Creating...' : 'Create User' }}
+          </button>
+        </form>
+        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
+        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
       </section>
 
       <section class="panel-card mb-4">
@@ -167,6 +256,9 @@ const editUser = (user) => {
                   <div class="action-buttons">
                     <button type="button" class="btn page-btn-outline" @click="viewUser(user)">View</button>
                     <button type="button" class="btn page-btn-primary" @click="editUser(user)">Edit</button>
+                    <button type="button" class="btn page-btn-danger" :disabled="deletingUserId === user.user_id" @click="deleteUser(user)">
+                      {{ deletingUserId === user.user_id ? 'Deleting...' : 'Delete' }}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -245,6 +337,12 @@ const editUser = (user) => {
   border-radius: 1.2rem;
   background: #fafafa;
   padding: 1rem 1.1rem;
+}
+
+.create-user-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
 }
 
 .panel-head {
@@ -359,6 +457,29 @@ const editUser = (user) => {
   background: #f3f3f3;
 }
 
+.page-btn-danger {
+  background: #b42318;
+  color: #ffffff;
+  border: 1px solid #b42318;
+}
+
+.page-btn-danger:hover {
+  background: #912018;
+  color: #ffffff;
+}
+
+.action-feedback {
+  font-size: 0.92rem;
+}
+
+.success-text {
+  color: #166534;
+}
+
+.error-text {
+  color: #b42318;
+}
+
 .empty-state {
   text-align: center;
   color: #707070;
@@ -394,6 +515,10 @@ const editUser = (user) => {
     align-items: stretch;
   }
 
+  .create-user-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .filter-input {
     min-width: 0;
   }
@@ -410,6 +535,10 @@ const editUser = (user) => {
   }
 
   .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-user-form {
     grid-template-columns: 1fr;
   }
 

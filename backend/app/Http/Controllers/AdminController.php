@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -93,6 +94,46 @@ class AdminController extends Controller
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
             ],
             'users' => $users,
+        ]);
+    }
+
+    public function createUser(Request $request)
+    {
+        // Keep validation aligned with the admin create-user form constraints.
+        $validated = $request->validate([
+            'role_id' => 'required|exists:roles,role_id',
+            'username' => 'required|string|max:9|unique:users,username',
+            'email' => 'required|email|max:254|unique:users,email',
+            'first_name' => 'nullable|string|max:50',
+            'last_name' => 'required|string|max:50',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $user = User::create([
+            'role_id' => (int) $validated['role_id'],
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'first_name' => $validated['first_name'] ?? null,
+            'last_name' => $validated['last_name'],
+            // Store a one-way hash only, never plaintext passwords.
+            'password_hash' => Hash::make($validated['password']),
+            // New accounts start as active.
+            'account_status_id' => 1,
+        ]);
+
+        return response()->json([
+            'message' => 'User created successfully.',
+            'user' => $user,
+        ], 201);
+    }
+
+    public function deleteUser(User $user)
+    {
+        // Route model binding resolves {user} by user_id (see User model getRouteKeyName()).
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted successfully.',
         ]);
     }
 }
