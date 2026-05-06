@@ -11,8 +11,11 @@ import IndustryContacts from '@/pages/student/IndustryContacts.vue';
 import Networking from '@/pages/student/Networking.vue'
 import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
-import GoalsPage from '../pages/student/GoalsPage.vue'
-import goalFeedback from '@/pages/staff/goalFeedback.vue'
+import GoalsPage from '@/pages/student/GoalsPage.vue'
+import CertificationSettings from '@/pages/student/editCerts.vue'
+import AdminPage from '@/pages/admin/admin.vue'
+import GoalFeedback from '@/pages/staff/goalFeedback.vue'
+
 const routes = [
   {
     path: '/',
@@ -75,16 +78,28 @@ const routes = [
   },
 
   {
-  path: '/goals/:id',
-  name: 'GoalsPage',
-  component: GoalsPage
+    path: '/goals/:id',
+    name: 'GoalsPage',
+    component: GoalsPage
   },
 
   {
     path: '/staff/goal-feedback',
     name: 'goalFeedback',
-    component: goalFeedback
-  }
+    component: GoalFeedback
+  },
+
+  {
+    path: '/admin/:id',
+    name: 'admin',
+    component: AdminPage
+  },
+
+  {
+    path: '/certification-settings/:id',
+    name: 'certificationSettings',
+    component: CertificationSettings
+  },
 
 ]
 

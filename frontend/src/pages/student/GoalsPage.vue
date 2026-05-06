@@ -19,7 +19,7 @@
         </label>
         <label>
           Progress Status:
-          <select v-model="newGoalData.status">
+          <select v-model.number="newGoalData.goal_status_id">
             <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
           </select>
         </label>
@@ -55,7 +55,7 @@
         </label>
         <label>
           Progress Status:
-          <select v-model="editGoalData.status">
+          <select v-model.number="editGoalData.goal_status_id">
             <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
           </select>
         </label>
@@ -110,6 +110,7 @@
         <table class="goals-table">
         <thead>
           <tr>
+            <th class="drag-col-header"></th>
             <th>SMART Goal</th>
             <th>Action Steps</th>
             <th>Progress</th>
@@ -122,7 +123,30 @@
           </thead>
 
           <tbody>
-          <tr v-for="goal in goals" :key="goal.goal_id">
+          <tr
+            v-for="goal in goals"
+            :key="goal.goal_id"
+            :class="{
+              'goal-row-dragging': draggedGoalId === goal.goal_id,
+              'goal-row-drop-target': hoveredGoalId === goal.goal_id && draggedGoalId !== goal.goal_id
+            }"
+            @dragenter.prevent="onGoalDragEnter(goal)"
+            @dragleave="onGoalDragLeave(goal)"
+            @dragover.prevent
+            @drop="onGoalDrop(goal)"
+          >
+            <td class="drag-handle-cell">
+              <button
+                type="button"
+                class="drag-handle-btn"
+                draggable="true"
+                aria-label="Drag to reorder goal"
+                @dragstart="onGoalDragStart($event, goal)"
+                @dragend="onGoalDragEnd"
+              >
+                <span class="drag-handle-icon" aria-hidden="true">⋮⋮</span>
+              </button>
+            </td>
             <td>{{ goal.goal_description }}</td>
 
             <td class="steps-cell">
@@ -142,15 +166,23 @@
                   {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
                 </button>
 
-                <button class="btn page-btn-success steps-edit-btn" @click="editSteps(goal)">Edit Steps</button>
+                <button
+                  type="button"
+                  class="action-icon-btn steps-edit-icon-btn"
+                  aria-label="Edit action steps"
+                  title="Edit Steps"
+                  @click="editSteps(goal)"
+                >
+                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
               </div>
             </td>
 
             <td class="progress-cell">
               <select
                 class="status-select"
-                v-model="goal.status"
-                @focus="goal._previousStatus = goal.status"
+                v-model.number="goal.goal_status_id"
+                @focus="goal._previousStatusId = goal.goal_status_id"
                 @change="updateGoalStatus(goal)"
               >
                 <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -163,9 +195,38 @@
 
             <td class="actions-cell">
               <div class="actions-stack">
-                <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
-                <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
+                <button
+                  type="button"
+                  class="action-icon-btn"
+                  aria-label="Edit goal"
+                  title="Edit"
+                  @click="editGoal(goal)"
+                >
+                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  class="action-icon-btn"
+                  aria-label="Delete goal"
+                  title="Delete"
+                  @click="deleteGoal(goal)"
+                >
+                  <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
               </div>
+            </td>
+          </tr>
+          <tr v-if="goals.length > 1" class="drop-to-end-row">
+            <td
+              class="drop-to-end-cell"
+              :class="{ 'drop-to-end-active': isEndDropZoneActive }"
+              :colspan="9"
+              @dragenter.prevent="onEndDropDragEnter"
+              @dragleave="onEndDropDragLeave"
+              @dragover.prevent
+              @drop="onGoalDropToEnd"
+            >
+              Drop here to move goal to bottom
             </td>
           </tr>
           </tbody>
@@ -177,8 +238,8 @@
         <article v-for="goal in goals" :key="`mobile-${goal.goal_id}`" class="mobile-goal-card">
           <div class="mobile-goal-head">
             <h3 class="mobile-goal-title">{{ goal.goal_description }}</h3>
-            <span class="mobile-status-badge" :class="getStatusClass(goal.status)">
-              {{ getStatusLabel(goal.status) }}
+            <span class="mobile-status-badge" :class="getStatusClass(goal.goal_status_id)">
+              {{ getStatusLabel(goal.goal_status_id) }}
             </span>
           </div>
 
@@ -186,8 +247,8 @@
             <p class="mobile-label">Progress</p>
             <select
               class="status-select mobile-status-select"
-              v-model="goal.status"
-              @focus="goal._previousStatus = goal.status"
+              v-model.number="goal.goal_status_id"
+              @focus="goal._previousStatusId = goal.goal_status_id"
               @change="updateGoalStatus(goal)"
             >
               <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -207,7 +268,15 @@
             >
               {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
             </button>
-            <button class="btn page-btn-success steps-edit-btn w-100 mt-2" @click="editSteps(goal)">Edit Steps</button>
+            <button
+              type="button"
+              class="action-icon-btn steps-edit-icon-btn mt-2"
+              aria-label="Edit action steps"
+              title="Edit Steps"
+              @click="editSteps(goal)"
+            >
+              <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+            </button>
           </div>
 
           <div class="mobile-grid">
@@ -279,8 +348,11 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import api from "@/services/api";
+import editIcon from '@/assets/edit.png'
+import deleteIcon from '@/assets/delete.png'
 
 // Page-level reactive state used by forms, filters, and modal dialogs.
 const goals = ref([])
@@ -296,12 +368,21 @@ const stepModalGoal = ref(null)
 const savingSteps = ref(false)
 const stepDrafts = ref([])
 const expandedStepsByGoal = ref({})
-// value is sent to backend, label is displayed in UI.
+const route = useRoute()
+const profileId = computed(() => Number(route.params.id))
+// Tracks the currently dragged goal to drive reorder and visual states.
+const draggedGoalId = ref(null)
+// Prevents concurrent reorder requests from overlapping.
+const isReorderingGoals = ref(false)
+// Highlights the row currently hovered as a potential drop target.
+const hoveredGoalId = ref(null)
+// Highlights the dedicated drop zone that moves a goal to the end.
+const isEndDropZoneActive = ref(false)
+// goal_status_id values match backend `goal_statuses` seed order (1 Planned, 2 In progress, 3 Completed).
 const progressStatusOptions = [
-  { value: 'planned', label: 'Planned' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'on_hold', label: 'On Hold' }
+  { value: 1, label: 'Planned' },
+  { value: 2, label: 'In Progress' },
+  { value: 3, label: 'Completed' },
 ]
 const newGoalData = reactive({
   plan_id: null,
@@ -311,7 +392,7 @@ const newGoalData = reactive({
   start_date: '',
   end_date: '',
   completion_notes: '',
-  status: 'planned'
+  goal_status_id: 1,
 })
 const editGoalData = reactive({
   plan_id: null,
@@ -321,19 +402,19 @@ const editGoalData = reactive({
   start_date: '',
   end_date: '',
   completion_notes: '',
-  status: 'planned'
+  goal_status_id: 1,
 })
 
 // Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
-const getStatusLabel = (statusValue) => {
-  const matched = progressStatusOptions.find((item) => item.value === statusValue)
-  return matched ? matched.label : statusValue
+const getStatusLabel = (goalStatusId) => {
+  const matched = progressStatusOptions.find((item) => item.value === Number(goalStatusId))
+  return matched ? matched.label : '—'
 }
-const getStatusClass = (statusValue) => {
-  if (statusValue === 'completed') return 'status-completed'
-  if (statusValue === 'in_progress') return 'status-in-progress'
-  if (statusValue === 'on_hold') return 'status-on-hold'
+const getStatusClass = (goalStatusId) => {
+  const id = Number(goalStatusId)
+  if (id === 3) return 'status-completed'
+  if (id === 2) return 'status-in-progress'
   return 'status-planned'
 }
 const isStepsExpanded = (goalId) => Boolean(expandedStepsByGoal.value[goalId])
@@ -363,7 +444,9 @@ const loadGoals = async () => {
     loading.value = true
 
     // Build optional date-range query params from filter inputs.
-    const params = {}
+    const params = {
+      profile_id: profileId.value
+    }
 
     if (fromDate.value) {
       params.from = fromDate.value
@@ -376,8 +459,15 @@ const loadGoals = async () => {
       params
     })
 
-    // Update table data with the latest goals from API.
-    goals.value = response.data
+    // Respect persisted backend order, with created_at as a stable tiebreaker.
+    goals.value = [...response.data].sort((a, b) => {
+      const aOrder = a.goal_order ?? Number.MAX_SAFE_INTEGER
+      const bOrder = b.goal_order ?? Number.MAX_SAFE_INTEGER
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder
+      }
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0)
+    })
   } catch (error) {
     console.error('Error while fetching goals:', error)
   } finally {
@@ -385,9 +475,154 @@ const loadGoals = async () => {
   }
 }
 
+const onGoalDragStart = (event, goal) => {
+  if (isReorderingGoals.value) {
+    event.preventDefault()
+    return
+  }
+
+  draggedGoalId.value = goal.goal_id
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', String(goal.goal_id))
+}
+
+const onGoalDragEnter = (goal) => {
+  if (isReorderingGoals.value || draggedGoalId.value === null) {
+    return
+  }
+  hoveredGoalId.value = goal.goal_id
+  isEndDropZoneActive.value = false
+}
+
+const onGoalDragLeave = (goal) => {
+  if (hoveredGoalId.value === goal.goal_id) {
+    hoveredGoalId.value = null
+  }
+}
+
+const onGoalDrop = async (targetGoal) => {
+  if (isReorderingGoals.value || draggedGoalId.value === null || draggedGoalId.value === targetGoal.goal_id) {
+    return
+  }
+
+  const previousGoals = [...goals.value]
+  // Reorder in memory first for immediate feedback, then persist to backend.
+  const reorderedGoals = moveGoalBefore(draggedGoalId.value, targetGoal.goal_id)
+  draggedGoalId.value = null
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+
+  if (!reorderedGoals) {
+    return
+  }
+
+  goals.value = reorderedGoals
+  await persistGoalOrder(previousGoals)
+}
+
+const onGoalDropToEnd = async () => {
+  if (isReorderingGoals.value || draggedGoalId.value === null) {
+    return
+  }
+
+  const previousGoals = [...goals.value]
+  // Dedicated drop zone enables moving a goal to the absolute bottom.
+  const reorderedGoals = moveGoalToEnd(draggedGoalId.value)
+  draggedGoalId.value = null
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+
+  if (!reorderedGoals) {
+    return
+  }
+
+  goals.value = reorderedGoals
+  await persistGoalOrder(previousGoals)
+}
+
+const onEndDropDragEnter = () => {
+  if (isReorderingGoals.value || draggedGoalId.value === null) {
+    return
+  }
+  isEndDropZoneActive.value = true
+  hoveredGoalId.value = null
+}
+
+const onEndDropDragLeave = () => {
+  isEndDropZoneActive.value = false
+}
+
+const onGoalDragEnd = () => {
+  draggedGoalId.value = null
+  hoveredGoalId.value = null
+  isEndDropZoneActive.value = false
+}
+
+const moveGoalBefore = (sourceGoalId, targetGoalId) => {
+  const sourceIndex = goals.value.findIndex((goal) => goal.goal_id === sourceGoalId)
+  const targetIndex = goals.value.findIndex((goal) => goal.goal_id === targetGoalId)
+
+  if (sourceIndex === -1 || targetIndex === -1) {
+    return null
+  }
+
+  const nextGoals = [...goals.value]
+  const [movedGoal] = nextGoals.splice(sourceIndex, 1)
+  const insertIndex = sourceIndex < targetIndex ? targetIndex : targetIndex
+  nextGoals.splice(insertIndex, 0, movedGoal)
+
+  // Rebuild sequential order values expected by the reorder API.
+  return nextGoals.map((goal, index) => ({
+    ...goal,
+    goal_order: index + 1
+  }))
+}
+
+const moveGoalToEnd = (sourceGoalId) => {
+  const sourceIndex = goals.value.findIndex((goal) => goal.goal_id === sourceGoalId)
+  if (sourceIndex === -1) {
+    return null
+  }
+
+  const nextGoals = [...goals.value]
+  const [movedGoal] = nextGoals.splice(sourceIndex, 1)
+  nextGoals.push(movedGoal)
+
+  // Rebuild sequential order values expected by the reorder API.
+  return nextGoals.map((goal, index) => ({
+    ...goal,
+    goal_order: index + 1
+  }))
+}
+
+const persistGoalOrder = async (previousGoals) => {
+  try {
+    isReorderingGoals.value = true
+    // Persist only IDs in their final order; backend maps index -> goal_order.
+    await api.put('/smart-goals/reorder', {
+      profile_id: profileId.value,
+      goal_ids: goals.value.map((goal) => goal.goal_id)
+    })
+  } catch (error) {
+    // Roll back UI order if save fails so client/server stay consistent.
+    goals.value = previousGoals
+    console.error('Error reordering goals:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to reorder goals'
+    alert(`Failed to reorder goals: ${errorMessage}`)
+  } finally {
+    isReorderingGoals.value = false
+  }
+}
+
 const loadPlanId = async () => {
   try {
-    const response = await api.get('/career-plans')
+    const response = await api.get('/career-plans', {
+      params: {
+        profile_id: profileId.value
+      }
+    })
     if (response.data && response.data.length > 0) {
       // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
@@ -422,7 +657,10 @@ const createGoal = async () => {
   try {
     // Normalize form values (e.g., empty optional fields) before sending to API.
     const payload = normalizeGoalPayload(newGoalData)
-    await api.post('/smart-goals', payload)
+    await api.post('/smart-goals', {
+      ...payload,
+      profile_id: profileId.value
+    })
     showNewGoalForm.value = false
     // Reset form
     Object.assign(newGoalData, {
@@ -433,7 +671,7 @@ const createGoal = async () => {
       start_date: '',
       end_date: '',
       completion_notes: '',
-      status: 'planned'
+      goal_status_id: 1,
     })
     loadGoals() // Refresh the list
     alert('Goal created successfully!')
@@ -469,7 +707,7 @@ const cancelNewGoal = () => {
     start_date: '',
     end_date: '',
     completion_notes: '',
-    status: 'planned'
+    goal_status_id: 1,
   })
 }
 
@@ -485,7 +723,7 @@ const cancelEditGoal = () => {
     start_date: '',
     end_date: '',
     completion_notes: '',
-    status: 'planned'
+    goal_status_id: 1,
   })
 }
 
@@ -551,6 +789,7 @@ const saveSteps = async () => {
     savingSteps.value = true
 
     await api.put(`/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
+      profile_id: profileId.value,
       steps: normalizedSteps.map((step_description) => ({ step_description }))
     })
 
@@ -570,13 +809,37 @@ const saveSteps = async () => {
 
 // Optimistically update status from dropdown; revert on API failure.
 const updateGoalStatus = async (goal) => {
-  const previousStatus = goal._previousStatus ?? 'planned'
+  const previousId = goal._previousStatusId ?? goal.goal_status_id
   try {
     await api.put(`/smart-goals/${goal.goal_id}`, {
-      status: goal.status
+      profile_id: profileId.value,
+      goal_status_id: goal.goal_status_id,
     })
+
+    const opt = progressStatusOptions.find((o) => o.value === Number(goal.goal_status_id))
+    if (goal.status && opt) {
+      goal.status.goal_status_id = goal.goal_status_id
+      goal.status.status = opt.label
+    }
+
+    // When a goal is marked completed, place it at the end of the list.
+    if (Number(goal.goal_status_id) === 3) {
+      const previousGoals = [...goals.value]
+      const reorderedGoals = moveGoalToEnd(goal.goal_id)
+      if (reorderedGoals) {
+        goals.value = reorderedGoals
+        await persistGoalOrder(previousGoals)
+      }
+    }
   } catch (error) {
-    goal.status = previousStatus
+    goal.goal_status_id = previousId
+    if (goal.status) {
+      const opt = progressStatusOptions.find((o) => o.value === Number(previousId))
+      if (opt) {
+        goal.status.status = opt.label
+        goal.status.goal_status_id = previousId
+      }
+    }
     console.error('Error updating goal status:', error)
     const errorMessage = error.response?.data?.message ||
       Object.values(error.response?.data?.errors || {}).flat()[0] ||
@@ -596,7 +859,7 @@ const editGoal = (goal) => {
     start_date: goal.start_date || '',
     end_date: goal.end_date || '',
     completion_notes: goal.completion_notes || '',
-    status: goal.status || 'planned'
+    goal_status_id: goal.goal_status_id ?? 1,
   })
   showEditGoalForm.value = true
 }
@@ -605,7 +868,10 @@ const editGoal = (goal) => {
 const updateGoal = async () => {
   try {
     const payload = normalizeGoalPayload(editGoalData)
-    await api.put(`/smart-goals/${editingGoal.value.goal_id}`, payload)
+    await api.put(`/smart-goals/${editingGoal.value.goal_id}`, {
+      ...payload,
+      profile_id: profileId.value
+    })
     showEditGoalForm.value = false
     editingGoal.value = null
     loadGoals() // Refresh the list
@@ -623,7 +889,11 @@ const updateGoal = async () => {
 const deleteGoal = async (goal) => {
   if (confirm(`Are you sure you want to delete this goal: ${goal.goal_description}?`)) {
     try {
-      await api.delete(`/smart-goals/${goal.goal_id}`)
+      await api.delete(`/smart-goals/${goal.goal_id}`, {
+        params: {
+          profile_id: profileId.value
+        }
+      })
       loadGoals() // Refresh the list
       alert('Goal deleted successfully!')
     } catch (error) {
@@ -809,6 +1079,35 @@ const deleteGoal = async (goal) => {
   background: #f8f8f8;
 }
 
+.goal-row-dragging {
+  opacity: 0.55;
+}
+
+.goals-table tbody tr.goal-row-drop-target td {
+  background: #eef5ff;
+}
+
+.drop-to-end-row td {
+  border-bottom: none;
+}
+
+.drop-to-end-cell {
+  text-align: center;
+  color: #7a7a7a;
+  font-size: 0.86rem;
+  font-family: 'Montserrat Alternates', sans-serif;
+  padding: 0.6rem 0.8rem;
+  border-top: 1px dashed #d8d8d8;
+  background: #fafafa;
+  transition: all 0.15s ease;
+}
+
+.drop-to-end-active {
+  background: #eef5ff;
+  border-top-color: #99bfff;
+  color: #3c5d9e;
+}
+
 .goals-table tbody td {
   border-bottom: 1px solid #e6e6e6;
   background: transparent;
@@ -820,31 +1119,42 @@ const deleteGoal = async (goal) => {
 
 .goals-table th:nth-child(1),
 .goals-table td:nth-child(1) {
-  /* Column 1: SMART Goal */
-  min-width: 15rem;
+  /* Column 1: Drag Handle */
+  min-width: 3rem;
+  width: 3rem;
 }
 
 .goals-table th:nth-child(2),
 .goals-table td:nth-child(2) {
-  /* Column 2: Action Steps */
-  min-width: 16rem;
+  /* Column 2: SMART Goal */
+  min-width: 15rem;
 }
 
 .goals-table th:nth-child(3),
-.goals-table td:nth-child(3),
+.goals-table td:nth-child(3) {
+  /* Column 3: Action Steps */
+  min-width: 16rem;
+}
+
 .goals-table th:nth-child(4),
 .goals-table td:nth-child(4),
-.goals-table th:nth-child(7),
-.goals-table td:nth-child(7) {
-  /* Columns 3,4,7: Progress, Learnings, Completion Notes */
+.goals-table th:nth-child(5),
+.goals-table td:nth-child(5),
+.goals-table th:nth-child(8),
+.goals-table td:nth-child(8) {
+  /* Columns 4,5,8: Progress, Learnings, Completion Notes */
   min-width: 10rem;
 }
 
-.goals-table th:nth-child(5),
-.goals-table td:nth-child(5),
 .goals-table th:nth-child(6),
 .goals-table td:nth-child(6) {
-  /* Columns 5,6: Start Date, End Date */
+  /* Columns 6,7: Start Date, End Date */
+  min-width: 8.5rem;
+  white-space: nowrap;
+}
+
+.goals-table th:nth-child(7),
+.goals-table td:nth-child(7) {
   min-width: 8.5rem;
   white-space: nowrap;
 }
@@ -861,6 +1171,39 @@ const deleteGoal = async (goal) => {
   overflow-y: auto;
 }
 
+.drag-col-header {
+  width: 3rem;
+}
+
+.drag-handle-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.drag-handle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.35rem;
+  cursor: grab;
+  color: #7a7a7a;
+  line-height: 1;
+}
+
+.drag-handle-btn:hover {
+  background: #f0f0f0;
+  color: #5f5f5f;
+}
+
+.drag-handle-btn:active {
+  cursor: grabbing;
+}
+
+.drag-handle-icon {
+  font-size: 1.05rem;
+  letter-spacing: -0.1rem;
+}
+
 .steps-cell {
   vertical-align: top !important;
 }
@@ -873,6 +1216,10 @@ const deleteGoal = async (goal) => {
 }
 
 .steps-edit-btn {
+  margin-top: 0.15rem;
+}
+
+.steps-edit-icon-btn {
   margin-top: 0.15rem;
 }
 
@@ -920,16 +1267,43 @@ const deleteGoal = async (goal) => {
 
 .actions-stack {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.55rem;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
 }
 
-.actions-stack .btn {
-  width: 100%;
-  max-width: 11rem;
-  align-self: center;
+.action-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.action-icon-image {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.action-icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-icon-btn:focus-visible {
+  outline: 2px solid #9db8e6;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.action-icon-btn:active {
+  transform: scale(1.05);
 }
 
 .goal-form-card {

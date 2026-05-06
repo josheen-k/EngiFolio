@@ -15,24 +15,29 @@ class User extends Model
         'role_id',
         'username',
         'email',
+        'first_name',
+        'last_name',
         'password_hash',
         'account_status',
     ];
 
-    protected $hidden = ['password_hash',];
+    // Used to protect the hash from being returned for security reasons
+    protected $hidden = [
+        'password_hash',
+    ];
 
     public function profile()
     {
-        return $this->hasOne(StudentProfile::class, 'user_id');
+        return $this->hasOne(StudentProfile::class, 'user_id', 'user_id');
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id', 'role_id');
+    }
+
     public function getRouteKeyName()
     {
-     return 'user_id';
+        return 'user_id';
     }
-
-    public function industryContacts()
-    {
-        return $this->hasMany(IndustryContact::class, 'user_id', 'user_id');
-    }
-
 }

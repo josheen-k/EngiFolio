@@ -19,7 +19,7 @@ class CompetencyFeedback extends Model
 
     public function competencyEntry()
     {
-        return $this->belongsTo(CompetencyEntry::class, 'entry_id');
+        return $this->belongsTo(CompetencyEntry::class, 'entry_id', 'entry_id');
     }
 
     public function staff()

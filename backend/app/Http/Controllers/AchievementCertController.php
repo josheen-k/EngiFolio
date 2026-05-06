@@ -21,7 +21,7 @@ class AchievementCertController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id'     => 'required|exists:users,user_id', 
+            'profile_id'     => 'required|exists:student_profiles,profile_id', 
             'title'       => 'required|string|max:100',
             'body'        => 'nullable|string',
             'file_path'   => 'nullable|string|max:255',
@@ -36,16 +36,29 @@ class AchievementCertController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, AchievementCert $achievementCert)
+    public function update(Request $request, $id)
     {
-        //
+        $cert = AchievementCert::findOrFail($id);
+
+        $validated = $request->validate([
+            'profile_id'     => 'required|exists:student_profiles,profile_id', 
+            'title'       => 'required|string|max:100',
+            'body'        => 'nullable|string',
+            'file_path'   => 'nullable|string|max:255',
+            'issued_date' => 'nullable|date',
+        ]);
+
+        $cert->update($validated);
+
+        return response()->json(['message' => 'Certificate updated successfully', 'cert' => $cert]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(AchievementCert $achievementCert)
-    {
-        //
+    public function destroy($id) {
+        AchievementCert::findOrFail($id)->delete();
+
+        return response()->json(['message' => 'Achievement certificate successfully deleted']);
     }
 }

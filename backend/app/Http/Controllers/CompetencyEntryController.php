@@ -26,9 +26,9 @@ class CompetencyEntryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($userId)
+    public function show($profileId)
     {
-        $entries = CompetencyEntry::with('indicator')->where('user_id', $userId)->get();
+        $entries = CompetencyEntry::with('indicator', 'entryLevel')->where('profile_id', $profileId)->get();
 
         if ($entries->isEmpty()) {
             return response()->json(['message' => 'No comptencies for this user found'], 404);

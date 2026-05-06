@@ -10,16 +10,16 @@ class JobResource extends Model
     use HasFactory;
 
     protected $table = 'job_resources';
-    protected $primaryKey = 'job_resources_id';
+    protected $primaryKey = 'job_resource_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'title',
         'body',
         'file_path',
     ];
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 }
