@@ -14,6 +14,8 @@ use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\GoalStatusesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,3 +105,6 @@ Route::get('/goal-status', [GoalStatusesController::class, 'index']);
 Route::post('/goal-status', [GoalStatusesController::class, 'store']);
 Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
 Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
+
+// Admin dashboard
+Route::get('/admin/users-overview', [AdminController::class, 'usersOverview']);

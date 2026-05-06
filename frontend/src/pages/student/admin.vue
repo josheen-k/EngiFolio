@@ -1,46 +1,89 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
+import api from '@/services/api'
 
+const router = useRouter()
 const searchQuery = ref('')
-const statusFilter = ref('all')
+const users = ref([])
+const loading = ref(false)
+const loadError = ref('')
 
-const users = ref([
-  { id: 'STU-1001', name: 'Alex Chen', email: 'alex.chen@engifolio.edu', role: 'Student', status: 'active', goals: 8, completedGoals: 2, updatedAt: '2026-04-28' },
-  { id: 'STU-1002', name: 'Mia Patel', email: 'mia.patel@engifolio.edu', role: 'Student', status: 'active', goals: 6, completedGoals: 4, updatedAt: '2026-04-27' },
-  { id: 'STU-1003', name: 'Noah Wang', email: 'noah.wang@engifolio.edu', role: 'Student', status: 'at_risk', goals: 3, completedGoals: 0, updatedAt: '2026-04-24' },
-  { id: 'ADM-9001', name: 'Sarah Lin', email: 'sarah.lin@engifolio.edu', role: 'Admin', status: 'active', goals: 0, completedGoals: 0, updatedAt: '2026-04-29' }
-])
-
-const filteredUsers = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-  return users.value.filter((user) => {
-    const matchesStatus = statusFilter.value === 'all' || user.status === statusFilter.value
-    const matchesQuery =
-      query.length === 0 ||
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.id.toLowerCase().includes(query)
-    return matchesStatus && matchesQuery
-  })
+const stats = ref({
+  totalUsers: 0,
+  totalGoals: 0,
+  totalCompletedGoals: 0
 })
 
-const totalUsers = computed(() => users.value.length)
-const activeUsers = computed(() => users.value.filter((user) => user.status === 'active').length)
-const atRiskUsers = computed(() => users.value.filter((user) => user.status === 'at_risk').length)
-const totalGoals = computed(() => users.value.reduce((sum, user) => sum + user.goals, 0))
+const filteredUsers = computed(() => users.value)
 
-const getStatusLabel = (status) => {
-  if (status === 'active') return 'Active'
-  if (status === 'at_risk') return 'At Risk'
-  if (status === 'inactive') return 'Inactive'
-  return status
+const totalUsers = computed(() => stats.value.totalUsers)
+const totalGoals = computed(() => stats.value.totalGoals)
+const totalCompletedGoals = computed(() => stats.value.totalCompletedGoals)
+
+const fetchUsersOverview = async () => {
+  try {
+    loading.value = true
+    loadError.value = ''
+
+    const params = {}
+
+    const query = searchQuery.value.trim()
+    if (query) {
+      params.q = query
+    }
+
+    const response = await api.get('/admin/users-overview', { params })
+    users.value = response.data.users || []
+    stats.value = response.data.stats || {
+      totalUsers: 0,
+      totalGoals: 0,
+      totalCompletedGoals: 0
+    }
+  } catch (error) {
+    console.error('Failed to load admin users overview:', error)
+    users.value = []
+    stats.value = {
+      totalUsers: 0,
+      totalGoals: 0,
+      totalCompletedGoals: 0
+    }
+    loadError.value = error.response?.data?.message || 'Failed to load user management data'
+  } finally {
+    loading.value = false
+  }
 }
 
-const getStatusClass = (status) => {
-  if (status === 'active') return 'status-active'
-  if (status === 'at_risk') return 'status-at-risk'
-  return 'status-inactive'
+let searchDebounceTimer = null
+
+watch(searchQuery, () => {
+  if (searchDebounceTimer) {
+    clearTimeout(searchDebounceTimer)
+  }
+  searchDebounceTimer = setTimeout(() => {
+    fetchUsersOverview()
+  }, 300)
+})
+
+onMounted(() => {
+  fetchUsersOverview()
+})
+
+const viewUser = (user) => {
+  if (!user.profile_id) {
+    alert('This user does not have a student profile yet.')
+    return
+  }
+  router.push(`/goals/${user.profile_id}`)
+}
+
+const editUser = (user) => {
+  if (!user.profile_id) {
+    alert('This user does not have a student profile yet.')
+    return
+  }
+  router.push(`/settings/profile/${user.profile_id}`)
 }
 </script>
 
@@ -62,16 +105,16 @@ const getStatusClass = (status) => {
           <p class="stat-value">{{ totalUsers }}</p>
         </article>
         <article class="stat-card">
-          <p class="stat-label">Active Users</p>
-          <p class="stat-value">{{ activeUsers }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">At Risk</p>
-          <p class="stat-value">{{ atRiskUsers }}</p>
-        </article>
-        <article class="stat-card">
           <p class="stat-label">Total Goals Logged</p>
           <p class="stat-value">{{ totalGoals }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Completed Goals</p>
+          <p class="stat-value">{{ totalCompletedGoals }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Open Goals</p>
+          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
         </article>
       </section>
 
@@ -85,12 +128,6 @@ const getStatusClass = (status) => {
               class="filter-input"
               placeholder="Search by name, email, or ID"
             />
-            <select v-model="statusFilter" class="filter-select">
-              <option value="all">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="at_risk">At Risk</option>
-              <option value="inactive">Inactive</option>
-            </select>
           </div>
         </div>
 
@@ -100,7 +137,7 @@ const getStatusClass = (status) => {
               <tr>
                 <th>User</th>
                 <th>Role</th>
-                <th>Status</th>
+                <th>Username</th>
                 <th>Goals</th>
                 <th>Completed</th>
                 <th>Last Updated</th>
@@ -108,6 +145,12 @@ const getStatusClass = (status) => {
               </tr>
             </thead>
             <tbody>
+              <tr v-if="loading">
+                <td colspan="7" class="empty-state">Loading users...</td>
+              </tr>
+              <tr v-else-if="loadError">
+                <td colspan="7" class="empty-state">{{ loadError }}</td>
+              </tr>
               <tr v-for="user in filteredUsers" :key="user.id">
                 <td>
                   <p class="user-name mb-0">{{ user.name }}</p>
@@ -115,21 +158,19 @@ const getStatusClass = (status) => {
                 </td>
                 <td>{{ user.role }}</td>
                 <td>
-                  <span class="status-pill" :class="getStatusClass(user.status)">
-                    {{ getStatusLabel(user.status) }}
-                  </span>
+                  {{ user.username || '-' }}
                 </td>
                 <td>{{ user.goals }}</td>
                 <td>{{ user.completedGoals }}</td>
                 <td>{{ user.updatedAt }}</td>
                 <td>
                   <div class="action-buttons">
-                    <button type="button" class="btn page-btn-outline">View</button>
-                    <button type="button" class="btn page-btn-primary">Edit</button>
+                    <button type="button" class="btn page-btn-outline" @click="viewUser(user)">View</button>
+                    <button type="button" class="btn page-btn-primary" @click="editUser(user)">Edit</button>
                   </div>
                 </td>
               </tr>
-              <tr v-if="filteredUsers.length === 0">
+              <tr v-if="!loading && !loadError && filteredUsers.length === 0">
                 <td colspan="7" class="empty-state">No users match this filter.</td>
               </tr>
             </tbody>
@@ -284,29 +325,6 @@ const getStatusClass = (status) => {
 .user-email {
   color: #6c6c6c;
   font-size: 0.92rem;
-}
-
-.status-pill {
-  display: inline-block;
-  padding: 0.18rem 0.65rem;
-  border-radius: 999px;
-  border: 1px solid #d7d7d7;
-  font-size: 0.78rem;
-}
-
-.status-active {
-  background: #e8f7ed;
-  color: #256942;
-}
-
-.status-at-risk {
-  background: #fff3e2;
-  color: #8d5b1e;
-}
-
-.status-inactive {
-  background: #f5f5f5;
-  color: #555555;
 }
 
 .action-buttons {
