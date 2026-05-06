@@ -199,7 +199,6 @@ onMounted(() => {
     height: 15rem;
     top: 50%;
     left: 50%;
-    pointer-events: none;
     transition: transform 0.5s ease, opacity 0.5s ease, scale 0.5s ease;
     cursor: pointer;
     z-index: 0;
