@@ -1,3 +1,113 @@
+<template>
+  <Navbar />
+
+  <div class="container-lg py-5 px-4" v-if="profile">
+    <!--achievement certs-->
+    <section class="mb-5 pb-4 border-bottom">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="sec-title mb-0">Achievement Certifications</h2>
+        <button class="btn btn-ql" @click="addAchCert">Add Achievement</button>
+      </div>
+      <div v-if="profile.achievement_certs.length" class="d-flex flex-column gap-3">
+        <div class="cert-row" v-for="(cert, index) in profile.achievement_certs" :key="index">
+
+          <!-- header-->
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <img src="@/assets/cert.png" class="cert-icon" alt="certificate" />
+            <span class="cert-type-label">Certificate of Achievement</span>
+            <button class="remove-btn ms-auto" @click="removeAchCert(index)">
+              <img src="@/assets/delete.png" class="del-icon" alt="remove" />
+            </button>
+          </div>
+
+          <!--form-->
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="field-label">Title</label>
+              <input v-model="cert.title" class="field-input form-control" placeholder="example: Dean's Award" />
+            </div>
+            <div class="col-12">
+              <label class="field-label">Description</label>
+              <input v-model="cert.body" class="field-input form-control"
+                placeholder="Brief description of this certification" />
+            </div>
+            <div class="col-12">
+              <label class="field-label">File path / URL</label>
+              <input v-model="cert.file_path" class="field-input form-control"
+                placeholder="https://example.com/cert.pdf" />
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="field-label">Issued date</label>
+              <input type="date" v-model="cert.issued_date" class="field-input form-control" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <p v-else class="empty-txt text-center py-4">No achievement certifications yet! Click add to get started.</p>
+    </section>
+
+    <!--attainment certs-->
+    <section class="mb-5 pb-4 border-bottom">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="sec-title mb-0">Attainment Certifications</h2>
+        <button class="btn btn-ql" @click="addAttCert">Add Attainment</button>
+      </div>
+
+      <div v-if="profile.attainment_certs.length" class="d-flex flex-column gap-3">
+        <div class="cert-row" v-for="(cert, index) in profile.attainment_certs" :key="index">
+
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <img src="@/assets/cert.png" class="cert-icon" alt="certificate" />
+            <span class="cert-type-label">Certificate of Attainment</span>
+            <button class="remove-btn ms-auto" @click="removeAttCert(index)">
+              <img src="@/assets/delete.png" class="del-icon" alt="remove" />
+            </button>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="field-label">Title</label>
+              <input v-model="cert.title" class="field-input form-control" placeholder="e.g. Certified Engineer" />
+            </div>
+            <div class="col-12">
+              <label class="field-label">Description</label>
+              <input v-model="cert.body" class="field-input form-control"
+                placeholder="Brief description of this certification" />
+            </div>
+            <div class="col-12">
+              <label class="field-label">File path / URL</label>
+              <input v-model="cert.file_path" class="field-input form-control"
+                placeholder="https://example.com/cert.pdf" />
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="field-label">Issued date</label>
+              <input type="date" v-model="cert.issued_date" class="field-input form-control" />
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="field-label">Expiry date</label>
+              <input type="date" v-model="cert.expiry_date" class="field-input form-control" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <p v-else class="empty-txt text-center py-4">No attainment certifications yet! Click add to getstarted.</p>
+    </section>
+
+    <!--footer-->
+    <div class="d-flex justify-content-center gap-3 pt-3">
+      <button class="btn btn-filter" @click="cancel">Cancel</button>
+      <button class="btn btn-ql" @click="saveChanges">Save Changes</button>
+    </div>
+  </div>
+
+  <div v-else class="container py-5 text-center">
+    <p class="text-muted small">Loading settings...</p>
+  </div>
+</template>
+
 <script setup>
   import { ref, onMounted } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
@@ -118,145 +228,119 @@ onMounted(() => {
   loadProfile();
 })
 
-
 </script>
 
-<template>
-  <Navbar />
-  <body class="container py-5" v-if="profile">
-<div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="stat-title mb-0">Achievement Certifications</h5>
-    <button @click="addAchCert" class="btn btn-ql rounded-pill px-4">Add Achievement</button>
-  </div>       
-  <div class="row g-3">
-    <div v-for="(cert, index) in profile.achievement_certs" :key="index" class="col-12 border-bottom border-secondary pb-3 mb-2">
-      <div class="row g-2 align-items-end">
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Title</label>
-          <input v-model="cert.title" class="form-control"/>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Description</label>
-          <input v-model="cert.body" class="form-control"/>
-        </div>
-				<div class="col-md-4">
-          <label class="form-label fw-bold">File Path</label>
-          <input v-model="cert.file_path" class="form-control"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Issued Date</label>
-          <input type="date" v-model="cert.issued_date" class="form-control"/>
-        </div>
-        <div class="col-md-2 offset-md-1">
-          <button @click="removeAchCert(index)" class="btn btn-filter px-4">Delete</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="stat-title mb-0">Attainment Certifications</h5>
-    <button @click="addAttCert" class="btn btn-ql rounded-pill px-4">Add Attainment</button>
-  </div>       
-  <div class="row g-3">
-    <div v-for="(cert, index) in profile.attainment_certs" :key="index" class="col-12 border-bottom border-secondary pb-3 mb-2">
-      <div class="row g-2 align-items-end">
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Title</label>
-          <input v-model="cert.title" class="form-control"/>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Description</label>
-          <input v-model="cert.body" class="form-control"/>
-        </div>
-				<div class="col-md-5">
-          <label class="form-label fw-bold">File Path</label>
-          <input v-model="cert.file_path" class="form-control"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Issued Date</label>
-          <input type="date" v-model="cert.issued_date" class="form-control"/>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Expiry Date</label>
-          <input type="date" v-model="cert.expiry_date" class="form-control"/>
-        </div>
-        <div class="col-md-2 offset-md-1">
-          <button @click="removeAttCert(index)" class="btn btn-filter px-4">Delete</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-        <footer class="border-top pt-4 d-flex justify-content-end gap-2">
-          <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
-          <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
-        </footer>
-  </body>
-	
-
-	
-
-  <div v-else class="container py-5 text-center">
-    <p class="text-muted small">Loading settings...</p>
-  </div>
-</template>
-
 <style scoped>
-	.sec-title {
-		font-family: 'Martel', serif;
-		font-size: 2.0rem;
-		color: #1c1c1cc5;
-		font-weight: lighter;
-		margin-bottom: 2rem;
-	}
+.sec-title {
+    font-family: 'Martel', serif;
+    font-size: 2rem;
+    color: #303030c5;
+  }
 
-	.card-dark {
-		background: #f1f1f1;
-	}
-
-	.stat-title {
-		font-family: 'Maven Pro', sans-serif;
-		font-size: 1.5rem;
-		color: #3b3b3b;
-	}
-
-	.btn-filter {
-		font-family: 'Montserrat Alternates', sans-serif;
-		border-radius: 1.5rem;
-		font-weight: lighter;
-		background: #e6e6e6;
-	}
-
-
-	.btn-ql {
-		font-family: 'Montserrat Alternates', sans-serif;
-		font-size: 1rem;
-		color: #ffffff;
-		background: #555555;
-		padding: 0.5rem 1rem;
-	}
-
-	.btn-ql:hover {
-		color: #ffffff;
-		background: #333333;
-	}
-
-	.btn-filter:hover {
-		background: #666666;
-		color: #ffffff;
-	}
-
-  .profile-pic {
-		width: 150px;
-		height: 150px; 
-		border-radius: 50%;
-		object-fit: cover;   
-		border: 3px solid #f1f1f1; 
-		background-color: #fff;
-		box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-	}
+  .cert-row {
+    background: #f7f7f7;
+    border: 1px solid #cccccc;
+    border-radius: 2rem;
+    padding: 1.5rem 1.75rem;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .cert-row:hover {
+    box-shadow: 0 0.5rem 1.5rem #e5e5e5;
+  }
+  
+  .cert-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    object-fit: contain;
+    opacity: 0.6;
+  }
+  
+  .cert-type-label {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 0.85rem;
+    color: #aaaaaa;
+  }
+  
+  .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem;
+    opacity: 0.6;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  
+  .remove-btn:hover {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  
+  .del-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    object-fit: contain;
+  }
+  
+  .field-label {
+    display: block;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 0.8rem;
+    color: #999999;
+    margin-bottom: 0.3rem;
+  }
+  
+  .field-input.form-control {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1rem;
+    color: #333333;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+  }
+  
+  .field-input.form-control:focus {
+    border-color: #c4c4c4;
+    box-shadow: 0 0 0 0.02rem #2b2b2b;
+  }
+  
+  .empty-txt {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1rem;
+    color: #aaaaaa;
+  }
+  
+  .btn-filter {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1rem;
+    border-radius: 1.5rem;
+    background: #e6e6e6;
+    color: #222222;
+    padding: 0.5rem 2rem;
+  }
+  
+  .btn-filter:hover {
+    background: #666666;
+    color: #ffffff;
+  }
+  
+  .btn-ql {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1rem;
+    color: #ffffff;
+    background: #555555;
+    border-radius: 1.5rem;
+    padding: 0.5rem 2rem;
+  }
+  
+  .btn-ql:hover {
+    color: #ffffff;
+    background: #333333;
+  }
+  
+  @media (min-width: 820px) {
+      .container-lg {
+          max-width: 60%;
+      }
+  }
 </style>
