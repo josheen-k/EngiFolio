@@ -19,7 +19,7 @@
         </label>
         <label>
           Progress Status:
-          <select v-model="newGoalData.status">
+          <select v-model.number="newGoalData.goal_status_id">
             <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
           </select>
         </label>
@@ -55,7 +55,7 @@
         </label>
         <label>
           Progress Status:
-          <select v-model="editGoalData.status">
+          <select v-model.number="editGoalData.goal_status_id">
             <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
           </select>
         </label>
@@ -181,8 +181,8 @@
             <td class="progress-cell">
               <select
                 class="status-select"
-                v-model="goal.status.status"
-                @focus="goal._previousStatus = goal.status.status"
+                v-model.number="goal.goal_status_id"
+                @focus="goal._previousStatusId = goal.goal_status_id"
                 @change="updateGoalStatus(goal)"
               >
                 <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -238,8 +238,8 @@
         <article v-for="goal in goals" :key="`mobile-${goal.goal_id}`" class="mobile-goal-card">
           <div class="mobile-goal-head">
             <h3 class="mobile-goal-title">{{ goal.goal_description }}</h3>
-            <span class="mobile-status-badge" :class="getStatusClass(goal.status.status)">
-              {{ getStatusLabel(goal.status.status) }}
+            <span class="mobile-status-badge" :class="getStatusClass(goal.goal_status_id)">
+              {{ getStatusLabel(goal.goal_status_id) }}
             </span>
           </div>
 
@@ -247,8 +247,8 @@
             <p class="mobile-label">Progress</p>
             <select
               class="status-select mobile-status-select"
-              v-model="goal.status.status"
-              @focus="goal._previousStatus = goal.status.status"
+              v-model.number="goal.goal_status_id"
+              @focus="goal._previousStatusId = goal.goal_status_id"
               @change="updateGoalStatus(goal)"
             >
               <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
@@ -348,6 +348,7 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import api from "@/services/api";
 import editIcon from '@/assets/edit.png'
@@ -367,6 +368,8 @@ const stepModalGoal = ref(null)
 const savingSteps = ref(false)
 const stepDrafts = ref([])
 const expandedStepsByGoal = ref({})
+const route = useRoute()
+const profileId = computed(() => Number(route.params.id))
 // Tracks the currently dragged goal to drive reorder and visual states.
 const draggedGoalId = ref(null)
 // Prevents concurrent reorder requests from overlapping.
@@ -375,11 +378,11 @@ const isReorderingGoals = ref(false)
 const hoveredGoalId = ref(null)
 // Highlights the dedicated drop zone that moves a goal to the end.
 const isEndDropZoneActive = ref(false)
-// value is sent to backend, label is displayed in UI.
+// goal_status_id values match backend `goal_statuses` seed order (1 Planned, 2 In progress, 3 Completed).
 const progressStatusOptions = [
-  { value: 'planned', label: 'Planned' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
+  { value: 1, label: 'Planned' },
+  { value: 2, label: 'In Progress' },
+  { value: 3, label: 'Completed' },
 ]
 const newGoalData = reactive({
   plan_id: null,
@@ -389,7 +392,7 @@ const newGoalData = reactive({
   start_date: '',
   end_date: '',
   completion_notes: '',
-  status: 'planned'
+  goal_status_id: 1,
 })
 const editGoalData = reactive({
   plan_id: null,
@@ -399,19 +402,19 @@ const editGoalData = reactive({
   start_date: '',
   end_date: '',
   completion_notes: '',
-  status: 'planned'
+  goal_status_id: 1,
 })
 
 // Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
-const getStatusLabel = (statusValue) => {
-  const matched = progressStatusOptions.find((item) => item.value === statusValue)
-  return matched ? matched.label : statusValue
+const getStatusLabel = (goalStatusId) => {
+  const matched = progressStatusOptions.find((item) => item.value === Number(goalStatusId))
+  return matched ? matched.label : '—'
 }
-const getStatusClass = (statusValue) => {
-  if (statusValue === 'completed') return 'status-completed'
-  if (statusValue === 'in_progress') return 'status-in-progress'
-  if (statusValue === 'on_hold') return 'status-on-hold'
+const getStatusClass = (goalStatusId) => {
+  const id = Number(goalStatusId)
+  if (id === 3) return 'status-completed'
+  if (id === 2) return 'status-in-progress'
   return 'status-planned'
 }
 const isStepsExpanded = (goalId) => Boolean(expandedStepsByGoal.value[goalId])
@@ -441,7 +444,9 @@ const loadGoals = async () => {
     loading.value = true
 
     // Build optional date-range query params from filter inputs.
-    const params = {}
+    const params = {
+      profile_id: profileId.value
+    }
 
     if (fromDate.value) {
       params.from = fromDate.value
@@ -597,6 +602,7 @@ const persistGoalOrder = async (previousGoals) => {
     isReorderingGoals.value = true
     // Persist only IDs in their final order; backend maps index -> goal_order.
     await api.put('/smart-goals/reorder', {
+      profile_id: profileId.value,
       goal_ids: goals.value.map((goal) => goal.goal_id)
     })
   } catch (error) {
@@ -612,7 +618,11 @@ const persistGoalOrder = async (previousGoals) => {
 
 const loadPlanId = async () => {
   try {
-    const response = await api.get('/career-plans')
+    const response = await api.get('/career-plans', {
+      params: {
+        profile_id: profileId.value
+      }
+    })
     if (response.data && response.data.length > 0) {
       // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
@@ -647,7 +657,10 @@ const createGoal = async () => {
   try {
     // Normalize form values (e.g., empty optional fields) before sending to API.
     const payload = normalizeGoalPayload(newGoalData)
-    await api.post('/smart-goals', payload)
+    await api.post('/smart-goals', {
+      ...payload,
+      profile_id: profileId.value
+    })
     showNewGoalForm.value = false
     // Reset form
     Object.assign(newGoalData, {
@@ -694,7 +707,7 @@ const cancelNewGoal = () => {
     start_date: '',
     end_date: '',
     completion_notes: '',
-    status: 'planned'
+    goal_status_id: 1,
   })
 }
 
@@ -710,7 +723,7 @@ const cancelEditGoal = () => {
     start_date: '',
     end_date: '',
     completion_notes: '',
-    status: 'planned'
+    goal_status_id: 1,
   })
 }
 
@@ -776,6 +789,7 @@ const saveSteps = async () => {
     savingSteps.value = true
 
     await api.put(`/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
+      profile_id: profileId.value,
       steps: normalizedSteps.map((step_description) => ({ step_description }))
     })
 
@@ -795,14 +809,21 @@ const saveSteps = async () => {
 
 // Optimistically update status from dropdown; revert on API failure.
 const updateGoalStatus = async (goal) => {
-  const previousStatus = goal._previousStatus ?? 'planned'
+  const previousId = goal._previousStatusId ?? goal.goal_status_id
   try {
     await api.put(`/smart-goals/${goal.goal_id}`, {
-      status: goal.status.status
+      profile_id: profileId.value,
+      goal_status_id: goal.goal_status_id,
     })
 
+    const opt = progressStatusOptions.find((o) => o.value === Number(goal.goal_status_id))
+    if (goal.status && opt) {
+      goal.status.goal_status_id = goal.goal_status_id
+      goal.status.status = opt.label
+    }
+
     // When a goal is marked completed, place it at the end of the list.
-    if (goal.status === 'completed') {
+    if (Number(goal.goal_status_id) === 3) {
       const previousGoals = [...goals.value]
       const reorderedGoals = moveGoalToEnd(goal.goal_id)
       if (reorderedGoals) {
@@ -811,7 +832,14 @@ const updateGoalStatus = async (goal) => {
       }
     }
   } catch (error) {
-    goal.status.status = previousStatus
+    goal.goal_status_id = previousId
+    if (goal.status) {
+      const opt = progressStatusOptions.find((o) => o.value === Number(previousId))
+      if (opt) {
+        goal.status.status = opt.label
+        goal.status.goal_status_id = previousId
+      }
+    }
     console.error('Error updating goal status:', error)
     const errorMessage = error.response?.data?.message ||
       Object.values(error.response?.data?.errors || {}).flat()[0] ||
@@ -831,7 +859,7 @@ const editGoal = (goal) => {
     start_date: goal.start_date || '',
     end_date: goal.end_date || '',
     completion_notes: goal.completion_notes || '',
-    goal_status_id: goal.status.status || 'planned'
+    goal_status_id: goal.goal_status_id ?? 1,
   })
   showEditGoalForm.value = true
 }
@@ -840,7 +868,10 @@ const editGoal = (goal) => {
 const updateGoal = async () => {
   try {
     const payload = normalizeGoalPayload(editGoalData)
-    await api.put(`/smart-goals/${editingGoal.value.goal_id}`, payload)
+    await api.put(`/smart-goals/${editingGoal.value.goal_id}`, {
+      ...payload,
+      profile_id: profileId.value
+    })
     showEditGoalForm.value = false
     editingGoal.value = null
     loadGoals() // Refresh the list
@@ -858,7 +889,11 @@ const updateGoal = async () => {
 const deleteGoal = async (goal) => {
   if (confirm(`Are you sure you want to delete this goal: ${goal.goal_description}?`)) {
     try {
-      await api.delete(`/smart-goals/${goal.goal_id}`)
+      await api.delete(`/smart-goals/${goal.goal_id}`, {
+        params: {
+          profile_id: profileId.value
+        }
+      })
       loadGoals() // Refresh the list
       alert('Goal deleted successfully!')
     } catch (error) {
