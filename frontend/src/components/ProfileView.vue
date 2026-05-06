@@ -35,7 +35,7 @@
                     </div>
 
                     <!-- bottom row: degree, specialisation -->
-                    <div class="row g-5">
+                    <div class="row g-3">
                         <div class="col-12 col-sm-6">
                             <div class="info">
                                 <span class="info-label">Degree undertaking</span>
@@ -44,7 +44,7 @@
                         </div>
                         <div class="col-12 col-sm-6">
                             <div class="info">
-                                <span class="info-label">Specialisation</span>
+                                <span class="info-label">Specialisation chosen</span>
                                 <span class="info-value">{{ profile.specialisation }}</span>
                             </div>
                         </div>
