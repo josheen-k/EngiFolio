@@ -34,6 +34,8 @@ class CompetencyIndicator extends Model
     {
         // Return the first entry when joining entries to entry levels and ordering from highest weight first
         return $this->hasOne(CompetencyEntry::class, 'indicator_id', 'indicator_id')
+            // Ignore all entries that are drafts
+            ->where('competency_entries.entry_status_id', '!=', 1)
             ->join('competency_entry_levels', 'competency_entries.entry_level_id', '=', 'competency_entry_levels.entry_level_id')
             ->orderByDesc('competency_entry_levels.competency_level_weighting');
     }

@@ -28,53 +28,51 @@
 
 
     const exportToPdf = async () => {
-  // 1. Selection Validation
-  if (!profileSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
-    alert("You must select at least one category to export");
-    return;
-  }
-
-  try {
-    const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
-      selections: {
-        profile: profileSelected.value,
-        competencies: competenciesSelected.value,
-        networking: networkingContactsSelected.value,
-        goals: goalsSelected.value
+      // Check that at lease one category is selected
+      if (!profileSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
+        alert("You must select at least one category to export");
+        return;
       }
-    }, { 
-      responseType: 'blob',
-      // Optional: ensures headers are handled correctly
-      headers: { 'Accept': 'application/pdf' } 
-    });
 
-    // 2. Check if the returned blob is actually a PDF
-    if (response.data.type !== 'application/pdf') {
-      // If the backend sent JSON (error) instead of a PDF
-      const text = await response.data.text();
-      const errorData = JSON.parse(text);
-      throw new Error(errorData.message || "Backend failed to generate PDF");
-    }
+      try {
+        const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
+          selections: {
+            profile: profileSelected.value,
+            competencies: competenciesSelected.value,
+            networking: networkingContactsSelected.value,
+            goals: goalsSelected.value
+          }
+        }, { 
+          responseType: 'blob',
+          headers: { 'Accept': 'application/pdf' } 
+        });
 
-    const blob = new Blob([response.data], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `portfolio_export_${route.params.id}.pdf`);
-    
-    document.body.appendChild(link);
-    link.click();
-    
-    // Cleanup
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    
-    alert("PDF Downloaded successfully");
-  } catch (error) {
-    console.error("PDF Export failed:", error);
-    alert("There was an error generating your PDF. Please ensure the backend service is running.");
-  }
-};
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `portfolio_export_${route.params.id}.pdf`);
+        
+        document.body.appendChild(link);
+        link.click();
+      
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        alert("PDF Downloaded successfully");
+      } catch (error) {
+        console.error(error);
+        alert("Error generating the PDF.");
+      }
+
+      // Reset values after
+      profileSelected.value = false;
+      competenciesSelected.value = false;
+      networkingContactsSelected.value = false;
+      goalsSelected.value = false;
+      allDataSelected.value = false;
+    };
+
     // Fetches the profile and adds the contents to the file
     const addProfile = async () => { 
       try {
@@ -113,9 +111,7 @@
       try {
         const response = await api.get(`/competency-entries/${route.params.id}`);
         userCompetencies.value = response.data;
-      } catch (error) {
-        console.error("Error while fetching user competencies:", error);
-      } finally {
+
         const formattedComp = ['"----- Competencies -----"']
         
         const compHeader = [
@@ -160,6 +156,9 @@
 
         formattedComp.push('\n\n');
         return formattedComp.join('\n');
+        
+      } catch (error) {
+        console.error("Error while fetching user competencies:", error);
       }
     };
 

@@ -10,7 +10,7 @@ class CompetencyGroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-        public function index()
+    public function index()
     {
         $groups = CompetencyGroup::get(); 
 
@@ -47,5 +47,17 @@ class CompetencyGroupController extends Controller
     public function destroy(CompetencyGroup $competencyGroup)
     {
         //
+    }
+
+    // Gets student competencies
+    public function getStudentCompetencies($profileId)
+    {
+    $data = CompetencyGroup::with([
+        'indicators.entries' => function ($query) use ($profileId) {
+            $query->where('profile_id', $profileId)->with('entryLevel');
+        }
+    ])->get();
+
+    return response()->json($data);
     }
 }

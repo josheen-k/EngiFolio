@@ -4,60 +4,60 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		{{-- Style to be used by the pdf --}}
 		<style>
-				body { 
-						font-family: 'Arial', sans-serif; 
-						font-size: 10px;
-						line-height: 1.5; 
-						color: #293949;
-						margin: 0;
-						padding: 0;
-				}
+			body { 
+				font-family: 'Arial', sans-serif; 
+				font-size: 10px;
+				line-height: 1.5; 
+				color: #293949;
+				margin: 0;
+				padding: 0;
+			}
 
-				h1 { 
-						font-size: 22px; 
-						color: #2974a3;
-						border-bottom: 2px solid #2974a3;
-						padding-bottom: 5px;
-						margin-bottom: 20px;
-				}
+			h1 { 
+				font-size: 22px; 
+				color: #2974a3;
+				border-bottom: 2px solid #2974a3;
+				padding-bottom: 5px;
+				margin-bottom: 20px;
+			}
 
-				h2 { 
-						font-size: 16px; 
-						color: #1a5276; 
-						margin-top: 25px;
-						border-left: 4px solid #2974a3;
-						padding-left: 10px;
-				}
+			h2 { 
+				font-size: 16px; 
+				color: #1a5276; 
+				margin-top: 25px;
+				border-left: 4px solid #2974a3;
+				padding-left: 10px;
+			}
 
-				/* Prevents rows from splitting over pages*/
-				.section { 
-						margin-bottom: 30px; 
-						page-break-inside: avoid;
-				}
+			/* Prevents rows from splitting over pages*/
+			.section { 
+				margin-bottom: 30px; 
+				page-break-inside: avoid;
+			}
 
-				table { 
-						width: 100%; 
-						border-collapse: collapse; 
-						margin-top: 15px;
-						table-layout: fixed;
-				}
+			table { 
+				width: 100%; 
+				border-collapse: collapse; 
+				margin-top: 15px;
+				table-layout: fixed;
+			}
 
-				th { 
-						background-color: #f8f9fa; 
-						color: #34495e;
-						font-weight: bold; 
-						text-transform: uppercase;
-						font-size: 9px;
-						border-bottom: 2px solid #dee2e6;
-						padding: 10px 8px;
-				}
+			th { 
+				background-color: #f8f9fa; 
+				color: #34495e;
+				font-weight: bold; 
+				text-transform: uppercase;
+				font-size: 9px;
+				border-bottom: 2px solid #dee2e6;
+				padding: 10px 8px;
+			}
 
-				td { 
-						border-bottom: 1px solid #eee;
-						padding: 8px; 
-						vertical-align: top;
-						word-wrap: break-word;
-				}
+			td { 
+				border-bottom: 1px solid #eee;
+				padding: 8px; 
+				vertical-align: top;
+				word-wrap: break-word;
+			}
 		</style>
 	</head>
 	<body>
@@ -77,21 +77,31 @@
 
 	{{-- Check if competencies option is selected and if there are competencies to add --}}
 	@if(!empty($selections['competencies']) && $profile->competencyEntries->isNotEmpty())
-		{{-- Add each competency individually so they fit better than a table --}}
 		<h2>Competencies</h2>
-		@foreach($profile->competencyEntries as $entry)
-			<div class="section">
-				<h3>
-					{{ $entry->indicator?->display_id }}: {{ $entry->indicator?->indicator_name }}
+
+		{{-- Group entries by indicator --}}
+		@foreach($profile->competencyEntries->groupBy('indicator_id') as $indicatorGroup)
+			@php
+				// Grab the first entry in the group to get indicator details
+				$firstEntry = $indicatorGroup->first();
+			@endphp
+			<div">
+				<h3 style="padding: 5px;">
+					{{ $firstEntry->indicator?->display_id }}: {{ $firstEntry->indicator?->indicator_name }}
 				</h3>
-				<p><strong>Competency:</strong> {{ $entry->experience_title }}</p>
-				<p><strong>Experience Tasks:</strong> {{ $entry->experience_tasks }}</p>
-				<p><strong>Key Learnings:</strong> {{ $entry->key_learnings }}</p>
-				<p><strong>Future Applications:</strong> {{ $entry->future_applications }}</p>
-				<div>
-					<span><strong>Year:</strong> {{ $entry->associated_year }}</span>  |  
-					<span><strong>Level:</strong> {{ $entry->entryLevel?->competency_level }}</span>
-				</div>
+				{{-- Loop through all entries under this indicator --}}
+				@foreach($indicatorGroup as $entry)
+					<div class="competency-entry" style="margin-left: 20px; margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+						<p><strong>Competency:</strong> {{ $entry->experience_title }}</p>
+						<p><strong>Experience Tasks:</strong> {{ $entry->experience_tasks }}</p>
+						<p><strong>Key Learnings:</strong> {{ $entry->key_learnings }}</p>
+						<p><strong>Future Applications:</strong> {{ $entry->future_applications }}</p>
+						<div>
+							<span><strong>Year:</strong> {{ $entry->associated_year }}</span>  |  
+							<span><strong>Level:</strong> {{ $entry->entryLevel?->competency_level }}</span>
+						</div>
+					</div>
+				@endforeach
 			</div>
 		@endforeach
 	@endif
