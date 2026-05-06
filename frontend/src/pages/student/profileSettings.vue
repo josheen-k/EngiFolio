@@ -1,3 +1,102 @@
+<template>
+  <Navbar />
+  <div class="edit-wrap" v-if="profile">
+    <h2 class="sec-title text-center mb-5">Edit Profile</h2>
+
+    <!--edit pfp-->
+    <section class="edit-card mb-4">
+      <h3 class="card-title mb-4">Profile Image</h3>
+      <div class="d-flex align-items-center gap-4">
+        <img :src="profile.profile_image_url || '/src/assets/default.jpg'" @error="(e) => e.target.src = '/default.jpg'"
+        class="profile-pic" style="flex-shrink: 0;"/>
+
+        <div class="flex-grow-1">
+          <label class="field-label">Profile Image URL</label>
+          <input v-model.lazy="profile.profile_image_url" class="field-input form-control"
+            placeholder="Link to your profile picture"/>
+        </div>
+      </div>
+    </section>
+
+    <!--edit basic info-->
+    <section class="edit-card mb-4">
+      <h3 class="card-title mb-4">Basic Information</h3>
+      <div class="row g-3">
+        <div class="col-12 col-sm-4">
+          <label class="field-label">First name</label>
+          <input v-model="profile.user.first_name" class="field-input form-control" placeholder="First name"/>
+        </div>
+        <div class="col-12 col-sm-4">
+          <label class="field-label">Last name</label>
+          <input v-model="profile.user.last_name" class="field-input form-control" placeholder="Last name"/>
+        </div>
+        <div class="col-12 col-sm-4">
+          <label class="field-label">Preferred name</label>
+          <input v-model="profile.preferred_name" class="field-input form-control" placeholder="Preferred name"/>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="field-label">Degree undertaking</label>
+          <input v-model="profile.degree_title" class="field-input form-control"
+            placeholder="eg: Bachelor of Engineering"/>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="field-label">Specialisation chosen</label>
+          <input v-model="profile.specialisation" class="field-input form-control" placeholder="eg: Electrical"/>
+        </div>
+      </div>
+    </section>
+
+    <!--edit personal intro-->
+    <section class="edit-card mb-4">
+      <h3 class="card-title mb-4">Personal Introduction</h3>
+      <label class="field-label">About you</label>
+      <textarea v-model="profile.personal_intro" class="field-input form-control" rows="5"
+        placeholder="Write a short introduction about yourself…"></textarea>
+    </section>
+
+    <!--edit links-->
+    <section class="edit-card mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="card-title mb-0">Professional Links</h3>
+        <button class="btn btn-add" @click="addLink">Add link</button>
+      </div>
+
+      <div v-if="profile.links.length" class="d-flex flex-column gap-3">
+        <div class="link-edit-row" v-for="(link, index) in profile.links" :key="index">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-4">
+              <label class="field-label">Label</label>
+              <input v-model="link.link_label" class="field-input form-control" placeholder="e.g. LinkedIn"/>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="field-label">URL</label>
+              <input v-model="link.link_url" class="field-input form-control" placeholder="https://example.com"/>
+            </div>
+            <div class="col-12 col-sm-2 d-flex align-items-end">
+              <button class="remove-btn" @click="removeLink(index)" title="Remove link">
+                <img src="@/assets/delete.png" class="del-icon" alt="remove" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p v-else class="empty-txt text-center py-2">No links yet! Click add link to get started.</p>
+    </section>
+
+    <!--footer actions-->
+    <footer class="pt-4 d-flex justify-content-end gap-2">
+      <button class="btn btn-filter" @click="cancel">Cancel</button>
+      <button class="btn btn-ql" @click="saveChanges">Save Changes</button>
+    </footer>
+
+  </div>
+
+  <div v-else class="container py-5 text-center">
+    <p class="text-muted small">Loading settings...</p>
+  </div>
+</template>
+
 <script setup>
   import { ref, onMounted } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
@@ -82,162 +181,139 @@ const saveChanges = async () => {
 onMounted(() => {
   loadProfile();
 })
-
-
 </script>
 
-<template>
-  <Navbar />
-  <body class="container py-5" v-if="profile">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
-        
-        <div class="align-items-center mb-4">
-          <h2 class="sec-title mb-1">Edit Profile</h2>
-        </div>
-      <div class="card stat-card card-dark border-0 p-4">
-          <h5 class="stat-title mb-4">Profile Image</h5>
-          <div class="d-flex align-items-center gap-4">
-              <img :src="profile.profile_image_url || '/src/assets/default.jpg'" @error="(e) => e.target.src = '/default.jpg'" class="profile-pic" style="flex-shrink: 0;"/>
-              <div class="flex-grow-1">
-                  <label class="form-label fw-bold">Profile Image URL</label>
-                  <input v-model.lazy="profile.profile_image_url" class="form-control" placeholder="Link to your profile picture"/>
-              </div>
-          </div>
-      </div>
-        <div class="row justify-content-center">
-          <div class="card-body p-4">
-            
-            <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
-              <h5 class="stat-title mb-4">Basic Information</h5>
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">First Name</label>
-                  <input v-model="profile.user.first_name" class="form-control form-control-lg"/>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Last Name</label>
-                  <input v-model="profile.user.last_name" class="form-control form-control-lg"/>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Preferred Name</label>
-                  <input v-model="profile.preferred_name" class="form-control form-control-lg"/>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Degree Title</label>
-                  <input v-model="profile.degree_title" class="form-control"/>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label fw-bold">Specialisation</label>
-                  <input v-model="profile.specialisation" class="form-control"/>
-                </div>
-              </div>
-            </div>
-
-            <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
-              <h5 class="stat-title mb-4">About You</h5>
-              <div class="mb-3">
-                <label class="form-label fw-bold">Personal Introduction</label>
-                <textarea v-model="profile.personal_intro" class="form-control" rows="4"></textarea>
-              </div>
-            </div>
-
-            <div class="card stat-card card-dark border-0 h-auto p-4 mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="stat-title mb-0">Professional Links</h5>
-                <button @click="addLink" class="btn  btn-ql rounded-pill px-4">Add New Link</button>
-              </div>       
-              <div class="row g-3">
-                <div v-for="(link, index) in profile.links" :key="index" class="col-12 border-bottom border-secondary pb-3 mb-2">
-                  <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold">Link Title</label>
-                      <input v-model="link.link_label" class="form-control"/>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold">URL</label>
-                      <input v-model="link.link_url" class="form-control"/>
-                    </div>
-                    <div class="col-md-2">
-                      <button @click="removeLink(index)" class="btn btn-filter px-4" title="Remove Link">
-                      Delete</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-if="profile.links.length === 0" class="text-center py-3">
-              <p class="text-muted small mb-0">No links to show</p>
-            </div>
-          </div>
-        </div>
-            
-        <footer class="border-top pt-4 d-flex justify-content-end gap-2">
-          <button class="btn btn-filter px-4" @click="cancel">Cancel</button>
-          <button class="btn btn-ql rounded-pill px-4" @click="saveChanges">Save Changes</button>
-        </footer>
-
-      </div>
-    </div>
-  </body>
-
-  <div v-else class="container py-5 text-center">
-    <p class="text-muted small">Loading settings...</p>
-  </div>
-</template>
-
 <style scoped>
-	.sec-title {
-		font-family: 'Martel', serif;
-		font-size: 2.0rem;
-		color: #1c1c1cc5;
-		font-weight: lighter;
-		margin-bottom: 2rem;
-	}
+.edit-wrap {
+  max-width: 60%;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
 
-	.card-dark {
-		background: #f1f1f1;
-	}
+.sec-title {
+  font-family: 'Martel', serif;
+  font-size: 2rem;
+  color: #303030c5;
+}
 
-	.stat-title {
-		font-family: 'Maven Pro', sans-serif;
-		font-size: 1.5rem;
-		color: #3b3b3b;
-	}
+.edit-card {
+  background: #f7f7f7;
+  border: 1px solid #cccccc;
+  border-radius: 2rem;
+  padding: 1.5rem 1.75rem;
+  transition: box-shadow 0.2s ease;
+}
 
-	.btn-filter {
-		font-family: 'Montserrat Alternates', sans-serif;
-		border-radius: 1.5rem;
-		font-weight: lighter;
-		background: #e6e6e6;
-	}
+.edit-card:hover {
+  box-shadow: 0 0.5rem 1.5rem #e5e5e5;
+}
 
+.card-title {
+  font-family: 'Martel', serif;
+  font-size: 1.3rem;
+  font-weight: 100;
+  color: #808080;
+}
 
-	.btn-ql {
-		font-family: 'Montserrat Alternates', sans-serif;
-		font-size: 1rem;
-		color: #ffffff;
-		background: #555555;
-		padding: 0.5rem 1rem;
-	}
+.profile-pic {
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2.5px solid #dddddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
 
-	.btn-ql:hover {
-		color: #ffffff;
-		background: #333333;
-	}
+.link-edit-row {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+}
 
-	.btn-filter:hover {
-		background: #666666;
-		color: #ffffff;
-	}
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  opacity: 0.5;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
 
-  .profile-pic {
-		width: 150px;
-		height: 150px; 
-		border-radius: 50%;
-		object-fit: cover;   
-		border: 3px solid #f1f1f1; 
-		background-color: #fff;
-		box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-	}
+.remove-btn:hover {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+.del-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  object-fit: contain;
+}
+
+.field-label {
+  display: block;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.8rem;
+  color: #999999;
+  margin-bottom: 0.3rem;
+}
+
+.field-input.form-control {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1rem;
+  color: #333333;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.75rem;
+}
+
+.field-input.form-control:focus {
+  border-color: #c4c4c4;
+  box-shadow: 0 0 0 0.02rem #2b2b2b;
+}
+
+.empty-txt {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1rem;
+  color: #aaaaaa;
+}
+
+.btn-filter, .btn-add {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.5rem;
+  background: #e6e6e6;
+  color: #222222;
+  padding: 0.5rem 2rem;
+}
+
+.btn-filter:hover, .btn-add:hover {
+  background: #666666;
+  color: #ffffff;
+}
+
+.btn-ql {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  background: #555555;
+  border-radius: 1.5rem;
+  padding: 0.5rem 2rem;
+}
+
+.btn-add {
+  font-size: 0.8rem;
+}
+
+.btn-ql:hover {
+  color: #ffffff;
+  background: #333333;
+}
+
+@media (max-width: 768px) {
+  .edit-wrap {
+    max-width: 100%;
+    padding: 2rem 1rem;
+  }
+}
 </style>

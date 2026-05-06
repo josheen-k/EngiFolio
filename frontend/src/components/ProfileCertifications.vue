@@ -168,7 +168,7 @@ onMounted(() => {
 
 <style scoped>
 .main-section {
-    max-width: 80%;
+    max-width: 85%;
     margin: 0 auto;
     padding: 3rem 1.5rem;
 }
@@ -211,13 +211,13 @@ onMounted(() => {
 }
 
 .card-prev {
-    transform: translate(-50%, -50%) translateX(-90%) scale(0.7);
+    transform: translate(-50%, -50%) translateX(-95%) scale(0.7);
     opacity: 0.5;
     z-index: 2;
 }
 
 .card-next {
-    transform: translate(-50%, -50%) translateX(90%) scale(0.7);
+    transform: translate(-50%, -50%) translateX(95%) scale(0.7);
     opacity: 0.5;
     z-index: 2;
 }
@@ -364,5 +364,72 @@ onMounted(() => {
 .btn-ql:hover {
     color: #ffffff;
     background: #333333;
+}
+
+@media (max-width: 767px) {
+    .main-section {
+        max-width: 100%;
+        padding: 2rem 1rem;
+    }
+
+    .sec-title {
+        font-size: 1.4rem;
+    }
+
+    .cert-card {
+        width: 100%;
+        height: 80%;
+    }
+
+    .card-prev, .card-next {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+
+    .card-center {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    .card-center .cert-card-inner {
+        box-shadow: none;
+    }
+
+    .carousel {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .lineup {
+        order: 1;
+        width: 100%;
+        flex: none;
+        height: 18rem;
+    }
+
+    .nav-btn {
+        order: 2;
+        padding: 0.3rem;
+        margin: 0.5rem 1rem 0;
+    }
+
+    .nav-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .cert-label {
+        font-size: 0.9rem;
+    }
+
+    .cert-title {
+        font-size: 1rem;
+    }
+
+    .cert-body {
+        font-size: 0.8rem;
+        overflow-y: auto;
+    }
 }
 </style>

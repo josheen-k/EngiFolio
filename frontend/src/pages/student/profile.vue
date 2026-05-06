@@ -16,11 +16,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router' 
 import Navbar from '@/components/Navbar.vue';
 import ProfileView from '@/components/ProfileView.vue';
 import ProfileCertifications from '@/components/ProfileCertifications.vue';
 import api from "@/services/api";
+
+const route = useRoute() 
 
 // different tabs in side pannel
 const currTab = ref('PROFILE');
@@ -36,7 +39,11 @@ const currComponent = computed(()=> {
   }
 });
 
-
+onMounted(() => {
+  if (route.query.tab === 'CERTIFICATIONS') {
+    currTab.value = 'CERTIFICATIONS'
+  }
+})
 </script>
 
 <style scoped>
