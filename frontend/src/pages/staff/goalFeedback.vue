@@ -9,7 +9,7 @@
           <h1 class="page-title mb-2">SMART Goals Feedback</h1>
           <p class="page-subtitle mb-0">Provide feedback to students' SMART Goals.</p>
         </div>
-        <button class="btn page-btn-primary px-4 py-2" @click="newGoal">New Goal</button>
+        <!-- <button class="btn page-btn-primary px-4 py-2" @click="newGoal">New Goal</button> -->
       </section>
 
       <!-- RENDER NEW FEEDBACK FORM  -->
@@ -134,7 +134,6 @@
               <th>End Date</th>
               <th>Completion Notes</th>
               <th>Feedback</th>
-              <th>Actions</th>
             </tr>
           </thead>
 
@@ -142,7 +141,7 @@
             <tr v-for="goal in goals" :key="goal.goal_id">
               <td>{{ goal.goal_description }}</td>
 
-              <!-- <td class="steps-cell">
+              <td class="steps-cell">
                 <div class="steps-stack">
                   <ul v-if="getGoalSteps(goal).length" class="steps-list">
                     <li v-for="step in getVisibleSteps(goal)" :key="step.step_id">
@@ -158,36 +157,27 @@
                   >
                     {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
                   </button>
-
-                  <button class="btn page-btn-success steps-edit-btn" @click="editSteps(goal)">Edit Steps</button>
                 </div>
-              </td> -->
-              <td class="steps-cell"></td>
-
-              <td class="progress-cell">
-                <!-- <select
-                  class="status-select"
-                  v-model="goal.status"
-                  @focus="goal._previousStatus = goal.status"
-                  @change="updateGoalStatus(goal)"
-                >
-                   <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option> 
-                </select> -->
               </td>
+
+              <td>{{ getStatusLabel(goal.goal_status_id) }}</td>
               <td>{{ goal.learnings }}</td>
               <td>{{ goal.start_date }}</td>
               <td>{{ goal.end_date }}</td>
               <td class="completion-notes-cell">{{ goal.completion_notes || '-' }}</td>
 
+              <!-- <td>{{ getFeedback(goal.goal_status_id) }}</td> -->
               <td v-for="f in feedback" :key="f.goal_id">
-                <td v-if="f.goal_id==goal.goal_id">{{ f.feedback_content }}</td>
-              </td>
-
-              <td class="actions-cell">
-                <div class="actions-stack">
-                  <button class="btn page-btn-outline" @click="editGoal(goal)">Edit</button>
-                  <button class="btn page-btn-danger" @click="deleteGoal(goal)">Delete</button>
-                </div>
+                <div v-if="f.goal_id==goal.goal_id">{{ f.feedback_content }}</div>
+                <button
+                  type="button"
+                  class="action-icon-btn"
+                  aria-label="Edit feedback"
+                  title="Edit"
+                  @click="editFeedback(goal)"
+                >
+                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                </button>
               </td>
             </tr>
           </tbody>
@@ -250,8 +240,11 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import api from "@/services/api";
+import editIcon from '@/assets/edit.png'
+import deleteIcon from '@/assets/delete.png'
 import FeedbackReflections from '@/components/FeedbackReflections.vue';
 
 const goals = ref([])
@@ -259,6 +252,64 @@ const feedback = ref([])
 const loading = ref(true)
 const fromDate = ref('')
 const toDate = ref('')
+const showNewGoalForm = ref(false)
+const showEditFeedbackForm = ref(false)
+const showStepModal = ref(false)
+const editingFeedback = ref(null)
+const planId = ref(null)
+const stepModalGoal = ref(null)
+const savingSteps = ref(false)
+const feedbackDrafts = ref([])
+const expandedStepsByGoal = ref({})
+const route = useRoute()
+const feedbackModalGoal = ref(null)
+const profileId = computed(() => 2) //computed(() => Number(route.params.id))
+
+const editFeedbackData = reactive({
+  goal_id: null,
+  staff_id: null,
+  feedback_content: '',
+})
+
+const progressStatusOptions = [
+  { value: 1, label: 'Planned' },
+  { value: 2, label: 'In Progress' },
+  { value: 3, label: 'Completed' },
+]
+
+// Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
+const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
+const getStatusLabel = (goalStatusId) => {
+  const matched = progressStatusOptions.find((item) => item.value === Number(goalStatusId))
+  return matched ? matched.label : '—'
+}
+const getStatusClass = (goalStatusId) => {
+  const id = Number(goalStatusId)
+  if (id === 3) return 'status-completed'
+  if (id === 2) return 'status-in-progress'
+  return 'status-planned'
+}
+const isStepsExpanded = (goalId) => Boolean(expandedStepsByGoal.value[goalId])
+// Show only the first 3 steps by default unless the goal is expanded.
+const getVisibleSteps = (goal) => {
+  const steps = getGoalSteps(goal)
+  if (isStepsExpanded(goal.goal_id)) {
+    return steps
+  }
+  return steps.slice(0, 3)
+}
+// Compute how many steps are hidden behind the "View more" button.
+const getHiddenStepsCount = (goal) => {
+  const hidden = getGoalSteps(goal).length - 3
+  return hidden > 0 ? hidden : 0
+}
+// Toggle expanded/collapsed state for a specific goal's step list.
+const toggleSteps = (goalId) => {
+  expandedStepsByGoal.value = {
+    ...expandedStepsByGoal.value,
+    [goalId]: !isStepsExpanded(goalId)
+  }
+}
 
 // loadGoals taken from GoalsPage.vue
 const loadGoals = async () => {
@@ -266,7 +317,9 @@ const loadGoals = async () => {
     loading.value = true
 
     // Build optional date-range query params from filter inputs.
-    const params = {}
+    const params = {
+      profile_id: profileId.value
+    }
 
     if (fromDate.value) {
       params.from = fromDate.value
@@ -297,7 +350,11 @@ const loadFeedback = async () => {
 
 const loadPlanId = async () => {
   try {
-    const response = await api.get('/career-plans')
+    const response = await api.get('/career-plans', {
+      params: {
+        profile_id: profileId.value
+      }
+    })
     if (response.data && response.data.length > 0) {
       // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
@@ -307,16 +364,51 @@ const loadPlanId = async () => {
       alert('Please create a Career Development Plan first')
     }
   } catch (error) {
-    console.error('Error loading plan ID:', error)
-    alert('Failed to load Career Development Plan')
+    // console.error('Error loading plan ID:', error)
+    // alert('Failed to load Career Development Plan')
   }
 }
 
 onMounted(() => {
-  // loadPlanId()
+  loadPlanId()
   loadFeedback()
   loadGoals()
 })
+
+const normalizeGoalPayload = (goal) => {
+  // Convert optional empty form fields to null so backend validation/database handling stays consistent.
+  return {
+    ...goal,
+    progress_notes: goal.progress_notes || null,
+    learnings: goal.learnings || null,
+    start_date: goal.start_date || null,
+    end_date: goal.end_date || null,
+    completion_notes: goal.completion_notes || null,
+  }
+}
+
+const addFeedback = () => {
+  feedbackDrafts.value.push({
+    goal_id: null,
+    staff_id: null,
+    feedback_content: ''
+  })
+}
+
+const editFeedback = (feedback) => {
+  editingFeedback.value = feedback
+  Object.assign(editFeedbackData, {
+    goal_id: feedback.goal_id,
+    staff_id: feedback.staff_id,
+    feedback_content: feedback.feedback_content,
+  })
+  showEditFeedbackForm.value = true
+}
+
+const updateFeedback = (goal) => {}
+
+const deleteFeedback = (goal) => {}
+
 
 </script>
 
@@ -484,6 +576,7 @@ onMounted(() => {
   background-color: #f3f3f3;
   color: #333333;
   letter-spacing: 0.02em;
+  vertical-align: middle;
 }
 
 .goals-table tbody tr:nth-child(even) {
@@ -493,6 +586,36 @@ onMounted(() => {
 .goals-table tbody tr:hover {
   background: #f8f8f8;
 }
+
+/*
+.goal-row-dragging {
+  opacity: 0.55;
+}
+
+.goals-table tbody tr.goal-row-drop-target td {
+  background: #eef5ff;
+}
+
+.drop-to-end-row td {
+  border-bottom: none;
+}
+
+.drop-to-end-cell {
+  text-align: center;
+  color: #7a7a7a;
+  font-size: 0.86rem;
+  font-family: 'Montserrat Alternates', sans-serif;
+  padding: 0.6rem 0.8rem;
+  border-top: 1px dashed #d8d8d8;
+  background: #fafafa;
+  transition: all 0.15s ease;
+}
+
+.drop-to-end-active {
+  background: #eef5ff;
+  border-top-color: #99bfff;
+  color: #3c5d9e;
+}*/
 
 .goals-table tbody td {
   border-bottom: 1px solid #e6e6e6;
@@ -516,11 +639,16 @@ onMounted(() => {
 }
 
 .goals-table th:nth-child(3),
+.goals-table td:nth-child(3) {
+  /* Column 3: Action Steps */
+  min-width: 10rem;
+}
+.goals-table th:nth-child(3),
 .goals-table td:nth-child(3),
 .goals-table th:nth-child(4),
 .goals-table td:nth-child(4),
 .goals-table th:nth-child(7),
-.goals-table td:nth-child(7) {
+.goals-table td:nth-child(7){
   /* Columns 3,4,7: Progress, Learnings, Completion Notes */
   min-width: 10rem;
 }
@@ -536,6 +664,7 @@ onMounted(() => {
 
 .goals-table th:last-child,
 .goals-table td:last-child {
+  /* Last column: Feedback */
   min-width: 9rem;
 }
 
@@ -545,9 +674,42 @@ onMounted(() => {
   max-height: 6.8rem;
   overflow-y: auto;
 }
+/*
+.drag-col-header {
+  width: 3rem;
+}
+
+.drag-handle-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.drag-handle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.35rem;
+  cursor: grab;
+  color: #7a7a7a;
+  line-height: 1;
+}
+
+.drag-handle-btn:hover {
+  background: #f0f0f0;
+  color: #5f5f5f;
+}
+
+.drag-handle-btn:active {
+  cursor: grabbing;
+}
+
+.drag-handle-icon {
+  font-size: 1.05rem;
+  letter-spacing: -0.1rem;
+}*/
 
 .steps-cell {
-  vertical-align: top !important;
+  vertical-align: middle !important;
 }
 
 .steps-stack {
@@ -558,6 +720,10 @@ onMounted(() => {
 }
 
 .steps-edit-btn {
+  margin-top: 0.15rem;
+}
+
+.steps-edit-icon-btn {
   margin-top: 0.15rem;
 }
 
@@ -605,16 +771,43 @@ onMounted(() => {
 
 .actions-stack {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.55rem;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
 }
 
-.actions-stack .btn {
-  width: 100%;
-  max-width: 11rem;
-  align-self: center;
+.action-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.action-icon-image {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.action-icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-icon-btn:focus-visible {
+  outline: 2px solid #9db8e6;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.action-icon-btn:active {
+  transform: scale(1.05);
 }
 
 .goal-form-card {
@@ -792,7 +985,7 @@ onMounted(() => {
   color: #8d5b1e;
 }
 
-/* .mobile-section {
+.mobile-section {
   margin-bottom: 0.75rem;
 }
 
@@ -824,7 +1017,7 @@ onMounted(() => {
   grid-template-columns: 1fr 1fr;
   gap: 0.55rem;
   margin-top: 0.6rem;
-} */
+}
 
 @media (max-width: 992px) {
   .page-title {
