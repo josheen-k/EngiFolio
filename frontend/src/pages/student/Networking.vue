@@ -1,98 +1,160 @@
-
-
 <template>
   <div class="page">
+    <Navbar />
 
-    <Navbar/>
-
-    <!-- main-->
     <section class="container-lg py-5">
 
-      <!-- Header -->
+      <!-- HEADER -->
       <div class="header">
-        <h2 class="page-title">Industry Contacts</h2>
+        <div class="title-wrap">
+          <!-- <img
+            src="https://cdn-icons-png.flaticon.com/512/174/174857.png"
+            class="linkedin-icon"
+            alt="LinkedIn"
+          /> -->
+          <h2 class="page-title">Industry Contacts</h2>
+
+          <div class="networking-switch">
+            <RouterLink :to="`/student/networking/${route.params.id ||1}`" class="switch-pill"> Events Calender </RouterLink>
+            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill active"> Industry Contacts</RouterLink>
+          </div>
+        </div>
+
         <button class="btn btn-dark btn-main" @click="openForm">
           + Add Contact
         </button>
       </div>
 
-      <!-- Search -->
-      <input
-        v-model="search"
-        class="search"
-        placeholder="Search contacts"
-      />
+      <!-- SEARCH + SORT -->
+      <div class="controls">
+        <input
+          v-model="search"
+          class="search"
+          placeholder="Search contacts"
+        />
 
-      <!-- TABLE -->
-      <div class="table-box">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Company</th>
-              <th>Progress Notes</th>
-              <th>Date Met</th>
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="c in filteredContacts" :key="c.contact_id">
-              <td>{{ c.contact_name }}</td>
-              <td>{{ c.company }}</td>
-              <td>{{ c.progress_notes }}</td>
-              <td>{{ c.date_met }}</td>
-              <td>
-                <button class="edit-btn" @click="editContact(c)">Edit</button>
-                <button class="delete-btn" @click="deleteContact(c.contact_id)">Delete</button>
-              </td>
-            </tr>
-
-            <tr v-if="filteredContacts.length === 0">
-              <td colspan="5" class="empty">No contacts found</td>
-            </tr>
-          </tbody>
-        </table>
+        <select v-model="sortBy" class="sort">
+          <option disabled value="">Sort</option>
+          <option value="name_asc">A-Z</option>
+          <option value="name_desc">Z-A</option>
+          <option value="date_desc">Newest</option>
+          <option value="date_asc">Oldest</option>
+        </select>
       </div>
 
-      <!-- Form -->
-      <div v-if="showForm" class="form-box">
+      <!-- CARDS -->
+      <div class="card-grid">
+        <div
+          v-for="c in sortedContacts"
+          :key="c.contact_id"
+          class="contact-card"
+          @click="openDetails(c)"
+        >
 
-        <h3>{{ editMode ? "Edit Contact" : "Add Contact" }}</h3>
+          <!-- MENU -->
+          <div class="menu-wrapper" @click.stop>
+            <button class="menu-btn" @click="toggleMenu(c.contact_id)">
+              ⋯
+            </button>
 
-        <input v-model="form.contact_name" placeholder="Name" />
-        <input v-model="form.company" placeholder="Company" />
-        <textarea v-model="form.progress_notes" placeholder="Notes"></textarea>
-        <input type="date" v-model="form.date_met" />
+            <div v-if="openMenuId === c.contact_id" class="dropdown">
+              <ButtonsStyle
+                @edit="editContact(c)"
+                @delete="deleteContact(c.contact_id)"
+              />
+            </div>
+          </div>
 
-        <div class="btn-row">
-          <button class="btn btn-dark" @click="saveContact">
-            {{ editMode ? "Update" : "Create" }}
-          </button>
+          <!-- CARD -->
+          <div class="card-top">
+            <div class="avatar">
+              <img :src="getAvatar(c.contact_name)" />
+            </div>
 
-          <button class="btn btn-light" @click="closeForm">
-            Cancel
-          </button>
+            <div class="info">
+              <h3 class="contact-name">{{ c.contact_name }}</h3>
+
+              <p class="meta">📅 {{ c.date_met }}</p>
+
+            </div>
+          </div>
+
         </div>
+      </div>
 
+      <!-- DETAILS MODAL -->
+      <div v-if="selectedContact" class="modal-overlay" @click.self="selectedContact = null">
+        <div class="modal-box">
+
+          <h3>{{ selectedContact.contact_name }}</h3>
+
+          <p><b>Company:</b> {{ selectedContact.company }}</p>
+          <p><b>Date Met:</b> {{ selectedContact.date_met }}</p>
+
+          <p><b>Notes:</b></p>
+          <p>{{ selectedContact.progress_notes }}</p>
+
+          <div class="btn-row">
+            <ButtonsStyle
+              @edit="editContact(selectedContact)"
+              @delete="deleteContact(selectedContact.contact_id)"
+            />
+            <button class="btn btn-light" @click="selectedContact = null">
+              Close
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
+        <div class="modal-box">
+
+          <h3>{{ editMode ? "Edit Contact" : "Create Contact" }}</h3>
+
+          <input v-model="form.contact_name" placeholder="Name" />
+          <input v-model="form.company" placeholder="Company" />
+          <textarea v-model="form.progress_notes" placeholder="Notes"></textarea>
+          <input type="date" v-model="form.date_met" />
+
+          <div class="btn-row">
+            <button class="btn btn-dark" @click="saveContact">
+              {{ editMode ? "Update" : "Create" }}
+            </button>
+
+            <button class="btn btn-light" @click="closeForm">
+              Cancel
+            </button>
+          </div>
+
+        </div>
       </div>
 
     </section>
+
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import api from "@/services/api";
-import Navbar from '@/components/Navbar.vue';
 
+import Navbar from "@/components/Navbar.vue";
+import ButtonsStyle from "@/components/ButtonsStyle.vue";
+
+const route = useRoute();
 const userId = 2;
-
 const contacts = ref([]);
 const search = ref("");
+const sortBy = ref("");
 
-const showForm = ref(false); // to toggle between add/update form, whether to update it or not
-const editMode = ref(false); // false-reate a new contact, true- update an existing contact
+const showForm = ref(false);
+const editMode = ref(false);
+const selectedContact = ref(null);
+const openMenuId = ref(null);
 
 const form = ref({
   contact_id: null,
@@ -102,26 +164,54 @@ const form = ref({
   date_met: "",
 });
 
-/* Fetch contacts */
+/* FETCH */
 const fetchContacts = async () => {
-  try {
-    const res = await api.get(`/users/${userId}/industry-contacts`);
-    contacts.value = res.data;
-  } catch (err) {
-    console.error("Fetch error:", err);
-  }
+  const res = await api.get(`/users/${userId}/industry-contacts`);
+  contacts.value = res.data;
 };
-
 onMounted(fetchContacts);
 
-/* Filter */
+/* FILTER */
 const filteredContacts = computed(() => {
   return contacts.value.filter(c =>
     c.contact_name?.toLowerCase().includes(search.value.toLowerCase())
   );
 });
 
-/* Open form */
+/* SORT */
+const sortedContacts = computed(() => {
+  let list = [...filteredContacts.value];
+
+  switch (sortBy.value) {
+    case "name_asc":
+      return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name));
+    case "name_desc":
+      return list.sort((a, b) => b.contact_name.localeCompare(a.contact_name));
+    case "date_desc":
+      return list.sort((a, b) => new Date(b.date_met) - new Date(a.date_met));
+    case "date_asc":
+      return list.sort((a, b) => new Date(a.date_met) - new Date(b.date_met));
+    default:
+      return list;
+  }
+});
+
+/* HELPERS */
+
+
+const getAvatar = (name) => {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`;
+};
+
+/* ACTIONS */
+const toggleMenu = (id) => {
+  openMenuId.value = openMenuId.value === id ? null : id;
+};
+
+const openDetails = (c) => {
+  selectedContact.value = c;
+};
+
 const openForm = () => {
   editMode.value = false;
   form.value = {
@@ -134,21 +224,14 @@ const openForm = () => {
   showForm.value = true;
 };
 
-/* Close form */
 const closeForm = () => {
   showForm.value = false;
 };
 
-/* Save */
 const saveContact = async () => {
-  try {
-    const payload = {
-      contact_name: form.value.contact_name,
-      company: form.value.company,
-      progress_notes: form.value.progress_notes,
-      date_met: form.value.date_met,
-    };
+  const payload = { ...form.value };
 
+  try {
     if (editMode.value) {
       await api.put(
         `/users/${userId}/industry-contacts/${form.value.contact_id}`,
@@ -162,136 +245,174 @@ const saveContact = async () => {
     }
 
     closeForm();
-    fetchContacts();
-  } catch (err) {
-    console.error("Save error:", err.response?.data || err);
+    await fetchContacts();
+  } catch (error) {
+    console.error("Save contact failed:", error);
+
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      alert(`Save failed: ${JSON.stringify(error.response.data)}`);
+    } else {
+      alert("Save failed. Check browser console for details.");
+    }
   }
 };
 
-/* Edit */
+
 const editContact = (c) => {
+  selectedContact.value = null;
+  openMenuId.value = null;
+
   editMode.value = true;
   form.value = { ...c };
   showForm.value = true;
 };
 
-/* Delete */
 const deleteContact = async (id) => {
-  try {
-    await api.delete(`/users/${userId}/industry-contacts/${id}`);
-    fetchContacts();
-  } catch (err) {
-    console.error("Delete error:", err);
-  }
+  await api.delete(`/users/${userId}/industry-contacts/${id}`);
+  selectedContact.value = null;
+  openMenuId.value = null;
+  fetchContacts();
 };
 </script>
 
 <style scoped>
 .page {
   font-family: 'Martel', sans-serif;
-  background: #fff;
+  background: #f4f6f8;
   min-height: 100vh;
 }
 
-.logo-img {
-  height: 2.5rem;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-family: 'Martel', sans-serif;
-}
-
+/* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.title-wrap {
+  display: flex;
   align-items: center;
-  margin-bottom: 25px;
+  gap: 8px;
 }
 
-.btn {
-  font-family: 'Montserrat Alternates', sans-serif;
-  border-radius: 30px;
+.linkedin-icon {
+  width: 24px;
 }
 
-.btn-main {
-  padding: 10px 20px;
+/* CONTROLS */
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-/* SEARCH */
 .search {
-  margin-bottom: 25px;
-  padding: 12px;
-  width: 320px;
-  border-radius: 12px;
+  width: 240px;
+  padding: 8px;
+  border-radius: 10px;
   border: 1px solid #ddd;
 }
 
-/* TABLE */
-.table-box {
+.sort {
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+}
+
+/* GRID */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+/* CARD */
+.contact-card {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-  overflow: hidden;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  text-align: left;
+  border-radius: 12px;
   padding: 14px;
-  background: #fafafa;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+/* MENU */
+.menu-wrapper {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* DROPDOWN */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 24px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* CARD CONTENT */
+.card-top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.avatar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.contact-name {
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
-td {
-  padding: 14px;
-  border-top: 1px solid #eee;
-}
-
-tr:hover {
-  background: #fafafa;
-}
-
-.empty {
-  text-align: center;
-  padding: 20px;
+.meta {
+  font-size: 0.7rem;
   color: #777;
 }
 
-/* BUTTONS */
-.edit-btn {
-  background: #e5e7eb;
-  border-radius: 10px;
-  padding: 6px 12px;
+.linkedin-link {
+  font-size: 0.7rem;
+  color: #0a66c2;
+  text-decoration: none;
 }
 
-.delete-btn {
-  background: #ef4444;
-  color: white;
-  border-radius: 10px;
-  padding: 6px 12px;
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* FORM */
-.form-box {
-  margin-top: 30px;
-  padding: 25px;
-  border-radius: 16px;
-  border: 1px solid #eee;
-  width: 420px;
+.modal-box {
   background: white;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 20px;
+  border-radius: 12px;
+  width: 380px;
 }
 
-.form-box input,
-.form-box textarea {
+.modal-box input,
+.modal-box textarea {
   width: 100%;
-  margin-bottom: 12px;
-  padding: 10px;
+  margin-bottom: 10px;
+  padding: 8px;
   border-radius: 10px;
   border: 1px solid #ddd;
 }
@@ -300,4 +421,27 @@ tr:hover {
   display: flex;
   gap: 10px;
 }
+
+.networking-switch {
+  display: inline-flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.switch-pill {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d6e0ea;
+  text-decoration: none;
+  color: #4e6577;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.switch-pill.active {
+  background: #172334;
+  color: #fff;
+  border-color: #172334;
+}
 </style>
+

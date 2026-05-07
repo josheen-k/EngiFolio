@@ -12,9 +12,16 @@ class CareerDevelopmentPlanController extends Controller
      */
     public function index(Request $request)
     {
-        // Get current user's career development plans
-        // For now, without auth, we'll return all plans (you may need to add auth later)
-        $plans = CareerDevelopmentPlan::all();
+        $query = CareerDevelopmentPlan::query();
+
+        if ($request->filled('profile_id')) {
+            $validated = $request->validate([
+                'profile_id' => 'required|integer|exists:student_profiles,profile_id',
+            ]);
+            $query->where('profile_id', $validated['profile_id']);
+        }
+
+        $plans = $query->get();
         return response()->json($plans);
     }
 

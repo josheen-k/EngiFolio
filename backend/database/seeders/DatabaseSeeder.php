@@ -72,6 +72,11 @@ class DatabaseSeeder extends Seeder
             ['goal_id' => 2, 'plan_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
+        DB::table('goal_feedback')->insert([
+            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        // 6. NETWORKING
         DB::table('industry_contacts')->insert([
             ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Robert Ford', 'company' => 'Westworld Robotics', 'date_met' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 2, 'profile_id' => 2, 'contact_name' => 'Sarah Connor', 'company' => 'Cyberdyne Systems', 'date_met' => '2026-01-20', 'created_at' => now(), 'updated_at' => now()],
@@ -140,6 +145,33 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/certs/innovation_prize.pdf', 
                 'issued_date' => '2026-03-15', 
                 'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1,
+                'title' => 'University Scholarship for Academic Excellence',
+                'body' => 'Awarded a merit-based scholarship for maintaining a GPA above 6.5 throughout the academic year.',
+                'file_path' => '/uploads/certs/scholarship_2024.pdf',
+                'issued_date' => '2024-02-01',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1,
+                'title' => 'Best Team Project – Software Engineering',
+                'body' => 'Recognized for leading a team to deliver a scalable web application using modern development practices.',
+                'file_path' => '/uploads/certs/team_project_award.pdf',
+                'issued_date' => '2025-06-05',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'profile_id' => 1,
+                'title' => 'Volunteer Recognition Award',
+                'body' => 'Acknowledged for contributing over 100 hours to STEM outreach programs for high school students.',
+                'file_path' => '/uploads/certs/volunteer_award.pdf',
+                'issued_date' => '2023-11-18',
+                'created_at' => now(),
                 'updated_at' => now()
             ],
             [

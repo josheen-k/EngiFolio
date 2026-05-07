@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('networking_events', function (Blueprint $table) {
             $table->id('event_id');
-            $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
-            $table->string('event_name', 60);
+            $table->foreignId('profile_id')->nullable()->constrained('student_profiles', 'profile_id')->nullOnDelete();
+            $table->string('event_name', 255);
             $table->dateTime('event_datetime');
             $table->string('location', 100)->nullable();
             $table->text('details')->nullable();

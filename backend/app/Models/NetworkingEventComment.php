@@ -4,17 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\NetworkingEvent;
 
-class NetworkingEventQuestion extends Model
+class NetworkingEventComment extends Model
 {
     use HasFactory;
 
-    protected $table = 'networking_event_questions';
-    protected $primaryKey = 'question_id';
+    protected $table = 'networking_event_comments';
+
     protected $fillable = [
         'event_id',
-        'question_text',
-        'question_order'
+        'comment_text',
+        'comment_type',
+        'link_url',
+        'file_path',
+        'file_name',
     ];
 
     public function event()

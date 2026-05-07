@@ -24,6 +24,7 @@ export const currentCategories = ref([
             isDraft: false,
             feedback: 'Good structure, but expand your analysis section.',
             feedbackAuthor: 'Dr Smith',
+            feedbackDate: '02/04/2023',
             evidenceEntries: [
               {
                 type: 'url',
@@ -75,6 +76,7 @@ export const currentCategories = ref([
             isDraft: false,
             feedback: 'Good structure, but expand your analysis section.',
             feedbackAuthor: 'Dr Smith',
+            feedbackDate: '05/05/2022',
             evidenceEntries: [
               {
                 type: '',
