@@ -2,15 +2,18 @@
   <div class="feedback-wrap">
     <div class="feedback-header">
       <h1 class="compt-title">Feedback Received</h1>
-      <div class="d-flex gap-2">
-        <button class="btn btn-sort">Sort</button>
-        <button class="btn btn-filter">Add filter</button>
+
+      <!-- search bar instead of filtee/sort-->
+      <div class="search-wrap">
+        <img src="@/assets/search.png" class="search-icon" alt="search"/>
+        <input v-model="searchQuery" class="search-input" placeholder="Search by staff name..." type="text"/>
+        <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">×</button>
       </div>
     </div>
 
     <!-- feedback list-->
-    <div v-if="feedbackItems.length" class="d-flex flex-column gap-1">
-      <div class="feedback-item" v-for="(item, i) in feedbackItems" :key="i">
+    <div v-if="filteredItems.length" class="d-flex flex-column gap-1">
+      <div class="feedback-item" v-for="(item, i) in filteredItems" :key="i">
         <div class="feedback-row">
           <img class="triangle" :class="{ open: openStates[i] }" src="@/assets/triangle.png" @click="toggleOpen(i)"/>
 
@@ -24,14 +27,21 @@
         <!-- expanded feedback text-->
         <div v-if="openStates[i]" class="feedback-body">
           <p class="feedback-txt">{{ item.reflec.feedback }}</p>
+          <p class="feedback-date" v-if="item.reflec.feedbackDate">{{ item.reflec.feedbackDate }}</p>
         </div>
       </div>
     </div>
 
-    <!-- empty-->
-    <div v-else class="empty-state">
+    <!-- empty (no feedback)-->
+    <div v-else-if="!feedbackItems.length" class="empty-state">
       <p class="empty-txt">No feedback received yet.</p>
       <p class="empty-sub">Feedback from supervisor will appear here once received.</p>
+    </div>
+
+    <!-- empty (no search result)-->
+    <div v-else class="empty-state">
+      <p class="empty-txt">No results for "{{ searchQuery }}"</p>
+      <p class="empty-sub">Try a different staff name</p>
     </div>
   </div>
 
@@ -44,6 +54,9 @@ import { ref, computed, watch } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import { currentCategories } from '@/useCompetencies.js'
 
+const searchQuery = ref('')
+
+// collect all reflections with feedback
 const feedbackItems = computed(function () {
   const out = []
 
@@ -64,8 +77,29 @@ const feedbackItems = computed(function () {
   return out
 })
 
+// filter by search query of feedbackAuthor
+const filteredItems = computed(function () {
+  if (!searchQuery.value.trim()) {
+    return feedbackItems.value
+  }
+  const query = searchQuery.value.toLowerCase().trim()
+
+  return feedbackItems.value.filter(function (item) {
+    let author = item.reflec.feedbackAuthor
+    if (!author) {
+      author=''
+    }
+    author = author.toLowerCase()
+    if (author.includes(query)) {
+      return true
+    } else {
+      return false
+    }
+  })
+})
+
 const openStates = ref({})
-watch(feedbackItems, function (items) {
+watch(filteredItems, function (items) {
   for (let i = 0; i < items.length; i++) {
     if (openStates.value[i]===undefined) {
       openStates.value[i] = true
@@ -137,11 +171,6 @@ function onDelete() {
   margin-bottom: 2rem;
 }
 
-.feedback-header>.d-flex {
-  position: absolute;
-  right: 0;
-}
-
 .compt-title {
   font-family: 'Martel', serif;
   font-size: 2rem;
@@ -149,6 +178,56 @@ function onDelete() {
   font-weight: lighter;
   margin-bottom: 0;
   text-align: center;
+}
+
+.search-wrap {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 2rem;
+  padding: 0.35rem 0.75rem;
+  gap: 0.4rem;
+}
+
+.search-wrap:focus-within {
+  border-color: #888888;
+  background: #ffffff;
+}
+
+.search-icon {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+}
+
+.search-input {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.8rem;
+  color: #333333;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 10rem;
+}
+
+.search-input::placeholder {
+  color: #979797;
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: #aaaaaa;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.search-clear:hover {
+  color: #555555;
 }
 
 .feedback-item {
@@ -200,6 +279,14 @@ function onDelete() {
   font-size: 1rem;
   color: #666666;
   font-style: italic;
+  margin-bottom: 0.25rem;
+}
+
+.feedback-date {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.8rem;
+  color: #aaaaaa;
+  margin-bottom: 0;
 }
 
 .empty-state {
@@ -218,31 +305,5 @@ function onDelete() {
   font-family: 'Maven Pro', sans-serif;
   font-size: 0.95rem;
   color: #aaaaaa;
-}
-
-.btn-sort {
-  font-family: 'Montserrat Alternates', sans-serif;
-  border-radius: 1.5rem;
-  font-size: 1rem;
-  background: #555555;
-  color: #ffffff;
-}
-
-.btn-sort:hover {
-  background: #333333;
-  color: #ffffff;
-}
-
-.btn-filter {
-  font-family: 'Montserrat Alternates', sans-serif;
-  border-radius: 1.5rem;
-  font-size: 1rem;
-  background: #e6e6e6;
-  color: #222222;
-}
-
-.btn-filter:hover {
-  background: #666666;
-  color: #ffffff;
 }
 </style>
