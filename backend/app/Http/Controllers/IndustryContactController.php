@@ -21,11 +21,11 @@ class IndustryContactController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $user)
+public function store(Request $request, $user)
 {
     $validated = $request->validate([
-        'contact_name' => 'required|string|max:100',
-        'company' => 'nullable|string|max:100',
+        'contact_name' => 'required|string|max:255',
+        'company' => 'nullable|string|max:255',
         'progress_notes' => 'nullable|string',
         'date_met' => 'nullable|date',
     ]);
