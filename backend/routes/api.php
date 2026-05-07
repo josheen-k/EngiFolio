@@ -14,6 +14,7 @@ use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
+use App\Http\Controllers\GoalFeedbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +75,13 @@ Route::get('user/smart-goals/{userId}', [SmartGoalController::class, 'showUserGo
 Route::post('/smart-goals/{goalId}/action-steps', [GoalActionStepController::class, 'store']);
 Route::put('/action-steps/{stepId}', [GoalActionStepController::class, 'update']);
 Route::delete('/action-steps/{stepId}', [GoalActionStepController::class, 'destroy']);
+
+// Staff SMART Goal feedback routes
+Route::get('/smart-goals/all/feedback', [GoalFeedbackController::class, 'index']);
+Route::post('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'store']);
+Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'show']);
+Route::put('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'update']);
+Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'destroy']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);

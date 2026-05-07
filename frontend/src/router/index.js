@@ -14,6 +14,8 @@ import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
 import AdminPage from '@/pages/admin/admin.vue'
+import GoalFeedback from '@/pages/staff/goalFeedback.vue'
+
 const routes = [
   {
     path: '/',
@@ -80,6 +82,13 @@ const routes = [
     name: 'GoalsPage',
     component: GoalsPage
   },
+
+  {
+    path: '/staff/goal-feedback',
+    name: 'goalFeedback',
+    component: GoalFeedback
+  },
+
   {
     path: '/admin/:id',
     name: 'admin',
@@ -91,7 +100,7 @@ const routes = [
     name: 'certificationSettings',
     component: CertificationSettings
   },
-  
+
 ]
 
 const router = createRouter({
