@@ -23,18 +23,30 @@ class IndustryContactController extends Controller
      */
 public function store(Request $request, $user)
 {
-    $validated = $request->validate([
-        'contact_name' => 'required|string|max:255',
-        'company' => 'nullable|string|max:255',
-        'progress_notes' => 'nullable|string',
-        'date_met' => 'nullable|date',
-    ]);
+    try {
+        $validated = $request->validate([
+            'contact_name' => 'required|string|max:255',
+            'company' => 'nullable|string|max:255',
+            'progress_notes' => 'nullable|string',
+            'date_met' => 'nullable|date',
+        ]);
 
-    $validated['user_id'] = $user; //manually sending the user id for now, once login/authenication systemis created, will integrate it
+        $validated['user_id'] = $user;
 
-    $contact = IndustryContact::create($validated);
+        $contact = IndustryContact::create($validated);
 
-    return response()->json($contact, 201);
+        return response()->json($contact, 201);
+    } catch (\Throwable $e) {
+        Log::error('Industry contact create failed', [
+            'user_id' => $user,
+            'payload' => $request->all(),
+            'message' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 }
 
     /**
