@@ -7,8 +7,9 @@ import ProfileSettings from '@/pages/student/profileSettings.vue'
 import EACompetency from '@/pages/student/eaCompetency.vue'
 import CareerPlanning from '@/pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
-import IndustryContacts from '@/pages/student/IndustryContacts.vue';
+import IndustryContacts from '@/pages/student/IndustryContacts.vue'
 import Networking from '@/pages/student/Networking.vue'
+import Event from '@/pages/student/Event.vue'
 import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
@@ -37,8 +38,7 @@ const routes = [
     name: 'profile-settings',
     component: ProfileSettings
   },
-
-    {
+  {
     path: '/student/career-development/:id',
     name: 'careerDevelopment',
     component: CareerDevelopment
@@ -58,25 +58,26 @@ const routes = [
     name: 'IndustryContacts',
     component: IndustryContacts
   },
-
   {
     path: '/student/networking/:id',
     name: 'networking',
-    component: Networking
+    component: Event
   },
-
+  {
+    path: '/student/event',
+    name: 'event',
+    component: Event
+  },
   {
     path: '/student/export/:id',
     name: 'export',
     component: Export
   },
-
   {
     path: '/login',
     name: 'login',
     component: Login
   },
-
   {
     path: '/goals/:id',
     name: 'GoalsPage',
@@ -93,6 +94,12 @@ const routes = [
     path: '/admin/:id',
     name: 'admin',
     component: AdminPage
+  },
+
+  {
+    path: '/student/networking/contacts/:id',
+    name: 'networking-contacts',
+    component: Networking
   },
 
   {
