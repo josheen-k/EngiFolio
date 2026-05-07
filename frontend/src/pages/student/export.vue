@@ -338,7 +338,7 @@
                   <input class="form-check-input me-3" type="checkbox" v-model="profileSelected" id="checkProfile">
                   <div>
                     <div class="d-block fw-bold">Profile</div>
-                    <small>Bio, degree details, and personal links</small>
+                    <small>Bio, degree details, and professional links</small>
                   </div>
                 </label>
               </div>
@@ -407,9 +407,11 @@
   }
 
   .stat-card {
-    border-radius: 1.5rem;
-    border: 0;
-    height: auto;
+    background: #f7f7f7;
+    border: 1px solid #cccccc;
+    border-radius: 2rem;
+    padding: 1.5rem 1.75rem;
+    transition: box-shadow 0.2s ease;
   }
 
   .card-dark {
@@ -417,8 +419,10 @@
   }
 
   .stat-title {
-    font-family: 'Maven Pro', sans-serif;
-    font-weight: 550;
+    font-family: 'Martel', serif;
+    font-size: 1.3rem;
+    font-weight: 200;
+    color: #6d6d6d;
   }
 
   .selection-row {
@@ -474,4 +478,6 @@
   .selection-all {
 		background: #ffffff;
   }
+
+  
 </style>
