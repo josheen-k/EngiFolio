@@ -14,10 +14,10 @@
           /> -->
           <h2 class="page-title">Industry Contacts</h2>
 
-          <duv class="networking-switch">
+          <div class="networking-switch">
             <RouterLink :to="`/student/networking/${route.params.id ||1}`" class="switch-pill"> Events Calender </RouterLink>
             <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill active"> Industry Contacts</RouterLink>
-          </duv>
+          </div>
         </div>
 
         <button class="btn btn-dark btn-main" @click="openForm">
@@ -76,15 +76,6 @@
 
               <p class="meta">📅 {{ c.date_met }}</p>
 
-              <a
-                v-if="c.linkedin_url"
-                :href="formatUrl(c.linkedin_url)"
-                target="_blank"
-                class="linkedin-link"
-                @click.stop
-              >
-                 LinkedIn profile
-              </a>
             </div>
           </div>
 
@@ -99,13 +90,6 @@
 
           <p><b>Company:</b> {{ selectedContact.company }}</p>
           <p><b>Date Met:</b> {{ selectedContact.date_met }}</p>
-
-          <p v-if="selectedContact.linkedin_url">
-            <b>LinkedIn:</b>
-            <a :href="formatUrl(selectedContact.linkedin_url)" target="_blank">
-              Open Profile
-            </a>
-          </p>
 
           <p><b>Notes:</b></p>
           <p>{{ selectedContact.progress_notes }}</p>
@@ -131,7 +115,6 @@
 
           <input v-model="form.contact_name" placeholder="Name" />
           <input v-model="form.company" placeholder="Company" />
-          <input v-model="form.linkedin_url" placeholder="LinkedIn URL" />
           <textarea v-model="form.progress_notes" placeholder="Notes"></textarea>
           <input type="date" v-model="form.date_met" />
 
@@ -164,7 +147,6 @@ import ButtonsStyle from "@/components/ButtonsStyle.vue";
 
 const route = useRoute();
 const userId = 2;
-
 const contacts = ref([]);
 const search = ref("");
 const sortBy = ref("");
@@ -178,7 +160,6 @@ const form = ref({
   contact_id: null,
   contact_name: "",
   company: "",
-  linkedin_url: "",
   progress_notes: "",
   date_met: "",
 });
@@ -216,10 +197,7 @@ const sortedContacts = computed(() => {
 });
 
 /* HELPERS */
-const formatUrl = (url) => {
-  if (!url) return "";
-  return url.startsWith("http") ? url : "https://" + url;
-};
+
 
 const getAvatar = (name) => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`;
@@ -240,7 +218,6 @@ const openForm = () => {
     contact_id: null,
     contact_name: "",
     company: "",
-    linkedin_url: "",
     progress_notes: "",
     date_met: "",
   };
@@ -254,19 +231,33 @@ const closeForm = () => {
 const saveContact = async () => {
   const payload = { ...form.value };
 
-  if (payload.linkedin_url && !payload.linkedin_url.startsWith("http")) {
-    payload.linkedin_url = "https://" + payload.linkedin_url;
-  }
+  try {
+    if (editMode.value) {
+      await api.put(
+        `/users/${userId}/industry-contacts/${form.value.contact_id}`,
+        payload
+      );
+    } else {
+      await api.post(
+        `/users/${userId}/industry-contacts`,
+        payload
+      );
+    }
 
-  if (editMode.value) {
-    await api.put(`/users/${userId}/industry-contacts/${form.value.contact_id}`, payload);
-  } else {
-    await api.post(`/users/${userId}/industry-contacts`, payload);
-  }
+    closeForm();
+    await fetchContacts();
+  } catch (error) {
+    console.error("Save contact failed:", error);
 
-  closeForm();
-  fetchContacts();
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      alert(`Save failed: ${JSON.stringify(error.response.data)}`);
+    } else {
+      alert("Save failed. Check browser console for details.");
+    }
+  }
 };
+
 
 const editContact = (c) => {
   selectedContact.value = null;
