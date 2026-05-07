@@ -321,51 +321,72 @@
 <template>
   <Navbar />
 
-  <main class="container-xl py-5 px-4">
+  <main class="container-xl py-5">
     <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <h1 class="sec-title mb-4">Export Your Portfolio</h1>
+      <div class="col-xl-8">
+        <h1 class="sec-title text-center mb-5">Export Your Portfolio</h1>
 
-        <div class="card card-dark border-0 p-4 mb-4">
-          <h2 class="sec-title mb-4" style="font-size: 1.25rem;">
-            Tick the boxes of the data you would like to be included:
-          </h2>
+        <div class="card stat-card card-dark p-4 mb-5">
+          <div class="card-body">
+            <h2 class="stat-title mb-4 text-center">
+              Select Data Categories
+            </h2>
 
-          <div class="focus-table d-flex flex-column gap-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="profileSelected" id="checkProfile">
-              <label class="form-check-label" for="checkProfile">Profile</label>
-            </div>
+            <div class="focus-table d-flex flex-column gap-2">
+              <div class="selection-row d-flex align-items-center rounded-4">
+                <label class="form-check-label d-flex p-3 w-100" for="checkProfile">
+                  <input class="form-check-input me-3" type="checkbox" v-model="profileSelected" id="checkProfile">
+                  <div>
+                    <div class="d-block fw-bold">Profile</div>
+                    <small>Bio, degree details, and personal links</small>
+                  </div>
+                </label>
+              </div>
 
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="competenciesSelected" id="checkComp">
-              <label class="form-check-label" for="checkComp">Competencies</label>
-            </div>
+              <div class="selection-row d-flex align-items-center rounded-4">
+                <label class="form-check-label d-flex p-3 w-100" for="checkComp">
+                  <input class="form-check-input me-3" type="checkbox" v-model="competenciesSelected" id="checkComp">
+                  <div>
+                    <div class="d-block fw-bold">Competencies</div>
+                    <small>Reflection entries and EA competency levels</small>
+                  </div>
+                </label>
+              </div>
 
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="networkingContactsSelected" id="checkNet">
-              <label class="form-check-label" for="checkNet">Networking Contacts</label>
-            </div>
+              <div class="selection-row d-flex align-items-center rounded-4">
+                <label class="form-check-label d-flex p-3 w-100" for="checkNet">
+                  <input class="form-check-input me-3" type="checkbox" v-model="networkingContactsSelected" id="checkNet">
+                  <div>
+                    <div class="d-block fw-bold">Networking Contacts</div>
+                    <small>Industry connections and progress notes</small>
+                  </div>
+                </label>
+              </div>
 
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="goalsSelected" id="checkGoals">
-              <label class="form-check-label" for="checkGoals">Smart Goals</label>
-            </div>
+              <div class="selection-row d-flex align-items-center rounded-4">
+                <label class="form-check-label d-flex p-3 w-100" for="checkGoals">
+                  <input class="form-check-input me-3" type="checkbox" v-model="goalsSelected" id="checkGoals">
+                  <div>
+                    <div class="d-block fw-bold">Smart Goals</div>
+                    <small>Career planning and action steps</small>
+                  </div>
+                </label>
+              </div>
+              <hr class="my-6"/>
 
-            <hr class="my-2" />
-
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" v-model="allDataSelected" id="checkAll">
-              <label v-if="!allDataSelected" class="form-check-label fw-bold" for="checkAll">All data</label>
-              <label v-else class="form-check-label fw-bold" for="checkAll">Unselect all data</label>
+              <div class="selection-row selection-all d-flex align-items-center rounded-4">
+                <label class="form-check-label fw-bold p-3 w-100">
+                  <input class="form-check-input me-3" type="checkbox" v-model="allDataSelected" id="checkAll">
+                  <span class="fw-bold">{{ allDataSelected ? 'Unselect All Data' : 'Select All Data' }}</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="d-flex gap-3 align-items-center">
-          <button class="btn btn-ql rounded-pill px-5" @click="exportData">Export Data</button>
-          <button class="btn btn-primary rounded-pill px-5" @click="exportToPdf">Export PDF</button>
-          <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-link text-muted btn-sm text-decoration-none">Cancel</router-link>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+          <button class="btn btn-csv rounded-pill px-5" @click="exportData">Export CSV</button>
+          <button class="btn btn-pdf rounded-pill px-5" @click="exportToPdf">Export PDF Document</button>
         </div>
       </div>
     </div>
@@ -375,59 +396,82 @@
 <style scoped>
   .sec-title {
     font-family: 'Martel', serif;
-    font-size: 2.0rem;
-    color: #303030c5;
+    font-size: 2rem;
+    color: #2b2b2bc5;
+    font-weight: lighter;
+    margin-bottom: 2rem;
+  }
+
+  .stat-title {
+    color: #1d1d1dc5;
+  }
+
+  .stat-card {
+    border-radius: 1.5rem;
+    border: 0;
+    height: auto;
   }
 
   .card-dark {
     background: #f1f1f1;
-    border-radius: 8px;
   }
 
-  .focus-table {
+  .stat-title {
     font-family: 'Maven Pro', sans-serif;
-    font-size: 0.95rem;
+    font-weight: 550;
   }
 
-  .btn-ql {
-    font-family: 'Montserrat Alternates', sans-serif;
-    font-size: 1rem;
-    color: #ffffff;
-    background: #555555;
-    padding: 0.5rem 1rem;
+  .selection-row {
+    cursor: pointer;
   }
 
-  .btn-ql:hover {
-    color: #ffffff;
-    background: #333333;
+  .selection-row:hover {
+    background: rgba(255, 255, 255, 0.5);
   }
 
   .form-check-input {
-    width: 1.25em;
-    height: 1.25em;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid #bababa;
     cursor: pointer;
-  }
-
-  .form-check-label {
-    cursor: pointer;
-    padding-left: 0.5rem;
-    font-weight: 500;
-  }
-
-  .form-check-input:hover,
-  .form-check-input:focus {
-    border-color: #111a27;
-    box-shadow: none;
-  }
-
-  .form-check-input:checked:focus {
-    background-color: #111a27;
-    border-color: #111a27;
-    box-shadow: 0 0 0 0.25rem rgba(30, 46, 71, 0.25);
   }
 
   .form-check-input:checked {
-    background-color: #111a27;
-    border-color: #111a27;
+    background-color: #333;
+    border-color: #333;
+  }
+
+  .form-check-label {
+    font-family: 'Maven Pro', sans-serif;
+    cursor: pointer;
+    color: #444;
+  }
+
+  .btn-csv {
+		font-family: 'Montserrat Alternates', sans-serif;
+		border-radius: 1.5rem;
+		background: #bdbdbd;
+	}
+
+  .btn-csv:hover {
+		background: #979797;
+	}
+
+	.btn-pdf {
+		font-family: 'Montserrat Alternates', sans-serif;
+		font-size: 1rem;
+		color: #ffffff;
+		background: #555555;
+		padding: 0.5rem 1rem;
+	}
+
+	.btn-pdf:hover {
+		color: #ffffff;
+		background: #222222;
+	}
+
+  .selection-all {
+		background: #ffffff;
   }
 </style>
