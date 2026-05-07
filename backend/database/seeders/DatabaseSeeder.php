@@ -72,6 +72,10 @@ class DatabaseSeeder extends Seeder
             ['goal_id' => 2, 'plan_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
+        DB::table('goal_feedback')->insert([
+            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
         // 6. NETWORKING
         DB::table('industry_contacts')->insert([
             ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Robert Ford', 'company' => 'Westworld Robotics', 'date_met' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()],

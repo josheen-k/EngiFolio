@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
+use App\Http\Controllers\GoalFeedbackController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -74,6 +76,13 @@ Route::get('/user/smart-goals/{userId}', [SmartGoalController::class, 'showUserG
 Route::post('/smart-goals/{goalId}/action-steps', [GoalActionStepController::class, 'store']);
 Route::put('/action-steps/{stepId}', [GoalActionStepController::class, 'update']);
 Route::delete('/action-steps/{stepId}', [GoalActionStepController::class, 'destroy']);
+
+// Staff SMART Goal feedback routes
+Route::get('/smart-goals/all/feedback', [GoalFeedbackController::class, 'index']);
+Route::post('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'store']);
+Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'show']);
+Route::put('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'update']);
+Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'destroy']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
