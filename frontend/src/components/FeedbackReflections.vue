@@ -3,7 +3,7 @@
     <div class="feedback-header">
       <h1 class="compt-title">Feedback Received</h1>
 
-      <!-- search bar instead of filtee/sort-->
+      <!-- search bar instead of filter/sort-->
       <div class="search-wrap">
         <img src="@/assets/search.png" class="search-icon" alt="search"/>
         <input v-model="searchQuery" class="search-input" placeholder="Search by staff name..." type="text"/>
@@ -45,8 +45,16 @@
     </div>
   </div>
 
-  <ViewReflection :show="viewReflec.show" :reflec="viewReflec.reflec" :compt="viewReflec.compt" :index="viewReflec.index"
-  @close="viewReflec.show = false" @save="onSave" @delete="onDelete"/>
+  <ViewReflection 
+    v-if="viewReflec.show"
+    :show="viewReflec.show" 
+    :reflec="viewReflec.reflec" 
+    :compt="viewReflec.compt" 
+    :index="viewReflec.index"
+    :levelOptions="levelOptions"
+    @close="viewReflec.show = false" 
+    @refresh="onRefresh"
+  />
 </template>
 
 <script setup>
