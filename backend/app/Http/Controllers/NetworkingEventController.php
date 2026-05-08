@@ -23,6 +23,7 @@ class NetworkingEventController extends Controller
     {
         //
         $validated = $request->validate([
+            'profile_id' => ['required', 'exists:student_profiles,profile_id'],
             'name' => ['required', 'string', 'max:255'],
             'date' => ['required', 'date'],
             'location' => ['nullable', 'string', 'max:100'],
@@ -31,7 +32,7 @@ class NetworkingEventController extends Controller
             'contact_ids.*' => ['exists:industry_contacts,contact_id'],
         ]);
         $event = NetworkingEvent::create([
-            'user_id' => null,
+            'profile_id' => $validated['profile_id'],
             'event_name' => $validated['name'],
             'event_datetime' => $validated['date'],
             'location' => $validated['location'] ?? null,

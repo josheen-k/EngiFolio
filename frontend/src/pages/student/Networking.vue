@@ -91,8 +91,11 @@
           <p><b>Company:</b> {{ selectedContact.company }}</p>
           <p><b>Date Met:</b> {{ selectedContact.date_met }}</p>
 
-          <p><b>Notes:</b></p>
-          <p>{{ selectedContact.progress_notes }}</p>
+          <p v-if="selectedContact.link_url">
+            <b>Link:</b>
+            <a :href="formatUrl(selectedContact.link_url)" target="_blank" rel="noopener noreferrer">Open Link</a>
+          </p>
+
 
           <div class="btn-row">
             <ButtonsStyle
@@ -115,7 +118,7 @@
 
           <input v-model="form.contact_name" placeholder="Name" />
           <input v-model="form.company" placeholder="Company" />
-          <textarea v-model="form.progress_notes" placeholder="Notes"></textarea>
+          <input v-model="form.link_url" type="url" placeholder="Link" />
           <input type="date" v-model="form.date_met" />
 
           <div class="btn-row">
@@ -146,7 +149,7 @@ import Navbar from "@/components/Navbar.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
 
 const route = useRoute();
-const userId = 2;
+const profileId = computed(() =>(route.params.id || 1));
 const contacts = ref([]);
 const search = ref("");
 const sortBy = ref("");
@@ -160,13 +163,13 @@ const form = ref({
   contact_id: null,
   contact_name: "",
   company: "",
-  progress_notes: "",
+  link_url: "",
   date_met: "",
 });
 
 /* FETCH */
 const fetchContacts = async () => {
-  const res = await api.get(`/users/${userId}/industry-contacts`);
+  const res = await api.get(`/users/${profileId.value}/industry-contacts`);
   contacts.value = res.data;
 };
 onMounted(fetchContacts);
@@ -203,6 +206,11 @@ const getAvatar = (name) => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`;
 };
 
+const formatUrl = (url) => {
+  if(!url) return "";
+  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+};
+
 /* ACTIONS */
 const toggleMenu = (id) => {
   openMenuId.value = openMenuId.value === id ? null : id;
@@ -218,7 +226,7 @@ const openForm = () => {
     contact_id: null,
     contact_name: "",
     company: "",
-    progress_notes: "",
+    link_url: "",
     date_met: "",
   };
   showForm.value = true;
@@ -234,12 +242,12 @@ const saveContact = async () => {
   try {
     if (editMode.value) {
       await api.put(
-        `/users/${userId}/industry-contacts/${form.value.contact_id}`,
+        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
         payload
       );
     } else {
       await api.post(
-        `/users/${userId}/industry-contacts`,
+        `/users/${profileId.value}/industry-contacts`,
         payload
       );
     }
@@ -269,7 +277,7 @@ const editContact = (c) => {
 };
 
 const deleteContact = async (id) => {
-  await api.delete(`/users/${userId}/industry-contacts/${id}`);
+  await api.delete(`/users/${profileId.value}/industry-contacts/${id}`);
   selectedContact.value = null;
   openMenuId.value = null;
   fetchContacts();

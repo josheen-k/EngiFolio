@@ -29,6 +29,8 @@ const YEAR_VIEW_END = 2100
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
 const calendarView = ref('month')
+const elevatorPitch = ref('')
+const savingPitch = ref(false)
 const showForm = ref(false)
 const showEventDetails = ref(false)
 const showConfirmDialog = ref(false)
@@ -194,15 +196,31 @@ const fetchEvents = async () => {
 }
 
 const fetchContacts = async () => {
-  const response = await axios.get(`${apiBaseUrl}/users/2/industry-contacts`)
+  const response = await axios.get(`${apiBaseUrl}/users/${route.params.id}/industry-contacts`)
   contacts.value = response.data
 }
 
 onMounted(() => {
   fetchEvents()
   fetchContacts()
+  fetchElevatorPitch()
 })
 
+const fetchElevatorPitch = async() => {
+  const response = await axios.get(
+    `${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`
+  )
+  elevatorPitch.value = response.data.pitch_text || ''
+}
+
+const saveElevatorPitch = async() => {
+  savingPitch.value = true
+  try {
+    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,})
+  } finally {
+    savingPitch.value = false
+  }
+}
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
     const dateKey = normalizeEventDate(event.event_datetime)
@@ -413,10 +431,15 @@ async function addEvent() {
     }
   }
 
+  const payload ={
+    ...newEvent.value,
+    profile_id: Number(route.params.id),
+  }
+
   if (isUpdate) {
-    await axios.put(`${apiBaseUrl}/networking-events/${editingEventId.value}`, newEvent.value)
+    await axios.put(`${apiBaseUrl}/networking-events/${editingEventId.value}`, payload)
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events`, newEvent.value)
+    await axios.post(`${apiBaseUrl}/networking-events`, payload)
   }
 
   const savedDate = newEvent.value.date
@@ -656,6 +679,13 @@ function goToToday() {
 
   <main class="networking-page">
     <section class="networking-shell">
+      <div class="pitch-box">
+        <label class="pitch-label"> Elevator Pitch</label>
+        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
+        <div class="pitch-actions">
+          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Submit' }}</button>
+        </div>
+      </div>
       <div class="page-header">
         <div>
           <p class="eyebrow">Networking Planner</p>
@@ -672,7 +702,7 @@ function goToToday() {
 
         <button class="action-button" @click="openCreateForm()">
           Add Event
-        </button>
+        </button>        
       </div>
 
       <section class="calendar-card">
@@ -1126,9 +1156,15 @@ function goToToday() {
   justify-content: space-between;
   align-items: flex-end;
   gap: 1.5rem;
+  align-items: end;
   margin-bottom: 1.5rem;
 }
 
+.page-header > .action-button{
+  flex: 0 0 auto;
+  width: auto;
+  white-space: nowrap;
+}
 .eyebrow,
 .toolbar-label,
 .modal-label,
@@ -1895,4 +1931,38 @@ function goToToday() {
   border-color: #172334;
 }
 
+.pitch-box {
+  background: #fff;
+  border: 1px solid #d9e0e7;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+
+}
+
+.pitch-label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #24364b;
+}
+
+.pitch-textarea{
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+  padding: 12px;
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.pitch-actions{
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
 </style>
