@@ -156,27 +156,38 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { getAllCompts, blankForm, todayStr } from '@/useCompetencies.js'
+import api from "@/services/api"
 
 const props = defineProps({
   show: Boolean,
-  initialComptId: { 
-    type: String, 
-    default: '' 
-  }
+  initialComptId: [String, Number], 
+  levelOptions: Array,
+  categories: Array
 })
 
-const emit = defineEmits(['close', 'add'])
-const allCompts = computed(()=>getAllCompts())
+const emit = defineEmits(['close', 'refresh'])
+const allCompts = computed(() => {
+  // Get the indicator id and description for the selected competency
+  return props.categories.flatMap(category => {
+    return category.compt.map(indicator => ({
+      id: indicator.id, 
+      desc: indicator.description || '' 
+    }));
+  });
+});
 
 // form state
 const f = ref(blankForm())
 
 // when popup opens or initialComptId changes, reset and prefil
-watch(()=> props.show, (v)=> {
+watch(() => props.show, (v) => {
   if (v) {
-    f.value = blankForm(props.initialComptId)
-  }
-})
+    f.value = blankForm();
+    f.value.comptId = props.initialComptId;
+  }}, 
+  // Run straight away
+  { immediate: true });
+
 watch(()=> props.initialComptId, (id)=> {
   if (props.show) {
     f.value.comptId = id
@@ -223,29 +234,59 @@ function handleFile(e, ev) {
 }
 
 // submit form
-function submit(asDraft = false) {
-  emit('add', {
-    comptId: f.value.comptId,
-    reflec: {
-      title: f.value.title || 'Untitled',
-      year: Number(f.value.year),
-      level: f.value.level,
-      date: todayStr(),
-      startDate: f.value.startDate,
-      endDate: f.value.endDate,
-      tasks: f.value.tasks,
-      learnings: f.value.learnings,
-      future: f.value.future,
-      isDraft: asDraft,
-      evidenceEntries: JSON.parse(JSON.stringify(f.value.evidenceEntries))
-    }
-  })
-  emit('close')
+const  submit = async () => {
+  try {
+    const payload = {
+      profile_id: 1, // Consider getting this from route params or user store
+      indicator_id: Number(f.value.comptId),
+      experience_title: f.value.title || 'Untitled',
+      associated_year: Number(f.value.year),
+      entry_level_id: f.value.level, 
+      entry_status_id: 2, 
+      start_date: f.value.startDate,
+      end_date: f.value.endDate,
+      experience_tasks: f.value.tasks,
+      key_learnings: f.value.learnings,
+      future_applications: f.value.future,
+    };
+
+    await api.post('/competency-entries', payload);
+
+    // Close window
+    emit('close');
+
+  } catch (error) {
+    console.error("Submission failed:", error);
+    alert("Submission could not be saved. Please check that all required fields are filled");
+  }
 }
 
-function saveAsDraft() {
-  submit(true)
-}
+const saveAsDraft = async () => {
+  try {
+    const payload = {
+      profile_id: 1,
+      indicator_id: Number(f.value.comptId),
+      experience_title: f.value.title || 'Untitled',
+      associated_year: Number(f.value.year),
+      entry_level_id: f.value.level, 
+      entry_status_id: 1,
+      start_date: f.value.startDate,
+      end_date: f.value.endDate,
+      experience_tasks: f.value.tasks,
+      key_learnings: f.value.learnings,
+      future_applications: f.value.future,
+    };
+
+    await api.post('/competency-entries', payload);
+
+    // Close window
+    emit('close');
+    
+  } catch (error) {
+    console.error("Draft save failed:", error);
+    alert("Submission could not be saved. Please check that all required fields are filled");
+  }
+};
 </script>
 
 <style scoped>
