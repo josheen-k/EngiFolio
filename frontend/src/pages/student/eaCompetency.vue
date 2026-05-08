@@ -85,6 +85,11 @@ const loadData = async () => {
   }
 };
 
+// Reload data
+const handleRefresh = () => {
+  loadData();
+};
+
 // Load the data when the page is loaded
 onMounted(loadData);
 </script>

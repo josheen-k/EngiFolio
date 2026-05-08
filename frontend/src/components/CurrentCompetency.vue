@@ -66,7 +66,7 @@
               <p class="filter-heading">Attainment level</p>
               <div class="d-flex flex-column gap-1">
                 <label class="filter-option" v-for="opt in levelOptions" :key="opt.value">
-                  <input type="checkbox" :value="opt.value" v-model="reflecFilterLevel" class="filter-radio"/>{{ opt.label }}
+                  <input type="checkbox" :value="opt.label" v-model="reflecFilterLevel" class="filter-radio"/>{{ opt.label }}
                 </label>
               </div>
 
@@ -118,7 +118,7 @@
             <p class="filter-heading">Highest attainment level</p>
             <div class="d-flex flex-column gap-1">
               <label class="filter-option" v-for="opt in levelOptions" :key="opt.value">
-                <input type="checkbox" :value="opt.value" v-model="filterLevel" class="filter-radio"/>{{ opt.label }}
+                <input type="checkbox" :value="opt.label" v-model="filterLevel" class="filter-radio"/>{{ opt.label }}
               </label>
             </div>
 
@@ -313,31 +313,28 @@ const processedReflec = computed(() => {
     list = list.filter(r => reflecFilterYear.value.includes(r.associated_year))
   }
 
-  // filter by level
+  // filter by levels
   if (reflecFilterLevel.value.length > 0) {
-    list = list.filter(r => reflecFilterLevel.value.includes(r.level?.competency_level))
+    list = list.filter(r => {
+      // Use optional chaining to handle both object or string formats
+      const currentLvl = r.entry_level?.competency_level || r.level;
+      return reflecFilterLevel.value.includes(currentLvl);
+    });
   }
 
   // sort
   list = list.sort((a, b) => {
     if (sortBy.value === 'name') {
       if (sortOrder.value === 'asc') {
-        return (a.title || '').localeCompare(b.title || '')
+        return (a.experience_title || '').localeCompare(b.experience_title || '')
       } else {
-        return (b.title || '').localeCompare(a.title || '')
+        return (b.experience_title || '').localeCompare(a.experience_title || '')
       }
     }
 
-    //date parsing dd/mm/yyyy format
-    function parseDate(str) {
-      if (!str) {
-        return 0
-      }
-      const [day, month, year] = str.split('/')
-      return new Date(year, month-1, day)
-    }
-    const da = parseDate(a.date)
-    const db = parseDate(b.date)
+    // Convert date into a number
+    const da = new Date(a.updated_at);
+    const db = new Date(b.updated_at);
 
     if (sortOrder.value === 'asc') {
       return da-db
