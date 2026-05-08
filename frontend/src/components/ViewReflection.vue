@@ -17,9 +17,9 @@
 
         <!-- competency, level, year-->
         <div class="d-flex justify-content-center gap-2 pt-3 pb-2">
-          <span class="pill-tag">Competency {{ compt.id }}</span>
-          <span class="pill-tag">{{ reflec.year===0 ? 'PRIOR':'YEAR ' + reflec.year }}</span>
-          <span class="pill-tag">{{ reflec.level }}</span>
+          <span class="pill-tag">Competency {{ compt.displayId }}</span>
+          <span class="pill-tag">{{ reflec.associated_year ===0 ? 'PRIOR':'YEAR ' + reflec.associated_year }}</span>
+          <span class="pill-tag">{{ reflec.entry_level?.competency_level }}</span>
         </div>
         <!-- date range-->
         <p class="text-center date-txt pb-2">{{ reflec.startDate }} – {{ reflec.endDate}}</p>
@@ -243,15 +243,17 @@ const allCompts = computed(()=> getAllCompts())
 
 // edit form
 const ef = ref({
-  title: '',
-  comptId: '',
-  year: '',
-  level: '',
-  startDate: '',
-  endDate: '',
-  tasks: '',
-  learnings: '',
-  future: '',
+  profile_id: route.params.id,
+  indicator_id,
+  experience_title: '',
+  associated_year,
+  entry_level_id,
+  entry_status_id,
+  start_date: '',
+  end_date: '',
+  experience_tasks: '',
+  key_learnings: '',
+  future_applications: '',
   evidenceEntries: []
 })
 

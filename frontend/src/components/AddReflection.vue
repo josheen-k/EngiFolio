@@ -237,7 +237,7 @@ function handleFile(e, ev) {
 const  submit = async () => {
   try {
     const payload = {
-      profile_id: 1, // Consider getting this from route params or user store
+      profile_id: route.params.id,
       indicator_id: Number(f.value.comptId),
       experience_title: f.value.title || 'Untitled',
       associated_year: Number(f.value.year),
@@ -264,7 +264,7 @@ const  submit = async () => {
 const saveAsDraft = async () => {
   try {
     const payload = {
-      profile_id: 1,
+      profile_id:  route.params.id,
       indicator_id: Number(f.value.comptId),
       experience_title: f.value.title || 'Untitled',
       associated_year: Number(f.value.year),
