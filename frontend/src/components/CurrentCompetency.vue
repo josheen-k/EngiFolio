@@ -195,7 +195,7 @@ const props = defineProps({
 });
 
 // Signal parent to reload the data when changed
-const emit = defineEmits(['refresh'])
+const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null);
 
 
@@ -399,13 +399,6 @@ function onSaveReflec({ index, updated }) {
   if (selectedCompt.value) {
     Object.assign(selectedCompt.value.reflec[index], updated)
   }
-}
-
-function onDeleteReflec(index) {
-  if (selectedCompt.value) {
-    selectedCompt.value.reflec.splice(index, 1)
-  }
-  viewReflec.value.show = false
 }
 
 // add reflection popup 

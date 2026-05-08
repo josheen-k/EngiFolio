@@ -9,9 +9,9 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Adding reflection for:</label>
-            <select v-model="f.comptId" class="form-select field-select rounded-3">
-              <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.id }}</option>
-            </select>
+            <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
+              Competency {{ selectedCompt.displayId }}
+            </div>
           </div>
           <div class="col-7">
             <label class="form-label field-label">Description:</label>
@@ -24,11 +24,10 @@
           <div class="col-5">
             <label class="form-label field-label">Attainment level</label>
             <select v-model="f.level" class="form-select field-select rounded-3">
-              <option>Emerging</option>
-              <option>Developing</option>
-              <option>Proficient</option>
-              <option>Confident</option>
-            </select>
+            <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
           </div>
           <div class="col-7">
             <label class="form-label field-label">Experience title</label>
