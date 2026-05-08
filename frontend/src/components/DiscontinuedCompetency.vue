@@ -31,12 +31,12 @@
       <div v-if="selectedCompt.reflec.length" class="row g-3">
         <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in selectedCompt.reflec" :key="i">
           <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, i)">
-            <p class="compt-label mb-2">{{ reflec.title }}</p>
+            <p class="compt-label mb-2">{{ reflec.experience_title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="reflecs rounded-pill">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
-              <span class="txt-lvl">{{ reflec.level }}</span>
+              <span class="reflecs rounded-pill">{{ reflec.associated_year === 0 ? 'PRIOR' : 'YEAR ' + reflec.associated_year }}</span>
+              <span class="txt-lvl">{{ reflec.entry_level?.competency_level }}</span>
             </div>
-            <p class="txt-lvl mb-0">Last updated: {{ reflec.date }}</p>
+            <p class="txt-lvl mb-0">Last updated: {{ formatDate(reflec.updated_at) }}</p>
           </div>
         </div>
       </div>
@@ -47,7 +47,7 @@
     <div v-else>
       <h1 class="compt-title">Discontinued Competencies</h1>
 
-      <div class="mb-4" v-for="c in categories" :key="c.key">
+      <div class="mb-4" v-for="c in filteredCategories" :key="c.key">
         <div class="d-flex align-items-center gap-2 mb-3 category" @click="c.open = !c.open">
           <img class="triangle" :class="{ open: c.open }" src="@/assets/triangle.png"/>
           <span class="c-label">{{ c.label }}</span>
@@ -59,8 +59,8 @@
             <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
               <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
               <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
-                <span class="rounded-pill px-3 py-1" :class="compt.reflec.length ? 'reflecs-blue' : 'reflecs-red'">
-                  {{ compt.reflec.length }} reflection{{ compt.reflec.length !== 1 ? 's' : '' }}
+                <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
+                  {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
                 </span>
               </div>
               <p class="txt-lvl mb-0">Highest level: {{ getLvl(compt) }}</p>
@@ -76,16 +76,30 @@
 
   </div>
 
-  <ViewReflection :show="viewReflec.show" :reflec="viewReflec.reflec" :compt="viewReflec.compt" :index="viewReflec.index"
-  @close="closeReflec" @save="onSaveReflec" @delete="onDeleteReflec"/>
+  <ViewReflection 
+    v-if="viewReflec.show"
+    :show="viewReflec.show" 
+    :reflec="viewReflec.reflec" 
+    :compt="viewReflec.compt" 
+    :index="viewReflec.index"
+    @close="closeReflec" 
+    @save="onSaveReflec" 
+    @delete="onDeleteReflec"
+  />
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed  } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import { discontinuedCategories, getLvl } from '@/useCompetencies.js'
 
-const categories = discontinuedCategories
+// Sent from main page
+const props = defineProps({
+  categories: { type: Array, required: true },
+  levelOptions: { type: Array, required: true }
+});
+
+const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null)
 
 function openDetail(compt, catLabel) {
@@ -109,12 +123,21 @@ const viewReflec = ref({
   index: null
 })
 
-function openReflec(reflec, index) {
+// Filter for entries where discontinued_date exists
+const filteredCategories = computed(() => {
+  return props.categories.map(cat => ({
+    ...cat,
+    compt: cat.compt.filter(ind => ind.discontinued_date && ind.discontinued_date !== '')
+  })).filter(cat => cat.compt.length > 0);
+});
+
+function openReflec(reflec) {
+  const originalIndex = selectedCompt.value.reflec.findIndex(r => r.entry_id === reflec.entry_id);
   viewReflec.value = {
     show: true,
     reflec,
     compt: selectedCompt.value,
-    index
+    index: originalIndex
   }
 }
 
@@ -123,9 +146,7 @@ function closeReflec() {
 }
 
 function onSaveReflec({ index, updated }) {
-  if (selectedCompt.value) {
-    Object.assign(selectedCompt.value.reflec[index], updated)
-  }
+  emit('refresh');
 }
 
 function onDeleteReflec(index) {
@@ -134,6 +155,14 @@ function onDeleteReflec(index) {
   }
   viewReflec.value.show = false
 }
+
+function publishedOnly(compt) { return publishedReflec(compt); }
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-AU');
+};
 </script>
 
 <style scoped>
