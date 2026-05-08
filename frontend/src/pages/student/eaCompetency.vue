@@ -10,19 +10,28 @@
     </aside>
 
     <main class="mt-5 main-area">
-      <component :is="currComponent"/>
+      <!-- Used to pass data to the other components -->
+      <component :is="currComponent" :categories="categories" :levelOptions="levelOptions" @refresh="handleRefresh"
+/>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '@/components/Navbar.vue';
 import CurrentCompetency from '@/components/CurrentCompetency.vue';
 import DraftReflections from '@/components/DraftReflections.vue';
 import FeedbackReflections from '@/components/FeedbackReflections.vue';
 import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 import api from "@/services/api";
+
+const route = useRoute()
+
+// Stores data to be passed to components
+const categories  = ref([])
+const levelOptions = ref([])
 
 // different tabs in side pannel
 const currTab = ref('CURRENT');
@@ -41,6 +50,43 @@ const currComponent = computed(()=> {
       return DiscontinuedCompetency
   }
 });
+
+const loadData = async () => { 
+  try {
+    // Make calls to backend for competencies and levels
+    const [compRes, levelRes] = await Promise.all([
+      api.get(`/competency-groups-student/${route.params.id}`),
+      api.get(`/competency-levels`)
+    ]);
+
+    // Map competency data to the values used by the other components
+    categories.value = compRes.data.map(group => ({
+      key: group.display_id,
+      label: group.group_name,
+      open: true,
+      compt: group.indicators.map(ind => ({
+        id: ind.indicator_id,
+        displayId: ind.display_id,
+        desc: ind.description,
+        reflec: ind.entries || [] 
+      }))
+    }));
+
+    // Map entry level data to the value and label used by the other components
+    levelOptions.value = [
+      { value: null, label: 'Not Started' },
+      ...levelRes.data.map(l => ({ 
+        value: l.entry_level_id,  
+        label: l.competency_level 
+      }))
+    ];
+  } catch (error) {
+    console.error("Error when loading competencies and levels", error);
+  }
+};
+
+// Load the data when the page is loaded
+onMounted(loadData);
 </script>
 
 <style scoped>

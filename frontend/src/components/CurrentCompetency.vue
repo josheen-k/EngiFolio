@@ -5,7 +5,7 @@
 
       <div class="btn-title-wrap">
         <button class="btn btn-filter" @click="closeDetail">Go back</button>
-        <h2 class="compt-title mb-0">Competency {{ selectedCompt.id }}</h2>
+        <h2 class="compt-title mb-0">Competency {{ selectedCompt.displayId }}</h2>
       </div>
 
       <p class="fs-5">Category: <em>{{ selectedCompt.category }}</em></p>
@@ -13,8 +13,8 @@
       <p class="detail-txt">{{ selectedCompt.description }}</p>
 
       <div class="d-flex justify-content-between detail-stats">
-        <p class="fs-5">Total reflection entries you added: <em>{{ publishedOnly(selectedCompt).length }}</em></p>
-        <p class="fs-5">Highest attainment level you reflected: <em>{{ getLvl(selectedCompt) }}</em></p>
+        <p class="fs-5">Total reflection entries: <em>{{ publishedOnly(selectedCompt).length }}</em></p>
+        <p class="fs-5">Highest attainment level: <em>{{ getLvl(selectedCompt) }}</em></p>
       </div>
 
       <div class="d-flex justify-content-between align-items-center my-3">
@@ -81,15 +81,15 @@
 
       <!-- filtered + sorted reflection entries -->
       <div v-if="processedReflec.length" class="row g-3">
-        <div class="col-12 col-sm-6 col-lg-3" v-for="reflec in processedReflec" :key="reflec._rawIndex">
+        <div class="col-12 col-sm-6 col-lg-3" v-for="reflec in processedReflec" :key="reflec.entry_id">
           <div class="card compt-card p-3 h-70 reflec-card"
-            @click="openReflec(reflec, reflec._rawIndex)">
-            <p class="compt-label mb-2">{{ reflec.title }}</p>
+            @click="openReflec(reflec, reflec.entry_id)">
+            <p class="compt-label mb-2">{{ reflec.experience_title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="reflecs rounded-pill">{{ reflec.year === 0 ? 'PRIOR' : 'YEAR ' + reflec.year }}</span>
-              <span class="txt-lvl">{{ reflec.level }}</span>
+              <span class="reflecs rounded-pill">{{ reflec.associated_year === 0 ? 'PRIOR' : 'YEAR ' + reflec.associated_year }}</span>
+              <span class="txt-lvl">{{ reflec.entry_level?.competency_level }}</span>
             </div>
-            <p class="txt-lvl mb-0">Last updated: {{ reflec.date }}</p>
+            <p class="txt-lvl mb-0">Last updated: {{ formatDate(reflec.updated_at) }}</p>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@
           <div v-if="filteredCompts(c).length" class="d-flex flex-wrap gap-3">
             <div class="compt-wrap" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
-                <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
+                <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
 
                 <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                   <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
@@ -158,28 +158,66 @@
     </div>
   </div>
 
-  <ViewReflection :show="viewReflec.show" :reflec="viewReflec.reflec" :compt="viewReflec.compt" :index="viewReflec.index"
-  @close="closeReflec" @save="onSaveReflec" @delete="onDeleteReflec"/>
+  <ViewReflection 
+    v-if="viewReflec.show && viewReflec.reflec"
+    :show="viewReflec.show" 
+    :reflec="viewReflec.reflec" 
+    :compt="viewReflec.compt" 
+    :index="viewReflec.index"
+    :levelOptions="levelOptions"
+    @close="closeReflec" 
+    @refresh="onSaveReflec"
+  />
 
-  <AddReflection :show="addModal.show" :initialComptId="addModal.comptId" 
-  @close="addModal.show = false" @add="onAddReflec"/>
+  <AddReflection 
+    v-if="addModal.show"
+    :show="addModal.show" 
+    :initialComptId="addModal.comptId" 
+    :levelOptions="levelOptions"
+    :categories="categories"
+    @close="addModal.show = false" 
+    @add="onAddReflec"
+    @refresh="onSaveReflec"
+  />
 </template>
 
 <script setup>
-import { onMounted, computed, ref } from 'vue'
+import { computed, ref } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
-import { currentCategories, getLvl, publishedReflec } from '@/useCompetencies.js'
+import { getLvl, publishedReflec } from '@/useCompetencies.js'
 import { onClickOutside } from '@vueuse/core';
 
+// Allows for the eaCompetency page to pass the vales along
+const props = defineProps({
+  categories: { type: Array, required: true },
+  levelOptions: { type: Array, required: true }
+});
+
+// Signal parent to reload the data when changed
+const emit = defineEmits(['refresh'])
 const selectedCompt = ref(null);
-const categories = currentCategories // use shared data
+
 
 // filter options for competencies
 const filterRef = ref(null)
 const ddOpen = ref(false)
 const filterReflec = ref('all')
 const filterLevel = ref([])
+const reflecFilterRef = ref(null)
+const reflecFilterDdOpen = ref(false)
+const reflecFilterYear = ref([])
+const reflecFilterLevel = ref([])
+
+// Sorting
+const sortRef = ref(null)
+const sortDdOpen = ref(false)
+const sortBy = ref('date')
+const sortOrder = ref('desc')  // 'asc'  | 'desc'
+const sortByOptions = [
+  { value: 'date', label: 'Date' },
+  { value: 'name', label: 'Title (A–Z)' }
+]
 
 const reflecOption = [
   { value: 'all', label: 'All competencies' },
@@ -187,13 +225,15 @@ const reflecOption = [
   { value: 'no-reflections', label: 'No reflections yet' }
 ]
 
-const levelOptions = [
-  { value: 'Not Started', label: 'Not Started' },
-  { value: 'Emerging', label: 'Emerging' },
-  { value: 'Developing', label: 'Developing' },
-  { value: 'Competent', label: 'Competent' },
-  { value: 'Proficient', label: 'Proficient' }
+const yearOptions = [
+  { value: 0, label: 'Prior to degree' },
+  { value: 1, label: 'Year 1' },
+  { value: 2, label: 'Year 2' },
+  { value: 3, label: 'Year 3' },
+  { value: 4, label: 'Year 4' }
 ]
+
+
 
 const hasActiveFilter = computed(function () {
   return filterReflec.value !== 'all' || filterLevel.value.length > 0
@@ -217,8 +257,8 @@ function publishedOnly(compt) {
   return publishedReflec(compt)
 }
 
-function filteredCompts(category) {
-  return category.compt.filter(function (compt) {
+function filteredCompts(competency) {
+  return competency.compt.filter(function (compt) {
     const published = publishedOnly(compt)
     const highestLvl = getLvl(compt)
 
@@ -239,15 +279,6 @@ function filteredCompts(category) {
 
 // filter & sort for reflec entries
 // reflec entry sort
-const sortRef = ref(null)
-const sortDdOpen = ref(false)
-const sortBy = ref('date')
-const sortOrder = ref('desc')  // 'asc'  | 'desc'
-
-const sortByOptions = [
-  { value: 'date', label: 'Date' },
-  { value: 'name', label: 'Title (A–Z)' }
-]
 
 function clearSort() {
   sortBy.value = 'date'
@@ -258,20 +289,6 @@ function clearSort() {
 onClickOutside(sortRef, function () {
   sortDdOpen.value = false
 })
-
-//reflec entry filter
-const reflecFilterRef = ref(null)
-const reflecFilterDdOpen = ref(false)
-const reflecFilterYear = ref([])
-const reflecFilterLevel = ref([])
-
-const yearOptions = [
-  { value: 0, label: 'Prior to degree' },
-  { value: 1, label: 'Year 1' },
-  { value: 2, label: 'Year 2' },
-  { value: 3, label: 'Year 3' },
-  { value: 4, label: 'Year 4' }
-]
 
 const hasActiveReflecFilter = computed(function () {
   return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
@@ -288,19 +305,17 @@ onClickOutside(reflecFilterRef, function () {
 })
 
 const processedReflec = computed(() => {
-  if (!selectedCompt.value) {
-    return []
-  }
+  if (!selectedCompt.value) { return [] }
   let list = publishedOnly(selectedCompt.value)
 
   // filter by year
   if (reflecFilterYear.value.length > 0) {
-    list = list.filter(r => reflecFilterYear.value.includes(r.year))
+    list = list.filter(r => reflecFilterYear.value.includes(r.associated_year))
   }
 
   // filter by level
   if (reflecFilterLevel.value.length > 0) {
-    list = list.filter(r => reflecFilterLevel.value.includes(r.level))
+    list = list.filter(r => reflecFilterLevel.value.includes(r.level?.competency_level))
   }
 
   // sort
@@ -333,6 +348,17 @@ const processedReflec = computed(() => {
   return list
 })
 
+// Makes the date a readable format
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  
+  return date.toLocaleDateString('en-AU') + ', ' + 
+    date.toLocaleTimeString('en-AU', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+    }).toLowerCase();
+};
+
 function openDetail(compt, catLabel) {
   // reset reflection filters and sort when opening new compt
   clearReflecFilter()
@@ -340,6 +366,7 @@ function openDetail(compt, catLabel) {
 
   selectedCompt.value = {
     id: compt.id,
+    displayId: compt.displayId,
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
@@ -397,16 +424,10 @@ function openAdd(comptId = '') {
   }
 }
 
+// Refresh the data when an entry is added
 function onAddReflec({ comptId, reflec }) {
-  for (const cat of categories.value) {
-    const found = cat.compt.find(function (c) {
-      return c.id === comptId
-    })
-    if (found) {
-      found.reflec.push(reflec)
-      break
-    }
-  }
+  emit('refresh')
+  addModal.value.show = false
 }
 </script>
 
