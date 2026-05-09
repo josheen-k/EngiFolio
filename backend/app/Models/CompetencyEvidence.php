@@ -13,14 +13,9 @@ class CompetencyEvidence extends Model
     protected $primaryKey = 'evidence_id';
     protected $fillable = [
         'entry_id', 
-        'evidence_type_id', 
+        'evidence_type', 
         'evidence_value'
     ];
-
-    public function type()
-    {
-        return $this->belongsTo(CompetencyEvidenceType::class, 'evidence_type_id', 'evidence_type_id');
-    }
 
     public function entry()
     {

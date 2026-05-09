@@ -44,17 +44,21 @@
           </div>
 
           <!-- evidence-->
-          <div>
+         <div>
             <p class="section-label">Evidence:</p>
-            <div v-for="(ev, i) in (reflec?.evidenceEntries || []).filter(e=> e.value || e.fileName)" :key="i"
-            class="d-flex align-items-center gap-3 mb-2">
-
-              <span class="ev-label">{{ evLabel(ev.type) }}:</span>
-              <span class="evidence-pill">
-                <a v-if="ev.type==='url'" :href="ev.value">{{ ev.value }}</a>
-                <span v-else>{{ ev.fileName || ev.value }}</span>
-              </span>
+            <div v-if="reflec?.evidence?.length">
+              <div v-for="(ev, i) in reflec.evidence" :key="i"
+                class="d-flex align-items-center gap-3 mb-2">
+                <span class="ev-label">{{ evLabel(ev.evidence_type) }}:</span>
+                <span class="evidence-pill">
+                  <a v-if="ev.evidence_type === 'url'" :href="ev.evidence_value" target="_blank">
+                    {{ ev.evidence_value }}
+                  </a>
+                  <span v-else>{{ ev.evidence_value }}</span>
+                </span>
+              </div>
             </div>
+            <p v-else class="body-txt">No evidence added yet</p>
           </div>
 
           <!-- feedback received -->
@@ -252,6 +256,7 @@ const route = useRoute()
 // local state
 const editing = ref(false)
 const showDeleteConfirm = ref(false)
+
 const allCompts = computed(()=> getAllCompts())
 
 // edit form
@@ -270,9 +275,6 @@ const ef = ref({
   evidenceEntries: []
 })
 
-const hasEvidence = computed(() =>
-  props.reflec.evidenceEntries.some(e => e.value || e.fileName)
-)
 
 // reset edit state when popup closes
 watch(() => props.show, (v) => {
@@ -334,6 +336,13 @@ function handleFile(e, ev) {
 
 // enter edit
 function enterEdit() {
+  const existingEvidence = (props.reflec.evidence || []).map(ev => ({
+    evidence_id: ev.evidence_id,  // keep id so we know which to update/delete
+    type: ev.evidence_type,
+    value: ev.evidence_value,
+    fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
+  }))
+
   ef.value = {
     id: props.reflec.entry_id,
     experience_title: props.reflec.experience_title || '',
@@ -345,66 +354,58 @@ function enterEdit() {
     experience_tasks: props.reflec.experience_tasks || '',
     key_learnings: props.reflec.key_learnings || '',
     future_applications: props.reflec.future_applications || '',
-    evidenceEntries: JSON.parse(JSON.stringify(props.reflec.evidenceEntries || []))
+    evidenceEntries: existingEvidence.length 
+      ? existingEvidence
+      : [{ type: '', value: '', fileName: '' }]
   }
   editing.value = true
 }
 
-const saveEdit = async () => {
+const saveEntry = async (statusId) => {
   try {
-    const payload = {
-      profile_id: route.params.id,
-      indicator_id: Number(ef.value.indicator_id),
-      experience_title: ef.value.experience_title || 'Untitled',
-      associated_year: Number(ef.value.associated_year),
-      entry_level_id: ef.value.entry_level_id, 
-      entry_status_id: 2, 
-      start_date: ef.value.start_date,
-      end_date: ef.value.end_date,
-      experience_tasks: ef.value.experience_tasks,
-      key_learnings: ef.value.key_learnings,
-      future_applications: ef.value.future_applications,
-    };
-
-    await api.put(`/competency-entries/${ef.value.id}`, payload);
-
-    // Close window
-    emit('save');
-    emit('close');
-
-  } catch (error) {
-    console.error("Submission failed:", error);
-    alert("Submission could not be saved. Please check that all required fields are filled");
-  }
-}
-
-const saveAsDraft = async () => {
-  try {
-    const payload = {
+    await api.put(`/competency-entries/${ef.value.id}`, {
       profile_id: route.params.id,
       indicator_id: Number(ef.value.indicator_id),
       experience_title: ef.value.experience_title || 'Untitled',
       associated_year: Number(ef.value.associated_year),
       entry_level_id: ef.value.entry_level_id,
-      entry_status_id: 1,
+      entry_status_id: statusId,
       start_date: ef.value.start_date,
       end_date: ef.value.end_date,
       experience_tasks: ef.value.experience_tasks,
       key_learnings: ef.value.key_learnings,
       future_applications: ef.value.future_applications,
-    };
+    })
 
-    await api.put(`/competency-entries/${ef.value.id}`, payload);
+    const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
+    for (const id of existingIds) {
+      await api.delete(`/competency-evidence/${id}`)
+    }
+
+    // Save current evidence entries
+    const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
+    for (const ev of evidenceToSave) {
+      await api.post('/competency-evidence', {
+        entry_id: ef.value.id,
+        evidence_type: ev.type,
+        evidence_value: ev.value
+      })
+    }
 
     // Close window
-    emit('save');
     emit('close');
     
   } catch (error) {
-    console.error("Draft save failed:", error);
-    alert("Submission could not be saved. Please check that all required fields are filled");
+    console.error("Submission Failled:", error);
+    alert("Submission could not be saved. Please check that all required fields are filled.", error);
   }
 }
+
+// Pass the entry status id when saving the entry
+// 1 for draft, 2 for submitted
+const saveEdit = () => saveEntry(2)
+const saveAsDraft = () => saveEntry(1)
+
 
 function doDelete() {
   emit('delete', props.index)

@@ -18,6 +18,7 @@ use App\Http\Controllers\SmartGoalController;
 use App\Http\Controllers\StudentLinkController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CompetencyEvidenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -142,3 +143,6 @@ Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsContro
 // Competency Groups
 Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class, 'getStudentCompetencies']);
 
+// Competency Links
+Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
+Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);

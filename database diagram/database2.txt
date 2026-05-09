@@ -331,19 +331,11 @@ Table competency_entry_statuses {
 Table competency_evidence {
   evidence_id bigint [pk, increment]
   entry_id bigint [not null, ref: > competency_entries.entry_id, note: 'On delete: cascade']
-  evidence_type_id bigint [not null, ref: > competency_evidence_types.evidence_type_id, note: 'On delete: restrict']
+  evidence_type_id varchar(15) [not null]
   evidence_value varchar(500) [not null, note: 'Stores evidence path']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
-
-Table competency_evidence_types {
-  evidence_type_id bigint [pk, increment]
-  evidence_type varchar(15) [not null, note: "url, file"]
-  created_at datetime [not null]
-  updated_at datetime [not null]  
-}
-
 
 // =====================================================
 // STAFF FEEDBACK

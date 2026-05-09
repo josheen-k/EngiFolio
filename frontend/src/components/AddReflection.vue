@@ -156,6 +156,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { blankForm } from '@/useCompetencies.js'
+import { useRoute } from 'vue-router'
 import api from "@/services/api"
 
 const props = defineProps({
@@ -165,12 +166,15 @@ const props = defineProps({
   categories: Array
 })
 
-const emit = defineEmits(['close', 'refresh'])
+const emit = defineEmits(['close', 'refresh']);
+const route = useRoute();
+
 const allCompts = computed(() => {
   // Get the indicator id and description for the selected competency
   return props.categories.flatMap(category => {
     return category.compt.map(indicator => ({
       id: indicator.id, 
+      displayId: indicator.displayId,
       desc: indicator.description || '' 
     }));
   });
@@ -250,7 +254,19 @@ const  submit = async () => {
       future_applications: f.value.future,
     };
 
-    await api.post('/competency-entries', payload);
+    const res = await api.post('/competency-entries', payload);
+
+    const entryId = res.data.entry_id
+
+    // Save each evidence entry
+    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
+    for (const ev of evidenceToSave) {
+      await api.post('/competency-evidence', {
+        entry_id: entryId,
+        evidence_type: ev.type,
+        evidence_value: ev.value
+      })
+    }
 
     // Close window
     emit('close');
@@ -277,9 +293,23 @@ const saveAsDraft = async () => {
       future_applications: f.value.future,
     };
 
-    await api.post('/competency-entries', payload);
+    
+    const res = await api.post('/competency-entries', payload);
+
+    const entryId = res.data.entry_id
+
+    // Save each evidence entry
+    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
+    for (const ev of evidenceToSave) {
+      await api.post('/competency-evidence', {
+        entry_id: entryId,
+        evidence_type: ev.type,
+        evidence_value: ev.value
+      })
+    }
 
     // Close window
+    emit('refresh')
     emit('close');
     
   } catch (error) {
