@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('competency_feedback', function (Blueprint $table) {
             $table->id('feedback_id');
-            $table->foreignId('entry_id')->constrained('competency_entries', 'entry_id')->onDelete('cascade');
-            $table->foreignId('staff_id')->nullable()->constrained('users', 'user_id');
+            $table->foreignId('entry_id')->references('entry_id')->on('competency_entries')->onDelete('cascade');
+            $table->foreignId('staff_id')->nullable()->references('user_id')->on('users')->onDelete('set null');;
             $table->text('feedback_content');
             $table->timestamps();
         });

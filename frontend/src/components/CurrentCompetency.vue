@@ -262,6 +262,9 @@ function filteredCompts(competency) {
     const published = publishedOnly(compt)
     const highestLvl = getLvl(compt)
 
+    // Exclude discontinued competencies
+    if (compt.discontinuedDate) return false
+
     // filter by reflection status
     if (filterReflec.value==='has-reflections' && published.length === 0) {
       return false

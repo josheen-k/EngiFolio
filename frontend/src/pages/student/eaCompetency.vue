@@ -68,7 +68,8 @@ const loadData = async () => {
         id: ind.indicator_id,
         displayId: ind.display_id,
         desc: ind.description,
-        reflec: ind.entries || [] 
+        reflec: ind.entries || [],
+        discontinuedDate: ind.discontinued_date 
       }))
     }));
 

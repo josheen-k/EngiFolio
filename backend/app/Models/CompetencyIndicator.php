@@ -14,6 +14,7 @@ class CompetencyIndicator extends Model
     protected $fillable = [
         'group_id',
         'display_id',
+        'indicator_name',
         'description',
         'indicator_link',
         'discontinued_date',

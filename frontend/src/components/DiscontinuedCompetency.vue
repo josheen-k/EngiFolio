@@ -1,36 +1,29 @@
 <template>
   <div class="curr-compt">
+    <!--compt detailed view-->
     <div v-if="selectedCompt" class="detail">
 
       <div class="btn-title-wrap">
         <button class="btn btn-filter" @click="closeDetail">Go back</button>
-        <h2 class="compt-title mb-0">Competency {{ selectedCompt.id }}</h2>
+        <h2 class="compt-title mb-0">Competency {{ selectedCompt.displayId }}</h2>
       </div>
 
       <p class="fs-5">Category: <em>{{ selectedCompt.category }}</em></p>
       <p class="fs-5 mb-1">Description:</p>
       <p class="detail-txt">{{ selectedCompt.description }}</p>
 
-      <p class="fs-5">Indicators:</p>
-      <ul class="ps-3">
-        <li class="detail-txt" v-for="(ind, i) in selectedCompt.indicators" :key="i">{{ ind }}</li>
-      </ul>
-
       <div class="d-flex justify-content-between detail-stats">
-        <p class="fs-5">Total reflection entries you added: <em>{{ selectedCompt.reflec.length }}</em></p>
-        <p class="fs-5">Highest attainment level you reflected: <em>{{ getLvl(selectedCompt) }}</em></p>
+        <p class="fs-5">Total reflection entries: <em>{{ publishedOnly(selectedCompt).length }}</em></p>
+        <p class="fs-5">Highest attainment level: <em>{{ getLvl(selectedCompt) }}</em></p>
       </div>
 
       <div class="d-flex justify-content-between align-items-center my-3">
         <h3 class="entry-title">Your Entries</h3>
-        <div class="d-flex gap-3">
-          <button type="button" class="btn btn-filter">Add filter</button>
-        </div>
       </div>
 
-      <div v-if="selectedCompt.reflec.length" class="row g-3">
-        <div class="col-12 col-sm-6 col-lg-3" v-for="(reflec, i) in selectedCompt.reflec" :key="i">
-          <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, i)">
+      <div v-if="processedReflec.length" class="row g-3">
+        <div class="col-12 col-sm-6 col-lg-3" v-for="reflec in processedReflec" :key="reflec.entry_id">
+          <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, reflec.entry_id)">
             <p class="compt-label mb-2">{{ reflec.experience_title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="reflecs rounded-pill">{{ reflec.associated_year === 0 ? 'PRIOR' : 'YEAR ' + reflec.associated_year }}</span>
@@ -41,9 +34,9 @@
         </div>
       </div>
       <p v-else class="text-secondary">No reflection entries yet.</p>
-
     </div>
 
+    <!--all discontinued compt view-->
     <div v-else>
       <h1 class="compt-title">Discontinued Competencies</h1>
 
@@ -57,7 +50,7 @@
         <div v-if="c.open" class="d-flex flex-wrap gap-3">
           <div class="compt-wrap" v-for="compt in c.compt" :key="compt.id">
             <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
-              <h5 class="compt-label mb-2">Competency {{ compt.id }}</h5>
+              <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
               <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                 <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
                   {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
@@ -72,49 +65,71 @@
           No discontinued competencies in this category.
         </p>
       </div>
-    </div>
 
+      <p v-if="filteredCategories.length === 0" class="text-secondary">
+        No discontinued competencies found.
+      </p>
+    </div>
   </div>
 
-  <ViewReflection 
-    v-if="viewReflec.show"
-    :show="viewReflec.show" 
-    :reflec="viewReflec.reflec" 
-    :compt="viewReflec.compt" 
+  <ViewReflection
+    v-if="viewReflec.show && viewReflec.reflec"
+    :show="viewReflec.show"
+    :reflec="viewReflec.reflec"
+    :compt="viewReflec.compt"
     :index="viewReflec.index"
-    @close="closeReflec" 
-    @save="onSaveReflec" 
-    @delete="onDeleteReflec"
+    :levelOptions="levelOptions"
+    @close="closeReflec"
+    @refresh="onSaveReflec"
   />
 </template>
 
 <script setup>
-import { ref, computed  } from 'vue'
+import { ref, computed } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
-import { discontinuedCategories, getLvl } from '@/useCompetencies.js'
+import { getLvl, publishedReflec } from '@/useCompetencies.js'
 
-// Sent from main page
 const props = defineProps({
   categories: { type: Array, required: true },
   levelOptions: { type: Array, required: true }
 });
 
 const emit = defineEmits(['refresh']);
-const selectedCompt = ref(null)
+const selectedCompt = ref(null);
+
+// Only keep compts where the indicator has a discontinued_date
+const filteredCategories = computed(() => {
+  return props.categories
+    .map(cat => ({
+      ...cat,
+      // Double !! used to convert date to boolean and then back again
+      compt: cat.compt.filter(compt => !!compt.discontinuedDate)
+    }))
+    .filter(cat => cat.compt.length > 0);
+});
+
+function publishedOnly(compt) {
+  return publishedReflec(compt);
+}
 
 function openDetail(compt, catLabel) {
   selectedCompt.value = {
     id: compt.id,
+    displayId: compt.displayId,
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
-    indicators: compt.indicators
   }
 }
 
 function closeDetail() {
   selectedCompt.value = null
 }
+
+const processedReflec = computed(() => {
+  if (!selectedCompt.value) return []
+  return publishedOnly(selectedCompt.value)
+})
 
 const viewReflec = ref({
   show: false,
@@ -123,21 +138,12 @@ const viewReflec = ref({
   index: null
 })
 
-// Filter for entries where discontinued_date exists
-const filteredCategories = computed(() => {
-  return props.categories.map(cat => ({
-    ...cat,
-    compt: cat.compt.filter(ind => ind.discontinued_date && ind.discontinued_date !== '')
-  })).filter(cat => cat.compt.length > 0);
-});
-
-function openReflec(reflec) {
-  const originalIndex = selectedCompt.value.reflec.findIndex(r => r.entry_id === reflec.entry_id);
+function openReflec(reflec, index) {
   viewReflec.value = {
     show: true,
     reflec,
     compt: selectedCompt.value,
-    index: originalIndex
+    index
   }
 }
 
@@ -145,26 +151,16 @@ function closeReflec() {
   viewReflec.value.show = false
 }
 
-function onSaveReflec({ index, updated }) {
-  emit('refresh');
+function onSaveReflec() {
+  emit('refresh')
 }
-
-function onDeleteReflec(index) {
-  if (selectedCompt.value) {
-    selectedCompt.value.reflec.splice(index, 1)
-  }
-  viewReflec.value.show = false
-}
-
-function publishedOnly(compt) { return publishedReflec(compt); }
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  
-  return date.toLocaleDateString('en-AU') + ', ' + 
-    date.toLocaleTimeString('en-AU', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
+  return date.toLocaleDateString('en-AU') + ', ' +
+    date.toLocaleTimeString('en-AU', {
+      hour: 'numeric',
+      minute: '2-digit',
     }).toLowerCase();
 };
 </script>
