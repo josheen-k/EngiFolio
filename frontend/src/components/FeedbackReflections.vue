@@ -18,17 +18,17 @@
           <img class="triangle" :class="{ open: openStates[i] }" src="@/assets/triangle.png" @click="toggleOpen(i)"/>
 
           <span class="feedback-summary">
-            {{ item.reflec.feedbackAuthor }} commented on
-            "<span class="reflec-link" @click="openReflec(item)">{{ item.reflec.title }}</span>"
+            {{ item.authorName  }} commented on
+            "<span class="reflec-link" @click="openReflec(item)">{{ item.reflec.experience_title}}</span>"
             (Competency {{ item.comptId }})
           </span>
         </div>
 
         <!-- expanded feedback text-->
         <div v-if="openStates[i]" class="feedback-body">
-          <p class="feedback-txt">{{ item.reflec.feedback }}</p>
-          <p class="feedback-date" v-if="item.reflec.feedbackDate">{{ item.reflec.feedbackDate }}</p>
-        </div>
+        <p class="feedback-txt">{{ item.fb.feedback_content }}</p>
+        <p class="feedback-date">{{ new Date(item.fb.created_at).toLocaleDateString('en-AU') }}</p>
+      </div>
       </div>
     </div>
 
@@ -60,50 +60,47 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
-import { currentCategories } from '@/useCompetencies.js'
 
+const props = defineProps({
+  categories: { type: Array, required: true },
+  levelOptions: { type: Array, required: true }
+});
+
+
+const emit = defineEmits(['refresh'])
 const searchQuery = ref('')
 
 // collect all reflections with feedback
 const feedbackItems = computed(function () {
   const out = []
 
-  for (const cat of currentCategories.value) {
+  for (const cat of props.categories) {
     for (const compt of cat.compt) {
       for (const r of compt.reflec) {
-        if (r.feedback) {
-          out.push({
-            comptId: compt.id,
-            reflec: r,
-            compt: compt
-          })
+        for (const fb of r.feedback) { 
+          if (r.feedback?.length) {
+            out.push({
+              comptId: compt.displayId,
+              compt: compt,
+              reflec: r,
+              fb: fb,
+              authorName: `${fb.staff.first_name} ${fb.staff.last_name}`
+            })
+          }
         }
       }
     }
   }
-
   return out
 })
 
 // filter by search query of feedbackAuthor
 const filteredItems = computed(function () {
-  if (!searchQuery.value.trim()) {
-    return feedbackItems.value
-  }
+  if (!searchQuery.value.trim()) return feedbackItems.value
   const query = searchQuery.value.toLowerCase().trim()
-
-  return feedbackItems.value.filter(function (item) {
-    let author = item.reflec.feedbackAuthor
-    if (!author) {
-      author=''
-    }
-    author = author.toLowerCase()
-    if (author.includes(query)) {
-      return true
-    } else {
-      return false
-    }
-  })
+  return feedbackItems.value.filter(item =>
+    item.authorName.toLowerCase().includes(query)
+  )
 })
 
 const openStates = ref({})
@@ -136,32 +133,8 @@ function openReflec(item) {
   }
 }
 
-function onSave({ index, updated }) {
-  const r = viewReflec.value.reflec
-
-  for (const cat of currentCategories.value) {
-    for (const compt of cat.compt) {
-      const idx = compt.reflec.indexOf(r)
-      if (idx!== -1) {
-        Object.assign(compt.reflec[idx], updated)
-        break
-      }
-    }
-  }
-}
-
-function onDelete() {
-  const r = viewReflec.value.reflec
-
-  for (const cat of currentCategories.value) {
-    for (const compt of cat.compt) {
-      const idx = compt.reflec.indexOf(r)
-      if (idx!== -1) {
-        compt.reflec.splice(idx, 1)
-        break
-      }
-    }
-  }
+function onRefresh() {
+  emit('refresh')
   viewReflec.value.show = false
 }
 </script>
