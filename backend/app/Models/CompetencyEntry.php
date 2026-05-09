@@ -30,12 +30,12 @@ class CompetencyEntry extends Model
         return $this->belongsTo(User::class, 'profile_id', 'profile_id');
     }
 
-    public function feedback()
+    public function competencyFeedback()
     {
         return $this->hasMany(CompetencyFeedback::class, 'entry_id', 'entry_id');
     }
 
-    public function evidence()
+    public function competencyEvidence()
     {
         return $this->hasMany(CompetencyEvidence::class, 'entry_id', 'entry_id');
     }

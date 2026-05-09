@@ -59,14 +59,17 @@
 
           <!-- feedback received -->
           <div>
-            <p class="section-label">Feedback Received:</p>
-            <div v-if="reflec?.feedback" class="feedback-received">
-              <span class="feedback-author">{{ reflec?.feedbackAuthor }} commented:</span>
-              <p class="feedback-received-txt">{{ reflec?.feedback }}</p>
+          <p class="section-label">Feedback Received:</p>
+          
+          <div v-if="reflec?.feedback?.length" class="d-flex flex-column gap-3">
+            <div v-for="(fb, i) in reflec.feedback" :key="i" class="feedback-received">
+              <span class="feedback-author">{{ fb.staff.first_name }} {{ fb.staff.last_name }} commented:</span>
+              <p class="feedback-received-txt">{{ fb.feedback_content }}</p>
+              <span class="date-txt">{{ new Date(fb.created_at).toLocaleDateString() }}</span>
             </div>
-            <!-- no feedback yet-->
-            <p v-else class="body-txt">No feedback received yet</p>
           </div>
+          <p v-else class="body-txt">No feedback received yet</p>
+        </div>
         </div>
 
         <!-- footer -->

@@ -9,7 +9,7 @@ class CompetencyEvidence extends Model
 {
     use HasFactory;
 
-    protected $table = 'competency_evidence';
+    protected $table = 'competency_evidences';
     protected $primaryKey = 'evidence_id';
     protected $fillable = [
         'entry_id', 

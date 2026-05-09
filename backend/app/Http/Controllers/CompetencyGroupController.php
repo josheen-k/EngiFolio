@@ -54,7 +54,7 @@ class CompetencyGroupController extends Controller
     {
     $data = CompetencyGroup::with([
         'indicators.entries' => function ($query) use ($profileId) {
-            $query->where('profile_id', $profileId)->with('entryLevel');
+            $query->where('profile_id', $profileId)->with('entryLevel', 'competencyFeedback.staff', 'competencyEvidence.type');
         }
     ])->get();
 

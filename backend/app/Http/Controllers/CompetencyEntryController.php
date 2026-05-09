@@ -12,7 +12,7 @@ class CompetencyEntryController extends Controller
      */
     public function index($profileId)
     {
-        $entries = CompetencyEntry::with('indicator', 'entryLevel')->where('profile_id', $profileId)->get();
+        $entries = CompetencyEntry::with('indicator', 'entryLevel', 'competencyFeedback.staff', 'CompetencyEvidence')->where('profile_id', $profileId)->get();
 
         if ($entries->isEmpty()) {
             return response()->json(['message' => 'No comptencies for this user found'], 404);
