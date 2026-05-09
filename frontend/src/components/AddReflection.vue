@@ -155,7 +155,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { getAllCompts, blankForm, todayStr } from '@/useCompetencies.js'
+import { blankForm } from '@/useCompetencies.js'
 import api from "@/services/api"
 
 const props = defineProps({
@@ -179,7 +179,7 @@ const allCompts = computed(() => {
 // form state
 const f = ref(blankForm())
 
-// when popup opens or initialComptId changes, reset and prefil
+// when popup opens or initialComptId changes, reset and prefill
 watch(() => props.show, (v) => {
   if (v) {
     f.value = blankForm();
