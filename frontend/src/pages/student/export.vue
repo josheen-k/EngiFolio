@@ -7,6 +7,7 @@
     const route = useRoute();
 
     const profileSelected = ref(false);
+    const certificationsSelected = ref(false);
     const competenciesSelected = ref(false);
     const networkingContactsSelected = ref(false);
     const goalsSelected = ref(false);
@@ -21,6 +22,7 @@
     // Keeps track of whether values are selected or not
     watch(allDataSelected, (newValue) => {
         profileSelected.value = newValue;
+        certificationsSelected.value = newValue;
         competenciesSelected.value = newValue;
         networkingContactsSelected.value = newValue;
         goalsSelected.value = newValue;
@@ -29,7 +31,7 @@
 
     const exportToPdf = async () => {
       // Check that at lease one category is selected
-      if (!profileSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
+      if (!profileSelected.value && !certificationsSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
         alert("You must select at least one category to export");
         return;
       }
@@ -38,6 +40,7 @@
         const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
           selections: {
             profile: profileSelected.value,
+            certifications: certificationsSelected.value,
             competencies: competenciesSelected.value,
             networking: networkingContactsSelected.value,
             goals: goalsSelected.value
@@ -67,6 +70,7 @@
 
       // Reset values after
       profileSelected.value = false;
+      certificationsSelected.value = false;
       competenciesSelected.value = false;
       networkingContactsSelected.value = false;
       goalsSelected.value = false;
@@ -106,6 +110,37 @@
       }
     };
 
+    const addCertifications = async () => {
+      try {
+        const response = await api.get(`/profile/${route.params.id}`);
+        const profileData = response.data.profile || response.data;
+
+        const formattedCerts = ['"----- Certificates -----"']
+
+        if (profileData.achievement_certs.length > 0) {
+          formattedCerts.push('"-- Achievement Certificates --"')
+          formattedCerts.push('"Title","Details","Issued Date"')
+          profileData.achievement_certs.forEach(cert => {
+            formattedCerts.push(`"${cert.title}","${cert.body || ''}","${cert.issued_date || ''}"`)
+          })
+        }
+
+        if (profileData.attainment_certs.length > 0) {
+          formattedCerts.push('"-- Attainment Certificates --"')
+          formattedCerts.push('"Title","Details","Issued Date","Expiry Date"')
+          profileData.attainment_certs.forEach(cert => {
+            formattedCerts.push(`"${cert.title}","${cert.body || ''}","${cert.issued_date || ''}","${cert.expiry_date || ''}"`)
+          })
+        }
+
+        formattedCerts.push('\n\n');
+        return formattedCerts.join('\n');
+      } catch (error) {
+        console.error("Error while fetching certifications:", error);
+        return '';
+      }
+    };
+
     // Fetches the competencies and adds the contents to the file
     const addCompetencies = async () => { 
       try {
@@ -115,44 +150,43 @@
         const formattedComp = ['"----- Competencies -----"']
         
         const compHeader = [
-          `"Competency Code"`,
-          `"EA Competency"`,
-          `"Competency Description"`,
-          `"Competency Link"`,
-          `"Experience Title"`,
-          `"Associated Year"`,
-          `"Experience Tasks"`,
-          `"Key Learnings"`,
-          `"Future Applications"`,
-          `"Level"`,
-          `"Status"`,
-          `"Start Date"`,
-          `"End Date"`
+          '"Competency Code"',
+          '"EA Competency"',
+          '"Competency Description"',
+          '"Competency Link"',
+          '"Experience Title"',
+          '"Associated Year"',
+          '"Experience Tasks"',
+          '"Key Learnings"',
+          '"Future Applications"',
+          '"Level"',
+          '"Status"',
+          '"Start Date"',
+          '"End Date"'
         ].join(",");
 
         formattedComp.push(compHeader);
+          if (userCompetencies.value?.length > 0) {
+            userCompetencies.value.forEach(comp => {
+              const row = [
+                `"${comp.indicator.display_id}"`,
+                `"${comp.indicator.indicator_description}"`,
+                `"${comp.indicator.description}"`,
+                `"${comp.indicator.indicator_link || ''}"`,
+                `"${comp.experience_title}"`,
+                `"${comp.associated_year}"`,
+                `"${comp.experience_tasks}"`,
+                `"${comp.key_learnings || ''}"`,
+                `"${comp.future_applications || ''}"`,
+                `"${comp.entry_level.competency_level || ''}"`,
+                `"${comp.entry_status.entry_status || ''}"`,
+                `"${comp.start_date}"`,
+                `"${comp.end_date || ''}"`
+              ].join(",");
+              formattedComp.push(row);
+            });
+          }
 
-        if (userCompetencies.value && userCompetencies.value.length > 0) {
-          userCompetencies.value.forEach(comp => {
-            const row = [
-              `"${comp.indicator.display_id}"`,
-              `"${comp.indicator.indicator_name}"`,
-              `"${comp.indicator.description}"`,
-              `"${comp.indicator.indicator_link || ''}"`,
-              `"${comp.experience_title}"`,
-              `"${comp.associated_year}"`,
-              `"${comp.experience_tasks}"`,
-              `"${comp.key_learnings || ''}"`,
-              `"${comp.future_applications || ''}"`,
-              `"${comp.level}"`,
-              `"${comp.status}"`,
-              `"${comp.start_date}"`,
-              `"${comp.end_date || ''}"`
-            ].join(",");
-            formattedComp.push(row);
-          });
-
-        }
 
         formattedComp.push('\n\n');
         return formattedComp.join('\n');
@@ -256,7 +290,7 @@
 
 
     const exportData = async () => {
-        if (!profileSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
+        if (!profileSelected.value && !certificationsSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
             alert("You must select at least one category to export");
             return;
         }
@@ -267,10 +301,16 @@
           const profileData = await addProfile();
           exportCSV.push(profileData);
         };
+
+        if (certificationsSelected.value) {
+          exportCSV.push(await addCertifications());
+        }
+
         if (competenciesSelected.value) {
           const competencyData = await addCompetencies();
           exportCSV.push(competencyData);
         }
+
         if (networkingContactsSelected.value) {
           const networkingData = await addNetworkingContacts();
           exportCSV.push(networkingData);
@@ -302,6 +342,7 @@
 
         // Reset values after
         profileSelected.value = false;
+        certificationsSelected.value = false;
         competenciesSelected.value = false;
         networkingContactsSelected.value = false;
         goalsSelected.value = false;
@@ -311,6 +352,7 @@
   // Reset all ticked boxes on reload
   onMounted(() => {
       profileSelected.value = false;
+      certificationsSelected.value = false;
       competenciesSelected.value = false;
       networkingContactsSelected.value = false;
       goalsSelected.value = false;
@@ -339,6 +381,16 @@
                   <div>
                     <div class="d-block fw-bold">Profile</div>
                     <small>Bio, degree details, and professional links</small>
+                  </div>
+                </label>
+              </div>
+
+              <div class="selection-row d-flex align-items-center rounded-4">
+                <label class="form-check-label d-flex p-3 w-100" for="checkCerts">
+                  <input class="form-check-input me-3" type="checkbox" v-model="certificationsSelected" id="checkCerts">
+                  <div>
+                    <div class="d-block fw-bold">Certificates</div>
+                    <small>Achievement and Attainment Certificates</small>
                   </div>
                 </label>
               </div>

@@ -68,10 +68,64 @@
 		<div class="section">
 			{{-- Add profile information to pdf --}}
 			<h2>Profile</h2>
-			<p><strong>Preferred name:</strong> {{ $profile->preferred_name ?? 'N/A' }}</p>
-			<p><strong>Degree:</strong> {{ $profile->degree_title ?? 'N/A' }}</p>
-			<p><strong>Sepcialisation:</strong> {{ $profile->specialisation ?? 'N/A' }}</p>
-			<p><strong>Personal Intro:</strong> {{ $profile->personal_intro ?? 'N/A' }}</p>
+			@if($profile->preferred_name)
+					<p><strong>Preferred name:</strong> {{ $profile->preferred_name }}</p>
+			@endif
+			<p><strong>Degree:</strong> {{ $profile->degree_title ?? '' }}</p>
+			<p><strong>Sepcialisation:</strong> {{ $profile->specialisation ?? '' }}</p>
+			<p><strong>Personal Intro:</strong> {{ $profile->personal_intro ?? '' }}</p>
+		</div>
+	@endif
+
+	{{-- Show achievement certificates if selected --}}
+	@if(!empty($selections['certifications']) && $profile->achievementCerts->isNotEmpty())
+		<div class="section">
+			<h2>Achievement Certificates</h2>
+			<table>
+				<thead>
+					<tr>
+						<th style="width: 25%;">Title</th>
+						<th style="width: 60%;">Details</th>
+						<th style="width: 15%;">Issued Date</th>
+					</tr>
+				</thead>
+				<tbody>
+						@foreach($profile->achievementCerts as $cert)
+							<tr>
+								<td>{{ $cert->title }}</td>
+								<td>{{ $cert->body ?? '' }}</td>
+								<td>{{ $cert->issued_date ?? '' }}</td>
+							</tr>
+						@endforeach
+				</tbody>
+			</table>
+		</div>
+	@endif
+
+	{{-- Show attainment certificates if selected --}}
+	@if(!empty($selections['certifications']) && $profile->attainmentCerts->isNotEmpty())
+		<div class="section">
+			<h2>Attainment Certificates</h2>
+			<table>
+					<thead>
+						<tr>
+							<th style="width: 25%;">Title</th>
+							<th style="width: 45%;">Details</th>
+							<th style="width: 15%;">Issued Date</th>
+							<th style="width: 15%;">Expiry Date</th>
+						</tr>
+					</thead>
+				<tbody>
+					@foreach($profile->attainmentCerts as $cert)
+						<tr>
+							<td>{{ $cert->title }}</td>
+							<td>{{ $cert->body ?? '' }}</td>
+							<td>{{ $cert->issued_date ?? '' }}</td>
+							<td>{{ $cert->expiry_date ?? '' }}</td>
+						</tr>
+					@endforeach
+				</tbody>
+			</table>
 		</div>
 	@endif
 
@@ -85,7 +139,7 @@
 				// Grab the first entry in the group to get indicator details
 				$firstEntry = $indicatorGroup->first();
 			@endphp
-			<div">
+			<div>
 				<h3 style="padding: 5px;">
 					{{ $firstEntry->indicator?->display_id }}: {{ $firstEntry->indicator?->indicator_name }}
 				</h3>
@@ -108,31 +162,35 @@
 
 	{{-- Check if networking is selected and contains industry contacts --}}
 	@if(!empty($selections['networking']) && $profile->industryContacts->isNotEmpty())
-			<div class="section">
-					<h2>Industry Contacts & Networking</h2>
-					<table>
-							<thead>
-									<tr>
-											<th>Contact Name</th>
-											<th>Company</th>
-											<th>Progress Notes</th>
-											<th>Contact Methods</th>
-											<th>Date Met</th>
-									</tr>
-							</thead>
-							<tbody>
-									@foreach($profile->industryContacts as $contact)
-											<tr>
-													<td>{{ $contact->contact_name }}</td>
-													<td>{{ $contact->company }}</td>
-													<td>{{ $contact->progress_notes }}</td>
-													<td>{{ $contact->progress_notes }}</td>
-													<td>{{ $contact->date_met }}</td>
-											</tr>
-									@endforeach
-							</tbody>
-					</table>
-			</div>
+		<div class="section">
+			<h2>Industry Contacts & Networking</h2>
+			<table>
+					<thead>
+						<tr>
+							<th style="width: 15%;">Contact Name</th>
+							<th style="width: 15%;">Company</th>
+							<th style="width: 30%;">Progress Notes</th>
+							<th style="width: 25%;">Contact Methods</th>
+							<th style="width: 15%;">Date Met</th>
+						</tr>
+					</thead>
+				<tbody>
+					@foreach($profile->industryContacts as $contact)
+						<tr>
+							<td>{{ $contact->contact_name }}</td>
+							<td>{{ $contact->company }}</td>
+							<td>{{ $contact->progress_notes }}</td>
+							<td>
+								@foreach($contact->contactMethods as $method)
+									<div>{{ $method->method_type }}: {{ $method->method_value }}</div>
+								@endforeach
+							</td>
+							<td>{{ $contact->date_met }}</td>
+						</tr>
+					@endforeach
+				</tbody>
+			</table>
+		</div>
 	@endif
 
 	{{-- Check if goals is selected and contains goals --}}
@@ -155,10 +213,10 @@
 						<table>
 							<thead>
 								<tr>
-									<th>Goal & Action Steps</th>
-									<th>Dates</th>
-									<th>Notes & Learnings</th>
-									<th>Status</th>
+									<th style="width: 35%;">Goals & Action Steps</th>
+									<th style="width: 35%;">Notes & Learnings</th>
+									<th style="width: 15%;">Dates</th>
+									<th style="width: 15%;">Status</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -173,6 +231,12 @@
 											</ul>
 										</td>
 										<td>
+											<div>
+												<strong>Progress:</strong> {{ $goal->progress_notes }}<br>
+												<strong>Learnings:</strong> {{ $goal->learnings }}
+											</div>
+										</td>
+										<td>
 											<small>
 												Start: {{ $goal->start_date }}<br>
 												End: {{ $goal->end_date }}<br>
@@ -182,13 +246,6 @@
 											</small>
 										</td>
 										<td>
-											<div>
-												<strong>Progress:</strong> {{ $goal->progress_notes }}<br>
-												<strong>Learnings:</strong> {{ $goal->learnings }}
-											</div>
-										</td>
-										<td>
-											{{-- Accessing status via the relationship defined in your schema --}}
 											{{ $goal->status->status ?? 'Planned' }}
 										</td>
 									</tr>

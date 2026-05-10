@@ -112,6 +112,8 @@ class StudentProfileController extends Controller
             'careerPlans.smartGoals',
             'careerPlans.smartGoals.actionSteps',
             'careerPlans.smartGoals.status',
+            'achievementCerts',
+            'attainmentCerts', 
         ])->findOrFail($id);
 
         // Fields selected. Passed by front end
