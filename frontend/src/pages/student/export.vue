@@ -81,7 +81,7 @@
     const addProfile = async () => { 
       try {
         const response = await api.get(`/profile/${route.params.id}`);
-        profile.value = response.data.profile || response.data;
+        profile.value = response.data;
       } catch (error) {
         console.error("Error while fetching profile:", error);
       } finally {
@@ -113,7 +113,7 @@
     const addCertifications = async () => {
       try {
         const response = await api.get(`/profile/${route.params.id}`);
-        const profileData = response.data.profile || response.data;
+        const profileData = response.data;
 
         const formattedCerts = ['"----- Certificates -----"']
 
