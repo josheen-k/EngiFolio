@@ -144,20 +144,20 @@ function onRefresh() {
 
 <style scoped>
 .feedback-wrap {
-  max-width: 90%;
+  max-width: 100%;
 }
 
 .feedback-header {
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
   margin-bottom: 2rem;
 }
 
 .compt-title {
   font-family: 'Martel', serif;
-  font-size: 2rem;
+  font-size: clamp(1.3rem, 4vw, 2rem);
   color: #2b2b2bc5;
   font-weight: lighter;
   margin-bottom: 0;
@@ -165,8 +165,6 @@ function onRefresh() {
 }
 
 .search-wrap {
-  position: absolute;
-  right: 0;
   display: flex;
   align-items: center;
   background: #f5f5f5;
@@ -174,6 +172,8 @@ function onRefresh() {
   border-radius: 2rem;
   padding: 0.35rem 0.75rem;
   gap: 0.4rem;
+  width: 100%;
+  max-width: 20rem;
 }
 
 .search-wrap:focus-within {
@@ -194,7 +194,7 @@ function onRefresh() {
   background: transparent;
   border: none;
   outline: none;
-  width: 10rem;
+  width: 100%;
 }
 
 .search-input::placeholder {
@@ -220,14 +220,15 @@ function onRefresh() {
 
 .feedback-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
 .triangle {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 0.5rem;
+  height: 0.5rem;
   flex-shrink: 0;
+  margin-top: 0.5rem;
   transition: transform 0.2s ease;
   transform: rotate(0deg);
   cursor: pointer;
@@ -239,7 +240,7 @@ function onRefresh() {
 
 .feedback-summary {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
   color: #333333;
 }
 
@@ -289,5 +290,29 @@ function onRefresh() {
   font-family: 'Maven Pro', sans-serif;
   font-size: 0.95rem;
   color: #aaaaaa;
+}
+
+@media (min-width: 768px) {
+  .feedback-header {
+    position: relative;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .search-wrap {
+    position: absolute;
+    right: 0;
+    width: auto;
+    max-width: none;
+  }
+
+  .search-input {
+    width: 10rem;
+  }
+
+  .triangle {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
 }
 </style>

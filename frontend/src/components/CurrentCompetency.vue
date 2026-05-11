@@ -17,9 +17,9 @@
         <p class="fs-5">Highest attainment level: <em>{{ getLvl(selectedCompt) }}</em></p>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center my-3">
-        <h3 class="entry-title">Your Entries</h3>
-        <div class="d-flex gap-2 align-items-center">
+      <div class="entries-header my-3">
+        <h3 class="entry-title mb-0">Your Entries</h3>
+        <div class="ctrl-actions">
 
           <!-- sort control -->
           <div class="filter-wrap" ref="sortRef">
@@ -140,8 +140,8 @@
         </div>
 
         <div v-if="c.open">
-          <div v-if="filteredCompts(c).length" class="d-flex flex-wrap gap-3">
-            <div class="compt-wrap" v-for="compt in filteredCompts(c)" :key="compt.id">
+          <div v-if="filteredCompts(c).length" class="row g-3">
+            <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
                 <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
                 <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5>
@@ -418,12 +418,12 @@ function onAddReflec() {
 
 <style scoped>
 .curr-compt {
-  max-width: 90%;
+  max-width: 100%;
 }
 
 .compt-title {
   font-family: 'Martel', serif;
-  font-size: 2rem;
+  font-size: clamp(1.3rem, 4vw, 2rem);
   color: #2b2b2bc5;
   font-weight: lighter;
   margin-bottom: 2rem;
@@ -436,6 +436,45 @@ function onAddReflec() {
   align-items: flex-start;
   justify-content: center;
   margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.title-row>.filter-wrap {
+  position: static;
+}
+
+.btn-title-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  padding: 0 6rem;
+}
+
+.btn-title-wrap>.btn {
+  position: absolute;
+  left: 0;
+}
+
+.detail-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 0.5rem;
+}
+
+.entries-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ctrl-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .filter-wrap {
@@ -446,12 +485,6 @@ function onAddReflec() {
   gap: 0.5rem;
 }
 
-.title-row>.filter-wrap {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
 .filter-dd {
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -460,7 +493,7 @@ function onAddReflec() {
   border: 0.09rem solid #e0e0e0;
   border-radius: 1rem;
   padding: 1rem 1.25rem;
-  min-width: 16rem;
+  min-width: min(16rem, 90vw);
   box-shadow: 0 0.5rem 1.5rem #e5e5e5;
   z-index: 10;
 }
@@ -487,19 +520,6 @@ function onAddReflec() {
   cursor: pointer;
 }
 
-.btn-title-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 3rem;
-}
-
-.btn-title-wrap>.btn {
-  position: absolute;
-  left: 0;
-}
-
 .category {
   cursor: pointer;
 }
@@ -516,16 +536,12 @@ function onAddReflec() {
 
 .c-label {
   font-family: 'Martian Mono', monospace;
-  font-size: 1.4rem;
+  font-size: clamp(1rem, 3vw, 1.4rem);
   font-weight: 100;
 }
 
-.compt-wrap {
-  flex: 0 0 12.5rem;
-}
-
 .compt-card {
-  width: 13.75rem;
+  width: 100%;
   min-height: 8.125rem;
   border-radius: 1.5rem;
   border: 1px solid #bababa;
@@ -538,7 +554,7 @@ function onAddReflec() {
 }
 
 .reflec-card {
-  width: 100%;
+  width: 100% !important;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -549,7 +565,7 @@ function onAddReflec() {
 
 .compt-label {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1.3rem;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
   font-weight: 100;
   color: #878787;
 }
@@ -564,23 +580,27 @@ function onAddReflec() {
 
 .txt-lvl {
   font-family: 'Maven Pro', sans-serif;
+  font-size: 0.9rem;
 }
 
 .reflecs-blue {
   background: #e2f8ff;
   color: #1a6a86;
   padding: 0.1rem 0.8rem;
+  font-size: 0.85rem;
 }
 
 .reflecs-red {
   background: #ffe3e3;
   color: #b03030;
   padding: 0.1rem 0.8rem;
+  font-size: 0.85rem;
 }
 
 .reflecs {
   background: #e6e6e6;
   padding: 0.1rem 0.8rem;
+  font-size: 0.85rem;
 }
 
 .plus-btn {
@@ -597,7 +617,7 @@ function onAddReflec() {
 .entry-title {
   font-family: 'Martian Mono', monospace;
   font-weight: 200;
-  font-size: 1.5rem;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
 }
 
 .detail {
@@ -607,20 +627,17 @@ function onAddReflec() {
 
 .detail-txt {
   color: #444444;
-}
-
-.detail-stats {
-  max-width: 90%;
+  font-size: 0.95rem;
 }
 
 .btn-filter, .btn-filter-sm {
   font-family: 'Montserrat Alternates', sans-serif;
   border-radius: 1.5rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
   background: #e6e6e6;
 }
 
-.btn-filter:hover, .btn-filter-sm:hover {
+.btn-filter:hover,.btn-filter-sm:hover {
   background: #666666;
   color: #ffffff;
 }
@@ -640,5 +657,35 @@ function onAddReflec() {
 
 .btn-filter-sm {
   font-size: 0.8rem !important;
+}
+
+@media (min-width: 768px) {
+  .title-row > .filter-wrap {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .detail-stats {
+    flex-direction: row;
+    justify-content: space-between;
+    max-width: 90%;
+  }
+
+  .btn-filter {
+    font-size: 1rem;
+  }
+
+  .btn-add {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 576px) {
+  .entries-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 </style>

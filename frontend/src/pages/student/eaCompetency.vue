@@ -1,11 +1,13 @@
 <template>
   <Navbar/>
 
-  <div class="d-flex p-4 side ms-3">
-    <aside class="d-flex gap-4 flex-column pt-5 sidebar-wrap">
-      <div class="d-flex align-items-center gap-3 px-3 py-2 sidebar"
-      :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
-        <span class="dot rounded-circle" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
+  <div class="page-wrap p-3">
+    <aside class="sidebar-wrap">
+      <div class="d-flex flex-row flex-md-column gap-2 gap-md-4 pt-0 pt-md-5">
+        <div class="d-flex align-items-center gap-2 gap-md-3 px-2 px-md-3 py-2 sidebar"
+        :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
+          <span class="dot rounded-circle d-none d-md-inline-block" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
+        </div>
       </div>
     </aside>
 
@@ -102,30 +104,27 @@ onMounted(loadData);
 </script>
 
 <style scoped>
-.side {
+.page-wrap {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  gap: 4rem;
+  gap: 0.5rem;
 }
 
 .sidebar-wrap {
-  position: sticky;
-  top: 30%;
-  left: 5%;
-  width: 20%;
-  height: fit-content;
+  width: 100%;
+}
+
+.sidebar{
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.9rem;
+  border-radius: 1.5rem;
+  cursor: pointer;
 }
 
 .main-area {
   flex: 1;
   min-width: 0;
-}
-
-.sidebar{
-  font-family: 'Maven Pro', sans-serif;
-  font-size: 1.2rem;
-  border-radius: 1.5rem;
-  cursor: pointer;
-  width: 70%;
 }
 
 .sidebar-on {
@@ -141,5 +140,30 @@ onMounted(loadData);
 
 .dot-on {
   background: #88c2d2;
+}
+
+@media (min-width: 768px) {
+  .page-wrap {
+    flex-direction: row;
+    gap: 8rem;
+  }
+
+  .sidebar-wrap {
+    position: sticky;
+    top: 30%;
+    width: 20%;
+    left: 7%;
+    min-width: 10rem;
+    height: fit-content;
+  }
+
+  .sidebar {
+    font-size: 1.2rem;
+    width: 70%;
+  }
+
+  .main-area {
+    flex: 0 0 60%;
+  }
 }
 </style>
