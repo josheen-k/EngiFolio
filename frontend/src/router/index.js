@@ -85,7 +85,7 @@ const routes = [
   },
 
   {
-    path: '/staff/goal-feedback',
+    path: '/staff/goal-feedback/:id',
     name: 'goalFeedback',
     component: GoalFeedback
   },

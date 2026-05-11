@@ -23,7 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ElevatorPitchController;
 
-
+use App\Http\Controllers\MentorStudentMappingController;
 use App\Http\Controllers\GoalFeedbackController;
 
 
@@ -73,11 +73,20 @@ Route::put('/action-steps/{stepId}', [GoalActionStepController::class, 'update']
 Route::delete('/action-steps/{stepId}', [GoalActionStepController::class, 'destroy']);
 
 // Staff SMART Goal feedback routes
-Route::get('/smart-goals/all/feedback', [GoalFeedbackController::class, 'index']);
+Route::get('/smart-goals/all/feedback/{staffID}', [GoalFeedbackController::class, 'index']);
 Route::post('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'store']);
 Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'show']);
 Route::put('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'update']);
 Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'destroy']);
+
+// Mentor Student Mapping routes
+Route::get('/mapping/staff/{staffID}', [MentorStudentMappingController::class, 'getMappedStudents']);
+Route::get('/mapping/student/{profileID}', [MentorStudentMappingController::class, 'getMappedStaff']);
+Route::post('/mapping', [MentorStudentMappingController::class, 'store']);
+Route::put('/mapping/{mappingID}', [MentorStudentMappingController::class, 'update']);
+Route::put('/mapping/student/{profileID}', [MentorStudentMappingController::class, 'updateMappedStaff']);
+Route::delete('/mapping/{mappingID}', [MentorStudentMappingController::class, 'destroy']);
+Route::delete('/mapping/student/{profileID}', [MentorStudentMappingController::class, 'destroyMappedStaff']);
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);

@@ -70,10 +70,12 @@ class DatabaseSeeder extends Seeder
         DB::table('smart_goals')->insert([
             ['goal_id' => 1, 'plan_id' => 1, 'goal_description' => 'Complete Statics Course', 'goal_status_id' => 2, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'created_at' => now(), 'updated_at' => now()],
             ['goal_id' => 2, 'plan_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'plan_id' => 2, 'goal_description' => 'Obtain 5 new industry contacts at upcoming career fair', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-06-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('goal_feedback')->insert([
-            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Please write goal using SMART criteria', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Well written but could use a more specific timeframe', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('industry_contacts')->insert([
@@ -113,7 +115,7 @@ class DatabaseSeeder extends Seeder
             ['group_id' => 3, 'display_id' => '3.6', 'indicator_name' => 'Team membership and leadership', 'description' => 'Effective team membership and team leadership.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
         
             ['group_id' => 3, 'display_id' => '3.0', 'indicator_name' => 'Test', 'description' => 'Test', 'discontinued_date' => now(), 'created_at' => now(), 'updated_at' => now()],
-            ]);
+        ]);
 
         DB::table('competency_entries')->insert([
             ['entry_id' => 1, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Bridge Project', 'associated_year' => 1, 'experience_tasks' => 'CAD work', 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],

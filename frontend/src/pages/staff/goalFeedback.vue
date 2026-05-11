@@ -85,24 +85,40 @@
           </div>
         </form>
       </div> -->
-
       <div class="filter-section mb-4">
-      <div class="filter-title-wrap">
-        <h2 class="filter-title mb-0">Date Range</h2>
-        <p class="filter-hint mb-0">Filtering is based on Start Date.</p>
+        <div class="filter-title-wrap">
+          <h2 class="filter-title mb-0">Student select</h2>
+          <p class="filter-hint mb-0">Filter student</p>
+        </div>
+
+        <label class="filter-field">
+          <span class="filter-label">Student user ID</span>
+          <select class="student-select">
+                <option v-for="mapping in mappedStudents" :key="mapping.value" :value="mapping.value"
+                >{{ mapping.profile_id }}</option>
+          </select>
+        </label>
+
+        <button class="btn page-btn-outline filter-action-btn" @click="loadGoals">Filter</button>
       </div>
 
-      <label class="filter-field">
-        <span class="filter-label">From</span>
-        <input type="date" v-model="fromDate" />
-      </label>
+      <div class="filter-section mb-4">
+        <div class="filter-title-wrap">
+          <h2 class="filter-title mb-0">Date Range</h2>
+          <p class="filter-hint mb-0">Filtering is based on Start Date.</p>
+        </div>
 
-      <label class="filter-field">
-        <span class="filter-label">To</span>
-        <input type="date" v-model="toDate" />
-      </label>
+        <label class="filter-field">
+          <span class="filter-label">From</span>
+          <input type="date" v-model="fromDate" />
+        </label>
 
-      <button class="btn page-btn-outline filter-action-btn" @click="loadGoals">Filter</button>
+        <label class="filter-field">
+          <span class="filter-label">To</span>
+          <input type="date" v-model="toDate" />
+        </label>
+
+        <button class="btn page-btn-outline filter-action-btn" @click="loadGoals">Filter</button>
       </div>
 
       <div v-if="loading" class="status-msg">Loading goals...</div>
@@ -122,7 +138,6 @@
             
           </tbody>
         </table> -->
-        
         <table class="goals-table">
           <thead>
             <tr>
@@ -166,9 +181,11 @@
               <td>{{ goal.end_date }}</td>
               <td class="completion-notes-cell">{{ goal.completion_notes || '-' }}</td>
 
-              <!-- <td>{{ getFeedback(goal.goal_status_id) }}</td> -->
-              <td v-for="f in feedback" :key="f.goal_id">
-                <div v-if="f.goal_id==goal.goal_id">{{ f.feedback_content }}</div>
+              <td>
+                <div v-for="f in feedback" :key="f.goal_id">
+                  <div v-if="f.goal_id==goal.goal_id">{{ f.feedback_content }}</div>
+                </div>
+
                 <button
                   type="button"
                   class="action-icon-btn"
@@ -182,7 +199,10 @@
             </tr>
           </tbody>
         </table>
+
       </div>
+
+      
     </section>
   
 
@@ -263,7 +283,11 @@ const feedbackDrafts = ref([])
 const expandedStepsByGoal = ref({})
 const route = useRoute()
 const feedbackModalGoal = ref(null)
-const profileId = computed(() => 2) //computed(() => Number(route.params.id))
+const profileId = computed(() => Number(route.params.id)) //computed(() => Number(route.params.id))
+const mappedStudents = ref([])
+const studentNames = ref([])
+const studentName = ref('')
+const coolTest = ref(null)
 
 const editFeedbackData = reactive({
   goal_id: null,
@@ -318,7 +342,7 @@ const loadGoals = async () => {
 
     // Build optional date-range query params from filter inputs.
     const params = {
-      profile_id: profileId.value
+      profile_id: 2//profileId.value
     }
 
     if (fromDate.value) {
@@ -343,16 +367,48 @@ const loadGoals = async () => {
   }
 }
 
+const loadMappedStudents = async () => {
+  const response = await api.get(`/mapping/staff/${route.params.id}`)
+  mappedStudents.value = response.data
+  // for (let index = 0; index < mappedStudents.length; index++) {
+  //   const responseUsr = await api.get(`/users/${userId}`)
+  //   mappedStudents.names[]
+  // }
+}
+
+const getUserName = async (userId) => {
+  // try {
+    // const response = await api.get(`/users/${userId}`)
+    // studentName = response.data.username
+    // studentName = "Alex"
+  // } catch (error) {
+  //   console.error('Error fetching username', error)
+  //   studentName = 'oh no'
+  // }
+}
+
+// const getFeedback = (goalId) => {
+//   // const response = await api.get(`/smart-goals/${goalId}/feedback`)
+//   // const matched = feedback.find((item) => item.value === Number(goalId)) 
+//   // return matched ? matched.feedback_content : "—"
+//   return feedback.feedback_content
+// }
+
 const loadFeedback = async () => {
-  const response = await api.get('/smart-goals/all/feedback')
-  feedback.value = response.data
+  // try {
+    const response = await api.get(`/smart-goals/all/feedback/${route.params.id}`);
+    feedback.value = response.data
+  // } catch (error) {
+  //   console.error('Error fetching feedback', error)
+  //   // feedback.value = []
+  // }
 }
 
 const loadPlanId = async () => {
   try {
     const response = await api.get('/career-plans', {
       params: {
-        profile_id: profileId.value
+        profile_id: 2//profileId.value
       }
     })
     if (response.data && response.data.length > 0) {
@@ -370,6 +426,7 @@ const loadPlanId = async () => {
 }
 
 onMounted(() => {
+  loadMappedStudents()
   loadPlanId()
   loadFeedback()
   loadGoals()
@@ -400,9 +457,31 @@ const editFeedback = (feedback) => {
   Object.assign(editFeedbackData, {
     goal_id: feedback.goal_id,
     staff_id: feedback.staff_id,
-    feedback_content: feedback.feedback_content,
+    feedback_content: feedback.feedback_content || '',
   })
+
+  // if()
+
   showEditFeedbackForm.value = true
+}
+
+// Open step editor modal and clone/sort existing step data into local draft state.
+const editSteps = (goal) => {
+  stepModalGoal.value = goal
+  // Laravel serializes relations as snake_case in JSON responses.
+  const sortedSteps = [...getGoalSteps(goal)].sort((a, b) => (a.step_order ?? 0) - (b.step_order ?? 0))
+  stepDrafts.value = sortedSteps.map((step, index) => ({
+    step_id: step.step_id,
+    step_description: step.step_description || '',
+    step_order: step.step_order ?? index + 1,
+    localKey: `existing-${step.step_id}`
+  }))
+
+  if (stepDrafts.value.length === 0) {
+    addStep()
+  }
+
+  showStepModal.value = true
 }
 
 const updateFeedback = (goal) => {}
@@ -490,6 +569,18 @@ const deleteFeedback = (goal) => {}
 .page-btn-danger:hover {
   background: #e7635b;
   color: #ffffff;
+}
+
+.student-select {
+  width: min(100%, 14rem);
+  min-width: 14.5rem;
+  padding: 0.65rem 0.55rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  display: block;
+  margin: 0 auto;
 }
 
 .filter-section {
@@ -640,16 +731,14 @@ const deleteFeedback = (goal) => {}
 
 .goals-table th:nth-child(3),
 .goals-table td:nth-child(3) {
-  /* Column 3: Action Steps */
-  min-width: 10rem;
+  /* Column 3: Progress */
+  min-width: 8rem;
 }
-.goals-table th:nth-child(3),
-.goals-table td:nth-child(3),
 .goals-table th:nth-child(4),
 .goals-table td:nth-child(4),
 .goals-table th:nth-child(7),
 .goals-table td:nth-child(7){
-  /* Columns 3,4,7: Progress, Learnings, Completion Notes */
+  /* Columns 4,7: Learnings, Completion Notes */
   min-width: 10rem;
 }
 
@@ -665,7 +754,7 @@ const deleteFeedback = (goal) => {}
 .goals-table th:last-child,
 .goals-table td:last-child {
   /* Last column: Feedback */
-  min-width: 9rem;
+  min-width: 14rem;
 }
 
 .steps-list {
