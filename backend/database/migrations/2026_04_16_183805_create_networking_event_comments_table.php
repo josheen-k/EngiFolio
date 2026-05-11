@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('competency_evidence_types', function (Blueprint $table) {
-            $table->id('evidence_type_id');
-            $table->string('evidence_type', 15);
+        Schema::create('networking_event_comments', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
+            $table->text('comment_text');
+  
+            $table->foreignId('event_id')->nullable()->constrained('networking_events', 'event_id')->nullOnDelete();
         });
     }
 
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('competency_evidence_types');
+        Schema::dropIfExists('networking_event_comments');
     }
 };

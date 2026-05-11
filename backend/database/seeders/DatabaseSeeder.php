@@ -28,10 +28,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('competency_entry_levels')->insert([
-            ['entry_level_id' => 1, 'competency_level' => 'Emerging', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_level_id' => 2, 'competency_level' => 'Developing', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_level_id' => 3, 'competency_level' => 'Proficient', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_level_id' => 4, 'competency_level' => 'Confident', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 1, 'competency_level' => 'Emerging', 'competency_level_weighting' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 2, 'competency_level' => 'Developing', 'competency_level_weighting' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 3, 'competency_level' => 'Proficient', 'competency_level_weighting' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['entry_level_id' => 4, 'competency_level' => 'Confident', 'competency_level_weighting' => 4, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('competency_entry_statuses')->insert([
@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('student_profiles')->insert([
-            ['profile_id' => 1, 'user_id' => 1, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems.', 'profile_image_url' => '/src/assets/sam.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['profile_id' => 1, 'user_id' => 1, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems.', 'profile_image_url' => '/src/assets/alex.jpg', 'created_at' => now(), 'updated_at' => now()],
             ['profile_id' => 2, 'user_id' => 2, 'degree_title' => 'Bachelor of Civil Engineering', 'specialisation' => 'Structural', 'personal_intro' => 'Interested in earthquake-resistant urban design.', 'profile_image_url' => '/src/assets/kate.jpeg', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
@@ -72,7 +72,10 @@ class DatabaseSeeder extends Seeder
             ['goal_id' => 2, 'plan_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // 6. NETWORKING
+        DB::table('goal_feedback')->insert([
+            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
         DB::table('industry_contacts')->insert([
             ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Robert Ford', 'company' => 'Westworld Robotics', 'date_met' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 2, 'profile_id' => 2, 'contact_name' => 'Sarah Connor', 'company' => 'Cyberdyne Systems', 'date_met' => '2026-01-20', 'created_at' => now(), 'updated_at' => now()],
@@ -83,7 +86,6 @@ class DatabaseSeeder extends Seeder
             ['contact_id' => 2, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/sconnor', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // 7. COMPETENCIES
         DB::table('competency_groups')->insert([
             ['group_id' => 1, 'display_id' => 'CAT1', 'group_name' => 'Knowledge Base', 'created_at' => now(), 'updated_at' => now()],
             ['group_id' => 2, 'display_id' => 'CAT2', 'group_name' => 'Engineering Application Ability', 'created_at' => now(), 'updated_at' => now()],
@@ -91,32 +93,33 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('competency_indicators')->insert([
-            ['group_id' => 1, 'display_id' => '1.1', 'indicator_name' => 'Theory based understanding', 'description' => 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 1, 'display_id' => '1.2', 'indicator_name' => 'Mathematical/Numerical understanding', 'description' => 'Conceptual understanding of the mathematics, numerical analysis, statistics, and computer and information sciences which underpin the engineering discipline.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 1, 'display_id' => '1.3', 'indicator_name' => 'Specialist bodies of knowledge', 'description' => 'In-depth understanding of specialist bodies of knowledge within the engineering discipline.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 1, 'display_id' => '1.4', 'indicator_name' => 'Research directions', 'description' => 'Discernment of knowledge development and research directions within the engineering discipline.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 1, 'display_id' => '1.5', 'indicator_name' => 'Design practice and context', 'description' => 'Knowledge of engineering design practice and contextual factors impacting the engineering discipline.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 1, 'display_id' => '1.6', 'indicator_name' => 'Sustainable engineering practice', 'description' => 'Understanding of the scope, principles, norms, accountabilities and bounds of sustainable engineering practice in the specific discipline.', 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 1, 'display_id' => '1.1', 'indicator_name' => 'Theory based understanding', 'description' => 'Comprehensive, theory based understanding of the underpinning natural and physical sciences and the engineering fundamentals applicable to the engineering discipline.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 1, 'display_id' => '1.2', 'indicator_name' => 'Mathematical/Numerical understanding', 'description' => 'Conceptual understanding of the mathematics, numerical analysis, statistics, and computer and information sciences which underpin the engineering discipline.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 1, 'display_id' => '1.3', 'indicator_name' => 'Specialist bodies of knowledge', 'description' => 'In-depth understanding of specialist bodies of knowledge within the engineering discipline.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 1, 'display_id' => '1.4', 'indicator_name' => 'Research directions', 'description' => 'Discernment of knowledge development and research directions within the engineering discipline.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 1, 'display_id' => '1.5', 'indicator_name' => 'Design practice and context', 'description' => 'Knowledge of engineering design practice and contextual factors impacting the engineering discipline.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 1, 'display_id' => '1.6', 'indicator_name' => 'Sustainable engineering practice', 'description' => 'Understanding of the scope, principles, norms, accountabilities and bounds of sustainable engineering practice in the specific discipline.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
 
-            ['group_id' => 2, 'display_id' => '2.1', 'indicator_name' => 'Complex problem solving', 'description' => 'Application of established engineering methods to complex engineering problem solving.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 2, 'display_id' => '2.2', 'indicator_name' => 'Techniques, tools and resources', 'description' => 'Fluent application of engineering techniques, tools and resources.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 2, 'display_id' => '2.3', 'indicator_name' => 'Synthesis and design processes', 'description' => 'Application of systematic engineering synthesis and design processes.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 2, 'display_id' => '2.4', 'indicator_name' => 'Project management approaches', 'description' => 'Application of systematic approaches to the conduct and management of engineering projects.', 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 2, 'display_id' => '2.1', 'indicator_name' => 'Complex problem solving', 'description' => 'Application of established engineering methods to complex engineering problem solving.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 2, 'display_id' => '2.2', 'indicator_name' => 'Techniques, tools and resources', 'description' => 'Fluent application of engineering techniques, tools and resources.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 2, 'display_id' => '2.3', 'indicator_name' => 'Synthesis and design processes', 'description' => 'Application of systematic engineering synthesis and design processes.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 2, 'display_id' => '2.4', 'indicator_name' => 'Project management approaches', 'description' => 'Application of systematic approaches to the conduct and management of engineering projects.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
 
-            ['group_id' => 3, 'display_id' => '3.1', 'indicator_name' => 'Ethical conduct', 'description' => 'Ethical conduct and professional accountability.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.2', 'indicator_name' => 'Effective communication', 'description' => 'Effective oral and written communication in professional and lay domains.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.3', 'indicator_name' => 'Creative and pro-active demeanour', 'description' => 'Creative, innovative and pro-active demeanour.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.4', 'indicator_name' => 'Information management', 'description' => 'Professional use and management of information.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.5', 'indicator_name' => 'Self-management', 'description' => 'Orderly management of self, and professional conduct.', 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.6', 'indicator_name' => 'Team membership and leadership', 'description' => 'Effective team membership and team leadership.', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+            ['group_id' => 3, 'display_id' => '3.1', 'indicator_name' => 'Ethical conduct', 'description' => 'Ethical conduct and professional accountability.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.2', 'indicator_name' => 'Effective communication', 'description' => 'Effective oral and written communication in professional and lay domains.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.3', 'indicator_name' => 'Creative and pro-active demeanour', 'description' => 'Creative, innovative and pro-active demeanour.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.4', 'indicator_name' => 'Information management', 'description' => 'Professional use and management of information.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.5', 'indicator_name' => 'Self-management', 'description' => 'Orderly management of self, and professional conduct.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.6', 'indicator_name' => 'Team membership and leadership', 'description' => 'Effective team membership and team leadership.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+        
+            ['group_id' => 3, 'display_id' => '3.0', 'indicator_name' => 'Test', 'description' => 'Test', 'discontinued_date' => now(), 'created_at' => now(), 'updated_at' => now()],
+            ]);
 
         DB::table('competency_entries')->insert([
             ['entry_id' => 1, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Bridge Project', 'associated_year' => 1, 'experience_tasks' => 'CAD work', 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 2, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Bridge Project', 'associated_year' => 1, 'experience_tasks' => 'CAD work', 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 2, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Electrical Project', 'associated_year' => 2, 'experience_tasks' => 'Wiring', 'entry_level_id' => 1, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // 8. OTHER
         DB::table('cdl_modules')->insert([
             ['cdl_id' => 1, 'title' => 'Ethics', 'description' => 'Ethics 101', 'created_at' => now(), 'updated_at' => now()],
         ]);
@@ -183,7 +186,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 10. ATTAINMENT CERTIFICATES
         DB::table('attainment_certs')->insert([
             [
                 'profile_id' => 1, 
@@ -191,7 +193,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'General Construction Induction (CPCCWHS1001) required for all industrial site visits.', 
                 'file_path' => '/uploads/attain/white_card_alex.pdf', 
                 'issued_date' => '2025-05-20', 
-                'expiry_date' => null, // Typically doesn't expire
+                'expiry_date' => null,
                 'created_at' => now(), 
                 'updated_at' => now()
             ],
@@ -216,5 +218,11 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ],
         ]);
+        
+        DB::table('competency_feedback')->insert([
+            ['entry_id' => 1, 'staff_id' => 4, 'feedback_content' => 'Excellent detail on the CAD drawings. Consider adding more information about the structural materials used.', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 1, 'staff_id' => 4, 'feedback_content' => 'Good start on the wiring diagrams. Please ensure you upload the safety certification as evidence for this task.', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
     }
 }

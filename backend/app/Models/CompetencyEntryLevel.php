@@ -12,7 +12,8 @@ class CompetencyEntryLevel extends Model
     protected $table = 'competency_entry_levels'; 
     protected $primaryKey = 'entry_level_id';
     protected $fillable = [
-        'competency_level'
+        'competency_level',
+        'competency_level_weighting'
     ];
 
     public function entries()

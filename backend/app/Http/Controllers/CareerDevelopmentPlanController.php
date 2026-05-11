@@ -36,13 +36,22 @@ class CareerDevelopmentPlanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
-    {
-        // Return plan with all attached smart goals
-        $plan = CareerDevelopmentPlan::with(['smartGoals.actionSteps'])->where('user_id', $id)->findOrFail();
-        
-        return response()->json($plan);
+public function show($profile_id)
+{
+    try {
+        $plans = CareerDevelopmentPlan::with([
+            'smartGoals.actionSteps', 
+            'smartGoals.status'
+        ])
+        ->where('profile_id', $profile_id)
+        ->get(); // Use get() to return a collection of plans
+
+        return response()->json($plans);
+    } catch (\Exception $e) {
+        // If it still fails, this will tell you exactly why (e.g. "Column not found")
+        return response()->json(['error' => $e.getMessage()], 500);
     }
+}
 
     /**
      * Update the specified resource in storage.

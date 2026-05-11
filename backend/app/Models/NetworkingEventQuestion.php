@@ -13,11 +13,11 @@ class NetworkingEventQuestion extends Model
     protected $primaryKey = 'question_id';
     protected $fillable = [
         'event_id',
-        'question_order',
         'question_text',
+        'question_order'
     ];
 
-    public function networkingEvent()
+    public function event()
     {
         return $this->belongsTo(NetworkingEvent::class, 'event_id', 'event_id');
     }
