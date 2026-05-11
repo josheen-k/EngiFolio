@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -120,6 +121,14 @@ class AdminController extends Controller
             // New accounts start as active.
             'account_status_id' => 1,
         ]);
+
+        if ((int) $validated['role_id'] === 3) {
+            // Student accounts need a profile so admin View/Edit can open student pages.
+            StudentProfile::create([
+                'user_id' => $user->user_id,
+                'preferred_name' => $validated['first_name'] ?? null,
+            ]);
+        }
 
         return response()->json([
             'message' => 'User created successfully.',

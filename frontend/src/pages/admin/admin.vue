@@ -31,7 +31,10 @@ const stats = ref({
   totalCompletedGoals: 0
 })
 
-const filteredUsers = computed(() => users.value)
+const filteredUsers = computed(() => {
+  // Users with student profiles can be viewed/edited, so keep them at the top.
+  return [...users.value].sort((a, b) => Number(Boolean(b.profile_id)) - Number(Boolean(a.profile_id)))
+})
 
 const totalUsers = computed(() => stats.value.totalUsers)
 const totalGoals = computed(() => stats.value.totalGoals)
@@ -117,7 +120,7 @@ const createUser = async () => {
 
 const viewUser = (user) => {
   if (!user.profile_id) {
-    alert('This user does not have a student profile yet.')
+    // Admin and staff users do not have student profile pages.
     return
   }
   router.push(`/goals/${user.profile_id}`)
@@ -125,7 +128,7 @@ const viewUser = (user) => {
 
 const editUser = (user) => {
   if (!user.profile_id) {
-    alert('This user does not have a student profile yet.')
+    // Admin and staff users do not have student profile pages.
     return
   }
   router.push(`/settings/profile/${user.profile_id}`)
@@ -254,8 +257,26 @@ const deleteUser = async (user) => {
                 <td>{{ user.updatedAt }}</td>
                 <td>
                   <div class="action-buttons">
-                    <button type="button" class="btn page-btn-outline" @click="viewUser(user)">View</button>
-                    <button type="button" class="btn page-btn-primary" @click="editUser(user)">Edit</button>
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
+                      <button
+                        type="button"
+                        class="btn page-btn-outline"
+                        :disabled="!user.profile_id"
+                        @click="viewUser(user)"
+                      >
+                        View
+                      </button>
+                    </span>
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
+                      <button
+                        type="button"
+                        class="btn page-btn-primary"
+                        :disabled="!user.profile_id"
+                        @click="editUser(user)"
+                      >
+                        Edit
+                      </button>
+                    </span>
                     <button type="button" class="btn page-btn-danger" :disabled="deletingUserId === user.user_id" @click="deleteUser(user)">
                       {{ deletingUserId === user.user_id ? 'Deleting...' : 'Delete' }}
                     </button>
@@ -428,6 +449,10 @@ const deleteUser = async (user) => {
 .action-buttons {
   display: flex;
   gap: 0.45rem;
+}
+
+.action-tooltip {
+  display: inline-flex;
 }
 
 .btn {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
@@ -41,6 +42,11 @@ Route::get('/users/{user}', [UserController::class, 'show']);
 Route::put('/users/{user}', [UserController::class, 'update']);
 Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
+// Admin user management routes
+Route::get('/admin/users-overview', [AdminController::class, 'usersOverview']);
+Route::post('/admin/users', [AdminController::class, 'createUser']);
+Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
+
 // Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
@@ -81,7 +87,11 @@ Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
+Route::post('/career-plans', [CareerDevelopmentPlanController::class, 'store']);
+Route::put('/career-plans/{plan}/smart-goals', [CareerDevelopmentPlanController::class, 'linkSmartGoals']);
 Route::get('/career-plans/{id}', [CareerDevelopmentPlanController::class, 'show']);
+Route::put('/career-plans/{plan}', [CareerDevelopmentPlanController::class, 'update']);
+Route::delete('/career-plans/{plan}', [CareerDevelopmentPlanController::class, 'destroy']);
 
 // Competency Entries
 Route::get('/competency-entries/{profile_id}', [CompetencyEntryController::class, 'index']);
