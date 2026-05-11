@@ -1,29 +1,57 @@
 <script setup>
-import { ref } from 'vue';
-import { onClickOutside } from '@vueuse/core';
-import { useRoute } from 'vue-router';
+	import { ref, onMounted, watch } from 'vue';
+	import { onClickOutside } from '@vueuse/core';
+	import { useRoute } from 'vue-router';
+	import api from "@/services/api";
+	import defaultAvatar from '@/assets/placeholder-av.webp';
 
-const route = useRoute();
-const isOpen = ref(false);
-const dropdown = ref(null);
-const isMenuOpen = ref(false);
+	const route = useRoute();
+	const isOpen = ref(false);
+	const dropdown = ref(null);
+	const isMenuOpen = ref(false);
 
-const openDropdown = () => {
-	isOpen.value = !isOpen.value;
-};
-const closeDropdown = () => {
-	isOpen.value = false;
-};
-const toggleMenu = () => {
-	isMenuOpen.value = !isMenuOpen.value;
-};
-const closeMenu = () => {
-	isMenuOpen.value = false;
-};
+	// Store image in a local cache so image doesn't flicker when user navigates between pages
+	const cachedImage = localStorage.getItem(`profile_img_${route.params.id}`);
+	const profileImage = ref(cachedImage || null);
 
-onClickOutside(dropdown, () => {
-	isOpen.value = false;
-});
+	// For getting the profile picture
+	const fetchProfileData = async () => {
+		try {
+			const response = await api.get(`/profile/${route.params.id}`);
+			
+			if (response.data && response.data.profile_image_url) {
+				const newProfilePic = response.data.profile_image_url;
+
+				if (profileImage.value !== newProfilePic) {
+					profileImage.value = newProfilePic;
+					localStorage.setItem(`profile_img_${route.params.id}`, newProfilePic);
+				}
+			}
+		} catch (error) {
+			console.error("Profile load failed:", error);
+		}
+	};
+
+	const openDropdown = () => {
+		isOpen.value = !isOpen.value;
+	};
+	const closeDropdown = () => {
+		isOpen.value = false;
+	};
+	const toggleMenu = () => {
+		isMenuOpen.value = !isMenuOpen.value;
+	};
+	const closeMenu = () => {
+		isMenuOpen.value = false;
+	};
+
+	onClickOutside(dropdown, () => {
+		isOpen.value = false;
+	});
+
+	onMounted(() => {
+		fetchProfileData();
+	});
 </script>
 
 <template>
@@ -31,8 +59,7 @@ onClickOutside(dropdown, () => {
 		<div v-if="isMenuOpen" class="menu-backdrop" @click="closeMenu"></div>
 		<div class="nav-wrapper">
 			<div class="d-flex align-items-center gap-3 nav-left">
-				<!-- if we keep the router to go to home, it appears as if the logo signed the user out which looks bad-->
-				<!-- <router-link to="/"> -->
+
 				<div class="navLogo"></div>
 				<!-- </router-link> -->
 				<button class="menu-toggle" type="button" @click.stop="toggleMenu" aria-label="Toggle navigation">
@@ -61,15 +88,15 @@ onClickOutside(dropdown, () => {
 			</div>
 
 			<div class="nav-item" ref="dropdown">
-				<img class="rounded-circle av-img"
-					src="https://img.freepik.com/free-photo/young-woman-attend-courses-girl-student-studying-holding-notebooks-showing-thumb-up-approval-recommending-company-standing-blue-background_1258-70145.jpg"
-					alt="Profile" @click="openDropdown">
+					<img  class="rounded-circle av-img" :src="profileImage || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" @click="openDropdown"/>
 
 				<div v-if="isOpen" class="dd">
 					<router-link :to="`/profile/${$route.params.id}`" class="dd-item"
 						@click="closeDropdown">Profile</router-link>
 					<router-link :to="`/settings/profile/${$route.params.id}`" class="dd-item"
 						@click="closeDropdown">Settings</router-link>
+					<router-link :to="`/student/export/${$route.params.id}`" class="dd-item"
+						@click="closeDropdown">Export</router-link>
 					<router-link to="/" class="dd-item logout" @click="closeDropdown">Logout</router-link>
 				</div>
 			</div>

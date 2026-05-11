@@ -6,7 +6,7 @@
     <div class="toggle-line">
       <button class="toggle-btn" :class="{active: currTab === 'PROFILE' }" @click="currTab = 'PROFILE'">Profile</button>
       <button class="toggle-btn" :class="{ active: currTab === 'CERTIFICATIONS' }" @click="currTab = 'CERTIFICATIONS'">Certifications</button>
-      <!--slidingpill -->
+      <!--sliding pill -->
       <div class="toggle-pill" :class="currTab === 'CERTIFICATIONS' ? 'pill-right' : 'pill-left'"></div>
     </div>
   </div>
@@ -16,34 +16,32 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router' 
-import Navbar from '@/components/Navbar.vue';
-import ProfileView from '@/components/ProfileView.vue';
-import ProfileCertifications from '@/components/ProfileCertifications.vue';
-import api from "@/services/api";
+  import { ref, computed, onMounted } from 'vue'
+  import { useRoute } from 'vue-router' 
+  import Navbar from '@/components/Navbar.vue';
+  import ProfileView from '@/components/ProfileView.vue';
+  import ProfileCertifications from '@/components/ProfileCertifications.vue';
 
-const route = useRoute() 
+  const route = useRoute() 
 
-// different tabs in side pannel
-const currTab = ref('PROFILE');
-const tabs = ['PROFILE', 'CERTIFICATIONS'];
+  // different tabs in side pannel
+  const currTab = ref('PROFILE');
 
-// render components based on current tab
-const currComponent = computed(()=> {
-  switch (currTab.value) {
-    case 'PROFILE':
-      return ProfileView
-    case 'CERTIFICATIONS':
-      return ProfileCertifications
-  }
-});
+  // render components based on current tab
+  const currComponent = computed(()=> {
+    switch (currTab.value) {
+      case 'PROFILE':
+        return ProfileView
+      case 'CERTIFICATIONS':
+        return ProfileCertifications
+    }
+  });
 
-onMounted(() => {
-  if (route.query.tab === 'CERTIFICATIONS') {
-    currTab.value = 'CERTIFICATIONS'
-  }
-})
+  onMounted(() => {
+    if (route.query.tab === 'CERTIFICATIONS') {
+      currTab.value = 'CERTIFICATIONS'
+    }
+  })
 </script>
 
 <style scoped>

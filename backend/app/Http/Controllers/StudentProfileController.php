@@ -98,31 +98,33 @@ class StudentProfileController extends Controller
         return response()->json($studentProfile);
     }
 
-public function exportPdf(Request $request, $id)
-{
-    $profile = StudentProfile::with([
-        'user', 
-        'competencyEntries', 
-        'competencyEntries.indicator', 
-        'competencyEntries.entryLevel',  
-        'competencyEntries.entryStatus',
-        'industryContacts',
-        'industryContacts.contactMethods',
-        'careerPlans',
-        'careerPlans.smartGoals',
-        'careerPlans.smartGoals.actionSteps',
-        'careerPlans.smartGoals.status',
-    ])->findOrFail($id);
+    public function exportPdf(Request $request, $id)
+    {
+        $profile = StudentProfile::with([
+            'user', 
+            'competencyEntries', 
+            'competencyEntries.indicator', 
+            'competencyEntries.entryLevel',  
+            'competencyEntries.entryStatus',
+            'industryContacts',
+            'industryContacts.contactMethods',
+            'careerPlans',
+            'careerPlans.smartGoals',
+            'careerPlans.smartGoals.actionSteps',
+            'careerPlans.smartGoals.status',
+            'achievementCerts',
+            'attainmentCerts', 
+        ])->findOrFail($id);
 
-    // Fields selected. Passed by front end
-    $selections = $request->input('selections', []);
+        // Fields selected. Passed by front end
+        $selections = $request->input('selections', []);
 
-    // Use pdf template to generate pdf for downloading
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('portfolio', [
-        'profile' => $profile, 
-        'selections' => $selections
-    ]);
-    
-    return $pdf->download("portfolio.pdf");
-}
+        // Use pdf template to generate pdf for downloading
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('portfolio', [
+            'profile' => $profile, 
+            'selections' => $selections
+        ]);
+        
+        return $pdf->download("portfolio.pdf");
+    }
 }

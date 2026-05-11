@@ -13,10 +13,9 @@ class IndustryContact extends Model
     protected $table = 'industry_contacts';
     protected $primaryKey = 'contact_id';
     protected $fillable = [
-        'user_id',
+        'profile_id',
         'contact_name',
         'company',
-        'progress_notes',
         'date_met',
     ];
 
@@ -25,9 +24,9 @@ class IndustryContact extends Model
         return 'contact_id';
     }
 
-    public function user()
+    public function profile()
     {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
 
     public function contactMethods()

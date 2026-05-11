@@ -5,6 +5,9 @@ use App\Http\Controllers\AttainmentCertController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
 use App\Http\Controllers\CompetencyEntryController;
 use App\Http\Controllers\CompetencyIndicatorController;
+use App\Http\Controllers\StudentActionsController;
+use App\Http\Controllers\CompetencyEntryLevelsController;
+use App\Http\Controllers\CompetencyGroupController;
 use App\Http\Controllers\GoalActionStepController;
 use App\Http\Controllers\GoalStatusesController;
 use App\Http\Controllers\IndustryContactController;
@@ -15,22 +18,14 @@ use App\Http\Controllers\SmartGoalController;
 use App\Http\Controllers\StudentLinkController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CompetencyEvidenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ElevatorPitchController;
 
 
 use App\Http\Controllers\GoalFeedbackController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -52,11 +47,11 @@ Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 Route::get('/profileDash/{id}', [StudentProfileController::class, 'getDashboardInfo']);
 
 // Industry contacts/networking pages
-Route::get('/users/{user}/industry-contacts', [IndustryContactController::class, 'index']);
-Route::post('/users/{user}/industry-contacts', [IndustryContactController::class, 'store']);
-Route::get('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'show']);
-Route::put('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'update']);
-Route::delete('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'destroy']);
+Route::get('/users/{profile}/industry-contacts', [IndustryContactController::class, 'index']);
+Route::post('/users/{profile}/industry-contacts', [IndustryContactController::class, 'store']);
+Route::get('/users/{profile}/industry-contacts/{industryContact}', [IndustryContactController::class, 'show']);
+Route::put('/users/{profile}/industry-contacts/{industryContact}', [IndustryContactController::class, 'update']);
+Route::delete('/users/{profile}/industry-contacts/{industryContact}', [IndustryContactController::class, 'destroy']);
 
 // Student Profile Links
 Route::post('/link', [StudentLinkController::class, 'store']);
@@ -89,10 +84,16 @@ Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
 Route::get('/career-plans/{id}', [CareerDevelopmentPlanController::class, 'show']);
 
 // Competency Entries
-Route::get('/competency-entries/{id}', [CompetencyEntryController::class, 'show']);
+Route::get('/competency-entries/{profile_id}', [CompetencyEntryController::class, 'index']);
+Route::post('/competency-entries', [CompetencyEntryController::class, 'store']);
+Route::put('competency-entries/{entry_id}', [CompetencyEntryController::class, 'update']);
+Route::delete('competency-entries/{entry_id}', [CompetencyEntryController::class, 'destroy']);
+
 
 // Competency Indicators
 Route::get('/competency-indicators', [CompetencyIndicatorController::class, 'index']);
+Route::get('/student-competency-indicators/{id}', [CompetencyIndicatorController::class, 'competenciesWithHighest']);
+Route::get('/competency-indicators/{id}', [CompetencyIndicatorController::class, 'show']);
 
 // Event
 Route::get('/networking-events', [NetworkingEventController::class, 'index']);
@@ -132,3 +133,22 @@ Route::post('/goal-status', [GoalStatusesController::class, 'store']);
 Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
 Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
 
+// Student actions
+Route::get('/student-actions/recent/{id}', [StudentActionsController::class, 'getRecentActions']);
+Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
+
+// Competency Entry Levels
+Route::get('/competency-levels', [CompetencyEntryLevelsController::class, 'index']);
+Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsController::class, 'getLevelByWeighting']);
+
+// Competency Groups
+Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class, 'getStudentCompetencies']);
+
+// Competency Links
+Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
+Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);
+
+//ElevatorPitch
+Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
+Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
+Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);

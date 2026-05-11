@@ -9,9 +9,9 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Adding reflection for:</label>
-            <select v-model="f.comptId" class="form-select field-select rounded-3">
-              <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.id }}</option>
-            </select>
+            <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
+              Competency {{ selectedCompt.displayId }}
+            </div>
           </div>
           <div class="col-7">
             <label class="form-label field-label">Description:</label>
@@ -24,11 +24,10 @@
           <div class="col-5">
             <label class="form-label field-label">Attainment level</label>
             <select v-model="f.level" class="form-select field-select rounded-3">
-              <option>Emerging</option>
-              <option>Developing</option>
-              <option>Proficient</option>
-              <option>Confident</option>
-            </select>
+            <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
           </div>
           <div class="col-7">
             <label class="form-label field-label">Experience title</label>
@@ -136,7 +135,7 @@
           </div>
 
           <button class="btn btn-filter rounded-pill px-3 py-1 mt-1"
-          @click="f.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add another</button>
+          @click="f.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
         </div>
       </div>
 
@@ -147,7 +146,7 @@
         <div class="d-flex gap-2">
           <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
           <button class="btn btn-filter" @click="$emit('close')">Cancel</button>
-          <button class="btn btn-add" @click="submit">Done</button>
+          <button class="btn btn-add" @click="save">Done</button>
         </div>
       </div>
     </div>
@@ -156,28 +155,43 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { getAllCompts, blankForm, todayStr } from '@/useCompetencies.js'
+import { blankForm, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+import { useRoute } from 'vue-router'
+import api from "@/services/api"
 
 const props = defineProps({
   show: Boolean,
-  initialComptId: { 
-    type: String, 
-    default: '' 
-  }
+  initialComptId: [String, Number], 
+  levelOptions: Array,
+  categories: Array
 })
 
-const emit = defineEmits(['close', 'add'])
-const allCompts = computed(()=>getAllCompts())
+const emit = defineEmits(['close', 'refresh']);
+const route = useRoute();
+
+const allCompts = computed(() => {
+  // Get the indicator id and description for the selected competency
+  return props.categories.flatMap(category => {
+    return category.compt.map(indicator => ({
+      id: indicator.id, 
+      displayId: indicator.displayId,
+      desc: indicator.desc || '' 
+    }));
+  });
+});
 
 // form state
 const f = ref(blankForm())
 
-// when popup opens or initialComptId changes, reset and prefil
-watch(()=> props.show, (v)=> {
+// when popup opens or initialComptId changes, reset and prefill
+watch(() => props.show, (v) => {
   if (v) {
-    f.value = blankForm(props.initialComptId)
-  }
-})
+    f.value = blankForm();
+    f.value.comptId = props.initialComptId;
+  }}, 
+  // Run straight away
+  { immediate: true });
+
 watch(()=> props.initialComptId, (id)=> {
   if (props.show) {
     f.value.comptId = id
@@ -188,33 +202,6 @@ const selectedCompt = computed(()=>
   allCompts.value.find(c=> c.id===f.value.comptId)
 )
 
-// file evidence helpers
-function fileAccept(type) {
-  switch (type) {
-    case 'image':
-      return 'image/*'
-    case 'video':
-      return 'video/*'
-    case 'document':
-      return '.pdf,.doc,.docx,.txt,.ppt,.pptx'
-    default:
-      return '*'
-  }
-}
-
-function uploadHint(type) {
-  switch (type) {
-    case 'image':
-      return 'PNG, JPG, JPEG, GIF'
-    case 'video':
-      return 'MP4, MOV'
-    case 'document':
-      return 'PDF, DOC, DOCX, TXT, PPT, PPTX'
-    default:
-      return ''
-  }
-}
-
 function handleFile(e, ev) {
   const file = e.target.files[0]
   if (file) { 
@@ -224,29 +211,50 @@ function handleFile(e, ev) {
 }
 
 // submit form
-function submit(asDraft = false) {
-  emit('add', {
-    comptId: f.value.comptId,
-    reflec: {
-      title: f.value.title || 'Untitled',
-      year: Number(f.value.year),
-      level: f.value.level,
-      date: todayStr(),
-      startDate: f.value.startDate,
-      endDate: f.value.endDate,
-      tasks: f.value.tasks,
-      learnings: f.value.learnings,
-      future: f.value.future,
-      isDraft: asDraft,
-      evidenceEntries: JSON.parse(JSON.stringify(f.value.evidenceEntries))
+async function submit(statusId) {
+  try {
+    const payload = {
+      profile_id: route.params.id,
+      indicator_id: Number(f.value.comptId),
+      experience_title: f.value.title || 'Untitled',
+      associated_year: Number(f.value.year),
+      entry_level_id: f.value.level, 
+      entry_status_id: statusId, 
+      start_date: f.value.startDate,
+      end_date: f.value.endDate,
+      experience_tasks: f.value.tasks,
+      key_learnings: f.value.learnings,
+      future_applications: f.value.future,
+    };
+
+    const res = await api.post('/competency-entries', payload);
+
+    const entryId = res.data.entry_id
+
+    // Save each evidence entry
+    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
+    for (const ev of evidenceToSave) {
+      await api.post('/competency-evidence', {
+        entry_id: entryId,
+        evidence_type: ev.type,
+        evidence_value: ev.value
+      })
     }
-  })
-  emit('close')
+
+    // RefreshClose window
+    emit('refresh');
+    emit('close');
+
+  } catch (error) {
+    console.error("Submission failed:", error);
+    alert("Submission could not be saved. Please check that all required fields are filled");
+  }
 }
 
-function saveAsDraft() {
-  submit(true)
-}
+// Pass the entry status id when saving the entry
+// 1 for draft, 2 for submitted
+const save = () => submit(2)
+const saveAsDraft = () => submit(1)
 </script>
 
 <style scoped>
