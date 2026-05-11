@@ -488,7 +488,7 @@ function onAddReflec() {
 .filter-dd {
   position: absolute;
   top: calc(100% + 0.5rem);
-  right: 0;
+  left: 0;
   background: #ffffff;
   border: 0.09rem solid #e0e0e0;
   border-radius: 1rem;
