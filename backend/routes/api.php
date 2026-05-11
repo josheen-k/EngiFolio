@@ -21,6 +21,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompetencyEvidenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ElevatorPitchController;
 
 
 use App\Http\Controllers\GoalFeedbackController;
@@ -46,11 +47,11 @@ Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
 Route::get('/profileDash/{id}', [StudentProfileController::class, 'getDashboardInfo']);
 
 // Industry contacts/networking pages
-Route::get('/users/{user}/industry-contacts', [IndustryContactController::class, 'index']);
-Route::post('/users/{user}/industry-contacts', [IndustryContactController::class, 'store']);
-Route::get('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'show']);
-Route::put('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'update']);
-Route::delete('/users/{user}/industry-contacts/{industryContact}', [IndustryContactController::class, 'destroy']);
+Route::get('/users/{profile}/industry-contacts', [IndustryContactController::class, 'index']);
+Route::post('/users/{profile}/industry-contacts', [IndustryContactController::class, 'store']);
+Route::get('/users/{profile}/industry-contacts/{industryContact}', [IndustryContactController::class, 'show']);
+Route::put('/users/{profile}/industry-contacts/{industryContact}', [IndustryContactController::class, 'update']);
+Route::delete('/users/{profile}/industry-contacts/{industryContact}', [IndustryContactController::class, 'destroy']);
 
 // Student Profile Links
 Route::post('/link', [StudentLinkController::class, 'store']);
@@ -146,3 +147,8 @@ Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class,
 // Competency Links
 Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
 Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);
+
+//ElevatorPitch
+Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
+Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
+Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);
