@@ -150,7 +150,7 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="item in focusItems" :key="item.indicator_id">
+              <template v-for="item in focusItems.slice(0,7)" :key="item.indicator_id">
                 <tr v-if="!item.highest_entry || item.highest_entry.competency_level_weighting < 2">
                   <td><a href="#" class="table-link">{{ item.display_id }}</a></td>
                   <td>{{ item.description }}</td>
@@ -185,24 +185,6 @@
           </ul>
         </div>
         <p v-else class="text-center">No recent activity</p>
-      </div>
-
-      <div class="row mt-5">
-        <div class="col-12">
-          <h2 class="sec-title text-center">Your Goals</h2>
-          <ul class="ps-5 activity-list" v-if="userGoals && userGoals.length > 0">
-            <li class="mb-3" v-for="goal in userGoals" :key="goal.goal_id">
-              <strong>{{ (goal.status?.status || 'planned').toUpperCase() }}:</strong>
-              {{ goal.goal_description }} 
-              <span v-if="goal.end_date" class="text-muted">
-                (Target: {{ goal.end_date }})
-              </span>
-            </li>
-          </ul>
-          <div v-else class="ps-5 activity-list text-muted">
-            No goals currently logged.
-          </div>
-        </div>
       </div>
     </div>
   </main>
