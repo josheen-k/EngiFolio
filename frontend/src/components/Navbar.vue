@@ -88,9 +88,7 @@
 			</div>
 
 			<div class="nav-item" ref="dropdown">
-				<img class="rounded-circle av-img"
-					:src="profileImage ? profileImage : defaultAvatar"
-					alt="Profile" @click="openDropdown">
+					<img  class="rounded-circle av-img" :src="profileImage || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" @click="openDropdown"/>
 
 				<div v-if="isOpen" class="dd">
 					<router-link :to="`/profile/${$route.params.id}`" class="dd-item"

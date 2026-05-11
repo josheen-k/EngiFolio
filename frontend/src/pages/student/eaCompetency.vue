@@ -67,6 +67,7 @@ const loadData = async () => {
       compt: group.indicators.map(ind => ({
         id: ind.indicator_id,
         displayId: ind.display_id,
+        indicator_name: ind.indicator_name,
         desc: ind.description,
         reflec: ind.entries.map(entry => ({
           ...entry,
@@ -140,4 +141,9 @@ onMounted(loadData);
 .dot-on {
   background: #88c2d2;
 }
+</style>
+
+<style>
+  
+
 </style>

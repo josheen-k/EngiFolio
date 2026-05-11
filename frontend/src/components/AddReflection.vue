@@ -135,7 +135,7 @@
           </div>
 
           <button class="btn btn-filter rounded-pill px-3 py-1 mt-1"
-          @click="f.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add another</button>
+          @click="f.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
         </div>
       </div>
 
@@ -175,7 +175,7 @@ const allCompts = computed(() => {
     return category.compt.map(indicator => ({
       id: indicator.id, 
       displayId: indicator.displayId,
-      desc: indicator.description || '' 
+      desc: indicator.desc || '' 
     }));
   });
 });
@@ -309,7 +309,6 @@ const saveAsDraft = async () => {
     }
 
     // Close window
-    emit('refresh')
     emit('close');
     
   } catch (error) {

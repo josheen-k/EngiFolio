@@ -19,10 +19,13 @@ export function publishedReflec(compt) {
 // get highest lvl from reflections
 export function getLvl(compt) {
   const entries = compt.entries || compt.reflec || [];
-  if (entries.length === 0) return 'Not Started';
+
+  const published = entries.filter(e => e.entry_status_id !== 1);
+
+  if (published.length === 0) return 'Not Started';
 
   // Find highest entry for each competency
-  const highestEntry = entries.reduce((prev, current) => {
+  const highestEntry = published.reduce((prev, current) => {
     const currentWeight = current.entry_level?.competency_level_weighting || current.weight || 0;
     const prevWeight = prev.entry_level?.competency_level_weighting || prev.weight || 0;
     return currentWeight > prevWeight ? current : prev;

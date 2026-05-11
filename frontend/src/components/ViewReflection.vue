@@ -92,14 +92,22 @@
         <div class="border-bottom p-3">
           <input v-model="ef.experience_title" class="form-control rounded-3 text-center edit-title-input"/>
 
-          <!-- compt, level and year -->
-          <div class="d-flex justify-content-center gap-2 mt-3">
-            <select v-model="ef.indicator_id" class="pill-select">
-              <option v-for="c in allCompts" :key="c.id" :value="c.id">
-                Competency {{ c.displayId }}
-              </option>
-            </select>
+          <!-- competency name and desc-->
+          <div class="row g-4">
+            <div class="col-5">
+              <label class="form-label field-label">Adding reflection for:</label>
+              <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
+                Competency {{ compt?.displayId }}
+              </div>
+            </div>
+            <div class="col-7">
+              <label class="form-label field-label">Description:</label>
+              <p class="field-desc">{{ compt?.description }}</p>
+            </div>
+          </div>
 
+          <!-- level and year -->
+          <div class="d-flex justify-content-center gap-2 mt-3">
             <select v-model="ef.associated_year" class="pill-select">
               <option value="0">Prior to degree</option>
               <option value="1">Year 1</option>
@@ -201,7 +209,7 @@
             </div>
 
             <button class="btn btn-filter rounded-pill px-3 py-1"
-            @click="ef.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add another</button>
+            @click="ef.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
           </div>
 
         </div>
@@ -235,8 +243,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { getAllCompts } from '@/useCompetencies.js'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from "@/services/api"
 
@@ -256,8 +263,6 @@ const route = useRoute()
 // local state
 const editing = ref(false)
 const showDeleteConfirm = ref(false)
-
-const allCompts = computed(()=> getAllCompts())
 
 // edit form
 const ef = ref({
@@ -393,6 +398,7 @@ const saveEntry = async (statusId) => {
     }
 
     // Close window
+    emit('refresh')
     emit('close');
     
   } catch (error) {
@@ -407,9 +413,18 @@ const saveEdit = () => saveEntry(2)
 const saveAsDraft = () => saveEntry(1)
 
 
-function doDelete() {
-  emit('delete', props.index)
-  showDeleteConfirm.value = false
+async function doDelete() {
+  console.log('deleting entry:', props.reflec.entry_id)
+  try {
+    await api.delete(`/competency-entries/${props.reflec.entry_id}`)
+    console.log('deleted successfully')
+    showDeleteConfirm.value = false
+    emit('refresh')
+    emit('close')
+  } catch (error) {
+    console.error('Delete failed:', error)
+    alert('Could not delete this reflection')
+  }
 }
 </script>
 

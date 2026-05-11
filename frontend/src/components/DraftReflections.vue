@@ -9,21 +9,22 @@
           <button class="btn btn-add" @click="sortDdOpen = !sortDdOpen">Sort</button>
           <div v-if="sortDdOpen" class="filter-dd">
             <p class="filter-heading">Sort by</p>
-            <div class="d-flex flex-column gap-1 mb-3">
-              <label class="filter-option" v-for="opt in sortByOptions" :key="opt.value">
-                <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio" />
-                {{ opt.label }}
-              </label>
-            </div>
+              <div class="d-flex flex-column gap-1 mb-3">
+                <label class="filter-option" v-for="opt in sortByOptions" :key="opt.value">
+                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"  @click="sortOrder = 'desc'"/>{{ opt.label }}
+                </label>
+              </div>
             <p class="filter-heading">Order</p>
             <div class="d-flex flex-column gap-1">
-              <label class="filter-option">
-                <input type="radio" value="asc" v-model="sortOrder" class="filter-radio" />Ascending
-              </label>
-              <label class="filter-option">
-                <input type="radio" value="desc" v-model="sortOrder" class="filter-radio" />Descending
-              </label>
-            </div>
+                <label class="filter-option">
+                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>
+                  {{ sortBy === 'date' ? 'Newest to Oldest' : 'A to Z' }}
+                </label>
+                <label class="filter-option">
+                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>
+                  {{ sortBy === 'date' ? 'Oldest to Newest' : 'Z to A' }}
+                </label>
+              </div>
             <div class="d-flex gap-2 mt-3 justify-content-end">
               <button class="btn btn-filter-sm" @click="clearSort">Clear</button>
             </div>
@@ -46,8 +47,8 @@
             <p class="filter-heading">Attainment level</p>
             <div class="d-flex flex-column gap-1">
               <label class="filter-option" v-for="opt in levelOptions" :key="opt.id">
-                <input type="checkbox" :value="opt.competency_level" v-model="reflecFilterLevel" class="filter-radio" />
-                {{ opt.competency_level }}
+                <input type="checkbox" :value="opt.label" v-model="reflecFilterLevel" class="filter-radio" />
+                {{ opt.label }}
               </label>
             </div>
             <div class="d-flex gap-2 mt-3 justify-content-end">
@@ -61,12 +62,13 @@
     <!-- Filtered + Sorted Drafts -->
     <div v-if="processedDrafts.length" class="d-flex flex-wrap gap-3">
       <div class="draft-card" v-for="(item, i) in processedDrafts" :key="i" @click="openReflec(item)">
-        <p class="draft-title">{{ item.reflec.experience_title || 'Untitled Draft' }}</p>
+        <p class="draft-title">{{ item.reflec.experience_title }}</p>
         <div class="d-flex align-items-center gap-2">
           <span class="compt-pill">Competency {{ item.comptId }}</span>
           <!-- Simplified Delete -->
           <img class="plus-btn" src="@/assets/del.png" @click.stop="doDelete(item)">
         </div>
+        <p class="txt-lvl mb-0">Last updated: {{ formatDate(item.reflec.updated_at) }}</p>
       </div>
     </div>
 
@@ -176,7 +178,7 @@ const processedDrafts = computed(function () {
       for (const r of compt.reflec) {
         if (r.entry_status_id === 1) {
           list.push({
-            comptId: compt.id,
+            comptId: compt.displayId,
             reflec: r,
             compt: compt
           })
@@ -202,15 +204,15 @@ const processedDrafts = computed(function () {
   list = list.sort((a, b) => {
     if (sortBy.value === 'name') {
       if (sortOrder.value === 'asc') {
-        return (a.experience_title || '').localeCompare(b.experience_title || '')
+        return (b.reflec.experience_title || '').localeCompare(a.reflec.experience_title || '')      
       } else {
-        return (b.experience_title || '').localeCompare(a.experience_title || '')
+        return (a.reflec.experience_title || '').localeCompare(b.reflec.experience_title || '')
       }
     }
 
     // Convert date into a number
-    const da = new Date(a.updated_at);
-    const db = new Date(b.updated_at);
+    const da = new Date(a.reflec.updated_at);
+    const db = new Date(b.reflec.updated_at);
 
     if (sortOrder.value === 'asc') {
       return da-db
@@ -261,9 +263,49 @@ const confirmDelete = async () => {
     alert("Error when deleting the draft: ", error)
   }
 }
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-AU') + ', ' +
+    date.toLocaleTimeString('en-AU', {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).toLowerCase()
+}
 </script>
 
 <style scoped>
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.view-popup-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  width: 100%;
+  max-width: 45rem;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
 .drafts-wrap {
   max-width: 90%;
 }

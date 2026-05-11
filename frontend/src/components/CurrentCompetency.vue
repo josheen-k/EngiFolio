@@ -29,17 +29,19 @@
               <p class="filter-heading">Sort by</p>
               <div class="d-flex flex-column gap-1 mb-3">
                 <label class="filter-option" v-for="opt in sortByOptions" :key="opt.value">
-                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"/>{{ opt.label }}
+                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"  @click="sortOrder = 'desc'"/>{{ opt.label }}
                 </label>
               </div>
 
               <p class="filter-heading">Order</p>
               <div class="d-flex flex-column gap-1">
                 <label class="filter-option">
-                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>Ascending
+                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>
+                  {{ sortBy === 'date' ? 'Newest to Oldest' : 'A to Z' }}
                 </label>
                 <label class="filter-option">
-                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>Descending
+                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>
+                  {{ sortBy === 'date' ? 'Oldest to Newest' : 'Z to A' }}
                 </label>
               </div>
 
@@ -142,7 +144,7 @@
             <div class="compt-wrap" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
                 <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
-
+                <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5>
                 <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                   <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
                     {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
@@ -182,7 +184,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
 import { getLvl, publishedReflec } from '@/useCompetencies.js'
@@ -194,10 +196,25 @@ const props = defineProps({
   levelOptions: { type: Array, required: true }
 });
 
+watch(() => props.categories, () => {
+  if (!selectedCompt.value) return
+
+  for (const cat of props.categories) {
+    const updated = cat.compt.find(c => Number(c.id) === Number(selectedCompt.value.id))
+    if (updated) {
+      selectedCompt.value = {
+        ...selectedCompt.value,
+        reflec: updated.reflec,
+        description: updated.desc,
+      }
+      break
+    }
+  }
+}, { deep: true })
+
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null);
-
 
 // filter options for competencies
 const filterRef = ref(null)
@@ -320,7 +337,7 @@ const processedReflec = computed(() => {
   if (reflecFilterLevel.value.length > 0) {
     list = list.filter(r => {
       // Use optional chaining to handle both object or string formats
-      const currentLvl = r.entry_level?.competency_level || r.level;
+      const currentLvl = r.entry_level?.competency_level;
       return reflecFilterLevel.value.includes(currentLvl);
     });
   }
@@ -329,9 +346,9 @@ const processedReflec = computed(() => {
   list = list.sort((a, b) => {
     if (sortBy.value === 'name') {
       if (sortOrder.value === 'asc') {
-        return (a.experience_title || '').localeCompare(b.experience_title || '')
+        return (b.experience_title || '').localeCompare(a.experience_title || '')       
       } else {
-        return (b.experience_title || '').localeCompare(a.experience_title || '')
+        return (a.experience_title || '').localeCompare(b.experience_title || '')
       }
     }
 
@@ -340,9 +357,9 @@ const processedReflec = computed(() => {
     const db = new Date(b.updated_at);
 
     if (sortOrder.value === 'asc') {
-      return da-db
+      return da - db
     } else {
-      return db-da
+      return db - da
     }
   })
   return list
@@ -367,6 +384,7 @@ function openDetail(compt, catLabel) {
   selectedCompt.value = {
     id: compt.id,
     displayId: compt.displayId,
+    indicator_name: compt.indicator_name,
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
@@ -398,10 +416,9 @@ function closeReflec() {
   viewReflec.value.show = false
 }
 
-function onSaveReflec({ index, updated }) {
-  if (selectedCompt.value) {
-    Object.assign(selectedCompt.value.reflec[index], updated)
-  }
+function onSaveReflec() {
+  viewReflec.value.show = false 
+  emit('refresh')
 }
 
 // add reflection popup 
@@ -418,7 +435,7 @@ function openAdd(comptId = '') {
 }
 
 // Refresh the data when an entry is added
-function onAddReflec({ comptId, reflec }) {
+function onAddReflec() {
   emit('refresh')
   addModal.value.show = false
 }
