@@ -87,7 +87,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
-import { getLvl, publishedReflec } from '@/useCompetencies.js'
+import { getLvl, publishedReflec, formatDate } from '@/composables/useCompetencies.js'
 
 const props = defineProps({
   categories: { type: Array, required: true },
@@ -154,15 +154,6 @@ function closeReflec() {
 function onSaveReflec() {
   emit('refresh')
 }
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-AU') + ', ' +
-    date.toLocaleTimeString('en-AU', {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).toLowerCase();
-};
 </script>
 
 <style scoped>

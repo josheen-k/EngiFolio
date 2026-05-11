@@ -187,7 +187,7 @@
 import { computed, ref, watch } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
-import { getLvl, publishedReflec } from '@/useCompetencies.js'
+import { getLvl, publishedReflec, formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
 import { onClickOutside } from '@vueuse/core';
 
 // Allows for the eaCompetency page to pass the vales along
@@ -195,22 +195,6 @@ const props = defineProps({
   categories: { type: Array, required: true },
   levelOptions: { type: Array, required: true }
 });
-
-watch(() => props.categories, () => {
-  if (!selectedCompt.value) return
-
-  for (const cat of props.categories) {
-    const updated = cat.compt.find(c => Number(c.id) === Number(selectedCompt.value.id))
-    if (updated) {
-      selectedCompt.value = {
-        ...selectedCompt.value,
-        reflec: updated.reflec,
-        description: updated.desc,
-      }
-      break
-    }
-  }
-}, { deep: true })
 
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
@@ -231,26 +215,28 @@ const sortRef = ref(null)
 const sortDdOpen = ref(false)
 const sortBy = ref('date')
 const sortOrder = ref('desc')  // 'asc'  | 'desc'
-const sortByOptions = [
-  { value: 'date', label: 'Date' },
-  { value: 'name', label: 'Title (A–Z)' }
-]
+
+watch(() => props.categories, () => {
+  if (!selectedCompt.value) return
+  for (const cat of props.categories) {
+    const updated = cat.compt.find(c => Number(c.id) === Number(selectedCompt.value.id))
+    if (updated) {
+      selectedCompt.value = {
+        ...selectedCompt.value,
+        reflec: updated.reflec,
+        description: updated.desc,
+      }
+      break
+    }
+  }
+}, { deep: true })
+
 
 const reflecOption = [
   { value: 'all', label: 'All competencies' },
   { value: 'has-reflections', label: 'Has at least one reflection' },
   { value: 'no-reflections', label: 'No reflections yet' }
 ]
-
-const yearOptions = [
-  { value: 0, label: 'Prior to degree' },
-  { value: 1, label: 'Year 1' },
-  { value: 2, label: 'Year 2' },
-  { value: 3, label: 'Year 3' },
-  { value: 4, label: 'Year 4' }
-]
-
-
 
 const hasActiveFilter = computed(function () {
   return filterReflec.value !== 'all' || filterLevel.value.length > 0
@@ -364,17 +350,6 @@ const processedReflec = computed(() => {
   })
   return list
 })
-
-// Makes the date a readable format
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  
-  return date.toLocaleDateString('en-AU') + ', ' + 
-    date.toLocaleTimeString('en-AU', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-    }).toLowerCase();
-};
 
 function openDetail(compt, catLabel) {
   // reset reflection filters and sort when opening new compt

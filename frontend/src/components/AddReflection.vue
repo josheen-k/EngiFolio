@@ -146,7 +146,7 @@
         <div class="d-flex gap-2">
           <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
           <button class="btn btn-filter" @click="$emit('close')">Cancel</button>
-          <button class="btn btn-add" @click="submit">Done</button>
+          <button class="btn btn-add" @click="save">Done</button>
         </div>
       </div>
     </div>
@@ -155,7 +155,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { blankForm } from '@/useCompetencies.js'
+import { blankForm, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
 import { useRoute } from 'vue-router'
 import api from "@/services/api"
 
@@ -202,33 +202,6 @@ const selectedCompt = computed(()=>
   allCompts.value.find(c=> c.id===f.value.comptId)
 )
 
-// file evidence helpers
-function fileAccept(type) {
-  switch (type) {
-    case 'image':
-      return 'image/*'
-    case 'video':
-      return 'video/*'
-    case 'document':
-      return '.pdf,.doc,.docx,.txt,.ppt,.pptx'
-    default:
-      return '*'
-  }
-}
-
-function uploadHint(type) {
-  switch (type) {
-    case 'image':
-      return 'PNG, JPG, JPEG, GIF'
-    case 'video':
-      return 'MP4, MOV'
-    case 'document':
-      return 'PDF, DOC, DOCX, TXT, PPT, PPTX'
-    default:
-      return ''
-  }
-}
-
 function handleFile(e, ev) {
   const file = e.target.files[0]
   if (file) { 
@@ -238,7 +211,7 @@ function handleFile(e, ev) {
 }
 
 // submit form
-const  submit = async () => {
+async function submit(statusId) {
   try {
     const payload = {
       profile_id: route.params.id,
@@ -246,7 +219,7 @@ const  submit = async () => {
       experience_title: f.value.title || 'Untitled',
       associated_year: Number(f.value.year),
       entry_level_id: f.value.level, 
-      entry_status_id: 2, 
+      entry_status_id: statusId, 
       start_date: f.value.startDate,
       end_date: f.value.endDate,
       experience_tasks: f.value.tasks,
@@ -268,7 +241,8 @@ const  submit = async () => {
       })
     }
 
-    // Close window
+    // RefreshClose window
+    emit('refresh');
     emit('close');
 
   } catch (error) {
@@ -277,45 +251,10 @@ const  submit = async () => {
   }
 }
 
-const saveAsDraft = async () => {
-  try {
-    const payload = {
-      profile_id:  route.params.id,
-      indicator_id: Number(f.value.comptId),
-      experience_title: f.value.title || 'Untitled',
-      associated_year: Number(f.value.year),
-      entry_level_id: f.value.level, 
-      entry_status_id: 1,
-      start_date: f.value.startDate,
-      end_date: f.value.endDate,
-      experience_tasks: f.value.tasks,
-      key_learnings: f.value.learnings,
-      future_applications: f.value.future,
-    };
-
-    
-    const res = await api.post('/competency-entries', payload);
-
-    const entryId = res.data.entry_id
-
-    // Save each evidence entry
-    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
-    for (const ev of evidenceToSave) {
-      await api.post('/competency-evidence', {
-        entry_id: entryId,
-        evidence_type: ev.type,
-        evidence_value: ev.value
-      })
-    }
-
-    // Close window
-    emit('close');
-    
-  } catch (error) {
-    console.error("Draft save failed:", error);
-    alert("Submission could not be saved. Please check that all required fields are filled");
-  }
-};
+// Pass the entry status id when saving the entry
+// 1 for draft, 2 for submitted
+const save = () => submit(2)
+const saveAsDraft = () => submit(1)
 </script>
 
 <style scoped>

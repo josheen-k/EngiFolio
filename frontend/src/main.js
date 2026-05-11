@@ -9,8 +9,6 @@ import VueApexCharts from 'vue3-apexcharts'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 
-import '.assets/styles/global.css'
-
 const app = createApp(App)
 
 app.use(createPinia())

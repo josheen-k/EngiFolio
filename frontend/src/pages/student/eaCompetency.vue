@@ -33,7 +33,7 @@ const route = useRoute()
 const categories  = ref([])
 const levelOptions = ref([])
 
-// different tabs in side pannel
+// different tabs in side panel
 const currTab = ref('CURRENT');
 const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED'];
 
@@ -67,14 +67,15 @@ const loadData = async () => {
       compt: group.indicators.map(ind => ({
         id: ind.indicator_id,
         displayId: ind.display_id,
-        indicator_name: ind.indicator_name,
+        indicatorName: ind.indicator_name,
         desc: ind.description,
+        discontinuedDate: ind.discontinued_date, 
         reflec: ind.entries.map(entry => ({
           ...entry,
           feedback: entry.competency_feedback || [],
           evidence: entry.competency_evidence || []
-        })) || [],
-        discontinuedDate: ind.discontinued_date 
+        })),
+        
       }))
     }));
 
@@ -141,9 +142,4 @@ onMounted(loadData);
 .dot-on {
   background: #88c2d2;
 }
-</style>
-
-<style>
-  
-
 </style>

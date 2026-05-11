@@ -245,6 +245,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
 import api from "@/services/api"
 
 const props = defineProps({
@@ -257,7 +258,7 @@ const props = defineProps({
   categories: Array
 })
 
-const emit = defineEmits(['close', 'delete', 'save', 'refresh'])
+const emit = defineEmits(['close', 'refresh'])
 const route = useRoute()
 
 // local state
@@ -289,48 +290,6 @@ watch(() => props.show, (v) => {
   }
 })
 
-// evidence helpers
-function evLabel(type) {
-  switch (type) {
-    case 'url':
-      return 'URL'
-    case 'document':
-      return 'File'
-    case 'image':
-      return 'Image'
-    case 'video':
-      return 'Video'
-    default:
-      return type || 'File'
-  }
-}
-
-function fileAccept(type) {
-  switch (type) {
-    case 'image':
-      return 'image/*'
-    case 'video':
-      return 'video/*'
-    case 'document':
-      return '.pdf,.doc,.docx,.txt,.ppt,.pptx'
-    default:
-      return '*'
-  }
-}
-
-function uploadHint(type) {
-  switch (type) {
-    case 'image':
-      return 'PNG, JPG, JPEG, GIF'
-    case 'video':
-      return 'MP4, MOV'
-    case 'document':
-      return 'PDF, DOC, DOCX, TXT, PPT, PPTX'
-    default:
-      return ''
-  }
-}
-
 function handleFile(e, ev) {
   const file = e.target.files[0]
   if (file) {
@@ -342,7 +301,7 @@ function handleFile(e, ev) {
 // enter edit
 function enterEdit() {
   const existingEvidence = (props.reflec.evidence || []).map(ev => ({
-    evidence_id: ev.evidence_id,  // keep id so we know which to update/delete
+    evidence_id: ev.evidence_id,
     type: ev.evidence_type,
     value: ev.evidence_value,
     fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
@@ -366,7 +325,7 @@ function enterEdit() {
   editing.value = true
 }
 
-const saveEntry = async (statusId) => {
+async function saveEntry(statusId) {
   try {
     await api.put(`/competency-entries/${ef.value.id}`, {
       profile_id: route.params.id,
@@ -417,7 +376,6 @@ async function doDelete() {
   console.log('deleting entry:', props.reflec.entry_id)
   try {
     await api.delete(`/competency-entries/${props.reflec.entry_id}`)
-    console.log('deleted successfully')
     showDeleteConfirm.value = false
     emit('refresh')
     emit('close')

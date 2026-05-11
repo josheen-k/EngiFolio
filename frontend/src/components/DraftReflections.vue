@@ -107,6 +107,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
+import { formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
 import { onClickOutside } from '@vueuse/core'
 import api from "@/services/api"
 
@@ -133,23 +134,9 @@ const reflecFilterLevel = ref([])
 const showDeleteConfirm = ref(false)
 const itemToDelete = ref(null)
 
-const sortByOptions = [
-  { value: 'date', label: 'Date' },
-  { value: 'name', label: 'Title (A–Z)' }
-]
-
-const yearOptions = [
-  { value: 0, label: 'Prior to degree' },
-  { value: 1, label: 'Year 1' },
-  { value: 2, label: 'Year 2' },
-  { value: 3, label: 'Year 3' },
-  { value: 4, label: 'Year 4' }
-]
-
 const hasActiveReflecFilter = computed(function () {
   return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
 })
-
 
 function clearSort() {
   sortBy.value = 'date'
@@ -263,49 +250,9 @@ const confirmDelete = async () => {
     alert("Error when deleting the draft: ", error)
   }
 }
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-AU') + ', ' +
-    date.toLocaleTimeString('en-AU', {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).toLowerCase()
-}
 </script>
 
 <style scoped>
-.view-popup {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(0.375rem);
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
-}
-
-.view-popup-box {
-  background: #ffffff;
-  border-radius: 1.25rem;
-  width: 100%;
-  max-width: 45rem;
-  max-height: 88vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
-}
-
-.delete-box {
-  background: #ffffff;
-  border-radius: 1.25rem;
-  max-width: 22.5rem;
-  width: 100%;
-  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
-}
-
 .drafts-wrap {
   max-width: 90%;
 }

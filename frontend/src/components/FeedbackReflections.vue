@@ -73,12 +73,14 @@ const searchQuery = ref('')
 // collect all reflections with feedback
 const feedbackItems = computed(function () {
   const out = []
-
+  // For each category
   for (const cat of props.categories) {
+    // For each competency
     for (const compt of cat.compt) {
+      // For each entry
       for (const r of compt.reflec) {
-        for (const fb of r.feedback) { 
-          if (r.feedback?.length) {
+        if (r.feedback?.length) {
+          for (const fb of r.feedback) { 
             out.push({
               comptId: compt.displayId,
               compt: compt,
@@ -104,6 +106,7 @@ const filteredItems = computed(function () {
 })
 
 const openStates = ref({})
+
 watch(filteredItems, function (items) {
   for (let i = 0; i < items.length; i++) {
     if (openStates.value[i]===undefined) {
@@ -128,7 +131,7 @@ function openReflec(item) {
   viewReflec.value = {
     show: true,
     reflec: item.reflec,
-    compt: { id: item.comptId },
+    compt: item.compt,
     index: item.compt.reflec.indexOf(item.reflec)
   }
 }
