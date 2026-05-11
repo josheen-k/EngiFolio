@@ -239,9 +239,7 @@
         const response = await api.get(`/career-plans/${route.params.id}`);
         const data = response.data;
         plan.value = Array.isArray(data) ? data[0] : data;
-      } catch (error) {
-        console.error("Error while fetching user goals:", error);
-      } finally {
+
         const formattedGoals = ['"----- Goals -----"']
         
         const goalsHeader = [
@@ -269,7 +267,7 @@
               `"${goal.end_date || ''}"`,
               `"${goal.completion_date || ''}"`,
               `"${goal.completion_notes || ''}"`,
-              `"${goal.status || ''}"`,
+              `"${goal.status.status || ''}"`,
             ].join(",");
 
             formattedGoals.push(row);
@@ -285,7 +283,9 @@
 
         formattedGoals.push('\n\n');
         return formattedGoals.join('\n');
-      }    
+      } catch (error) {
+        console.error("Error while fetching user goals:", error);
+      } 
     };
 
 
