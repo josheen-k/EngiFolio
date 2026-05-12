@@ -23,19 +23,9 @@ use App\Http\Controllers\CompetencyEvidenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ElevatorPitchController;
-
-
 use App\Http\Controllers\GoalFeedbackController;
 
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::get('/data', function () {
-    return response()->json(['content' => 'Laravel 10 running']);
-});
-
+//  User Routes
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users', [UserController::class, 'store']);
 Route::get('/users/{user}', [UserController::class, 'show']);
@@ -142,3 +132,23 @@ Route::get('/goal-status', [GoalStatusesController::class, 'index']);
 Route::post('/goal-status', [GoalStatusesController::class, 'store']);
 Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
 Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
+
+// Student actions
+Route::get('/student-actions/recent/{id}', [StudentActionsController::class, 'getRecentActions']);
+Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
+
+// Competency Entry Levels
+Route::get('/competency-levels', [CompetencyEntryLevelsController::class, 'index']);
+Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsController::class, 'getLevelByWeighting']);
+
+// Competency Groups
+Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class, 'getStudentCompetencies']);
+
+// Competency Links
+Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
+Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);
+
+//ElevatorPitch
+Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
+Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
+Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);
