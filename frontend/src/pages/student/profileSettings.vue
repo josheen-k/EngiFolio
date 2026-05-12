@@ -92,7 +92,7 @@
 
   </div>
 
-  <div v-else class="container py-5 text-center">
+  <div v-else class="container py-5 text-center loading">
     <p class="text-muted small">Loading settings...</p>
   </div>
 </template>
@@ -310,6 +310,10 @@ onMounted(() => {
 .btn-ql:hover {
   color: #ffffff;
   background: #333333;
+}
+
+.loading {
+  min-height: calc(100vh);
 }
 
 @media (max-width: 768px) {

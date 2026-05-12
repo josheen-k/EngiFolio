@@ -24,11 +24,9 @@
         <section>
           <form>
             <div class="mb-3">
-              <label for="username" class="form-label">Username</label>
               <input type="text" class="form-control login-input" id="username" placeholder="Username" required>
             </div>
             <div class="mb-4">
-              <label for="password" class="form-label">Password</label>
               <input type="password" class="form-control login-input" id="password" placeholder="Password" required>
             </div>
             <button type="submit" class="btn btn-login w-100 mb-4">Login</button>
@@ -51,6 +49,7 @@
 	.login-page {
 		display: flex;
 		background-color: #f8f9fa;
+		min-height: calc(100vh - 135px);
 	}
 
 	.login-title {
@@ -76,9 +75,6 @@
 	.login-card {
 		background: white;
 		width: 100%;
-		margin-top: 45px;
-		margin-bottom: 300px;
-		max-height: 600px;
 		max-width: 420px;
 		padding: 2.5rem;
 		border-radius: 1.5rem;

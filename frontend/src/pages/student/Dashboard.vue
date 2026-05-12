@@ -189,8 +189,7 @@
     </div>
   </main>
 
-  <div v-else-if="loading" class="text-center py-5">
-		<div class="spinner-border" role="status"></div>
+  <div v-else-if="loading" class="text-center py-5 loading">
 		<p>Loading profile...</p>
 	</div>
 
@@ -753,5 +752,9 @@
   font-family: 'Maven Pro', sans-serif;
   font-size: 1rem;
   color: #aaaaaa;
+}
+
+.loading {
+  min-height: calc(100vh);
 }
 </style>
