@@ -16,6 +16,7 @@ import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
 import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
+import CDL from '@/pages/student/CDL.vue'
 
 const routes = [
   {
@@ -110,6 +111,11 @@ const routes = [
     path: '/certification-settings/:id',
     name: 'certificationSettings',
     component: CertificationSettings
+  },
+  {
+    path: '/student/CDL/:id',
+    name: 'CDL',
+    component: CDL
   },
 
 ]
