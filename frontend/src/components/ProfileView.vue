@@ -86,8 +86,7 @@
         </div>
     </div>
 
-    <div v-else-if="loading" class="text-center py-5">
-        <div class="spinner-border" role="status"></div>
+    <div v-else-if="loading" class="text-center py-5 loading">
         <p>Loading profile...</p>
     </div>
 
@@ -283,6 +282,10 @@ onMounted(() => {
 .btn-filter:hover {
     background: #666666;
     color: #ffffff;
+}
+
+.loading {
+    min-height: calc(100vh);
 }
 
 @media (max-width: 768px) {

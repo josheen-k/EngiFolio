@@ -63,23 +63,25 @@ const loadData = async () => {
 
     // Map competency data to the values used by the other components
     categories.value = compRes.data.map(group => ({
-      key: group.display_id,
-      label: group.group_name,
-      open: true,
-      compt: group.indicators.map(ind => ({
+    key: group.display_id,
+    label: group.group_name,
+    open: true,
+    compt: group.indicators.map(ind => {
+      return {
         id: ind.indicator_id,
         displayId: ind.display_id,
-        indicatorName: ind.indicator_name,
+        indicator_name: ind.indicator_name,
         desc: ind.description,
-        discontinuedDate: ind.discontinued_date, 
+        discontinuedDate: ind.discontinued_date,
+        attainmentIndicators: ind.attainment_indicators || [],
         reflec: ind.entries.map(entry => ({
           ...entry,
           feedback: entry.competency_feedback || [],
           evidence: entry.competency_evidence || []
-        })),
-        
-      }))
-    }));
+        }))
+      }
+    })
+  }))
 
     // Map entry level data to the value and label used by the other components
     levelOptions.value = [

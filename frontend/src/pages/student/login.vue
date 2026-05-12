@@ -3,57 +3,53 @@
 </script>
 
 <template>
-	<nav class="nav-wrapper">
-		<div>
-			<div class="navLogo"></div>
-		</div>
-		<div class="nav-bar">
-			<div class="nav-item">
-				<router-link to="/" class="btn-back-custom">Go back</router-link>
-			</div>
-		</div>
-	</nav>
-	<div class="login-page">
-		<div class="container py-5">
-			<div class="row justify-content-center">
-				<div class="col-lg-10">
-					<header>
-						<div class="d-flex justify-content-center mb-4 px-3">
-								<h1 class="h2 fw-bold mb-0 login-title">EngiFolio Login</h1>
-						</div>
-					</header>
-					<main>
-						<div class="container mt-5" style="max-width: 400px;">
-							<form>
-								<div class="mb-3">
-									<label for="username" class="form-label">Username</label>
-									<input type="text" class="form-control login-input" id="username" placeholder="Username" required>
-								</div>
-								<div class="mb-3">
-									<label for="password" class="form-label">Password</label>
-									<input type="password" class="form-control login-input" id="password" placeholder="Password" required>
-								</div>
-								<button type="submit" class="btn btn-login w-100 mb-3">Login</button>
-							</form>
-						</div>
-					</main>
-					<footer class="login-footer border-top pt-3 mt-2 text-center">
-						<p class="small text-muted mb-2">Hardcoded Links:</p>
-						<div class="d-flex justify-content-center gap-2">
-							<router-link to="/student/dashboard/1" class="btn btn-outline-secondary btn-sm rounded-pill">Student Profile 1</router-link>
-							<router-link to="/student/dashboard/2" class="btn btn-outline-secondary btn-sm rounded-pill">Student Profile 2</router-link>
-						</div>
-					</footer>
-				</div>
-			</div>  
-		</div>
-	</div>
+  <nav class="nav-wrapper">
+    <div>
+      <div class="navLogo"></div>
+    </div>
+    <div class="nav-bar">
+      <div class="nav-item">
+        <router-link to="/" class="btn-back-custom">Go back</router-link>
+      </div>
+    </div>
+  </nav>
+
+  <div class="login-page">
+    <main class="login-content">
+      <div class="login-card shadow-lg">
+        <header class="text-center mb-4">
+          <h1 class="fw-bold login-title">EngiFolio Login</h1>
+        </header>
+
+        <section>
+          <form>
+            <div class="mb-3">
+              <input type="text" class="form-control login-input" id="username" placeholder="Username" required>
+            </div>
+            <div class="mb-4">
+              <input type="password" class="form-control login-input" id="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-login w-100 mb-4">Login</button>
+          </form>
+        </section>
+
+        <footer class="login-footer border-top pt-4 text-center">
+          <p class="small text-muted mb-2">Hardcoded Links:</p>
+          <div class="d-flex justify-content-center gap-2">
+            <router-link to="/student/dashboard/1" class="btn btn-outline-secondary btn-sm rounded-pill">Student 1</router-link>
+            <router-link to="/student/dashboard/2" class="btn btn-outline-secondary btn-sm rounded-pill">Student 2</router-link>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
 </template>
 
 <style scoped>
 	.login-page {
 		display: flex;
 		background-color: #f8f9fa;
+		min-height: calc(100vh - 135px);
 	}
 
 	.login-title {
@@ -68,12 +64,26 @@
 		background-color: #fdfdfd;
 	}
 
+	.login-content {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 20px;
+	}
+
 	.login-card {
-		
+		background: white;
+		width: 100%;
+		max-width: 420px;
+		padding: 2.5rem;
+		border-radius: 1.5rem;
+		border: none;
 	}
 
 	.nav-wrapper {
-		width: 100vw;
+		width: 100%;
+		height: 60px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;

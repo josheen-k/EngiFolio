@@ -12,6 +12,11 @@
       <p class="fs-5 mb-1">Description:</p>
       <p class="detail-txt">{{ selectedCompt.description }}</p>
 
+      <p class="fs-5">Indicators Of Attainment:</p>
+        <ul class="ps-3">
+        <li class="detail-txt" v-for="(ind, i) in selectedCompt.attainmentIndicators" :key="i">{{ ind.attainment_indicator }}</li>
+      </ul>
+
       <div class="d-flex justify-content-between detail-stats">
         <p class="fs-5">Total reflection entries: <em>{{ publishedOnly(selectedCompt).length }}</em></p>
         <p class="fs-5">Highest attainment level: <em>{{ getLvl(selectedCompt) }}</em></p>
@@ -363,6 +368,7 @@ function openDetail(compt, catLabel) {
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
+    attainmentIndicators: compt.attainmentIndicators || [] 
   }
 }
 

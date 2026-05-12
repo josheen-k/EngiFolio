@@ -288,6 +288,15 @@ Table competency_indicators {
   updated_at datetime [not null]
 }
 
+// Attainment indicators for the competency indicators
+Table attainment_indicators {
+  attainment_indicator_id bigint [pk, increment]
+  indicator_id bigint [not null, ref: > competency_indicators.indicator_id, note: "On delete: cascade"]
+  attainment_indicator text
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
 // Student competency records
 Table competency_entries {
   entry_id bigint [pk, increment]
