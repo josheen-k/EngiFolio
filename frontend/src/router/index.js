@@ -93,7 +93,11 @@ const routes = [
   {
     path: '/admin/:id',
     name: 'admin',
-    component: AdminPage
+    component: AdminPage,
+    beforeEnter: (to) => {
+      // Admin role_id is 1, so only /admin/1 can access the admin page.
+      return String(to.params.id) === '1' ? true : { name: 'Homepage' }
+    }
   },
 
   {

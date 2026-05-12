@@ -36,8 +36,10 @@ class UserController extends Controller
             'email' => $validated['email'],
             'first_name'       => $validated['first_name'],
             'last_name'        => $validated['last_name'],
+            // Persist secure hash instead of storing raw password.
             'password_hash' => Hash::make($validated['password']),
-            'account_status' => 1,
+            // Default new users to active status.
+            'account_status_id' => 1,
         ]);
 
         return response()->json($user, 201);

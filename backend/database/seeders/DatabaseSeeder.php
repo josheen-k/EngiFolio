@@ -117,6 +117,114 @@ class DatabaseSeeder extends Seeder
             ['group_id' => 3, 'display_id' => '3.0', 'indicator_name' => 'Test', 'description' => 'Test', 'discontinued_date' => now(), 'created_at' => now(), 'updated_at' => now()],
         ]);
 
+        DB::table('attainment_indicators')->insert([
+            // All 1 competency attainment indicators
+            ['indicator_id' => 1, 'attainment_indicator' => 'Engages with the engineering discipline at a phenomenological level, applying sciences and engineering fundamentals to systematic investigation, interpretation, analysis and innovative solution of complex problems and broader aspects of engineering practice.'],
+            ['indicator_id' => 2, 'attainment_indicator' => 'Develops and fluently applies relevant investigation analysis, interpretation, assessment, characterisation, prediction, evaluation, modelling, decision making, measurement, evaluation, knowledge management and communication tools and techniques pertinent to the engineering discipline.'],
+            ['indicator_id' => 3, 'attainment_indicator' => 'Proficiently applies advanced technical knowledge and skills in at least one specialist practice domain of the engineering discipline.'],
+            ['indicator_id' => 4, 'attainment_indicator' => 'Identifies and critically appraises current developments, advanced technologies, emerging issues and interdisciplinary linkages in at least one specialist practice domain of the engineering discipline.'],
+            ['indicator_id' => 4, 'attainment_indicator' => 'Interprets and applies selected research literature to inform engineering application in at least one specialist domain of the engineering discipline.'],
+            ['indicator_id' => 5, 'attainment_indicator' => 'Identifies and applies systematic principles of engineering design relevant to the engineering discipline.'],
+            ['indicator_id' => 5, 'attainment_indicator' => 'Identifies and understands the interactions between engineering systems and people in the social, cultural, environmental, commercial, legal and political contexts in which they operate, including both the positive role of engineering in sustainable development and the potentially adverse impacts of engineering activity in the engineering discipline.'],
+            ['indicator_id' => 5, 'attainment_indicator' => 'Appreciates the issues associated with international engineering practice and global operating contexts.'],
+            ['indicator_id' => 5, 'attainment_indicator' => 'Is aware of the founding principles of human factors relevant to the engineering discipline.'],
+            ['indicator_id' => 5, 'attainment_indicator' => 'Is aware of the fundamentals of business and enterprise management.'],
+            ['indicator_id' => 5, 'attainment_indicator' => 'Identifies the structure, roles and capabilities of the engineering workforce.'],
+            ['indicator_id' => 6, 'attainment_indicator' => 'Appreciates the basis and relevance of standards and codes of practice, as well as legislative and statutory requirements applicable to the engineering discipline.'],
+            ['indicator_id' => 6, 'attainment_indicator' => 'Appreciates the principles of safety engineering, risk management and the health and safety responsibilities of the professional engineer, including legislative requirements applicable to the engineering discipline.'],
+            ['indicator_id' => 6, 'attainment_indicator' => 'Appreciates the social, environmental and economic principles of sustainable engineering practice.'],
+            ['indicator_id' => 6, 'attainment_indicator' => 'Understands the fundamental principles of engineering project management as a basis for planning, organising and managing resources.'],
+            ['indicator_id' => 6, 'attainment_indicator' => 'Appreciates the formal structures and methodologies of systems engineering as a holistic basis for managing complexity and sustainability in engineering practice.'],
+            
+            // 2.1
+            ['indicator_id' => 7, 'attainment_indicator' => 'Ensures that all aspects of an engineering activity are soundly based on fundamental principles - by diagnosing, and taking appropriate action with data, calculations, results, proposals, processes, practices, and documented information that may be ill-founded, illogical, erroneous, unreliable or unrealistic.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Competently addresses complex engineering problems which involve uncertainty, ambiguity, imprecise information and wide-ranging and sometimes conflicting technical and non-technical factors.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Investigates complex problems using research-based knowledge and research methods.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Partitions problems, processes or systems into manageable elements for the purposes of analysis, modelling or design and then re-combines to form a whole, with the integrity and performance of the overall system as the paramount consideration.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Conceptualises alternative engineering approaches and evaluates potential outcomes against appropriate criteria to justify an optimal solution choice.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Critically reviews and applies relevant standards and codes of practice underpinning the engineering discipline and nominated specialisations.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Identifies, quantifies, mitigates and manages technical, health, environmental, safety and other contextual risks associated with engineering application in the designated engineering discipline.'],
+            ['indicator_id' => 7, 'attainment_indicator' => 'Interprets and ensures compliance with relevant legislative and statutory requirements applicable to the engineering discipline.'],
+
+            // 2.2
+            ['indicator_id' => 8, 'attainment_indicator' => 'Proficiently identifies, selects and applies the materials, components, devices, systems, processes, resources, plant and equipment relevant to the engineering discipline.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Constructs or selects and applies from a qualitative description of a phenomenon, process, system, component or device a mathematical, physical or computational model based on fundamental scientific principles and justifiable simplifying assumptions.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Determines properties, performance, safe working limits, failure modes, and other inherent parameters of materials, components and systems relevant to the engineering discipline.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Applies a wide range of engineering tools for analysis, simulation, visualisation, synthesis and design, including assessing the accuracy and limitations of such tools, and validation of their results.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Applies formal systems engineering methods to address the planning and execution of complex, problem solving and engineering projects.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Designs and conducts experiments, analyses and interprets result data and formulates reliable conclusions.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Analyses sources of error in applied models and experiments; eliminates, minimises or compensates for such errors; quantifies significance of errors to any conclusions drawn.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Safely applies laboratory, test and experimental procedures appropriate to the engineering discipline.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Understands the need for systematic management of the acquisition, commissioning, operation, upgrade, monitoring and maintenance of engineering plant, facilities, equipment and systems.'],
+            ['indicator_id' => 8, 'attainment_indicator' => 'Understands the role of quality management systems, tools and processes within a culture of continuous improvement.'],
+
+            // 2.3
+            ['indicator_id' => 9, 'attainment_indicator' => 'Proficiently applies technical knowledge and open ended problem solving skills as well as appropriate tools and resources to design components, elements, systems, plant, facilities and/or processes to satisfy user requirements.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Executes and leads a whole systems design cycle approach.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Determines client requirements and identifies the impact of relevant contextual factors, including business planning and costing targets.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Systematically addresses sustainability criteria.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Works within projected development, production and implementation constraints.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Elicits, scopes and documents the required outcomes of the design task and defines acceptance criteria.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Identifies, assesses and manages technical, health and safety risks integral to the design process.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Writes engineering specifications that fully satisfy the formal requirements.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Ensures compliance with essential engineering standards and codes of practice.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Partitions the design task into appropriate modular functional elements that can be separately addressed and subsequently integrated through defined interfaces.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Identifies and analyses possible design approaches and justifies an optimal approach.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Develops and completes the design using appropriate engineering principles, tools and processes.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Integrates functional elements to form a coherent design solution.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Quantifies the materials, components, systems, equipment, facilities, engineering resources and operating arrangements needed for implementation of the solution.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Checks the design solution for each element and the integrated system against the engineering specifications.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Devises and documents tests that will verify performance of the elements and the integrated realisation.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Prototypes and implements the design solution and verifies performance against specification.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Documents, commissions and reports the design outcome.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Executes and leads a whole systems design cycle approach including determining client requirements, systematically addressing sustainability criteria, working within projected constraints, eliciting and documenting required outcomes, identifying and managing risks, writing engineering specifications, ensuring compliance with standards, partitioning design tasks, identifying and analysing design approaches, developing and completing the design, integrating functional elements, quantifying materials and resources, checking design solutions, devising verification tests, prototyping and verifying performance, and documenting and reporting the design outcome.'],
+            ['indicator_id' => 9, 'attainment_indicator' => 'Is aware of the accountabilities of the professional engineer in relation to the design authority role.'],
+
+            // 2.4
+            ['indicator_id' => 10, 'attainment_indicator' => 'Contributes to and/or manages complex engineering project activity, as a member and/or as the leader of an engineering team.'],
+            ['indicator_id' => 10, 'attainment_indicator' => 'Seeks out the requirements and associated resources and realistically assesses the scope, dimensions, scale of effort and indicative costs of a complex engineering project.'],
+            ['indicator_id' => 10, 'attainment_indicator' => 'Accommodates relevant contextual issues into all phases of engineering project work, including the fundamentals of business planning and financial management.'],
+            ['indicator_id' => 10, 'attainment_indicator' => 'Proficiently applies basic systems engineering and/or project management tools and processes to the planning and execution of project work, targeting the delivery of a significant outcome to a professional standard.'],
+            ['indicator_id' => 10, 'attainment_indicator' => 'Is aware of the need to plan and quantify performance over the full life-cycle of a project, managing engineering performance within the overall implementation context.'],
+            ['indicator_id' => 10, 'attainment_indicator' => 'Demonstrates commitment to sustainable engineering practices and the achievement of sustainable outcomes in all facets of engineering project work.'],
+            
+            // 3.1
+            ['indicator_id' => 11, 'attainment_indicator' => 'Demonstrates commitment to uphold the Engineers Australia Code of Ethics, and established norms of professional conduct pertinent to the engineering discipline.'],
+            ['indicator_id' => 11, 'attainment_indicator' => 'Understands the need for due-diligence in certification, compliance and risk management processes.'],
+            ['indicator_id' => 11, 'attainment_indicator' => 'Understands the accountabilities of the professional engineer and the broader engineering team for the safety of other people and for protection of the environment.'],
+            ['indicator_id' => 11, 'attainment_indicator' => 'Is aware of the fundamental principles of intellectual property rights and protection.'],
+
+            // 3.2
+            ['indicator_id' => 12, 'attainment_indicator' => 'Is proficient in listening, speaking, reading and writing English, including comprehending critically and fairly the viewpoints of others, expressing information effectively and succinctly to technical and non-technical audiences using appropriate media, representing an engineering position to the broader community, and appreciating the impact of body language and cross-cultural differences in communication.'],
+            ['indicator_id' => 12, 'attainment_indicator' => 'Prepares high quality engineering documents such as progress and project reports, reports of investigations and feasibility studies, proposals, specifications, design records, drawings, technical descriptions and presentations pertinent to the engineering discipline.'],
+
+            // 3.3
+            ['indicator_id' => 13, 'attainment_indicator' => 'Applies creative approaches to identify and develop alternative concepts, solutions and procedures, appropriately challenges engineering practices from technical and non-technical viewpoints, and identifies new technological opportunities.'],
+            ['indicator_id' => 13, 'attainment_indicator' => 'Seeks out new developments in the engineering discipline and specialisations and applies fundamental knowledge and systematic processes to evaluate and report potential.'],
+            ['indicator_id' => 13, 'attainment_indicator' => 'Is aware of broader fields of science, engineering, technology and commerce from which new ideas and interfaces may be drawn and readily engages with professionals from these fields to exchange ideas.'],
+
+            // 3.4
+            ['indicator_id' => 14, 'attainment_indicator' => 'Is proficient in locating and utilising information - including accessing, systematically searching, analysing, evaluating and referencing relevant published works and data, and is proficient in the use of indexes, bibliographic databases and other search facilities.'],
+            ['indicator_id' => 14, 'attainment_indicator' => 'Critically assesses the accuracy, reliability and authenticity of information.'],
+            ['indicator_id' => 14, 'attainment_indicator' => 'Is aware of common document identification, tracking and control procedures.'],
+
+            // 3.5
+            ['indicator_id' => 15, 'attainment_indicator' => 'Demonstrates commitment to critical self-review and performance evaluation against appropriate criteria as a primary means of tracking personal development needs and achievements.'],
+            ['indicator_id' => 15, 'attainment_indicator' => 'Understands the importance of being a member of a professional and intellectual community, learning from its knowledge and standards, and contributing to their maintenance and advancement.'],
+            ['indicator_id' => 15, 'attainment_indicator' => 'Demonstrates commitment to life-long learning and professional development.'],
+            ['indicator_id' => 15, 'attainment_indicator' => 'Manages time and processes effectively, prioritises competing demands to achieve personal, career and organisational goals and objectives.'],
+            ['indicator_id' => 15, 'attainment_indicator' => 'Thinks critically and applies an appropriate balance of logic and intellectual criteria to analysis, judgement and decision making.'],
+            ['indicator_id' => 15, 'attainment_indicator' => 'Presents a professional image in all circumstances, including relations with clients, stakeholders, as well as with professional and technical colleagues across wide ranging disciplines.'],
+
+            // 3.6
+            ['indicator_id' => 16, 'attainment_indicator' => 'Understands the fundamentals of team dynamics and leadership.'],
+            ['indicator_id' => 16, 'attainment_indicator' => 'Functions as an effective member or leader of diverse engineering teams, including those with multi-level, multi-disciplinary and multi-cultural dimensions.'],
+            ['indicator_id' => 16, 'attainment_indicator' => 'Earns the trust and confidence of colleagues through competent and timely completion of tasks.'],
+            ['indicator_id' => 16, 'attainment_indicator' => 'Recognises the value of alternative and diverse viewpoints, scholarly advice and the importance of professional networking.'],
+            ['indicator_id' => 16, 'attainment_indicator' => 'Confidently pursues and discerns expert assistance and professional advice.'],
+            ['indicator_id' => 16, 'attainment_indicator' => 'Takes initiative and fulfils the leadership role whilst respecting the agreed roles of others.'],
+        ]);
+
         DB::table('competency_entries')->insert([
             ['entry_id' => 1, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Bridge Project', 'associated_year' => 1, 'experience_tasks' => 'CAD work', 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
             ['entry_id' => 2, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Electrical Project', 'associated_year' => 2, 'experience_tasks' => 'Wiring', 'entry_level_id' => 1, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],

@@ -153,27 +153,17 @@
               <div class="steps-stack">
                 <ul v-if="getGoalSteps(goal).length" class="steps-list">
                   <li v-for="step in getVisibleSteps(goal)" :key="step.step_id">
-                    {{ step.step_description }}
+                    <span class="step-preview-text">{{ step.step_description }}</span>
                   </li>
                 </ul>
                 <p v-else class="no-steps-text">No steps</p>
 
                 <button
-                  v-if="getHiddenStepsCount(goal) > 0"
-                  class="btn btn-link view-more-btn p-0"
-                  @click="toggleSteps(goal.goal_id)"
-                >
-                  {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
-                </button>
-
-                <button
                   type="button"
-                  class="action-icon-btn steps-edit-icon-btn"
-                  aria-label="Edit action steps"
-                  title="Edit Steps"
+                  class="btn btn-link view-more-btn p-0"
                   @click="editSteps(goal)"
                 >
-                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                  {{ getStepsActionLabel(goal) }}
                 </button>
               </div>
             </td>
@@ -188,10 +178,34 @@
                 <option v-for="status in progressStatusOptions" :key="status.value" :value="status.value">{{ status.label }}</option>
               </select>
             </td>
-            <td>{{ goal.learnings }}</td>
+            <td class="text-preview-cell">
+              <div v-if="hasLongText(goal.learnings)" class="text-preview-stack">
+                <p class="text-preview">{{ getTextPreview(goal.learnings) }}</p>
+                <button
+                  type="button"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="openTextModal('Learnings', goal.learnings)"
+                >
+                  View more
+                </button>
+              </div>
+              <span v-else>{{ goal.learnings || '-' }}</span>
+            </td>
             <td>{{ goal.start_date }}</td>
             <td>{{ goal.end_date }}</td>
-            <td class="completion-notes-cell">{{ goal.completion_notes || '-' }}</td>
+            <td class="completion-notes-cell text-preview-cell">
+              <div v-if="hasLongText(goal.completion_notes)" class="text-preview-stack">
+                <p class="text-preview">{{ getTextPreview(goal.completion_notes) }}</p>
+                <button
+                  type="button"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="openTextModal('Completion Notes', goal.completion_notes)"
+                >
+                  View more
+                </button>
+              </div>
+              <span v-else>{{ goal.completion_notes || '-' }}</span>
+            </td>
 
             <td class="actions-cell">
               <div class="actions-stack">
@@ -258,24 +272,17 @@
           <div class="mobile-section">
             <p class="mobile-label">Action Steps</p>
             <ul v-if="getGoalSteps(goal).length" class="steps-list mobile-steps-list">
-              <li v-for="step in getVisibleSteps(goal)" :key="`mobile-step-${step.step_id}`">{{ step.step_description }}</li>
+              <li v-for="step in getVisibleSteps(goal)" :key="`mobile-step-${step.step_id}`">
+                <span class="step-preview-text">{{ step.step_description }}</span>
+              </li>
             </ul>
             <p v-else class="no-steps-text">No steps</p>
             <button
-              v-if="getHiddenStepsCount(goal) > 0"
-              class="btn btn-link view-more-btn p-0"
-              @click="toggleSteps(goal.goal_id)"
-            >
-              {{ isStepsExpanded(goal.goal_id) ? 'Show less' : `View more (${getHiddenStepsCount(goal)})` }}
-            </button>
-            <button
               type="button"
-              class="action-icon-btn steps-edit-icon-btn mt-2"
-              aria-label="Edit action steps"
-              title="Edit Steps"
+              class="btn btn-link view-more-btn p-0"
               @click="editSteps(goal)"
             >
-              <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+              {{ getStepsActionLabel(goal) }}
             </button>
           </div>
 
@@ -292,12 +299,32 @@
 
           <div class="mobile-section">
             <p class="mobile-label">Learnings</p>
-            <p class="mobile-value">{{ goal.learnings || '-' }}</p>
+            <div v-if="hasLongText(goal.learnings)" class="text-preview-stack">
+              <p class="mobile-value text-preview">{{ getTextPreview(goal.learnings) }}</p>
+              <button
+                type="button"
+                class="btn btn-link view-more-btn p-0"
+                @click="openTextModal('Learnings', goal.learnings)"
+              >
+                View more
+              </button>
+            </div>
+            <p v-else class="mobile-value">{{ goal.learnings || '-' }}</p>
           </div>
 
           <div class="mobile-section">
             <p class="mobile-label">Completion Notes</p>
-            <p class="mobile-value">{{ goal.completion_notes || '-' }}</p>
+            <div v-if="hasLongText(goal.completion_notes)" class="text-preview-stack">
+              <p class="mobile-value text-preview">{{ getTextPreview(goal.completion_notes) }}</p>
+              <button
+                type="button"
+                class="btn btn-link view-more-btn p-0"
+                @click="openTextModal('Completion Notes', goal.completion_notes)"
+              >
+                View more
+              </button>
+            </div>
+            <p v-else class="mobile-value">{{ goal.completion_notes || '-' }}</p>
           </div>
 
           <div class="mobile-actions">
@@ -313,7 +340,6 @@
         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
           <div>
             <h3 class="form-title mb-1">Edit Action Steps</h3>
-            <p class="modal-subtitle mb-0">{{ stepModalGoalTitle }}</p>
           </div>
           <button type="button" class="btn page-btn-outline" @click="closeStepModal">Close</button>
         </div>
@@ -342,6 +368,18 @@
         </div>
       </div>
     </div>
+
+    <div v-if="showTextModal" class="modal-backdrop" @click.self="closeTextModal">
+      <div class="text-modal-card">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h3 class="form-title mb-1">{{ textModalTitle }}</h3>
+          </div>
+          <button type="button" class="btn page-btn-outline" @click="closeTextModal">Close</button>
+        </div>
+        <div class="text-modal-body">{{ textModalContent }}</div>
+      </div>
+    </div>
     </main>
   </div>
 </template>
@@ -365,11 +403,14 @@ const showStepModal = ref(false)
 const editingGoal = ref(null)
 const planId = ref(null)
 const stepModalGoal = ref(null)
+const showTextModal = ref(false)
+const textModalTitle = ref('')
+const textModalContent = ref('')
 const savingSteps = ref(false)
 const stepDrafts = ref([])
-const expandedStepsByGoal = ref({})
 const route = useRoute()
 const profileId = computed(() => Number(route.params.id))
+const TEXT_PREVIEW_LIMIT = 90
 // Tracks the currently dragged goal to drive reorder and visual states.
 const draggedGoalId = ref(null)
 // Prevents concurrent reorder requests from overlapping.
@@ -417,26 +458,42 @@ const getStatusClass = (goalStatusId) => {
   if (id === 2) return 'status-in-progress'
   return 'status-planned'
 }
-const isStepsExpanded = (goalId) => Boolean(expandedStepsByGoal.value[goalId])
-// Show only the first 3 steps by default unless the goal is expanded.
+// Keep the table compact by previewing only the first 3 steps; the modal shows and edits the full list.
 const getVisibleSteps = (goal) => {
-  const steps = getGoalSteps(goal)
-  if (isStepsExpanded(goal.goal_id)) {
-    return steps
-  }
-  return steps.slice(0, 3)
+  return getGoalSteps(goal).slice(0, 3)
 }
 // Compute how many steps are hidden behind the "View more" button.
 const getHiddenStepsCount = (goal) => {
   const hidden = getGoalSteps(goal).length - 3
   return hidden > 0 ? hidden : 0
 }
-// Toggle expanded/collapsed state for a specific goal's step list.
-const toggleSteps = (goalId) => {
-  expandedStepsByGoal.value = {
-    ...expandedStepsByGoal.value,
-    [goalId]: !isStepsExpanded(goalId)
+const getStepsActionLabel = (goal) => {
+  if (!getGoalSteps(goal).length) {
+    return 'Add steps'
   }
+
+  const hiddenCount = getHiddenStepsCount(goal)
+  return hiddenCount > 0 ? `View more (${hiddenCount})` : 'View more'
+}
+
+const normalizeDisplayText = (value) => String(value || '').trim()
+const hasLongText = (value) => normalizeDisplayText(value).length > TEXT_PREVIEW_LIMIT
+const getTextPreview = (value) => {
+  const text = normalizeDisplayText(value)
+  if (text.length <= TEXT_PREVIEW_LIMIT) {
+    return text || '-'
+  }
+  return `${text.slice(0, TEXT_PREVIEW_LIMIT).trimEnd()}...`
+}
+const openTextModal = (title, content) => {
+  textModalTitle.value = title
+  textModalContent.value = normalizeDisplayText(content)
+  showTextModal.value = true
+}
+const closeTextModal = () => {
+  showTextModal.value = false
+  textModalTitle.value = ''
+  textModalContent.value = ''
 }
 
 const loadGoals = async () => {
@@ -746,8 +803,6 @@ const editSteps = (goal) => {
   showStepModal.value = true
 }
 
-const stepModalGoalTitle = computed(() => stepModalGoal.value?.goal_description || '')
-
 const addStep = () => {
   stepDrafts.value.push({
     step_id: null,
@@ -1056,7 +1111,7 @@ const deleteGoal = async (goal) => {
   border-color: #e0e0e0;
   padding: 0.9rem 0.8rem;
   vertical-align: middle;
-  text-align: left;
+  text-align: center;
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.4;
@@ -1136,14 +1191,19 @@ const deleteGoal = async (goal) => {
   min-width: 16rem;
 }
 
-.goals-table th:nth-child(4),
-.goals-table td:nth-child(4),
 .goals-table th:nth-child(5),
 .goals-table td:nth-child(5),
 .goals-table th:nth-child(8),
 .goals-table td:nth-child(8) {
-  /* Columns 4,5,8: Progress, Learnings, Completion Notes */
+  /* Columns 5,8: Learnings, Completion Notes */
   min-width: 10rem;
+}
+
+.goals-table th:nth-child(4),
+.goals-table td:nth-child(4) {
+  /* Column 4: Progress */
+  min-width: 7.5rem;
+  width: 7.5rem;
 }
 
 .goals-table th:nth-child(6),
@@ -1167,8 +1227,26 @@ const deleteGoal = async (goal) => {
 .steps-list {
   margin: 0 0 0.4rem 0;
   padding-left: 1.1rem;
-  max-height: 6.8rem;
-  overflow-y: auto;
+  text-align: left;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
+.steps-list li {
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
+.step-preview-text {
+  display: -webkit-box;
+  max-width: 12rem;
+  overflow: hidden;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+  text-align: left;
 }
 
 .drag-col-header {
@@ -1205,22 +1283,14 @@ const deleteGoal = async (goal) => {
 }
 
 .steps-cell {
-  vertical-align: top !important;
+  vertical-align: middle !important;
 }
 
 .steps-stack {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.35rem;
-}
-
-.steps-edit-btn {
-  margin-top: 0.15rem;
-}
-
-.steps-edit-icon-btn {
-  margin-top: 0.15rem;
 }
 
 .view-more-btn {
@@ -1237,16 +1307,43 @@ const deleteGoal = async (goal) => {
 
 .no-steps-text {
   margin: 0;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
+.text-preview-cell {
+  vertical-align: middle !important;
+}
+
+.text-preview-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.text-preview {
+  display: -webkit-box;
+  margin: 0;
+  max-width: 12rem;
+  overflow: hidden;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+  text-align: left;
 }
 
 .status-select {
-  width: min(100%, 13rem);
-  min-width: 9rem;
-  padding: 0.45rem 0.55rem;
+  width: 7rem;
+  min-width: 7rem;
+  padding: 0.38rem 0.45rem;
   border: 1px solid #d0d0d0;
   border-radius: 0.55rem;
   background: #ffffff;
-  font-family: 'Maven Pro', sans-serif;
+  font: 400 1rem/1.4 'Maven Pro', sans-serif;
+  color: #2b2b2b;
   display: block;
   margin: 0 auto;
 }
@@ -1376,8 +1473,25 @@ const deleteGoal = async (goal) => {
   box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.14);
 }
 
-.modal-subtitle {
-  color: #6a6a6a;
+.text-modal-card {
+  width: min(100%, 42rem);
+  max-height: 82vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 1.4rem;
+  padding: 1.4rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.14);
+}
+
+.text-modal-body {
+  padding: 1rem;
+  border: 1px solid #e4e4e4;
+  border-radius: 1rem;
+  background: #fafafa;
+  color: #2b2b2b;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .steps-editor {
@@ -1609,7 +1723,8 @@ const deleteGoal = async (goal) => {
     padding: 0.75rem;
   }
 
-  .step-modal-card {
+  .step-modal-card,
+  .text-modal-card {
     width: 100%;
     max-height: 92vh;
     padding: 1rem;

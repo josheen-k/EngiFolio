@@ -30,6 +30,11 @@ class CompetencyIndicator extends Model
         return $this->hasMany(CompetencyEntry::class, 'indicator_id', 'indicator_id');
     }
 
+    public function attainmentIndicators()
+    {
+        return $this->hasMany(AttainmentIndicator::class, 'indicator_id', 'indicator_id');
+    }
+
     // Called by the controller to find the highest weighted entry
     public function highestEntry()
     {

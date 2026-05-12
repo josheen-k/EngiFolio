@@ -18,7 +18,8 @@ class User extends Model
         'first_name',
         'last_name',
         'password_hash',
-        'account_status',
+        // Must match users.account_status_id column name for mass assignment.
+        'account_status_id',
     ];
 
     // Used to protect the hash from being returned for security reasons

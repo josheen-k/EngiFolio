@@ -364,7 +364,7 @@
   <Navbar />
 
   <main class="container-xl py-5">
-    <div class="row justify-content-center">
+    <div class="row justify-content-center export-page">
       <div class="col-xl-8">
         <h1 class="sec-title text-center mb-5">Export Your Portfolio</h1>
 
@@ -531,5 +531,7 @@
 		background: #ffffff;
   }
 
-  
+  .export-page {
+    min-height: calc(100vh - 150px);
+  }
 </style>

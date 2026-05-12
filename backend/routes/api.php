@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AchievementCertController;
 use App\Http\Controllers\AttainmentCertController;
 use App\Http\Controllers\CareerDevelopmentPlanController;
@@ -40,6 +41,11 @@ Route::post('/users', [UserController::class, 'store']);
 Route::get('/users/{user}', [UserController::class, 'show']);
 Route::put('/users/{user}', [UserController::class, 'update']);
 Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
+// Admin user management routes
+Route::get('/admin/users-overview', [AdminController::class, 'usersOverview']);
+Route::post('/admin/users', [AdminController::class, 'createUser']);
+Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
 
 // Student Profile
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
@@ -90,7 +96,11 @@ Route::delete('/mapping/student/{profileID}', [MentorStudentMappingController::c
 
 // Career Development Plan routes
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
+Route::post('/career-plans', [CareerDevelopmentPlanController::class, 'store']);
+Route::put('/career-plans/{plan}/smart-goals', [CareerDevelopmentPlanController::class, 'linkSmartGoals']);
 Route::get('/career-plans/{id}', [CareerDevelopmentPlanController::class, 'show']);
+Route::put('/career-plans/{plan}', [CareerDevelopmentPlanController::class, 'update']);
+Route::delete('/career-plans/{plan}', [CareerDevelopmentPlanController::class, 'destroy']);
 
 // Competency Entries
 Route::get('/competency-entries/{profile_id}', [CompetencyEntryController::class, 'index']);
@@ -141,23 +151,3 @@ Route::get('/goal-status', [GoalStatusesController::class, 'index']);
 Route::post('/goal-status', [GoalStatusesController::class, 'store']);
 Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
 Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
-
-// Student actions
-Route::get('/student-actions/recent/{id}', [StudentActionsController::class, 'getRecentActions']);
-Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
-
-// Competency Entry Levels
-Route::get('/competency-levels', [CompetencyEntryLevelsController::class, 'index']);
-Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsController::class, 'getLevelByWeighting']);
-
-// Competency Groups
-Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class, 'getStudentCompetencies']);
-
-// Competency Links
-Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
-Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);
-
-//ElevatorPitch
-Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
-Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
-Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);
