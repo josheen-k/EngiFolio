@@ -3,7 +3,7 @@
     <div class="drafts-header">
       <h1 class="compt-title">Drafts Saved</h1>
 
-      <div class="d-flex gap-2 align-items-center">
+      <div class="header-ctrls">
         <!-- Sort Control -->
         <div class="filter-wrap" ref="sortRef">
           <button class="btn btn-add" @click="sortDdOpen = !sortDdOpen">Sort</button>
@@ -60,15 +60,17 @@
     </div>
 
     <!-- Filtered + Sorted Drafts -->
-    <div v-if="processedDrafts.length" class="d-flex flex-wrap gap-3">
-      <div class="draft-card" v-for="(item, i) in processedDrafts" :key="i" @click="openReflec(item)">
-        <p class="draft-title">{{ item.reflec.experience_title }}</p>
-        <div class="d-flex align-items-center gap-2">
-          <span class="compt-pill">Competency {{ item.comptId }}</span>
-          <!-- Simplified Delete -->
-          <img class="plus-btn" src="@/assets/del.png" @click.stop="doDelete(item)">
+    <div v-if="processedDrafts.length" class="row g-3">
+      <div class="col-6 col-sm-4 col-md-3" v-for="(item, i) in processedDrafts" :key="i">
+        <div class="draft-card h-100" @click="openReflec(item)">
+          <p class="draft-title">{{ item.reflec.experience_title }}</p>
+          <div class="d-flex align-items-center gap-2">
+            <span class="compt-pill">Competency {{ item.comptId }}</span>
+            <!-- Simplified Delete -->
+            <img class="plus-btn" src="@/assets/del.png" @click.stop="doDelete(item)">
+          </div>
+          <p class="txt-lvl mb-0 mt-1">Last updated: {{ formatDate(item.reflec.updated_at) }}</p>
         </div>
-        <p class="txt-lvl mb-0">Last updated: {{ formatDate(item.reflec.updated_at) }}</p>
       </div>
     </div>
 
@@ -254,30 +256,28 @@ const confirmDelete = async () => {
 
 <style scoped>
 .drafts-wrap {
-  max-width: 90%;
+  max-width: 100%;
 }
 
 .drafts-header {
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
   margin-bottom: 2rem;
 }
 
-.drafts-header>.d-flex {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+.header-ctrls {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .compt-title {
   font-family: 'Martel', serif;
-  font-size: 2rem;
+  font-size: clamp(1.3rem, 4vw, 2rem);
   color: #2b2b2bc5;
   font-weight: lighter;
   text-align: center;
@@ -292,22 +292,15 @@ const confirmDelete = async () => {
   gap: 0.5rem;
 }
 
-.title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
 .filter-dd {
   position: absolute;
   top: calc(100% + 0.5rem);
-  right: 0;
+  left: 0;
   background: #ffffff;
   border: 0.09rem solid #e0e0e0;
   border-radius: 1rem;
   padding: 1rem 1.25rem;
-  min-width: 16rem;
+  min-width: 10rem;
   box-shadow: 0 0.5rem 1.5rem #e5e5e5;
   z-index: 10;
 }
@@ -334,24 +327,10 @@ const confirmDelete = async () => {
   cursor: pointer;
 }
 
-.btn-title-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 3rem;
-}
-
-.btn-title-wrap>.btn {
-  position: absolute;
-  left: 0;
-}
-
 .draft-card {
-  width: 13.75rem;
   border-radius: 1.5rem;
   border: 1.5px solid #bababa;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   background: #ffffff;
@@ -364,7 +343,7 @@ const confirmDelete = async () => {
 
 .draft-title {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1.1rem;
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
   color: #444444;
   text-decoration: underline;
   margin-bottom: 0.6rem;
@@ -372,22 +351,27 @@ const confirmDelete = async () => {
 
 .compt-pill {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #555555;
   background: #e8e8e8;
-  border-radius: 999px;
-  padding: 0.2rem 0.8rem;
+  border-radius: 2rem;
+  padding: 0.2rem 0.6rem;
 }
 
 .plus-btn {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.5rem;
+  height: 1.5rem;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
 
 .plus-btn:hover {
   transform: scale(1.1);
+}
+
+.txt-lvl {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.85rem;
 }
 
 .empty-state {
@@ -411,7 +395,7 @@ const confirmDelete = async () => {
 .btn-filter, .btn-filter-sm {
   font-family: 'Montserrat Alternates', sans-serif;
   border-radius: 1.5rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
   background: #e6e6e6;
 }
 
@@ -423,7 +407,7 @@ const confirmDelete = async () => {
 .btn-add {
   font-family: 'Montserrat Alternates', sans-serif;
   border-radius: 1.5rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #ffffff;
   background: #555555;
 }
@@ -435,5 +419,28 @@ const confirmDelete = async () => {
 
 .btn-filter-sm {
   font-size: 0.8rem !important;
+}
+
+@media (min-width: 768px) {
+  .drafts-header {
+    position: relative;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .header-ctrls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    justify-content: flex-end;
+  }
+  .draft-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .btn-filter, .btn-add {
+    font-size: 1rem;
+  }
 }
 </style>
