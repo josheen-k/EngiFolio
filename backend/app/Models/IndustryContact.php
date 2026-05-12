@@ -17,6 +17,7 @@ class IndustryContact extends Model
         'company',
         'progress_notes',
         'date_met',
+        'linkedin_url',
     ];
 
     public function getRouteKeyName()

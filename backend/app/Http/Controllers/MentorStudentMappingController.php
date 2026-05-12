@@ -7,43 +7,24 @@ use Illuminate\Http\Request;
 
 class MentorStudentMappingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        // temporary until auth
+        $staffId = $request->query('staff_id', 4);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $students = MentorStudentMapping::with('profile.user')
+            ->where('staff_id', $staffId)
+            ->get()
+            ->map(function ($mapping) {
+                return [
+                    'profile_id' => $mapping->profile->profile_id,
+                    'user_id' => $mapping->profile->user->user_id,
+                    'first_name' => $mapping->profile->user->first_name,
+                    'last_name' => $mapping->profile->user->last_name,
+                    'email' => $mapping->profile->user->email,
+                ];
+            });
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(MentorStudentMapping $mentorStudentMapping)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, MentorStudentMapping $mentorStudentMapping)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MentorStudentMapping $mentorStudentMapping)
-    {
-        //
+        return response()->json($students);
     }
 }

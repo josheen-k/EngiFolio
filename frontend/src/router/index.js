@@ -13,6 +13,8 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
+import CompetencyPage from '@/pages/staff/competencyPage.vue'
+
 const routes = [
   {
     path: '/',
@@ -85,7 +87,11 @@ const routes = [
     name: 'certificationSettings',
     component: CertificationSettings
   },
-  
+  {
+    path: '/competency',
+    component: CompetencyPage
+  }
+
 ]
 
 const router = createRouter({

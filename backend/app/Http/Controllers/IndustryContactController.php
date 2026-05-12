@@ -35,6 +35,7 @@ class IndustryContactController extends Controller
             'company' => 'nullable|string|max:100',
             'progress_notes' => 'nullable|string',
             'date_met' => 'nullable|date',
+            'linkedin_url' => 'nullable|string|max:500',
         ]);
 
         $validated['profile_id'] = $profile->profile_id;
@@ -56,6 +57,7 @@ class IndustryContactController extends Controller
             'company' => 'nullable|string|max:255',
             'progress_notes' => 'nullable|string',
             'date_met' => 'nullable|date',
+            'linkedin_url' => 'nullable|string|max:500',
         ]);
 
         $industryContact->update($validated);

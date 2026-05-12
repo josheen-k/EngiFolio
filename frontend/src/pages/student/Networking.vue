@@ -1,5 +1,4 @@
 
-
 <template>
   <div class="page">
 
@@ -85,6 +84,8 @@
 import { ref, computed, onMounted } from "vue";
 import api from "@/services/api";
 import Navbar from '@/components/Navbar.vue';
+
+import ActionButtons from '@/components/ButtonsStyle.vue'
 
 const userId = 2;
 

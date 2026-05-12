@@ -38,8 +38,8 @@ class CompetencyEntryController extends Controller
             'experience_tasks' => 'required|string',
             'key_learnings' => 'nullable|string',
             'future_applications' => 'nullable|string',
-            'level' => 'required|string',
-            'status' => 'required|string',
+            'entry_level_id' => 'required|string',
+            'entry_status_id' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date',
         ]);
@@ -94,8 +94,8 @@ class CompetencyEntryController extends Controller
             'experience_tasks' => 'sometimes|required|string',
             'key_learnings' => 'nullable|string',
             'future_applications' => 'nullable|string',
-            'level' => 'sometimes|required|string',
-            'status' => 'sometimes|required|string',
+            'entry_level_id' => 'sometimes|required|integer',
+            'entry_status_id' => 'sometimes|required|integer',
             'start_date' => 'sometimes|required|date',
             'end_date' => 'nullable|date',
         ]);

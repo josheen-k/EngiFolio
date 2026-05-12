@@ -20,8 +20,8 @@ class CompetencyEntry extends Model
         'experience_tasks',
         'key_learnings',
         'future_applications',
-        'level',
-        'status',
+        'entry_level_id',
+        'entry_status_id',
         'start_date',
         'end_date',
     ];
