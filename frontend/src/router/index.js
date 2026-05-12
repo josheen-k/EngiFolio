@@ -14,6 +14,7 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
+import CompetencyPage from '@/pages/staff/competencyPage.vue'
 import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 
@@ -111,6 +112,10 @@ const routes = [
     name: 'certificationSettings',
     component: CertificationSettings
   },
+  {
+    path: '/competency',
+    component: CompetencyPage
+  }
 
 ]
 

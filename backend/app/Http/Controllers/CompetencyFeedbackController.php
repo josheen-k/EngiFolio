@@ -3,47 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompetencyFeedback;
+use App\Models\CompetencyEntry;
 use Illuminate\Http\Request;
 
 class CompetencyFeedbackController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index($entryId)
     {
-        //
+        $feedback = CompetencyFeedback::where('entry_id', $entryId)
+            ->with('staff')
+            ->get();
+
+        return response()->json($feedback);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request, $entryId)
     {
-        //
-    }
+        $entry = CompetencyEntry::where('entry_id', $entryId)->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(CompetencyFeedback $competencyFeedback)
-    {
-        //
-    }
+        if (!$entry) {
+            return response()->json(['message' => 'Competency entry not found'], 404);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, CompetencyFeedback $competencyFeedback)
-    {
-        //
-    }
+        $validated = $request->validate([
+            'staff_id' => 'required|integer',
+            'feedback_content' => 'required|string',
+        ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(CompetencyFeedback $competencyFeedback)
-    {
-        //
+        $feedback = CompetencyFeedback::create([
+            'entry_id' => $entryId,
+            'staff_id' => $validated['staff_id'],
+            'feedback_content' => $validated['feedback_content'],
+        ]);
+
+        return response()->json($feedback, 201);
     }
 }

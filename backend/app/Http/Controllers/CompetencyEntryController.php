@@ -3,94 +3,126 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompetencyEntry;
+use App\Models\StudentProfile;
 use Illuminate\Http\Request;
 
 class CompetencyEntryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index($profileId)
+    public function index($userId)
     {
-        $entries = CompetencyEntry::with('indicator', 'entryLevel', 'competencyFeedback.staff', 'CompetencyEvidence')->where('profile_id', $profileId)->get();
+        $profile = StudentProfile::where('user_id', $userId)->first();
 
-        if ($entries->isEmpty()) {
-            return response()->json(['message' => 'No comptencies for this user found'], 404);
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
         }
+
+        $entries = CompetencyEntry::with('indicator')
+            ->where('profile_id', $profile->profile_id)
+            ->get();
 
         return response()->json($entries);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request, $userId)
     {
+        $profile = StudentProfile::where('user_id', $userId)->first();
+
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+
         $validated = $request->validate([
-            'profile_id' => 'required|exists:student_profiles,profile_id',
-            'indicator_id'   => 'required|exists:competency_indicators,indicator_id',
-            'experience_title'     => 'required|string|max:255',
-            'associated_year'     => 'required|integer',
-            'experience_tasks'   => 'required|string',
-            'key_learnings'   => 'nullable|string',
-            'future_applications'   => 'nullable|string',
-            'entry_level_id'   => 'required|integer|exists:competency_entry_levels,entry_level_id',
-            'entry_status_id'   => 'required|integer|exists:competency_entry_statuses,entry_status_id',
-            'start_date'   => 'required|date',
-            'end_date'   => 'nullable|date',
+            'indicator_id' => 'required|integer',
+            'experience_title' => 'required|string|max:255',
+            'associated_year' => 'required|integer',
+            'experience_tasks' => 'required|string',
+            'key_learnings' => 'nullable|string',
+            'future_applications' => 'nullable|string',
+            'entry_level_id' => 'required|string',
+            'entry_status_id' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date',
         ]);
 
+        $validated['profile_id'] = $profile->profile_id;
+
         $entry = CompetencyEntry::create($validated);
-        
+
         return response()->json($entry, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show()
+    public function show($userId, $entryId)
     {
+        $profile = StudentProfile::where('user_id', $userId)->first();
 
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+
+        $entry = CompetencyEntry::with('indicator')
+            ->where('profile_id', $profile->profile_id)
+            ->where('entry_id', $entryId)
+            ->first();
+
+        if (!$entry) {
+            return response()->json(['message' => 'Competency entry not found'], 404);
+        }
+
+        return response()->json($entry);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $competencyEntryId)
+    public function update(Request $request, $userId, $entryId)
     {
-        // Fails if no entry is found
-        $entry = \App\Models\CompetencyEntry::findOrFail($competencyEntryId);
+        $profile = StudentProfile::where('user_id', $userId)->first();
 
-        // Validate all data coming in
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+
+        $entry = CompetencyEntry::where('profile_id', $profile->profile_id)
+            ->where('entry_id', $entryId)
+            ->first();
+
+        if (!$entry) {
+            return response()->json(['message' => 'Competency entry not found'], 404);
+        }
+
         $validated = $request->validate([
-            'profile_id' => 'required|exists:student_profiles,profile_id',
-            'indicator_id'   => 'required|exists:competency_indicators,indicator_id',
-            'experience_title'     => 'required|string|max:255',
-            'associated_year'     => 'required|integer',
-            'experience_tasks'   => 'required|string',
-            'key_learnings'   => 'nullable|string',
-            'future_applications'   => 'nullable|string',
-            'entry_level_id'   => 'required|integer|exists:competency_entry_levels,entry_level_id',
-            'entry_status_id'   => 'required|integer|exists:competency_entry_statuses,entry_status_id',
-            'start_date'   => 'required|date',
-            'end_date'   => 'nullable|date',
+            'indicator_id' => 'sometimes|required|integer',
+            'experience_title' => 'sometimes|required|string|max:255',
+            'associated_year' => 'sometimes|required|integer',
+            'experience_tasks' => 'sometimes|required|string',
+            'key_learnings' => 'nullable|string',
+            'future_applications' => 'nullable|string',
+            'entry_level_id' => 'sometimes|required|integer',
+            'entry_status_id' => 'sometimes|required|integer',
+            'start_date' => 'sometimes|required|date',
+            'end_date' => 'nullable|date',
         ]);
 
-        // Update entry with validated data
         $entry->update($validated);
 
-        return response()->json(['message' => 'Entry updated successfully', 'entry' => $entry]);
+        return response()->json($entry);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($competencyEntryId)
+    public function destroy($userId, $entryId)
     {
-        $entry  = CompetencyEntry::findOrFail($competencyEntryId);
+        $profile = StudentProfile::where('user_id', $userId)->first();
+
+        if (!$profile) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+
+        $entry = CompetencyEntry::where('profile_id', $profile->profile_id)
+            ->where('entry_id', $entryId)
+            ->first();
+
+        if (!$entry) {
+            return response()->json(['message' => 'Competency entry not found'], 404);
+        }
+
         $entry->delete();
 
-
-        return response()->json(['message' => 'Competency entry successfully deleted'], 200);
+        return response()->json(['message' => 'Competency entry deleted']);
     }
 }

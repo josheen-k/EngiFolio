@@ -1,3 +1,4 @@
+
 <template>
   <div class="page">
     <Navbar />
@@ -144,6 +145,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import api from "@/services/api";
+import Navbar from '@/components/Navbar.vue';
+
+import ActionButtons from '@/components/ButtonsStyle.vue'
 
 import Navbar from "@/components/Navbar.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
