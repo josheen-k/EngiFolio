@@ -1,5 +1,5 @@
 <script setup>
-	import { computed, ref, onMounted, watch } from 'vue';
+	import { ref, onMounted } from 'vue';
 	import { onClickOutside } from '@vueuse/core';
 	import { useRoute } from 'vue-router';
 	import api from "@/services/api";
@@ -8,12 +8,7 @@
 	const route = useRoute();
 	const isOpen = ref(false);
 	const dropdown = ref(null);
-	const isGoalsOpen = ref(false);
-	const goalsDropdown = ref(null);
 	const isMenuOpen = ref(false);
-	const isGoalsActive = computed(() => {
-		return route.name === 'GoalsPage' || route.name === 'careerDevelopment';
-	});
 
 	// Store image in a local cache so image doesn't flicker when user navigates between pages
 	const cachedImage = localStorage.getItem(`profile_img_${route.params.id}`);
@@ -43,12 +38,6 @@
 	const closeDropdown = () => {
 		isOpen.value = false;
 	};
-	const toggleGoalsDropdown = () => {
-		isGoalsOpen.value = !isGoalsOpen.value;
-	};
-	const closeGoalsDropdown = () => {
-		isGoalsOpen.value = false;
-	};
 	const toggleMenu = () => {
 		isMenuOpen.value = !isMenuOpen.value;
 	};
@@ -58,10 +47,6 @@
 
 	onClickOutside(dropdown, () => {
 		isOpen.value = false;
-	});
-
-	onClickOutside(goalsDropdown, () => {
-		isGoalsOpen.value = false;
 	});
 
 	onMounted(() => {
@@ -90,29 +75,15 @@
 					<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`" @click="closeMenu">Competencies</router-link>
 					</li>
-					<!-- Goals dropdown lets students switch between SMART Goals and Career Development Plan. -->
-					<li class="nav-item goals-nav-item" ref="goalsDropdown">
-						<button
-							type="button"
-							class="nav-dropdown-button"
-							:class="{ 'active-link': isGoalsActive }"
-							@click="toggleGoalsDropdown"
-						>
-							Goals
-							<span class="dropdown-chevron">v</span>
-						</button>
-						<!-- Show dropdown links only after the Goals button is clicked. -->
-						<div v-if="isGoalsOpen" class="goals-dropdown">
-							<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeGoalsDropdown">SMART Goals</router-link>
-							<router-link active-class="active-link" :to="`/student/career-development/${$route.params.id}`" @click="closeGoalsDropdown">Career Development Plan</router-link>
-						</div>
+					<li class="nav-item">
+						<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">Goals</router-link>
 					</li>
 					<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
 					</li>
-					<!-- <li class="nav-item"> -->
-						<!-- <router-link active-class="active-link" :to="`/student/career-development/${$route.params.id}`" @click="closeMenu">CDL</router-link> -->
-					<!-- </li> -->
+						<li class="nav-item"> 
+						<router-link active-class="active-link" :to="`/student/CDL/${$route.params.id}`" @click="closeMenu">CDL</router-link>
+					</li> 
 				</ul>
 			</div>
 
@@ -133,9 +104,7 @@
 		<div v-if="isMenuOpen" class="mobile-menu-panel">
 			<router-link active-class="active-link" :to="`/student/dashboard/${$route.params.id}`" @click="closeMenu">Dashboard</router-link>
 			<router-link active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`" @click="closeMenu">Competencies</router-link>
-			<p class="mobile-menu-heading">Goals</p>
-			<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">SMART Goals</router-link>
-			<router-link active-class="active-link" :to="`/student/career-development/${$route.params.id}`" @click="closeMenu">Career Development Plan</router-link>
+			<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">Goals</router-link>
 			<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
 		</div>
 
@@ -215,8 +184,7 @@
 	margin: 3px 0;
 }
 
-.nav-item a,
-.nav-dropdown-button {
+.nav-item a {
 	color: #a7a7a7;
 	font-family: 'Montserrat Alternates', sans-serif;
 	font-size: 1.2rem;
@@ -228,51 +196,9 @@
 	height: 30px;
 }
 
-.nav-dropdown-button {
-	background: transparent;
-	border: 0;
-	cursor: pointer;
-}
-
-.dropdown-chevron {
-	font-size: 0.75rem;
-	margin-left: 0.35rem;
-}
-
 .nav-item a:hover,
-.nav-item a.active-link,
-.nav-dropdown-button:hover,
-.nav-dropdown-button.active-link {
+.nav-item a.active-link {
     color: #ffffff;
-}
-
-.goals-dropdown {
-	position: absolute;
-	top: 100%;
-	left: 0;
-	min-width: 14rem;
-	padding: 0.4rem;
-	background: #ffffff;
-	border: 1px solid #bebebe;
-	border-radius: 0.8rem;
-	box-shadow: 0 0.5rem 1.4rem rgba(0, 0, 0, 0.3);
-	z-index: 4;
-}
-
-.goals-dropdown a {
-	color: #444444;
-	font-size: 0.9rem;
-	display: block;
-	height: auto;
-	padding: 0.55rem 0.75rem;
-	border-radius: 0.5rem;
-	white-space: nowrap;
-}
-
-.goals-dropdown a:hover,
-.goals-dropdown a.active-link {
-	background-color: #f1f1f1;
-	color: #000000;
 }
 
 .navLogo {
@@ -330,8 +256,7 @@
 }
 
 @media (max-width: 1024px) {
-	.nav-item a,
-	.nav-dropdown-button {
+	.nav-item a {
 		font-size: 1rem;
 		padding: 0.55rem 0.45rem;
 	}
@@ -366,8 +291,7 @@
 		width: 100%;
 	}
 
-	.nav-item a,
-	.nav-dropdown-button {
+	.nav-item a {
 		font-size: 0.9rem;
 		white-space: nowrap;
 		height: auto;
@@ -411,16 +335,6 @@
 		text-decoration: none;
 		padding: 0.55rem 0.6rem;
 		border-radius: 0.45rem;
-	}
-
-	.mobile-menu-heading {
-		color: #ffffff;
-		font-family: 'Montserrat Alternates', sans-serif;
-		font-size: 0.78rem;
-		font-weight: 700;
-		margin: 0.35rem 0 0.1rem;
-		padding: 0.35rem 0.6rem 0;
-		text-transform: uppercase;
 	}
 
 	.mobile-menu-panel a:hover,

@@ -17,6 +17,7 @@ import CertificationSettings from '@/pages/student/editCerts.vue'
 import CompetencyPage from '@/pages/staff/competencyPage.vue'
 import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
+import CDL from '@/pages/student/CDL.vue'
 
 const routes = [
   {
@@ -115,7 +116,12 @@ const routes = [
   {
     path: '/competency',
     component: CompetencyPage
-  }
+  },
+  {
+    path: '/student/CDL/:id',
+    name: 'CDL',
+    component: CDL
+  },
 
 ]
 

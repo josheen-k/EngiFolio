@@ -50,6 +50,7 @@ Route::get('/data', function () {
 
 /* ================= USERS ================= */
 
+//  User Routes
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users', [UserController::class, 'store']);
 Route::get('/users/{user}', [UserController::class, 'show']);
@@ -191,3 +192,28 @@ Route::post('/competency-entries/{entry}/feedback', [CompetencyFeedbackControlle
 /* ================= STAFF ================= */
 
 Route::get('/staff/my-students', [MentorStudentMappingController::class, 'index']);
+// Goal status
+Route::get('/goal-status', [GoalStatusesController::class, 'index']);
+Route::post('/goal-status', [GoalStatusesController::class, 'store']);
+Route::put('/goal-status/{status}', [GoalStatusesController::class, 'update']);
+Route::delete('/goal-status/{status}', [GoalStatusesController::class, 'destroy']);
+
+// Student actions
+Route::get('/student-actions/recent/{id}', [StudentActionsController::class, 'getRecentActions']);
+Route::post('/student-actions/new', [StudentActionsController::class, 'store']);
+
+// Competency Entry Levels
+Route::get('/competency-levels', [CompetencyEntryLevelsController::class, 'index']);
+Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsController::class, 'getLevelByWeighting']);
+
+// Competency Groups
+Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class, 'getStudentCompetencies']);
+
+// Competency Links
+Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
+Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);
+
+//ElevatorPitch
+Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
+Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
+Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);
