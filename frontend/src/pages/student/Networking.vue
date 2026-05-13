@@ -149,7 +149,6 @@ import Navbar from '@/components/Navbar.vue';
 
 import ActionButtons from '@/components/ButtonsStyle.vue'
 
-import Navbar from "@/components/Navbar.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
 
 const route = useRoute();
