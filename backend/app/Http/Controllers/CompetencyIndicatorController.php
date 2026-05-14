@@ -58,13 +58,17 @@ class CompetencyIndicatorController extends Controller
     public function competenciesWithHighest($profileId)
     {
         // Count the amount of entries the student has for each competency
-        $indicators = CompetencyIndicator::withCount(['entries' => function ($query) use ($profileId) {
+        $indicators = CompetencyIndicator::whereNull('discontinued_date')->withCount(['entries' => function ($query) use ($profileId) {
             $query->where('profile_id', $profileId);}])
         // Call function that calculates the highest entry by level weighting
         ->with(['highestEntry' => function ($query) use ($profileId) {
             $query->where('profile_id', $profileId);
         }])->get();
 
-        return response()->json($indicators);
+        $sorted = $indicators->sortBy(function ($item) {
+            return $item->highestEntry->competency_level_weighting ?? 0;}
+        )->values();
+
+        return response()->json($sorted);
     }
 }

@@ -5,7 +5,7 @@
     <aside class="sidebar-wrap">
       <div class="d-flex flex-row flex-md-column gap-2 gap-md-4 pt-0 pt-md-5">
         <div class="d-flex align-items-center gap-2 gap-md-3 px-2 px-md-3 py-2 sidebar"
-        :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="currTab = t">
+        :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="switchTab(t)">
           <span class="dot rounded-circle d-none d-md-inline-block" :class="currTab===t ? 'dot-on' : ''"></span>{{ t }}
         </div>
       </div>
@@ -13,7 +13,7 @@
 
     <main class="mt-5 main-area">
       <!-- Used to pass data to the other components -->
-      <component :is="currComponent" :categories="categories" :levelOptions="levelOptions" @refresh="handleRefresh"
+      <component :is="currComponent" :categories="categories" :levelOptions="levelOptions" :initialIndicatorId="route.query.indicator" @refresh="loadData"
 />
     </main>
   </div>
@@ -21,7 +21,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue';
 import CurrentCompetency from '@/components/CurrentCompetency.vue';
 import DraftReflections from '@/components/DraftReflections.vue';
@@ -30,6 +30,7 @@ import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 import api from "@/services/api";
 
 const route = useRoute()
+const router = useRouter()
 
 // Stores data to be passed to components
 const categories  = ref([])
@@ -52,6 +53,15 @@ const currComponent = computed(()=> {
       return DiscontinuedCompetency
   }
 });
+
+// Set value of current tab
+function switchTab(tab) {
+  currTab.value = tab
+  if (route.query.indicator) {
+    // Clear url query
+    router.replace({ query: {} })
+  }
+}
 
 const loadData = async () => { 
   try {
@@ -97,12 +107,26 @@ const loadData = async () => {
 };
 
 // Reload data
-const handleRefresh = () => {
-  loadData();
-};
+const handleIndicatorParam = () => {
+  const indicatorId = route.query.indicator
+  if (indicatorId && categories.value.length) {
+      // Check to see if there is a matching indicator id
+    for (const cat of categories.value) {
+      const match = cat.compt.find(c => Number(c.id) === Number(indicatorId))
+      if (match) {
+        // Set tab to current and stop searching
+        currTab.value = 'CURRENT'
+        break
+      }
+    }
+  }
+}
 
-// Load the data when the page is loaded
-onMounted(loadData);
+// update onMounted to check for the param after data loads
+onMounted(async () => {
+  await loadData()
+  handleIndicatorParam()
+})
 </script>
 
 <style scoped>

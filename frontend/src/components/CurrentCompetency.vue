@@ -189,17 +189,38 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, useRoute, useRouter  } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
 import { getLvl, publishedReflec, formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
 import { onClickOutside } from '@vueuse/core';
 
+const route = useRoute()
+const router = useRouter()
+
 // Allows for the eaCompetency page to pass the vales along
 const props = defineProps({
   categories: { type: Array, required: true },
-  levelOptions: { type: Array, required: true }
+  levelOptions: { type: Array, required: true },
+  initialIndicatorId: { type: [String, Number], default: null }
 });
+
+// Watch for an indicatorId
+watch(
+  [() => props.initialIndicatorId, () => props.categories],
+  ([id, cats]) => {
+    if (id && cats.length) {
+      for (const cat of cats) {
+        const match = cat.compt.find(c => Number(c.id) === Number(id))
+        if (match) {
+          openDetail(match, cat.label)
+          break
+        }
+      }
+    }
+  },
+  { immediate: true }
+)
 
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
