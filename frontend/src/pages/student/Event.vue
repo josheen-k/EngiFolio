@@ -1,3 +1,461 @@
+<template>
+  <Navbar />
+
+  <main class="networking-page">
+    <section class="networking-shell">
+      <div class="pitch-box">
+        <label class="pitch-label"> Elevator Pitch</label>
+        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
+        <div class="pitch-actions">
+          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Submit' }}</button>
+        </div>
+      </div>
+      <div class="page-header">
+        <div>
+          <p class="eyebrow">Networking Planner</p>
+          <h1 class="page-title">Track events on a calendar</h1>
+          <p class="page-copy">
+            Tap a date to add a new event, or open an event day to review its details,
+            questions, and comments.
+          </p>
+          <div class="networking-switch">
+            <RouterLink :to="`/student/networking/${route.params.id || 1}`" class="switch-pill active"> Events Calendar</RouterLink>
+            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill"> Industry Contacts</RouterLink>
+          </div>
+        </div>
+
+        <button class="action-button" @click="openCreateForm()">
+          Add Event
+        </button>        
+      </div>
+
+      <section class="calendar-card">
+        <div class="calendar-toolbar">
+          <div>
+            <p class="toolbar-label">Calendar View</p>
+            <h2 class="calendar-title">{{ currentCalendarTitle }}</h2>
+          </div>
+
+          <div class="calendar-actions">
+            <div class="view-switcher">
+              <button
+                class="view-toggle"
+                :class="{ 'is-active': calendarView === 'month' }"
+                @click="switchCalendarView('month')"
+              >
+                Month
+              </button>
+              <button
+                class="view-toggle"
+                :class="{ 'is-active': calendarView === 'year' }"
+                @click="switchCalendarView('year')"
+              >
+                Year
+              </button>
+            </div>
+
+            <div class="calendar-controls">
+              <button class="ghost-button" @click="goToPreviousMonth">Previous</button>
+              <button class="ghost-button" @click="goToToday">Today</button>
+              <button class="ghost-button" @click="goToNextMonth">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="calendarView === 'month'" class="calendar-scroll">
+          <div class="calendar-grid">
+            <div
+              v-for="weekday in weekdayLabels"
+              :key="weekday"
+              class="weekday-cell"
+            >
+              {{ weekday }}
+            </div>
+
+            <button
+              v-for="day in calendarDays"
+              :key="day.dateKey"
+              class="day-cell"
+              :class="{
+                'is-outside-month': !day.isCurrentMonth,
+                'is-today': day.isToday,
+                'has-events': day.events.length,
+              }"
+              @click="handleDateClick(day)"
+            >
+              <div class="day-cell-header">
+                <span class="day-number">{{ day.dayNumber }}</span>
+                <span v-if="day.events.length" class="day-pill">
+                  {{ day.events.length }} event{{ day.events.length > 1 ? 's' : '' }}
+                </span>
+              </div>
+
+              <div class="event-chip-list">
+                <span
+                  v-for="event in day.events.slice(0, 2)"
+                  :key="event.event_id"
+                  class="event-chip"
+                >
+                  {{ event.event_name }}
+                </span>
+
+                <span v-if="day.events.length > 2" class="more-chip">
+                  +{{ day.events.length - 2 }} more
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="year-view-shell">
+          <p class="year-scroll-hint">Scroll vertically to move through years</p>
+
+          <div ref="yearScrollContainer" class="year-scroll-frame" @scroll="handleYearViewScroll">
+            <section
+              v-for="yearBlock in yearViewYears"
+              :key="yearBlock.key"
+              class="year-section"
+              :data-year="yearBlock.year"
+            >
+              <h3 class="year-section-title">{{ yearBlock.year }}</h3>
+
+              <div class="year-grid">
+                <article
+                  v-for="monthCard in yearBlock.months"
+                  :key="monthCard.key"
+                  class="year-card"
+                >
+                  <button
+                    class="year-card-title"
+                    @click="openMonthFromYear(monthCard.year, monthCard.monthIndex)"
+                  >
+                    {{ monthCard.monthLabel }}
+                  </button>
+
+                  <div class="mini-weekdays">
+                    <span
+                      v-for="weekday in miniWeekdayLabels"
+                      :key="`${monthCard.key}-${weekday}`"
+                      class="mini-weekday"
+                    >
+                      {{ weekday }}
+                    </span>
+                  </div>
+
+                  <div class="mini-month-grid">
+                    <button
+                      v-for="day in monthCard.days"
+                      :key="`${monthCard.key}-${day.dateKey}`"
+                      class="mini-day"
+                      :class="{
+                        'is-outside-month': !day.isCurrentMonth,
+                        'is-today': day.isToday,
+                        'has-events': day.events.length,
+                      }"
+                      @click="openMonthFromYear(monthCard.year, monthCard.monthIndex, day.dateKey)"
+                    >
+                      <span class="mini-day-number">{{ day.dayNumber }}</span>
+                      <span v-if="day.events.length" class="mini-event-dot" />
+                    </button>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
+      <div class="modal-card form-modal">
+        <div class="modal-header">
+          <div>
+            <p class="modal-label">{{ editingEventId ? 'Update Event' : 'Create Event' }}</p>
+            <h2>{{ editingEventId ? 'Edit networking event' : 'Add a networking event' }}</h2>
+          </div>
+
+          <button class="icon-button" @click="closeForm">Close</button>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Event Name</span>
+            <input v-model="newEvent.name" placeholder="Company mixer, panel, workshop..." />
+          </label>
+
+          <label class="field">
+            <span>Date</span>
+            <input v-model="newEvent.date" type="date" />
+          </label>
+
+          <label class="field">
+            <span>Location</span>
+            <input v-model="newEvent.location" placeholder="Adelaide, online, campus..." />
+          </label>
+
+          <label class="field field-full">
+            <span>Details</span>
+            <textarea
+              v-model="newEvent.details"
+              rows="5"
+              placeholder="What is this event about, and what do you want to remember?"
+            ></textarea>
+          </label>
+          <div class="field field-full">
+            <span>Related Contacts</span>
+            <div v-if="contacts.length" class="contact-picker">
+              <label v-for="contact in contacts" :key="contact.contact_id" class="contact-option">
+                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids">
+                <span>{{ contact.contact_name }}</span>
+              </label>
+            </div>
+            <p v-else>No contacts available</p>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="ghost-button" @click="closeForm">Cancel</button>
+          <button class="action-button" @click="addEvent">
+            {{ editingEventId ? 'Update Event' : 'Create Event' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showEventDetails" class="modal-overlay" @click.self="closeEventDetails">
+      <div class="modal-card details-modal">
+        <div class="modal-header">
+          <div>
+            <p class="modal-label">Events on</p>
+            <h2>{{ selectedDateLabel }}</h2>
+          </div>
+
+          <button class="icon-button" @click="closeEventDetails">Close</button>
+        </div>
+
+        <div v-if="selectedDateEvents.length" class="details-stack">
+          <article
+            v-for="event in selectedDateEvents"
+            :key="event.event_id"
+            class="event-detail-card"
+          >
+            <div class="event-detail-top">
+              <div>
+                <p class="event-date">{{ formatFullDate(normalizeEventDate(event.event_datetime)) }}</p>
+                <h3>{{ event.event_name }}</h3>
+              </div>
+
+              <div class="card-actions">
+                <button class="ghost-button" @click="editEvent(event)">Edit</button>
+                <button class="delete-button" @click="deleteEvent(event.event_id)">Delete</button>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <span class="detail-label">Location</span>
+              <p>{{ event.location || 'No location added yet.' }}</p>
+            </div>
+
+            <div class="detail-row">
+              <span class="detail-label">Details</span>
+              <p>{{ event.details || 'No event details added yet.' }}</p>
+            </div>
+
+            <div class="detail-row">
+              <span class="detail-label">Related Contacts</span>
+              <ul v-if="event.contacts && event.contacts.length" class="contact-list">
+                <li v-for="contact in event.contacts" :key="contact.contact_id" class="contact-list-item">
+                  <span class="contact-name">{{ contact.contact_name }}</span>
+                  <span v-if="contact.company" class="contact-company">{{ contact.company }}</span>
+                </li>
+              </ul>
+              <p v-else class="contact-empty">No related contacts added yet.</p>
+            </div>
+            <div class="detail-columns">
+              <div class="detail-panel">
+                <div class="panel-header">
+                  <h4>Questions</h4>
+                  <span class="panel-count">{{ event.questions?.length || 0 }}</span>
+                </div>
+
+                <div class="inline-editor">
+                  <input
+                    :value="getQuestionDraft(event.event_id)"
+                    placeholder="Add a question to ask at this event"
+                    @input="questionDrafts[event.event_id] = $event.target.value"
+                  />
+                  <div class="inline-actions">
+                    <button class="action-button small-button" @click="submitQuestion(event.event_id)">
+                      {{ editingQuestionIds[event.event_id] ? 'Update' : 'Add' }}
+                    </button>
+                    <button
+                      v-if="editingQuestionIds[event.event_id]"
+                      class="ghost-button small-button"
+                      @click="clearQuestionEditor(event.event_id)"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+
+                <ul v-if="event.questions && event.questions.length" class="item-list">
+                  <li v-for="question in event.questions" :key="question.question_id" class="list-item">
+                    <span>{{ question.question_text }}</span>
+                    <div class="list-actions">
+                      <button class="ghost-button small-button" @click="editQuestion(event.event_id, question)">
+                        Edit
+                      </button>
+                      <button
+                        class="delete-button small-button"
+                        @click="deleteQuestion(event.event_id, question.question_id)"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+                <p v-else>No questions saved for this event yet.</p>
+              </div>
+
+              <div class="detail-panel">
+                <div class="panel-header">
+                  <h4>Comments</h4>
+                  <span class="panel-count">{{ event.comments?.length || 0 }}</span>
+                </div>
+
+                <div class="inline-editor comment-evidence-editor">
+                  <div class="comment-evidence-grid">
+                    <div class="comment-evidence-field">
+                      <label class="detail-label">Evidence type</label>
+                      <select v-model="getCommentDraft(event.event_id).comment_type">
+                        <option value="">Select evidence type</option>
+                        <option value="link">Link</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                      </select>
+                    </div>
+
+                    <div class="comment-evidence-field comment-evidence-input">
+                      <label class="detail-label">Evidence input</label>
+
+                      <input
+                        v-if="!getCommentDraft(event.event_id).comment_type"
+                        disabled
+                        placeholder="Select a type first"
+                      />
+
+                      <input
+                        v-else-if="getCommentDraft(event.event_id).comment_type === 'link'"
+                        v-model="getCommentDraft(event.event_id).link_url"
+                        type="url"
+                        placeholder="https://example.com"
+                      />
+
+                      <div v-else class="upload-zone">
+                        <input
+                          type="file"
+                          :accept="getCommentDraft(event.event_id).comment_type === 'image'
+                            ? 'image/*'
+                            : 'video/*'"
+                          @change="handleCommentFileChange(event.event_id, $event.target.files)"
+                        />
+
+                        <p v-if="!getCommentDraft(event.event_id).file_name">
+                          {{
+                            getCommentDraft(event.event_id).comment_type === 'image'
+                              ? 'Upload an image file'
+                              : 'Upload a video file'
+                          }}
+                        </p>
+
+                        <p v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="inline-actions">
+                    <button class="action-button small-button" @click="submitComment(event.event_id)">
+                      {{ editingCommentIds[event.event_id] ? 'Update' : 'Add' }}
+                    </button>
+                    <button
+                      v-if="editingCommentIds[event.event_id]"
+                      class="ghost-button small-button"
+                      @click="clearCommentEditor(event.event_id)"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+
+                <ul v-if="event.comments && event.comments.length" class="item-list">
+                  <li v-for="comment in event.comments" :key="comment.id" class="list-item">
+                    <div class="comment-display">
+                      <a
+                        v-if="comment.comment_type === 'link'"
+                        :href="comment.link_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ comment.link_url }}
+                      </a>
+                      <a
+                        v-else-if="comment.file_path"
+                        :href="`http://127.0.0.1:8000/storage/${comment.file_path}`"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ comment.file_name || 'Open file' }}
+                      </a>
+                      <span v-else>No file available.</span>
+                    </div>
+
+                    <div class="list-actions">
+                      <button class="ghost-button small-button" @click="editComment(event.event_id, comment)">
+                        Edit
+                      </button>
+                      <button
+                        class="delete-button small-button"
+                        @click="deleteComment(event.event_id, comment.id)"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+                <p v-else>No comments saved for this event yet.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div v-else class="empty-state">
+          <h3>No events on this date</h3>
+          <p>Select another day or add a new networking event.</p>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
+      <div class="confirm-widget">
+        <p class="confirm-title">{{ confirmDialog.title }}</p>
+        <p class="confirm-message">{{ confirmDialog.message }}</p>
+        <div class="confirm-actions">
+          <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">
+            {{ confirmDialog.cancelLabel }}
+          </button>
+          <button
+            class="small-button"
+            :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
+            @click="resolveConfirmDialog(true)"
+          >
+            {{ confirmDialog.confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
@@ -673,466 +1131,6 @@ function goToToday() {
 }
 
 </script>
-
-<template>
-  <Navbar />
-
-  <main class="networking-page">
-    <section class="networking-shell">
-      <div class="pitch-box">
-        <label class="pitch-label"> Elevator Pitch</label>
-        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
-        <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Submit' }}</button>
-        </div>
-      </div>
-      <div class="page-header">
-        <div>
-          <p class="eyebrow">Networking Planner</p>
-          <h1 class="page-title">Track events on a calendar</h1>
-          <p class="page-copy">
-            Tap a date to add a new event, or open an event day to review its details,
-            questions, and comments.
-          </p>
-          <div class="networking-switch">
-            <RouterLink :to="`/student/networking/${route.params.id || 1}`" class="switch-pill active"> Events Calendar</RouterLink>
-            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill"> Industry Contacts</RouterLink>
-          </div>
-        </div>
-
-        <button class="action-button" @click="openCreateForm()">
-          Add Event
-        </button>        
-      </div>
-
-      <section class="calendar-card">
-        <div class="calendar-toolbar">
-          <div>
-            <p class="toolbar-label">Calendar View</p>
-            <h2 class="calendar-title">{{ currentCalendarTitle }}</h2>
-          </div>
-
-          <div class="calendar-actions">
-            <div class="view-switcher">
-              <button
-                class="view-toggle"
-                :class="{ 'is-active': calendarView === 'month' }"
-                @click="switchCalendarView('month')"
-              >
-                Month
-              </button>
-              <button
-                class="view-toggle"
-                :class="{ 'is-active': calendarView === 'year' }"
-                @click="switchCalendarView('year')"
-              >
-                Year
-              </button>
-            </div>
-
-            <div class="calendar-controls">
-              <button class="ghost-button" @click="goToPreviousMonth">Previous</button>
-              <button class="ghost-button" @click="goToToday">Today</button>
-              <button class="ghost-button" @click="goToNextMonth">Next</button>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="calendarView === 'month'" class="calendar-scroll">
-          <div class="calendar-grid">
-            <div
-              v-for="weekday in weekdayLabels"
-              :key="weekday"
-              class="weekday-cell"
-            >
-              {{ weekday }}
-            </div>
-
-            <button
-              v-for="day in calendarDays"
-              :key="day.dateKey"
-              class="day-cell"
-              :class="{
-                'is-outside-month': !day.isCurrentMonth,
-                'is-today': day.isToday,
-                'has-events': day.events.length,
-              }"
-              @click="handleDateClick(day)"
-            >
-              <div class="day-cell-header">
-                <span class="day-number">{{ day.dayNumber }}</span>
-                <span v-if="day.events.length" class="day-pill">
-                  {{ day.events.length }} event{{ day.events.length > 1 ? 's' : '' }}
-                </span>
-              </div>
-
-              <div class="event-chip-list">
-                <span
-                  v-for="event in day.events.slice(0, 2)"
-                  :key="event.event_id"
-                  class="event-chip"
-                >
-                  {{ event.event_name }}
-                </span>
-
-                <span v-if="day.events.length > 2" class="more-chip">
-                  +{{ day.events.length - 2 }} more
-                </span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <div v-else class="year-view-shell">
-          <p class="year-scroll-hint">Scroll vertically to move through years</p>
-
-          <div ref="yearScrollContainer" class="year-scroll-frame" @scroll="handleYearViewScroll">
-            <section
-              v-for="yearBlock in yearViewYears"
-              :key="yearBlock.key"
-              class="year-section"
-              :data-year="yearBlock.year"
-            >
-              <h3 class="year-section-title">{{ yearBlock.year }}</h3>
-
-              <div class="year-grid">
-                <article
-                  v-for="monthCard in yearBlock.months"
-                  :key="monthCard.key"
-                  class="year-card"
-                >
-                  <button
-                    class="year-card-title"
-                    @click="openMonthFromYear(monthCard.year, monthCard.monthIndex)"
-                  >
-                    {{ monthCard.monthLabel }}
-                  </button>
-
-                  <div class="mini-weekdays">
-                    <span
-                      v-for="weekday in miniWeekdayLabels"
-                      :key="`${monthCard.key}-${weekday}`"
-                      class="mini-weekday"
-                    >
-                      {{ weekday }}
-                    </span>
-                  </div>
-
-                  <div class="mini-month-grid">
-                    <button
-                      v-for="day in monthCard.days"
-                      :key="`${monthCard.key}-${day.dateKey}`"
-                      class="mini-day"
-                      :class="{
-                        'is-outside-month': !day.isCurrentMonth,
-                        'is-today': day.isToday,
-                        'has-events': day.events.length,
-                      }"
-                      @click="openMonthFromYear(monthCard.year, monthCard.monthIndex, day.dateKey)"
-                    >
-                      <span class="mini-day-number">{{ day.dayNumber }}</span>
-                      <span v-if="day.events.length" class="mini-event-dot" />
-                    </button>
-                  </div>
-                </article>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-    </section>
-
-    <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
-      <div class="modal-card form-modal">
-        <div class="modal-header">
-          <div>
-            <p class="modal-label">{{ editingEventId ? 'Update Event' : 'Create Event' }}</p>
-            <h2>{{ editingEventId ? 'Edit networking event' : 'Add a networking event' }}</h2>
-          </div>
-
-          <button class="icon-button" @click="closeForm">Close</button>
-        </div>
-
-        <div class="form-grid">
-          <label class="field">
-            <span>Event Name</span>
-            <input v-model="newEvent.name" placeholder="Company mixer, panel, workshop..." />
-          </label>
-
-          <label class="field">
-            <span>Date</span>
-            <input v-model="newEvent.date" type="date" />
-          </label>
-
-          <label class="field">
-            <span>Location</span>
-            <input v-model="newEvent.location" placeholder="Adelaide, online, campus..." />
-          </label>
-
-          <label class="field field-full">
-            <span>Details</span>
-            <textarea
-              v-model="newEvent.details"
-              rows="5"
-              placeholder="What is this event about, and what do you want to remember?"
-            ></textarea>
-          </label>
-          <div class="field field-full">
-            <span>Related Contacts</span>
-            <div v-if="contacts.length" class="contact-picker">
-              <label v-for="contact in contacts" :key="contact.contact_id" class="contact-option">
-                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids">
-                <span>{{ contact.contact_name }}</span>
-              </label>
-            </div>
-            <p v-else>No contacts available</p>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button class="ghost-button" @click="closeForm">Cancel</button>
-          <button class="action-button" @click="addEvent">
-            {{ editingEventId ? 'Update Event' : 'Create Event' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="showEventDetails" class="modal-overlay" @click.self="closeEventDetails">
-      <div class="modal-card details-modal">
-        <div class="modal-header">
-          <div>
-            <p class="modal-label">Events on</p>
-            <h2>{{ selectedDateLabel }}</h2>
-          </div>
-
-          <button class="icon-button" @click="closeEventDetails">Close</button>
-        </div>
-
-        <div v-if="selectedDateEvents.length" class="details-stack">
-          <article
-            v-for="event in selectedDateEvents"
-            :key="event.event_id"
-            class="event-detail-card"
-          >
-            <div class="event-detail-top">
-              <div>
-                <p class="event-date">{{ formatFullDate(normalizeEventDate(event.event_datetime)) }}</p>
-                <h3>{{ event.event_name }}</h3>
-              </div>
-
-              <div class="card-actions">
-                <button class="ghost-button" @click="editEvent(event)">Edit</button>
-                <button class="delete-button" @click="deleteEvent(event.event_id)">Delete</button>
-              </div>
-            </div>
-
-            <div class="detail-row">
-              <span class="detail-label">Location</span>
-              <p>{{ event.location || 'No location added yet.' }}</p>
-            </div>
-
-            <div class="detail-row">
-              <span class="detail-label">Details</span>
-              <p>{{ event.details || 'No event details added yet.' }}</p>
-            </div>
-
-            <div class="detail-row">
-              <span class="detail-label">Related Contacts</span>
-              <ul v-if="event.contacts && event.contacts.length" class="contact-list">
-                <li v-for="contact in event.contacts" :key="contact.contact_id" class="contact-list-item">
-                  <span class="contact-name">{{ contact.contact_name }}</span>
-                  <span v-if="contact.company" class="contact-company">{{ contact.company }}</span>
-                </li>
-              </ul>
-              <p v-else class="contact-empty">No related contacts added yet.</p>
-            </div>
-            <div class="detail-columns">
-              <div class="detail-panel">
-                <div class="panel-header">
-                  <h4>Questions</h4>
-                  <span class="panel-count">{{ event.questions?.length || 0 }}</span>
-                </div>
-
-                <div class="inline-editor">
-                  <input
-                    :value="getQuestionDraft(event.event_id)"
-                    placeholder="Add a question to ask at this event"
-                    @input="questionDrafts[event.event_id] = $event.target.value"
-                  />
-                  <div class="inline-actions">
-                    <button class="action-button small-button" @click="submitQuestion(event.event_id)">
-                      {{ editingQuestionIds[event.event_id] ? 'Update' : 'Add' }}
-                    </button>
-                    <button
-                      v-if="editingQuestionIds[event.event_id]"
-                      class="ghost-button small-button"
-                      @click="clearQuestionEditor(event.event_id)"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-
-                <ul v-if="event.questions && event.questions.length" class="item-list">
-                  <li v-for="question in event.questions" :key="question.question_id" class="list-item">
-                    <span>{{ question.question_text }}</span>
-                    <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editQuestion(event.event_id, question)">
-                        Edit
-                      </button>
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteQuestion(event.event_id, question.question_id)"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                </ul>
-                <p v-else>No questions saved for this event yet.</p>
-              </div>
-
-              <div class="detail-panel">
-                <div class="panel-header">
-                  <h4>Comments</h4>
-                  <span class="panel-count">{{ event.comments?.length || 0 }}</span>
-                </div>
-
-                <div class="inline-editor comment-evidence-editor">
-                  <div class="comment-evidence-grid">
-                    <div class="comment-evidence-field">
-                      <label class="detail-label">Evidence type</label>
-                      <select v-model="getCommentDraft(event.event_id).comment_type">
-                        <option value="">Select evidence type</option>
-                        <option value="link">Link</option>
-                        <option value="image">Image</option>
-                        <option value="video">Video</option>
-                      </select>
-                    </div>
-
-                    <div class="comment-evidence-field comment-evidence-input">
-                      <label class="detail-label">Evidence input</label>
-
-                      <input
-                        v-if="!getCommentDraft(event.event_id).comment_type"
-                        disabled
-                        placeholder="Select a type first"
-                      />
-
-                      <input
-                        v-else-if="getCommentDraft(event.event_id).comment_type === 'link'"
-                        v-model="getCommentDraft(event.event_id).link_url"
-                        type="url"
-                        placeholder="https://example.com"
-                      />
-
-                      <div v-else class="upload-zone">
-                        <input
-                          type="file"
-                          :accept="getCommentDraft(event.event_id).comment_type === 'image'
-                            ? 'image/*'
-                            : 'video/*'"
-                          @change="handleCommentFileChange(event.event_id, $event.target.files)"
-                        />
-
-                        <p v-if="!getCommentDraft(event.event_id).file_name">
-                          {{
-                            getCommentDraft(event.event_id).comment_type === 'image'
-                              ? 'Upload an image file'
-                              : 'Upload a video file'
-                          }}
-                        </p>
-
-                        <p v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="inline-actions">
-                    <button class="action-button small-button" @click="submitComment(event.event_id)">
-                      {{ editingCommentIds[event.event_id] ? 'Update' : 'Add' }}
-                    </button>
-                    <button
-                      v-if="editingCommentIds[event.event_id]"
-                      class="ghost-button small-button"
-                      @click="clearCommentEditor(event.event_id)"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-
-                <ul v-if="event.comments && event.comments.length" class="item-list">
-                  <li v-for="comment in event.comments" :key="comment.id" class="list-item">
-                    <div class="comment-display">
-                      <a
-                        v-if="comment.comment_type === 'link'"
-                        :href="comment.link_url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {{ comment.link_url }}
-                      </a>
-                      <a
-                        v-else-if="comment.file_path"
-                        :href="`http://127.0.0.1:8000/storage/${comment.file_path}`"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {{ comment.file_name || 'Open file' }}
-                      </a>
-                      <span v-else>No file available.</span>
-                    </div>
-
-                    <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editComment(event.event_id, comment)">
-                        Edit
-                      </button>
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteComment(event.event_id, comment.id)"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                </ul>
-                <p v-else>No comments saved for this event yet.</p>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <div v-else class="empty-state">
-          <h3>No events on this date</h3>
-          <p>Select another day or add a new networking event.</p>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
-      <div class="confirm-widget">
-        <p class="confirm-title">{{ confirmDialog.title }}</p>
-        <p class="confirm-message">{{ confirmDialog.message }}</p>
-        <div class="confirm-actions">
-          <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">
-            {{ confirmDialog.cancelLabel }}
-          </button>
-          <button
-            class="small-button"
-            :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
-            @click="resolveConfirmDialog(true)"
-          >
-            {{ confirmDialog.confirmLabel }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </main>
-
-
-</template>
 
 <style scoped>
 .networking-page {
