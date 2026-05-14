@@ -396,6 +396,13 @@ function openDetail(compt, catLabel) {
 
 function closeDetail() {
   selectedCompt.value = null
+  router.replace({ 
+    query: { 
+      ...route.query,       
+      tab: 'current',
+      indicator: undefined 
+    }
+  });
 }
 
 //detailed reflection view
