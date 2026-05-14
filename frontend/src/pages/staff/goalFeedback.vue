@@ -183,35 +183,55 @@
 
               <td>
                 <div v-for="f in feedback" :key="f.goal_id">
-                  <div v-if="f.goal_id==goal.goal_id">{{ f.feedback_content }}</div>
-                </div>
-
-                <div v-if="showForm" class="form-box">
-                <!-- <div class="form-box"> -->
-                  <h3>{{ editMode ? 'Edit Entry' : 'Add Entry' }}</h3>
-
-                  <input v-model="form.feedback_content" placeholder="Feedback content" />
-
-                  <div class="btn-row">
-                      <button class="btn btn-dark" @click="saveEntry">
-                        {{ editMode ? 'Update' : 'Create' }}
+                  <div v-if="f.goal_id==goal.goal_id">
+                    {{ f.feedback_content }}
+                    <div>
+                      <button
+                        type="button"
+                        class="action-icon-btn"
+                        aria-label="Edit feedback"
+                        title="Edit"
+                        @click="editForm(f)"
+                      >
+                        <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
                       </button>
 
-                      <button class="btn btn-light" @click="closeForm">
-                        Cancel
+                      <button
+                        type="button"
+                        class="action-icon-btn"
+                        aria-label="Delete goal"
+                        title="Delete"
+                        @click="deleteForm(f)"
+                      >
+                        <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                       </button>
+
+
+                      <div v-if="showForm" class="form-box">
+                      <!-- <div class="form-box"> -->
+                        <!-- <h3>{{ editMode ? 'Edit Entry' : 'Add Entry' }}</h3> -->
+
+                        <input v-model="form.feedback_content" placeholder="Feedback content" />
+
+                        <div class="btn-row">
+                            <button class="btn btn-dark" @click="saveEntry">
+                              {{ editMode ? 'Update' : 'Create' }}
+                            </button>
+
+                            <button class="btn btn-light" @click="closeForm">
+                              Cancel
+                            </button>
+                          </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
 
-                <button
-                  type="button"
-                  class="action-icon-btn"
-                  aria-label="Edit feedback"
-                  title="Edit"
-                  @click="editFeedback(goal)"
-                >
-                  <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
-                </button>
+
+
+
+
+
 
               </td>
             </tr>
@@ -314,6 +334,8 @@ const studentNames = ref([])
 const studentName = ref('')
 const coolTest = ref(null)
 
+const feedbackByGoal = ref([])
+
 const progressStatusOptions = [
   { value: 1, label: 'Planned' },
   { value: 2, label: 'In Progress' },
@@ -342,6 +364,19 @@ const editForm = (entry) => {
   editMode.value = true
   form.value = { ...entry }
   showForm.value = true
+}
+
+const deleteForm = async (feedback) => {
+  if (confirm(`Are you sure you want to delete this feedback: "${feedback.feedback_content}"?`)) {
+    try {
+      await api.delete(`/smart-goals/${feedback.goal_id}/feedback`)
+      await loadFeedback()
+    } catch (error) {
+      console.error('Error deleting feedback', error)
+      const errorMessage = error.response?.data?.message || 'Failed to delete feedback'
+      alert(`Failed to delete feedback: ${errorMessage}`)
+    }
+  }
 }
 
 // Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
@@ -375,6 +410,15 @@ const toggleSteps = (goalId) => {
   expandedStepsByGoal.value = {
     ...expandedStepsByGoal.value,
     [goalId]: !isStepsExpanded(goalId)
+  }
+}
+
+const getFeedback = async (goalID) => {
+  try {
+    const response = await api.get(`/smart-goals/${goalID}/feedback/get`)
+    feedbackByGoal.value = response.data
+  } catch (error) {
+    console.error('Error getting feedback from goal_id', error)
   }
 }
 
@@ -439,14 +483,14 @@ const loadPlanId = async () => {
     if (response.data && response.data.length > 0) {
       // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
-      newGoalData.plan_id = response.data[0].plan_id
+      // newGoalData.plan_id = response.data[0].plan_id
     } else {
       console.warn('No career development plan found')
       alert('Please create a Career Development Plan first')
     }
   } catch (error) {
-    // console.error('Error loading plan ID:', error)
-    // alert('Failed to load Career Development Plan')
+    console.error('Error loading plan ID:', error)
+    alert('Failed to load Career Development Plan')
   }
 }
 
@@ -456,6 +500,8 @@ onMounted(() => {
   loadFeedback()
   loadGoals()
 })
+
+
 
 const normalizeGoalPayload = (goal) => {
   // Convert optional empty form fields to null so backend validation/database handling stays consistent.

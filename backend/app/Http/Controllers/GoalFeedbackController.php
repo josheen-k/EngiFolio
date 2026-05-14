@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class GoalFeedbackController extends Controller
 {
+    // return feedback by goal_id
+    public function getFeedbackByGoal($goalID)
+    {
+        return response()->json(GoalFeedback::where('goal_id', $goalID)->get());
+    }
+
     // Display a listing of the resource.
     public function index($staffID)
     {
@@ -86,7 +92,7 @@ class GoalFeedbackController extends Controller
             return response()->json(['message' => 'Error: Goal or feedback not found'], 404);
         }
 
-        $goalFeedback->delete();
+        $goalFeedback->each->delete();
         return response()->json(['message' => 'Goal feedback deleted successfully']);
     }
 }

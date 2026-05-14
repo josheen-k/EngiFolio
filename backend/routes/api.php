@@ -96,6 +96,7 @@ Route::post('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 's
 Route::get('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'show']);
 Route::put('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'update']);
 Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'destroy']);
+Route::get('/smart-goals/{goalID}/feedback/get', [GoalFeedbackController::class, 'getFeedbackByGoal']);
 
 // // Mentor Student Mapping routes
 // Route::get('/mapping/staff/{staffID}', [MentorStudentMappingController::class, 'getMappedStudents']);
