@@ -3,7 +3,14 @@
     <Navbar />
 
     <section class="container-lg py-5">
+      <div class="pitch-box">
+        <label class="pitch-label"> Elevator pitch</label>
+        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
 
+        <div class="pitch-action">
+          <button class="btn btn-dark" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? "Saving..." : "Submit" }}</button>
+        </div>
+      </div>
       <!-- HEADER -->
       <div class="header">
         <div class="title-wrap">
@@ -159,6 +166,9 @@ const editMode = ref(false);
 const selectedContact = ref(null);
 const openMenuId = ref(null);
 
+const elevatorPitch = ref("");
+const savingPitch =ref(false);
+
 const form = ref({
   contact_id: null,
   contact_name: "",
@@ -172,7 +182,28 @@ const fetchContacts = async () => {
   const res = await api.get(`/users/${profileId.value}/industry-contacts`);
   contacts.value = res.data;
 };
-onMounted(fetchContacts);
+
+const fetchElevatorPitch = async () => {
+  const res = await api.get(`/profile/${route.params.id}/elevator-pitch`);
+  elevatorPitch.value = res.data.pitch_text || "";
+}
+
+const saveElevatorPitch = async () => {
+  savingPitch.value = true;
+
+  try{
+    await api.put(`/profile/${route.params.id}/elevator-pitch`,{
+      pitch_text: elevatorPitch.value,
+    })
+  } finally {
+    savingPitch.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchContacts();
+  fetchElevatorPitch();
+});
 
 /* FILTER */
 const filteredContacts = computed(() => {
@@ -289,6 +320,7 @@ const deleteContact = async (id) => {
   font-family: 'Martel', sans-serif;
   background: #f4f6f8;
   min-height: 100vh;
+  font-family: 'Montserrat Alternates', sans-serif;
 }
 
 /* HEADER */
@@ -450,6 +482,41 @@ const deleteContact = async (id) => {
   background: #172334;
   color: #fff;
   border-color: #172334;
+}
+
+.pitch-box {
+  background: #fff;
+  border: 1px solid #d9e0e7;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+
+}
+
+.pitch-label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #24364b;
+}
+
+.pitch-textarea{
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+  padding: 12px;
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.pitch-actions{
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 </style>
 

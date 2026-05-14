@@ -1135,12 +1135,7 @@ function goToToday() {
 <style scoped>
 .networking-page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(29, 158, 207, 0.18), transparent 20rem),
-    linear-gradient(180deg, #f6f8fb 0%, #eef2f7 100%);
-  color: #1f2933;
-  padding: 1.5rem;
-  padding-bottom: 2rem;
+  background: #ffffff;
   font-family: 'Montserrat Alternates', sans-serif;
 }
 
@@ -1827,8 +1822,7 @@ function goToToday() {
   }
 
   .networking-page {
-    padding: 1rem;
-    padding-bottom: 2rem;
+    background: #ffffff;
   }
 }
 
