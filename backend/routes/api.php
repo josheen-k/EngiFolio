@@ -28,6 +28,7 @@ use App\Http\Controllers\CompetencyFeedbackController;
 use App\Http\Controllers\MentorStudentMappingController; 
 
 use App\Http\Controllers\GoalFeedbackController;
+use App\Http\Controllers\CdlModuleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -202,3 +203,6 @@ Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class,
 Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
 Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
 Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);
+
+//CDL Page
+Route::get('/cdl-modules', [CdlModuleController::class, 'index']);
