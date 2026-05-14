@@ -100,6 +100,7 @@ class StudentProfileController extends Controller
 
     public function exportPdf(Request $request, $id)
     {
+        // Get tables of all data that can be exported
         $profile = StudentProfile::with([
             'user', 
             'competencyEntries', 
@@ -120,7 +121,7 @@ class StudentProfileController extends Controller
         $selections = $request->input('selections', []);
 
         // Use pdf template to generate pdf for downloading
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('portfolio', [
+        $pdf = Pdf::loadView('portfolio', [
             'profile' => $profile, 
             'selections' => $selections
         ]);
