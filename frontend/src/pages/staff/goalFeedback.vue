@@ -92,10 +92,10 @@
         </div>
 
         <label class="filter-field">
-          <span class="filter-label">Student user ID</span>
+          <span class="filter-label">Selected student</span>
           <select class="student-select">
                 <option v-for="mapping in mappedStudents" :key="mapping.value" :value="mapping.value"
-                >{{ mapping.profile_id }}</option>
+                >{{ mapping.first_name }} {{ mapping.last_name }}</option>
           </select>
         </label>
 
@@ -186,6 +186,23 @@
                   <div v-if="f.goal_id==goal.goal_id">{{ f.feedback_content }}</div>
                 </div>
 
+                <div v-if="showForm" class="form-box">
+                <!-- <div class="form-box"> -->
+                  <h3>{{ editMode ? 'Edit Entry' : 'Add Entry' }}</h3>
+
+                  <input v-model="form.feedback_content" placeholder="Feedback content" />
+
+                  <div class="btn-row">
+                      <button class="btn btn-dark" @click="saveEntry">
+                        {{ editMode ? 'Update' : 'Create' }}
+                      </button>
+
+                      <button class="btn btn-light" @click="closeForm">
+                        Cancel
+                      </button>
+                    </div>
+                </div>
+
                 <button
                   type="button"
                   class="action-icon-btn"
@@ -195,6 +212,7 @@
                 >
                   <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
                 </button>
+
               </td>
             </tr>
           </tbody>
@@ -204,6 +222,8 @@
 
       
     </section>
+
+
   
 
   <!-- <main class="container-xl py-4 px-4 px-md-5 goals-main"> -->
@@ -266,6 +286,8 @@ import api from "@/services/api";
 import editIcon from '@/assets/edit.png'
 import deleteIcon from '@/assets/delete.png'
 import FeedbackReflections from '@/components/FeedbackReflections.vue';
+// import { formGroupKey } from 'node_modules/bootstrap-vue-next/dist/utils/keys';
+// import CompetencyPage from './competencyPage.vue';
 
 const goals = ref([])
 const feedback = ref([])
@@ -273,9 +295,12 @@ const loading = ref(true)
 const fromDate = ref('')
 const toDate = ref('')
 const showNewGoalForm = ref(false)
-const showEditFeedbackForm = ref(false)
 const showStepModal = ref(false)
 const editingFeedback = ref(null)
+
+const showForm = ref(false)
+const editMode = ref(false)
+
 const planId = ref(null)
 const stepModalGoal = ref(null)
 const savingSteps = ref(false)
@@ -289,17 +314,35 @@ const studentNames = ref([])
 const studentName = ref('')
 const coolTest = ref(null)
 
-const editFeedbackData = reactive({
-  goal_id: null,
-  staff_id: null,
-  feedback_content: '',
-})
-
 const progressStatusOptions = [
   { value: 1, label: 'Planned' },
   { value: 2, label: 'In Progress' },
   { value: 3, label: 'Completed' },
 ]
+
+const form = reactive({
+  goal_id: null,
+  staff_id: null,
+  feedback_content: '',
+})
+
+const openForm = () => {
+  editMode.value = false
+  form.value = {
+    feedback_content: null,
+  }
+  showForm.value = true
+}
+
+const closeForm = () => {
+  showForm.value = false
+}
+
+const editForm = (entry) => {
+  editMode.value = true
+  form.value = { ...entry }
+  showForm.value = true
+}
 
 // Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
@@ -368,40 +411,22 @@ const loadGoals = async () => {
 }
 
 const loadMappedStudents = async () => {
-  const response = await api.get(`/mapping/staff/${route.params.id}`)
-  mappedStudents.value = response.data
-  // for (let index = 0; index < mappedStudents.length; index++) {
-  //   const responseUsr = await api.get(`/users/${userId}`)
-  //   mappedStudents.names[]
-  // }
+  try {
+    const response = await api.get(`/staff/my-students`)
+    mappedStudents.value = response.data
+  } catch (error) {
+    console.error('Error fetching mapped students', error)
+  }
 }
-
-const getUserName = async (userId) => {
-  // try {
-    // const response = await api.get(`/users/${userId}`)
-    // studentName = response.data.username
-    // studentName = "Alex"
-  // } catch (error) {
-  //   console.error('Error fetching username', error)
-  //   studentName = 'oh no'
-  // }
-}
-
-// const getFeedback = (goalId) => {
-//   // const response = await api.get(`/smart-goals/${goalId}/feedback`)
-//   // const matched = feedback.find((item) => item.value === Number(goalId)) 
-//   // return matched ? matched.feedback_content : "—"
-//   return feedback.feedback_content
-// }
 
 const loadFeedback = async () => {
-  // try {
-    const response = await api.get(`/smart-goals/all/feedback/${route.params.id}`);
+  try {
+    const response = await api.get(`/smart-goals/all/feedback/${profileId.value}`);
     feedback.value = response.data
-  // } catch (error) {
-  //   console.error('Error fetching feedback', error)
-  //   // feedback.value = []
-  // }
+  } catch (error) {
+    console.error('Error fetching feedback', error)
+    // feedback.value = []
+  }
 }
 
 const loadPlanId = async () => {
