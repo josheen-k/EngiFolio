@@ -25,6 +25,7 @@ const newUser = ref({
   password: ''
 })
 
+// Populated from the same /admin/users-overview response as the table (totals are sums over returned rows).
 const stats = ref({
   totalUsers: 0,
   totalGoals: 0,
@@ -45,6 +46,7 @@ const fetchUsersOverview = async () => {
     loading.value = true
     loadError.value = ''
 
+    // Optional `q` matches name, email, or username (ID) on the server.
     const params = {}
 
     const query = searchQuery.value.trim()
@@ -75,6 +77,7 @@ const fetchUsersOverview = async () => {
 
 let searchDebounceTimer = null
 
+// Debounce search input so we do not refetch on every keystroke.
 watch(searchQuery, () => {
   if (searchDebounceTimer) {
     clearTimeout(searchDebounceTimer)
@@ -85,6 +88,7 @@ watch(searchQuery, () => {
 })
 
 onMounted(() => {
+  // Initial load; subsequent loads are triggered by the debounced search watcher.
   fetchUsersOverview()
 })
 
@@ -169,6 +173,7 @@ const deleteUser = async (user) => {
         </div>
       </section>
 
+      <!-- Summary cards: totals mirror backend aggregation over the current result set (same request as the table). -->
       <section class="stats-grid mb-4">
         <article class="stat-card">
           <p class="stat-label">Total Users</p>
@@ -184,10 +189,12 @@ const deleteUser = async (user) => {
         </article>
         <article class="stat-card">
           <p class="stat-label">Open Goals</p>
+          <!-- Derived on the client; backend exposes completed count via goal_status_id = 3. -->
           <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
         </article>
       </section>
 
+      <!-- POST /admin/users — server hashes password; role_id 3 also creates a student_profiles row for View/Edit. -->
       <section class="panel-card mb-4">
         <h2 class="panel-title mb-3">Create User</h2>
         <form class="create-user-form" @submit.prevent="createUser">
@@ -210,6 +217,7 @@ const deleteUser = async (user) => {
         <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
       </section>
 
+      <!-- `user.id` is a display key from the API (e.g. STU-0001); goal columns count SMART goals for linked student profiles only. -->
       <section class="panel-card mb-4">
         <div class="panel-head">
           <h2 class="panel-title mb-0">User Management</h2>
@@ -291,6 +299,7 @@ const deleteUser = async (user) => {
         </div>
       </section>
 
+      <!-- UI placeholders only — wire to routes or modals when those features exist. -->
       <section class="panel-card quick-actions">
         <h2 class="panel-title">Quick Actions</h2>
         <div class="quick-action-grid">
