@@ -12,7 +12,13 @@ class CdlModuleController extends Controller
      */
     public function index()
     {
-        $modules = CdlModule::get(); 
+        $modules = CdlModule::select([
+            'cdl_id',
+            'title',
+            'description',
+            'module_url',
+            'updated_at',
+        ])->orderBy('updated_at', 'desc')->get();
 
         return response()->json($modules);    
     }
