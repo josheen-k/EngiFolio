@@ -189,7 +189,8 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, useRoute, useRouter  } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
 import { getLvl, publishedReflec, formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
