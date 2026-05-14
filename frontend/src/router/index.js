@@ -13,7 +13,10 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
-import CompetencyPage from '@/pages/staff/competencyPage.vue'
+import CompetencyReview from '@/pages/staff/competencyReview.vue'
+import competencyEntry from '@/pages/student/competencyEntry.vue'
+import staffDashboard from '@/pages/staff/staffDashboard.vue'
+import staffStudents from '@/pages/staff/staffStudents.vue'
 
 const routes = [
   {
@@ -24,12 +27,15 @@ const routes = [
   {
     path: '/student/dashboard/:id',
     name: 'Dashboard',
-    component: StudentDashboard
+    component: StudentDashboard,
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: '/profile/:id',
     name: 'profile',
-    component: StudentProfile
+    component: StudentProfile,
+    meta: { requiresAuth: true, roles: ['staff', 'student'] }
+
   },
   {
     path: '/settings/profile/:id',
@@ -40,34 +46,40 @@ const routes = [
     {
     path: '/student/career-development/:id',
     name: 'careerDevelopment',
-    component: CareerDevelopment
+    component: CareerDevelopment,
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: '/student/career-planning/:id',
     name: 'careerPlanning',
-    component: CareerPlanning
+    component: CareerPlanning,
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: '/student/eaCompetency/:id',
     name: 'eaCompetency',
-    component: EACompetency
+    component: EACompetency,
+    meta: { requiresAuth: true, role: 'student' }
   },
   {
     path: '/student/industry-contacts',
     name: 'IndustryContacts',
-    component: IndustryContacts
+    component: IndustryContacts,
+    meta: { requiresAuth: true, role: 'student' }
   },
 
   {
     path: '/student/networking/:id',
     name: 'networking',
-    component: Networking
+    component: Networking,
+    meta: { requiresAuth: true, role: 'student' }
   },
 
   {
     path: '/student/export/:id',
     name: 'export',
-    component: Export
+    component: Export,
+    meta: { requiresAuth: true, role: 'student' }
   },
 
   {
@@ -79,7 +91,8 @@ const routes = [
   {
     path: '/goals/:id',
     name: 'GoalsPage',
-    component: GoalsPage
+    component: GoalsPage,
+    meta: { requiresAuth: true, role: 'student' }
   },
 
   {
@@ -87,10 +100,32 @@ const routes = [
     name: 'certificationSettings',
     component: CertificationSettings
   },
+
   {
-    path: '/competency',
-    component: CompetencyPage
-  }
+    path: '/student/competency-entry/:id',
+    name: 'competencyEntry',
+    component: competencyEntry,
+    meta: { requiresAuth: true, role: 'student' }
+  },
+
+  {
+    path: '/staff/competency-review',
+    name: 'staffCompetencyReview',
+    component: CompetencyReview,
+    meta: { requiresAuth: true, role: 'staff' }
+  },
+  {
+    path: '/staff/dashboard',
+    name: 'staffDashboard',
+    component: staffDashboard,
+    meta: { requiresAuth: true, role: 'staff' }
+  },
+  {
+    path: '/staff/students',
+    name: 'staffStudents',
+    component: staffStudents,
+    meta: { requiresAuth: true, role: 'staff' }
+  },
 
 ]
 
@@ -99,4 +134,25 @@ const router = createRouter({
   routes,
 })
 
+router.beforeEach((to, from, next) => {
+  const user = JSON.parse(localStorage.getItem('user'))
+
+  if (to.meta.requiresAuth && !user) {
+    return next('/login')
+  }
+
+  if (to.meta.roles && user && !to.meta.roles.includes(user.role)) {
+    if (user.role === 'staff') return next('/staff/dashboard')
+    if (user.role === 'student') return next(`/student/dashboard/${user.user_id}`)
+    return next('/')
+  }
+
+  if (to.meta.role && user && to.meta.role !== user.role) {
+    if (user.role === 'staff') return next('/staff/dashboard')
+    if (user.role === 'student') return next(`/student/dashboard/${user.user_id}`)
+    return next('/')
+  }
+
+  next()
+})
 export default router;
