@@ -35,9 +35,13 @@
 
         <footer class="login-footer border-top pt-4 text-center">
           <p class="small text-muted mb-2">Hardcoded Links:</p>
-          <div class="d-flex justify-content-center gap-2">
+          <div class="d-flex justify-content-center gap-2 mb-2">
             <router-link to="/student/dashboard/1" class="btn btn-outline-secondary btn-sm rounded-pill">Student 1</router-link>
             <router-link to="/student/dashboard/2" class="btn btn-outline-secondary btn-sm rounded-pill">Student 2</router-link>
+          </div>
+					<div class="d-flex justify-content-center gap-2">
+            <router-link to="/" class="btn btn-outline-secondary btn-sm rounded-pill">Teacher</router-link>
+            <router-link to="/admin/1" class="btn btn-outline-secondary btn-sm rounded-pill">Admin</router-link>
           </div>
         </footer>
       </div>

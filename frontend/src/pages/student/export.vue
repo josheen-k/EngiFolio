@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, onMounted, watch } from 'vue';
+    import { ref, watch } from 'vue';
     import { useRoute } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
@@ -82,9 +82,6 @@
       try {
         const response = await api.get(`/profile/${route.params.id}`);
         profile.value = response.data;
-      } catch (error) {
-        console.error("Error while fetching profile:", error);
-      } finally {
 
         const firstName = profile.value.user?.first_name || '';
         const lastName = profile.value.user?.last_name || '';
@@ -107,6 +104,8 @@
 
         formattedProfile.push('\n\n');
         return formattedProfile.join('\n');
+      } catch (error) {
+        console.error("Error while fetching profile:", error);
       }
     };
 
@@ -201,11 +200,8 @@
       try {
         const response = await api.get(`/users/${route.params.id}/industry-contacts`);
         contacts.value = response.data;
-      } catch (error) {
-        console.error("Error while fetching user contacts:", error);
-      } finally {
-        const formattedNet = ['"----- Networking Contacts -----"']
-        
+
+        const formattedNet = ['"----- Networking Contacts -----"'] 
         const netHeader = [
           `"Name"`,
           `"Company"`,
@@ -230,7 +226,9 @@
 
         formattedNet.push('\n\n');
         return formattedNet.join('\n');
-      }    
+      } catch (error) {
+        console.error("Error while fetching user contacts:", error);
+      }
     };
 
     // Fetches the goals and adds the contents to the file
@@ -348,16 +346,6 @@
         goalsSelected.value = false;
         allDataSelected.value = false;
     };
-
-  // Reset all ticked boxes on reload
-  onMounted(() => {
-      profileSelected.value = false;
-      certificationsSelected.value = false;
-      competenciesSelected.value = false;
-      networkingContactsSelected.value = false;
-      goalsSelected.value = false;
-      allDataSelected.value = false;
-  });
 </script>
 
 <template>
