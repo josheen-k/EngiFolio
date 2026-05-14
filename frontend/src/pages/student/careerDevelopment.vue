@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import api from '@/services/api'
 import editIcon from '@/assets/edit.png'
@@ -8,6 +8,7 @@ import deleteIcon from '@/assets/delete.png'
 
 // Page state for loaded plans, available SMART goals, and create/edit form status.
 const route = useRoute()
+const router = useRouter()
 const plans = ref([])
 const allGoals = ref([])
 const loading = ref(false)
@@ -59,6 +60,17 @@ const getPlanField = (plan, field) => {
 const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
 const getGoalStatus = (goal) => goal.status?.status || 'No status'
+const currTab = computed(() => route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS')
+const goToGoals = () => {
+  if (route.name !== 'GoalsPage') {
+    router.push(`/goals/${route.params.id}`)
+  }
+}
+const goToCareerPlan = () => {
+  if (route.name !== 'careerDevelopment') {
+    router.push(`/student/career-development/${route.params.id}`)
+  }
+}
 const isGoalSelected = (goalId) => selectedGoalIds.value.includes(goalId)
 const toggleGoalSelection = (goalId) => {
   selectedGoalIds.value = isGoalSelected(goalId)
@@ -203,6 +215,13 @@ onMounted(() => {
 <template>
   <div class="goals-page career-development-page">
     <Navbar />
+    <div class="toggle">
+      <div class="toggle-line">
+        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
+        <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
+        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-right' : 'pill-left'"></div>
+      </div>
+    </div>
     <main class="container-xl py-4 px-4 px-md-5 goals-main">
       <!-- Page header and main action, matching the SMART Goals page structure. -->
       <section class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
@@ -445,6 +464,62 @@ onMounted(() => {
   max-width: 1280px;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+.toggle {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.toggle-line {
+  position: relative;
+  display: flex;
+  width: min(100%, 42rem);
+  background: #f0f0f0;
+  border-radius: 2rem;
+  padding: 0.3rem;
+  gap: 0;
+}
+
+.toggle-pill {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  width: calc(50% - 0.3rem);
+  background: #ffffff;
+  border-radius: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.25s ease;
+  pointer-events: none;
+}
+
+.pill-left {
+  transform: translateX(0);
+}
+
+.pill-right {
+  transform: translateX(100%);
+}
+
+.toggle-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.95rem;
+  color: #888888;
+  background: transparent;
+  border: none;
+  padding: 0.45rem 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.toggle-btn.active {
+  color: #222222;
 }
 
 .page-title {
@@ -876,6 +951,15 @@ onMounted(() => {
   .goals-main {
     padding-left: 0.9rem !important;
     padding-right: 0.9rem !important;
+  }
+
+  .toggle {
+    padding: 1rem 0.9rem 0.25rem;
+  }
+
+  .toggle-btn {
+    padding: 0.45rem 0.5rem;
+    font-size: clamp(0.72rem, 2.8vw, 0.82rem);
   }
 
   .page-title {

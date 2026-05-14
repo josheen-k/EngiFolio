@@ -145,7 +145,7 @@ Route::get('/competency-levels-by-weight/{weight}', [CompetencyEntryLevelsContro
 // Competency Groups
 Route::get('/competency-groups-student/{id}', [CompetencyGroupController::class, 'getStudentCompetencies']);
 
-// Competency Links
+// Competency Evidence
 Route::post('/competency-evidence', [CompetencyEvidenceController::class, 'store']);
 Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class, 'destroy']);
 
