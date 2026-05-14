@@ -10,7 +10,9 @@ class CareerDevelopmentPlan extends Model
     use HasFactory;
 
     protected $table = 'career_development_plans';
+
     protected $primaryKey = 'plan_id';
+
     protected $fillable = [
         'profile_id',
         'plan_year',
@@ -29,6 +31,13 @@ class CareerDevelopmentPlan extends Model
 
     public function smartGoals()
     {
-        return $this->hasMany(SmartGoal::class, 'plan_id', 'plan_id');
+        return $this->belongsToMany(
+            SmartGoal::class,
+            'career_development_plan_smart_goal',
+            'plan_id',
+            'goal_id',
+            'plan_id',
+            'goal_id'
+        )->withTimestamps();
     }
 }

@@ -12,7 +12,7 @@ class SmartGoalController extends Controller
     private function goalsQueryForProfile(int $profileId)
     {
         return SmartGoal::with(['actionSteps', 'feedback', 'status'])
-            ->whereHas('plan', fn($q) => $q->where('profile_id', $profileId));
+            ->where('profile_id', $profileId);
     }
 
     private function findGoalForProfileOrFail(int $goalId, int $profileId)
@@ -55,7 +55,7 @@ class SmartGoalController extends Controller
     {
         $validated = $request->validate([
             'profile_id' => 'required|integer|exists:student_profiles,profile_id',
-            'plan_id' => 'required|integer',
+            'plan_id' => 'nullable|integer|exists:career_development_plans,plan_id',
             'goal_description' => 'required|string',
             'timeline' => 'nullable|string',
             'progress_notes' => 'nullable|string',
@@ -67,23 +67,43 @@ class SmartGoalController extends Controller
             'goal_status_id' => 'required|integer|exists:goal_statuses,goal_status_id',
         ]);
 
-        $planBelongsToProfile = DB::table('career_development_plans')
-            ->where('plan_id', $validated['plan_id'])
-            ->where('profile_id', $validated['profile_id'])
-            ->exists();
+        if (! empty($validated['plan_id'])) {
+            $planOk = DB::table('career_development_plans')
+                ->where('plan_id', $validated['plan_id'])
+                ->where('profile_id', $validated['profile_id'])
+                ->exists();
 
-        if (!$planBelongsToProfile) {
-            return response()->json(['message' => 'Plan does not belong to the specified profile'], 422);
+            if (! $planOk) {
+                return response()->json(['message' => 'Plan does not belong to the specified profile'], 422);
+            }
         }
 
         // New goals are inserted at the top by shifting existing goals down by one.
         $smartGoal = DB::transaction(function () use ($validated) {
-            SmartGoal::where('plan_id', $validated['plan_id'])
-                ->increment('goal_order');
+            $profileId = (int) $validated['profile_id'];
+            $planId = isset($validated['plan_id']) ? (int) $validated['plan_id'] : null;
 
-            unset($validated['profile_id']);
-            $validated['goal_order'] = 1;
-            return SmartGoal::create($validated);
+            SmartGoal::where('profile_id', $profileId)->increment('goal_order');
+
+            $goal = SmartGoal::create([
+                'profile_id' => $profileId,
+                'goal_description' => $validated['goal_description'],
+                'timeline' => $validated['timeline'] ?? null,
+                'progress_notes' => $validated['progress_notes'] ?? null,
+                'learnings' => $validated['learnings'] ?? null,
+                'start_date' => $validated['start_date'] ?? null,
+                'end_date' => $validated['end_date'] ?? null,
+                'completion_date' => $validated['completion_date'] ?? null,
+                'completion_notes' => $validated['completion_notes'] ?? null,
+                'goal_status_id' => $validated['goal_status_id'],
+                'goal_order' => 1,
+            ]);
+
+            if ($planId) {
+                $goal->plans()->attach($planId);
+            }
+
+            return $goal;
         });
 
         return response()->json($smartGoal, 201);
@@ -92,7 +112,7 @@ class SmartGoalController extends Controller
     /**
      * Display the specified resource.
      */
-        public function show(Request $request, $id)
+    public function show(Request $request, $id)
     {
         $validated = $request->validate([
             'profile_id' => 'required|integer|exists:student_profiles,profile_id',
@@ -110,7 +130,6 @@ class SmartGoalController extends Controller
     {
         $validated = $request->validate([
             'profile_id' => 'required|integer|exists:student_profiles,profile_id',
-            'plan_id' => 'sometimes|required|integer',
             'goal_description' => 'sometimes|required|string',
             'timeline' => 'nullable|string',
             'progress_notes' => 'nullable|string',
@@ -123,17 +142,6 @@ class SmartGoalController extends Controller
         ]);
 
         $smartGoal = $this->findGoalForProfileOrFail((int) $id, (int) $validated['profile_id']);
-
-        if (isset($validated['plan_id'])) {
-            $planBelongsToProfile = DB::table('career_development_plans')
-                ->where('plan_id', $validated['plan_id'])
-                ->where('profile_id', $validated['profile_id'])
-                ->exists();
-
-            if (!$planBelongsToProfile) {
-                return response()->json(['message' => 'Plan does not belong to the specified profile'], 422);
-            }
-        }
 
         unset($validated['profile_id']);
         $smartGoal->update($validated);
@@ -196,7 +204,7 @@ class SmartGoalController extends Controller
         });
 
         return response()->json([
-            'message' => 'Goal order updated successfully'
+            'message' => 'Goal order updated successfully',
         ]);
     }
 
@@ -213,7 +221,7 @@ class SmartGoalController extends Controller
         $smartGoal->delete();
 
         return response()->json([
-            'message' => 'Smart goal deleted successfully'
+            'message' => 'Smart goal deleted successfully',
         ]);
     }
 
@@ -221,9 +229,8 @@ class SmartGoalController extends Controller
     {
         // Return user goals in the same persisted order used by the main goals list.
         $goals = SmartGoal::with(['actionSteps', 'feedback', 'status'])
-                ->whereHas('plan', fn($q) => $q->where('profile_id', $profileId))
-                ->get();
-        
+            ->where('profile_id', $profileId)
+            ->get();
 
         if ($goals->isEmpty()) {
             return response()->json(['message' => 'No goals for this user found'], 404);

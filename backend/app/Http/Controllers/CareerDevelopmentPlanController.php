@@ -61,6 +61,7 @@ class CareerDevelopmentPlanController extends Controller
             ->orderBy('plan_year')
             ->orderBy('created_at')
             ->get();
+
         return response()->json($plans);
     }
 
@@ -126,23 +127,18 @@ class CareerDevelopmentPlanController extends Controller
             return response()->json(['message' => 'Plan does not belong to the specified profile'], 422);
         }
 
-        $ownedGoalIds = SmartGoal::whereHas('plan', function ($query) use ($validated) {
-            $query->where('profile_id', $validated['profile_id']);
-        })
+        $ownedGoalIds = SmartGoal::where('profile_id', $validated['profile_id'])
             ->whereIn('goal_id', $validated['goal_ids'])
             ->pluck('goal_id')
             ->all();
 
-        if (count($ownedGoalIds) !== count($validated['goal_ids'])) {
+        if (count($validated['goal_ids']) > 0 && count($ownedGoalIds) !== count($validated['goal_ids'])) {
             return response()->json(['message' => 'One or more goals do not belong to this profile'], 422);
         }
 
-        // A SMART goal belongs to one plan at a time; selected goals move to this plan.
-        SmartGoal::whereIn('goal_id', $validated['goal_ids'])->update([
-            'plan_id' => $plan->plan_id,
-        ]);
+        $plan->smartGoals()->sync($validated['goal_ids']);
 
-        return response()->json($this->planWithGoals($plan));
+        return response()->json($this->planWithGoals($plan->fresh()));
     }
 
     /**
@@ -150,12 +146,6 @@ class CareerDevelopmentPlanController extends Controller
      */
     public function destroy(CareerDevelopmentPlan $plan)
     {
-        if ($plan->smartGoals()->exists()) {
-            return response()->json([
-                'message' => 'Move or delete linked SMART goals before deleting this plan',
-            ], 422);
-        }
-
         $plan->delete();
 
         return response()->json([
