@@ -197,7 +197,7 @@ const deleteUser = async (user) => {
             <option :value="2">Staff</option>
             <option :value="3">Student</option>
           </select>
-          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="Username (max 9 chars)" maxlength="9" required />
+          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
           <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
           <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
           <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
@@ -229,7 +229,7 @@ const deleteUser = async (user) => {
               <tr>
                 <th>User</th>
                 <th>Role</th>
-                <th>Username</th>
+                <th>ID</th>
                 <th>Goals</th>
                 <th>Completed</th>
                 <th>Last Updated</th>
