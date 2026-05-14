@@ -338,7 +338,8 @@
     const loadCompetencyIndicators = async () => {
       try {
         const response = await api.get(`/competency-indicators`);
-        competencyIndicators.value = response.data;
+        
+        competencyIndicators.value = response.data.filter(compt => !compt.discontinuedDate)
       } catch (error) {
         console.error("Error while fetching competencies:", error);
       }
