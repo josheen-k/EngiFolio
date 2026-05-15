@@ -149,7 +149,7 @@
             <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
                 <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
-                <!-- <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5> -->
+                <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5>
                 <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                   <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
                     {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}

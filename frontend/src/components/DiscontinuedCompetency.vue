@@ -80,7 +80,6 @@
     :index="viewReflec.index"
     :levelOptions="levelOptions"
     @close="closeReflec"
-    @refresh="onSaveReflec"
   />
 </template>
 
@@ -149,10 +148,6 @@ function openReflec(reflec, index) {
 
 function closeReflec() {
   viewReflec.value.show = false
-}
-
-function onSaveReflec() {
-  emit('refresh')
 }
 </script>
 

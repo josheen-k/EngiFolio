@@ -324,6 +324,7 @@
       focusItems.value.filter(item => !item.highest_entry || item.highest_entry.competency_level_weighting < 4).slice(0, 7)
     )
 
+    // Load individual backend calls
     const loadProfileData = async () => {
       try {
         const response = await api.get(`/profile/${route.params.id}`);
@@ -351,6 +352,7 @@
       }
 		};
 
+    // Gets highest level competency for each category
     const loadCompetencyIndicatorsWithCount = async () => {
       try {
         const response = await api.get(`/student-competency-indicators/${route.params.id}`);
@@ -448,18 +450,23 @@
     const loadData = async () => {
       loading.value = true;
       try {
-        await loadProfileData();
-        await loadUserCompetencyData();
-        await loadCompetencyIndicators();
-        await loadUserGoals();
-        await loadUserActions();
-        await loadCompetencyIndicatorsWithCount();
-        await updateChart();
-        await loadNetworkingEvents()
+        // Run all backend calls at the same time
+        await Promise.all([
+          loadProfileData(),
+          loadUserCompetencyData(),
+          loadCompetencyIndicators(),
+          loadUserGoals(),
+          loadUserActions(),
+          loadCompetencyIndicatorsWithCount(),
+          loadNetworkingEvents()
+        ])
 
-        // Calculate the total weight based of the weight of each competency
+        // Depends on data fetched above so runs afterwards
+        await updateChart()
+
+        // Calculate the total weight based of the weight of each competency. reduce goes through and accumulates a single value
         const totalWeight = focusItems.value.reduce((acc, item) => {
-            const weight = Number(item.highest_entry?.competency_level_weighting) || 0;
+            const weight = item.highest_entry?.competency_level_weighting || 0;
             return acc + weight;
         }, 0);
         

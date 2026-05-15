@@ -25,6 +25,14 @@
       goalsSelected.value = newValue
     })
 
+    // Set up a pop up notification instead of having an alert
+    const popUp = ref({ show: false, message: '', type: '' })
+
+    const showPopUp = (message, type) => {
+      popUp.value = { show: true, message, type }
+      setTimeout(() => popUp.value.show = false, 3000)
+    }
+
     const exportToPdf = async () => {
       // Check that at lease one category is selected
       if (profileSelected.value || certificationsSelected.value || competenciesSelected.value || networkingContactsSelected.value || goalsSelected.value) {
@@ -56,10 +64,10 @@
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
           
-          alert("PDF Downloaded successfully");
+          showPopUp("Downloading PDF...", "success");
         } catch (error) {
           console.error(error);
-          alert("Error generating the PDF.");
+          showPopUp("Error generating the PDF.", "error");
         }
 
         // Reset values after
@@ -70,7 +78,7 @@
         goalsSelected.value = false;
         allDataSelected.value = false;
       } else {
-        alert("You must select at least one category to export");
+        showPopUp("You must select at least one category to export", "error");
         return;
       }    
     };
@@ -120,7 +128,7 @@
           link.click();
           document.body.removeChild(link);
 
-          alert("Downloading exported data");
+          showPopUp("Downloading CSV...", "success");
 
           // Reset values after
           profileSelected.value = false;
@@ -131,7 +139,7 @@
           allDataSelected.value = false;
 
         } else {
-        alert("You must select at least one category to export");
+          showPopUp("You must select at least one category to export", "error");
         return;
       }    
     };
@@ -218,6 +226,9 @@
           <button class="btn btn-pdf rounded-pill px-5" @click="exportToPdf">Export PDF Document</button>
         </div>
       </div>
+    </div>
+    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+      {{ popUp.message }}
     </div>
   </main>
 </template>
@@ -311,4 +322,29 @@
   .export-page {
     min-height: calc(100vh - 150px);
   }
+
+  .popUp-msg {
+    position: fixed;
+    top: 5rem;   
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: max-content;
+    padding: 0.75rem 2rem;
+    border-radius: 2rem; 
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1.15rem;
+  }
+
+  .popUp-msg.success {
+    background: #5d5d5d;
+    color: #fff;
+  }
+
+  .popUp-msg.error {
+    background: #db7979;
+    color: #fff;
+  }
+
+  
 </style>

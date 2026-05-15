@@ -361,7 +361,6 @@ async function saveEntry(statusId) {
     emit('close');
     
   } catch (error) {
-    console.error("Submission Failled:", error);
     alert("Submission could not be saved. Please check that all required fields are filled.", error);
   }
 }
@@ -373,14 +372,12 @@ const saveAsDraft = () => saveEntry(1)
 
 
 async function doDelete() {
-  console.log('deleting entry:', props.reflec.entry_id)
   try {
     await api.delete(`/competency-entries/${props.reflec.entry_id}`)
     showDeleteConfirm.value = false
     emit('refresh')
     emit('close')
   } catch (error) {
-    console.error('Delete failed:', error)
     alert('Could not delete this reflection')
   }
 }
