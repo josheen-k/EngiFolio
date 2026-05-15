@@ -1,3 +1,156 @@
+<template>
+  <div class="admin-page">
+    <Navbar />
+
+    <main class="container-xl py-4 px-4 px-md-5 admin-main">
+      <section class="page-header mb-4">
+        <div>
+          <h1 class="page-title mb-2">Admin Console</h1>
+          <p class="page-subtitle mb-0">Manage users, monitor progress, and quickly identify students who need support.</p>
+        </div>
+      </section>
+
+      <!-- Summary cards: totals mirror backend aggregation over the current result set (same request as the table). -->
+      <section class="stats-grid mb-4">
+        <article class="stat-card">
+          <p class="stat-label">Total Users</p>
+          <p class="stat-value">{{ totalUsers }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Total Goals Logged</p>
+          <p class="stat-value">{{ totalGoals }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Completed Goals</p>
+          <p class="stat-value">{{ totalCompletedGoals }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Open Goals</p>
+          <!-- Derived on the client; backend exposes completed count via goal_status_id = 3. -->
+          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
+        </article>
+      </section>
+
+      <!-- POST /admin/users — server hashes password; role_id 3 also creates a student_profiles row for View/Edit. -->
+      <section class="panel-card mb-4">
+        <h2 class="panel-title mb-3">Create User</h2>
+        <form class="create-user-form" @submit.prevent="createUser">
+          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
+          <select v-model.number="newUser.role_id" class="filter-select" required>
+            <option :value="1">Admin</option>
+            <option :value="2">Staff</option>
+            <option :value="3">Student</option>
+          </select>
+          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
+          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
+          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
+          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
+          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
+          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
+            {{ creatingUser ? 'Creating...' : 'Create User' }}
+          </button>
+        </form>
+        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
+        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
+      </section>
+
+      <!-- `user.id` is a display key from the API (e.g. STU-0001); goal columns count SMART goals for linked student profiles only. -->
+      <section class="panel-card mb-4">
+        <div class="panel-head">
+          <h2 class="panel-title mb-0">User Management</h2>
+          <div class="filters-wrap">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="filter-input"
+              placeholder="Search by name, email, or ID"
+            />
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>ID</th>
+                <th>Goals</th>
+                <th>Completed</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loading">
+                <td colspan="7" class="empty-state">Loading users...</td>
+              </tr>
+              <tr v-else-if="loadError">
+                <td colspan="7" class="empty-state">{{ loadError }}</td>
+              </tr>
+              <tr v-for="user in filteredUsers" :key="user.id">
+                <td>
+                  <p class="user-name mb-0">{{ user.name }}</p>
+                  <p class="user-email mb-0">{{ user.email }}</p>
+                </td>
+                <td>{{ user.role }}</td>
+                <td>
+                  {{ user.username || '-' }}
+                </td>
+                <td>{{ user.goals }}</td>
+                <td>{{ user.completedGoals }}</td>
+                <td>{{ user.updatedAt }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
+                      <button
+                        type="button"
+                        class="btn page-btn-outline"
+                        :disabled="!user.profile_id"
+                        @click="viewUser(user)"
+                      >
+                        View
+                      </button>
+                    </span>
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
+                      <button
+                        type="button"
+                        class="btn page-btn-primary"
+                        :disabled="!user.profile_id"
+                        @click="editUser(user)"
+                      >
+                        Edit
+                      </button>
+                    </span>
+                    <button type="button" class="btn page-btn-danger" :disabled="deletingUserId === user.user_id" @click="deleteUser(user)">
+                      {{ deletingUserId === user.user_id ? 'Deleting...' : 'Delete' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="!loading && !loadError && filteredUsers.length === 0">
+                <td colspan="7" class="empty-state">No users match this filter.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- UI placeholders only — wire to routes or modals when those features exist.
+      <section class="panel-card quick-actions">
+        <h2 class="panel-title">Quick Actions</h2>
+        <div class="quick-action-grid">
+          <button type="button" class="btn page-btn-primary">Create Announcement</button>
+          <button type="button" class="btn page-btn-outline">Export Summary</button>
+          <button type="button" class="btn page-btn-outline">Send Reminder Emails</button>
+        </div>
+      </section>
+      -->
+    </main>
+  </div>
+</template>
+
+
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -161,156 +314,7 @@ const deleteUser = async (user) => {
 }
 </script>
 
-<template>
-  <div class="admin-page">
-    <Navbar />
 
-    <main class="container-xl py-4 px-4 px-md-5 admin-main">
-      <section class="page-header mb-4">
-        <div>
-          <h1 class="page-title mb-2">Admin Console</h1>
-          <p class="page-subtitle mb-0">Manage users, monitor progress, and quickly identify students who need support.</p>
-        </div>
-      </section>
-
-      <!-- Summary cards: totals mirror backend aggregation over the current result set (same request as the table). -->
-      <section class="stats-grid mb-4">
-        <article class="stat-card">
-          <p class="stat-label">Total Users</p>
-          <p class="stat-value">{{ totalUsers }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Total Goals Logged</p>
-          <p class="stat-value">{{ totalGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Completed Goals</p>
-          <p class="stat-value">{{ totalCompletedGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Open Goals</p>
-          <!-- Derived on the client; backend exposes completed count via goal_status_id = 3. -->
-          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
-        </article>
-      </section>
-
-      <!-- POST /admin/users — server hashes password; role_id 3 also creates a student_profiles row for View/Edit. -->
-      <section class="panel-card mb-4">
-        <h2 class="panel-title mb-3">Create User</h2>
-        <form class="create-user-form" @submit.prevent="createUser">
-          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
-          <select v-model.number="newUser.role_id" class="filter-select" required>
-            <option :value="1">Admin</option>
-            <option :value="2">Staff</option>
-            <option :value="3">Student</option>
-          </select>
-          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
-          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
-          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
-          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
-          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
-          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
-            {{ creatingUser ? 'Creating...' : 'Create User' }}
-          </button>
-        </form>
-        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
-        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
-      </section>
-
-      <!-- `user.id` is a display key from the API (e.g. STU-0001); goal columns count SMART goals for linked student profiles only. -->
-      <section class="panel-card mb-4">
-        <div class="panel-head">
-          <h2 class="panel-title mb-0">User Management</h2>
-          <div class="filters-wrap">
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="filter-input"
-              placeholder="Search by name, email, or ID"
-            />
-          </div>
-        </div>
-
-        <div class="table-scroll">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>ID</th>
-                <th>Goals</th>
-                <th>Completed</th>
-                <th>Last Updated</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="7" class="empty-state">Loading users...</td>
-              </tr>
-              <tr v-else-if="loadError">
-                <td colspan="7" class="empty-state">{{ loadError }}</td>
-              </tr>
-              <tr v-for="user in filteredUsers" :key="user.id">
-                <td>
-                  <p class="user-name mb-0">{{ user.name }}</p>
-                  <p class="user-email mb-0">{{ user.email }}</p>
-                </td>
-                <td>{{ user.role }}</td>
-                <td>
-                  {{ user.username || '-' }}
-                </td>
-                <td>{{ user.goals }}</td>
-                <td>{{ user.completedGoals }}</td>
-                <td>{{ user.updatedAt }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
-                      <button
-                        type="button"
-                        class="btn page-btn-outline"
-                        :disabled="!user.profile_id"
-                        @click="viewUser(user)"
-                      >
-                        View
-                      </button>
-                    </span>
-                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
-                      <button
-                        type="button"
-                        class="btn page-btn-primary"
-                        :disabled="!user.profile_id"
-                        @click="editUser(user)"
-                      >
-                        Edit
-                      </button>
-                    </span>
-                    <button type="button" class="btn page-btn-danger" :disabled="deletingUserId === user.user_id" @click="deleteUser(user)">
-                      {{ deletingUserId === user.user_id ? 'Deleting...' : 'Delete' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="!loading && !loadError && filteredUsers.length === 0">
-                <td colspan="7" class="empty-state">No users match this filter.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- UI placeholders only — wire to routes or modals when those features exist. -->
-      <section class="panel-card quick-actions">
-        <h2 class="panel-title">Quick Actions</h2>
-        <div class="quick-action-grid">
-          <button type="button" class="btn page-btn-primary">Create Announcement</button>
-          <button type="button" class="btn page-btn-outline">Export Summary</button>
-          <button type="button" class="btn page-btn-outline">Send Reminder Emails</button>
-        </div>
-      </section>
-    </main>
-  </div>
-</template>
 
 <style scoped>
 .admin-page {

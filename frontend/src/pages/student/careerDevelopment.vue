@@ -1,259 +1,11 @@
-<script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import Navbar from '@/components/Navbar.vue'
-import api from '@/services/api'
-import editIcon from '@/assets/edit.png'
-import deleteIcon from '@/assets/delete.png'
-
-// Page state for loaded plans, available SMART goals, and create/edit form status.
-const route = useRoute()
-const router = useRouter()
-const plans = ref([])
-const allGoals = ref([])
-const loading = ref(false)
-const errorMessage = ref('')
-const showPlanForm = ref(false)
-const editingPlanId = ref(null)
-const savingPlan = ref(false)
-const planFormError = ref('')
-const selectedGoalIds = ref([])
-
-const emptyPlanForm = () => ({
-  plan_year: '',
-  professional_interests: '',
-  employers_of_interest: '',
-  personal_values: '',
-  development_focus: '',
-  extracurriculars: '',
-  networking_plan: ''
-})
-
-const planForm = ref(emptyPlanForm())
-
-// Display helpers keep plan ordering and handle backend relation naming differences.
-const sortedPlans = computed(() => {
-  return [...plans.value].sort((a, b) => {
-    const yearDifference = Number(a.plan_year) - Number(b.plan_year)
-    if (yearDifference !== 0) {
-      return yearDifference
-    }
-    return new Date(a.created_at || 0) - new Date(b.created_at || 0)
-  })
-})
-
-const splitList = (value) => {
-  if (!value) {
-    return []
-  }
-
-  return String(value)
-    .split(/\r?\n|,/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-
-const getPlanFieldRaw = (plan, field) => {
-  const v = plan[field]
-  if (v == null || v === '') {
-    return ''
-  }
-  return String(v).trim()
-}
-
-const getPlanField = (plan, field) => {
-  const raw = getPlanFieldRaw(plan, field)
-  return raw || 'Not added yet.'
-}
-
-const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
-const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
-
-const showTextModal = ref(false)
-const textModalTitle = ref('')
-const textModalContent = ref('')
-const TEXT_PREVIEW_LIMIT = 90
-
-const normalizeDisplayText = (value) => String(value ?? '').trim()
-const hasLongText = (value) => normalizeDisplayText(value).length > TEXT_PREVIEW_LIMIT
-const getTextPreview = (value) => {
-  const text = normalizeDisplayText(value)
-  if (text.length <= TEXT_PREVIEW_LIMIT) {
-    return text || '-'
-  }
-  return `${text.slice(0, TEXT_PREVIEW_LIMIT).trimEnd()}...`
-}
-const openTextModal = (title, content) => {
-  textModalTitle.value = title
-  textModalContent.value = normalizeDisplayText(content)
-  showTextModal.value = true
-}
-const closeTextModal = () => {
-  showTextModal.value = false
-  textModalTitle.value = ''
-  textModalContent.value = ''
-}
-
-const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
-const getGoalStatus = (goal) => goal.status?.status || 'No status'
-const currTab = computed(() => route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS')
-const goToGoals = () => {
-  if (route.name !== 'GoalsPage') {
-    router.push(`/goals/${route.params.id}`)
-  }
-}
-const goToCareerPlan = () => {
-  if (route.name !== 'careerDevelopment') {
-    router.push(`/student/career-development/${route.params.id}`)
-  }
-}
-const isGoalSelected = (goalId) => selectedGoalIds.value.includes(goalId)
-const toggleGoalSelection = (goalId) => {
-  selectedGoalIds.value = isGoalSelected(goalId)
-    ? selectedGoalIds.value.filter((id) => id !== goalId)
-    : [...selectedGoalIds.value, goalId]
-}
-
-// Form helpers support both creating a new plan and editing an existing one.
-const resetPlanForm = () => {
-  planForm.value = emptyPlanForm()
-  selectedGoalIds.value = []
-  editingPlanId.value = null
-  planFormError.value = ''
-}
-
-const openCreatePlanForm = () => {
-  resetPlanForm()
-  showPlanForm.value = true
-}
-
-const openEditPlanForm = (plan) => {
-  editingPlanId.value = plan.plan_id
-  planForm.value = {
-    plan_year: plan.plan_year || '',
-    professional_interests: plan.professional_interests || '',
-    employers_of_interest: plan.employers_of_interest || '',
-    personal_values: plan.personal_values || '',
-    development_focus: plan.development_focus || '',
-    extracurriculars: plan.extracurriculars || '',
-    networking_plan: plan.networking_plan || ''
-  }
-  selectedGoalIds.value = getPlanGoals(plan).map((goal) => goal.goal_id)
-  planFormError.value = ''
-  showPlanForm.value = true
-}
-
-const cancelPlanForm = () => {
-  showPlanForm.value = false
-  resetPlanForm()
-}
-
-const normalizePlanPayload = () => ({
-  profile_id: Number(route.params.id),
-  plan_year: Number(planForm.value.plan_year),
-  professional_interests: planForm.value.professional_interests || null,
-  employers_of_interest: planForm.value.employers_of_interest || null,
-  personal_values: planForm.value.personal_values || null,
-  development_focus: planForm.value.development_focus || null,
-  extracurriculars: planForm.value.extracurriculars || null,
-  networking_plan: planForm.value.networking_plan || null
-})
-
-// API loading functions fetch plans and all goals that can be linked to a plan.
-const fetchCareerPlans = async () => {
-  try {
-    loading.value = true
-    errorMessage.value = ''
-
-    const response = await api.get(`/career-plans/${route.params.id}`)
-    plans.value = Array.isArray(response.data) ? response.data : [response.data]
-  } catch (error) {
-    console.error('Failed to load career development plans:', error)
-    errorMessage.value = error.response?.data?.message || 'Failed to load career development plan.'
-  } finally {
-    loading.value = false
-  }
-}
-
-const fetchSmartGoals = async () => {
-  try {
-    const response = await api.get('/smart-goals', {
-      params: {
-        profile_id: route.params.id
-      }
-    })
-    allGoals.value = Array.isArray(response.data) ? response.data : []
-  } catch (error) {
-    console.error('Failed to load SMART goals for linking:', error)
-    allGoals.value = []
-  }
-}
-
-// Save creates or updates the plan, then syncs linked SMART goals for this plan only (goals may link to multiple plans).
-const savePlan = async () => {
-  try {
-    savingPlan.value = true
-    planFormError.value = ''
-
-    const payload = normalizePlanPayload()
-    const response = editingPlanId.value
-      ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
-      : await api.post('/career-plans', payload)
-
-    const savedPlan = response.data
-
-    await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
-      profile_id: Number(route.params.id),
-      goal_ids: selectedGoalIds.value
-    })
-
-    showPlanForm.value = false
-    resetPlanForm()
-    await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
-  } catch (error) {
-    console.error('Failed to save career development plan:', error)
-    const serverMessage =
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      Object.values(error.response?.data?.errors || {}).flat()[0]
-
-    planFormError.value = serverMessage?.includes('Duplicate entry')
-      ? 'Another plan already used that year before the database constraint was updated. Please refresh and try again.'
-      : serverMessage || 'Failed to save career development plan.'
-  } finally {
-    savingPlan.value = false
-  }
-}
-
-const deletePlan = async (plan) => {
-  const confirmed = window.confirm(`Delete Year ${plan.plan_year} career plan? This cannot be undone.`)
-  if (!confirmed) {
-    return
-  }
-
-  try {
-    await api.delete(`/career-plans/${plan.plan_id}`)
-    await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
-  } catch (error) {
-    console.error('Failed to delete career development plan:', error)
-    alert(error.response?.data?.message || 'Failed to delete career development plan.')
-  }
-}
-
-onMounted(() => {
-  fetchCareerPlans()
-  fetchSmartGoals()
-})
-</script>
-
 <template>
   <div class="goals-page career-development-page">
     <Navbar />
     <div class="toggle">
       <div class="toggle-line">
-        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
         <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
-        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-right' : 'pill-left'"></div>
+        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
+        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-left' : 'pill-right'"></div>
       </div>
     </div>
     <main class="container-xl py-4 px-4 px-md-5 goals-main">
@@ -663,6 +415,259 @@ onMounted(() => {
     </main>
   </div>
 </template>
+
+
+
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import Navbar from '@/components/Navbar.vue'
+import api from '@/services/api'
+import editIcon from '@/assets/edit.png'
+import deleteIcon from '@/assets/delete.png'
+
+// Page state for loaded plans, available SMART goals, and create/edit form status.
+const route = useRoute()
+const router = useRouter()
+const plans = ref([])
+const allGoals = ref([])
+const loading = ref(false)
+const errorMessage = ref('')
+const showPlanForm = ref(false)
+const editingPlanId = ref(null)
+const savingPlan = ref(false)
+const planFormError = ref('')
+const selectedGoalIds = ref([])
+
+const emptyPlanForm = () => ({
+  plan_year: '',
+  professional_interests: '',
+  employers_of_interest: '',
+  personal_values: '',
+  development_focus: '',
+  extracurriculars: '',
+  networking_plan: ''
+})
+
+const planForm = ref(emptyPlanForm())
+
+// Display helpers keep plan ordering and handle backend relation naming differences.
+const sortedPlans = computed(() => {
+  return [...plans.value].sort((a, b) => {
+    const yearDifference = Number(a.plan_year) - Number(b.plan_year)
+    if (yearDifference !== 0) {
+      return yearDifference
+    }
+    return new Date(a.created_at || 0) - new Date(b.created_at || 0)
+  })
+})
+
+const splitList = (value) => {
+  if (!value) {
+    return []
+  }
+
+  return String(value)
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+const getPlanFieldRaw = (plan, field) => {
+  const v = plan[field]
+  if (v == null || v === '') {
+    return ''
+  }
+  return String(v).trim()
+}
+
+const getPlanField = (plan, field) => {
+  const raw = getPlanFieldRaw(plan, field)
+  return raw || 'Not added yet.'
+}
+
+const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
+const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
+
+const showTextModal = ref(false)
+const textModalTitle = ref('')
+const textModalContent = ref('')
+const TEXT_PREVIEW_LIMIT = 90
+
+const normalizeDisplayText = (value) => String(value ?? '').trim()
+const hasLongText = (value) => normalizeDisplayText(value).length > TEXT_PREVIEW_LIMIT
+const getTextPreview = (value) => {
+  const text = normalizeDisplayText(value)
+  if (text.length <= TEXT_PREVIEW_LIMIT) {
+    return text || '-'
+  }
+  return `${text.slice(0, TEXT_PREVIEW_LIMIT).trimEnd()}...`
+}
+const openTextModal = (title, content) => {
+  textModalTitle.value = title
+  textModalContent.value = normalizeDisplayText(content)
+  showTextModal.value = true
+}
+const closeTextModal = () => {
+  showTextModal.value = false
+  textModalTitle.value = ''
+  textModalContent.value = ''
+}
+
+const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
+const getGoalStatus = (goal) => goal.status?.status || 'No status'
+const currTab = computed(() =>
+  route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
+)
+const goToGoals = () => {
+  if (route.name !== 'GoalsPage') {
+    router.push(`/goals/${route.params.id}`)
+  }
+}
+const goToCareerPlan = () => {
+  if (route.name !== 'careerDevelopment') {
+    router.push(`/student/career-development/${route.params.id}`)
+  }
+}
+const isGoalSelected = (goalId) => selectedGoalIds.value.includes(goalId)
+const toggleGoalSelection = (goalId) => {
+  selectedGoalIds.value = isGoalSelected(goalId)
+    ? selectedGoalIds.value.filter((id) => id !== goalId)
+    : [...selectedGoalIds.value, goalId]
+}
+
+// Form helpers support both creating a new plan and editing an existing one.
+const resetPlanForm = () => {
+  planForm.value = emptyPlanForm()
+  selectedGoalIds.value = []
+  editingPlanId.value = null
+  planFormError.value = ''
+}
+
+const openCreatePlanForm = () => {
+  resetPlanForm()
+  showPlanForm.value = true
+}
+
+const openEditPlanForm = (plan) => {
+  editingPlanId.value = plan.plan_id
+  planForm.value = {
+    plan_year: plan.plan_year || '',
+    professional_interests: plan.professional_interests || '',
+    employers_of_interest: plan.employers_of_interest || '',
+    personal_values: plan.personal_values || '',
+    development_focus: plan.development_focus || '',
+    extracurriculars: plan.extracurriculars || '',
+    networking_plan: plan.networking_plan || ''
+  }
+  selectedGoalIds.value = getPlanGoals(plan).map((goal) => goal.goal_id)
+  planFormError.value = ''
+  showPlanForm.value = true
+}
+
+const cancelPlanForm = () => {
+  showPlanForm.value = false
+  resetPlanForm()
+}
+
+const normalizePlanPayload = () => ({
+  profile_id: Number(route.params.id),
+  plan_year: Number(planForm.value.plan_year),
+  professional_interests: planForm.value.professional_interests || null,
+  employers_of_interest: planForm.value.employers_of_interest || null,
+  personal_values: planForm.value.personal_values || null,
+  development_focus: planForm.value.development_focus || null,
+  extracurriculars: planForm.value.extracurriculars || null,
+  networking_plan: planForm.value.networking_plan || null
+})
+
+// API loading functions fetch plans and all goals that can be linked to a plan.
+const fetchCareerPlans = async () => {
+  try {
+    loading.value = true
+    errorMessage.value = ''
+
+    const response = await api.get(`/career-plans/${route.params.id}`)
+    plans.value = Array.isArray(response.data) ? response.data : [response.data]
+  } catch (error) {
+    console.error('Failed to load career development plans:', error)
+    errorMessage.value = error.response?.data?.message || 'Failed to load career development plan.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const fetchSmartGoals = async () => {
+  try {
+    const response = await api.get('/smart-goals', {
+      params: {
+        profile_id: route.params.id
+      }
+    })
+    allGoals.value = Array.isArray(response.data) ? response.data : []
+  } catch (error) {
+    console.error('Failed to load SMART goals for linking:', error)
+    allGoals.value = []
+  }
+}
+
+// Save creates or updates the plan, then syncs linked SMART goals for this plan only (goals may link to multiple plans).
+const savePlan = async () => {
+  try {
+    savingPlan.value = true
+    planFormError.value = ''
+
+    const payload = normalizePlanPayload()
+    const response = editingPlanId.value
+      ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
+      : await api.post('/career-plans', payload)
+
+    const savedPlan = response.data
+
+    await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
+      profile_id: Number(route.params.id),
+      goal_ids: selectedGoalIds.value
+    })
+
+    showPlanForm.value = false
+    resetPlanForm()
+    await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
+  } catch (error) {
+    console.error('Failed to save career development plan:', error)
+    const serverMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      Object.values(error.response?.data?.errors || {}).flat()[0]
+
+    planFormError.value = serverMessage?.includes('Duplicate entry')
+      ? 'Another plan already used that year before the database constraint was updated. Please refresh and try again.'
+      : serverMessage || 'Failed to save career development plan.'
+  } finally {
+    savingPlan.value = false
+  }
+}
+
+const deletePlan = async (plan) => {
+  const confirmed = window.confirm(`Delete Year ${plan.plan_year} career plan? This cannot be undone.`)
+  if (!confirmed) {
+    return
+  }
+
+  try {
+    await api.delete(`/career-plans/${plan.plan_id}`)
+    await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
+  } catch (error) {
+    console.error('Failed to delete career development plan:', error)
+    alert(error.response?.data?.message || 'Failed to delete career development plan.')
+  }
+}
+
+onMounted(() => {
+  fetchCareerPlans()
+  fetchSmartGoals()
+})
+</script>
+
 
 <style scoped>
 /* Shared page styling copied from the SMART Goals visual language. */

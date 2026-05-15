@@ -3,9 +3,9 @@
     <Navbar />
     <div class="toggle">
       <div class="toggle-line">
-        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
         <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
-        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-right' : 'pill-left'"></div>
+        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
+        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-left' : 'pill-right'"></div>
       </div>
     </div>
     <main class="container-xl py-4 px-4 px-md-5 goals-main">
@@ -419,7 +419,9 @@ const stepDrafts = ref([])
 const route = useRoute()
 const router = useRouter()
 const profileId = computed(() => Number(route.params.id))
-const currTab = computed(() => route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS')
+const currTab = computed(() =>
+  route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
+)
 const TEXT_PREVIEW_LIMIT = 90
 // Tracks the currently dragged goal to drive reorder and visual states.
 const draggedGoalId = ref(null)
