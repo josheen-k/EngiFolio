@@ -80,9 +80,8 @@
 
         <!--buttons-->
         <div class="d-flex gap-3 justify-content-center">
-            <button class="btn btn-filter">Export Data</button>
-            <router-link :to="{ name: 'profile-settings', params: { id: route.params.id } }" class="btn btn-ql">Edit
-                Profile</router-link>
+            <router-link :to="{ name: 'export', params: { id: route.params.id } }" class="btn btn-filter">Export Data</router-link>
+            <router-link :to="{ name: 'profile-settings', params: { id: route.params.id } }" class="btn btn-ql">Edit Profile</router-link>
         </div>
     </div>
 
