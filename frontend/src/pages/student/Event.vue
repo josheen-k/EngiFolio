@@ -1136,7 +1136,7 @@ function goToToday() {
 .networking-page {
   min-height: 100vh;
   background: #ffffff;
-  font-family: 'Montserrat Alternates', sans-serif;
+  font-family: 'Maven Pro', sans-serif;
 }
 
 .networking-shell {
