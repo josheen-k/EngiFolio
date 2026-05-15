@@ -7,8 +7,8 @@
         <label class="pitch-label"> Elevator pitch</label>
         <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
 
-        <div class="pitch-action">
-          <button class="btn btn-dark" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? "Saving..." : "Save" }}</button>
+        <div class="pitch-actions">
+          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
         </div>
       </div>
       <!-- HEADER -->
@@ -518,5 +518,29 @@ const deleteContact = async (id) => {
   justify-content: flex-end;
   margin-top: 10px;
 }
+
+.action-button {
+  background: #13202c;
+  color: #ffffff;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid #13202c;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+}
+
+.small-button {
+  padding: 0.55rem 0.95rem;
+  font-size: 0.85rem;
+}
+
+
 </style>
 
