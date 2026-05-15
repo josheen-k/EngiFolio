@@ -1174,7 +1174,7 @@ function goToToday() {
 .calendar-title,
 .modal-header h2,
 .event-detail-card h3 {
-  font-family: 'Martel', serif;
+  font-family: 'Maven Pro', sans-serif;
   margin: 0;
   color: #13202c;
 }
@@ -1296,7 +1296,7 @@ function goToToday() {
 .year-section-title {
   margin: 0 0 1rem;
   color: #13202c;
-  font-family: 'Martel', serif;
+  font-family: 'Maven Pro', sans-serif;
   font-size: clamp(2rem, 3vw, 2.6rem);
 }
 
@@ -1327,7 +1327,7 @@ function goToToday() {
   border: 0;
   background: transparent;
   color: #f05c48;
-  font-family: 'Martel', serif;
+  font-family: 'Maven Pro', sans-serif;
   font-size: 1.2rem;
   padding: 0;
   margin-bottom: 0.8rem;
@@ -1446,7 +1446,7 @@ function goToToday() {
 .delete-button,
 .icon-button {
   border-radius: 999px;
-  font-family: 'Montserrat Alternates', sans-serif;
+  font-family: 'Maven Pro', sans-serif;
 }
 
 .day-pill {
