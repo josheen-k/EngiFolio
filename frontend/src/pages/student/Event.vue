@@ -7,7 +7,7 @@
         <label class="pitch-label"> Elevator Pitch</label>
         <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
         <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Submit' }}</button>
+          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
         </div>
       </div>
       <div class="page-header">
