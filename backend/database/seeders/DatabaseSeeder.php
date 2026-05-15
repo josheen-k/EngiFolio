@@ -71,7 +71,7 @@ class DatabaseSeeder extends Seeder
             ['user_id' => 6, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Software', 'personal_intro' => 'Interested in distributed systems and scalable cloud architecture.', 'profile_image_url' => '/src/assets/samuel.jpg', 'created_at' => now(), 'updated_at' => now()],
             ['user_id' => 7, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Civil', 'personal_intro' => 'Specialising in structural integrity and earthquake-resistant design.', 'profile_image_url' => '/src/assets/isabella.jpg', 'created_at' => now(), 'updated_at' => now()],
             ['user_id' => 8, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Electrical & Electronic', 'personal_intro' => 'Researching renewable grid integration and power electronics.', 'profile_image_url' => '/src/assets/lachlan.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 9, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Chemical', 'personal_intro' => 'Focused on process optimization and carbon capture technologies.', 'profile_image_url' => '/src/assets/grace.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 9, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Chemical', 'personal_intro' => 'Focused on process optimisation and carbon capture technologies.', 'profile_image_url' => '/src/assets/grace.jpg', 'created_at' => now(), 'updated_at' => now()],
             ['user_id' => 10, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechatronic', 'personal_intro' => 'Developing autonomous robotics for industrial automation.', 'profile_image_url' => '/src/assets/james.jpg', 'created_at' => now(), 'updated_at' => now()],
             ['user_id' => 11, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Aerospace', 'personal_intro' => 'Passionate about orbital mechanics and propulsion systems.', 'profile_image_url' => '/src/assets/sarah.jpg', 'created_at' => now(), 'updated_at' => now()],
             ['user_id' => 12, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Biomedical', 'personal_intro' => 'Designing next-generation prosthetic limbs and wearable sensors.', 'profile_image_url' => '/src/assets/liam.jpg', 'created_at' => now(), 'updated_at' => now()],
@@ -350,14 +350,14 @@ class DatabaseSeeder extends Seeder
                 'experience_title' => 'Control Systems Workshop', 'associated_year' => 3, 
                 'experience_tasks' => 'Tuning PID controllers for a motor', 
                 'key_learnings' => 'Understood the impact of proportional, integral, and derivative gains on system stability.', 
-                'future_applications' => 'Optimizing feedback loops in autonomous vehicle navigation.', 
+                'future_applications' => 'Optimising feedback loops in autonomous vehicle navigation.', 
                 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-25', 'created_at' => now(), 'updated_at' => now()
             ],
             [
                 'entry_id' => 9, 'profile_id' => 1, 'indicator_id' => 6, 
                 'experience_title' => 'Ethics Case Study', 'associated_year' => 1, 
-                'experience_tasks' => 'Analyzing the Challenger disaster', 
-                'key_learnings' => 'Identified the dangers of "normalization of deviance" and the role of engineering whistleblowers.', 
+                'experience_tasks' => 'Analysing the Challenger disaster', 
+                'key_learnings' => 'Identified the dangers of normalisation of deviance and the role of engineering whistleblowers.', 
                 'future_applications' => 'Upholding rigorous safety standards despite project timeline pressures.', 
                 'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-04-02', 'created_at' => now(), 'updated_at' => now()
             ],
@@ -373,7 +373,7 @@ class DatabaseSeeder extends Seeder
                 'entry_id' => 11, 'profile_id' => 1, 'indicator_id' => 4, 
                 'experience_title' => 'Hackathon Participant', 'associated_year' => 2, 
                 'experience_tasks' => 'Rapid prototyping of a smart-city app', 
-                'key_learnings' => 'Learned to prioritize "Minimum Viable Product" features under strict time constraints.', 
+                'key_learnings' => 'Learned to prioritise Minimum Viable Product features under strict time constraints.', 
                 'future_applications' => 'Iterating quickly in fast-paced software development cycles.', 
                 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-11-01', 'created_at' => now(), 'updated_at' => now()
             ],
@@ -405,8 +405,8 @@ class DatabaseSeeder extends Seeder
                 'entry_id' => 15, 'profile_id' => 1, 'indicator_id' => 9, 
                 'experience_title' => 'Project Risk Assessment', 'associated_year' => 3, 
                 'experience_tasks' => 'Creating a Risk Register for a construction site simulation', 
-                'key_learnings' => 'Developed a "safety-first" mindset by identifying high-probability hazards and designing mitigation strategies.', 
-                'future_applications' => 'Ensuring OHS compliance and minimizing liability during real-world site management.', 
+                'key_learnings' => 'Developed a safety-first mindset by identifying high-probability hazards and designing mitigation strategies.', 
+                'future_applications' => 'Ensuring OHS compliance and minimising liability during real-world site management.', 
                 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-08-05', 'created_at' => now(), 'updated_at' => now()
             ],
             [
@@ -452,7 +452,7 @@ class DatabaseSeeder extends Seeder
             [
                 'profile_id' => 1, 
                 'title' => 'Dean\'s Merit List 2025', 
-                'body' => 'Recognized for outstanding academic achievement in the Faculty of Engineering, Computer and Mathematical Sciences.', 
+                'body' => 'Recognised for outstanding academic achievement in the Faculty of Engineering, Computer and Mathematical Sciences.', 
                 'file_path' => '/uploads/certs/deans_list_alex.pdf', 
                 'issued_date' => '2025-12-10', 
                 'created_at' => now(), 
@@ -479,7 +479,7 @@ class DatabaseSeeder extends Seeder
             [
                 'profile_id' => 1,
                 'title' => 'Best Team Project – Software Engineering',
-                'body' => 'Recognized for leading a team to deliver a scalable web application using modern development practices.',
+                'body' => 'Recognised for leading a team to deliver a scalable web application using modern development practices.',
                 'file_path' => '/uploads/certs/team_project_award.pdf',
                 'issued_date' => '2025-06-05',
                 'created_at' => now(),
@@ -539,7 +539,7 @@ class DatabaseSeeder extends Seeder
         ]);
         
         DB::table('competency_feedback')->insert([
-            ['entry_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Strong use of the pandas library. For your next iteration, try to modularize your functions to improve code reusability.', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Strong use of the pandas library. For your next iteration, try to modularise your functions to improve code reusability.', 'created_at' => now(), 'updated_at' => now()],
             ['entry_id' => 4, 'staff_id' => 5, 'feedback_content' => 'Great leadership initiative. It would be beneficial to see a short reflection on how you resolved specific technical disagreements within the team.', 'created_at' => now(), 'updated_at' => now()],
             ['entry_id' => 5, 'staff_id' => 4, 'feedback_content' => 'The LCA calculations are accurate. However, you should cross-reference the Australian Carbon Credit Units (ACCUs) standards in your future applications.', 'created_at' => now(), 'updated_at' => now()],
             ['entry_id' => 6, 'staff_id' => 6, 'feedback_content' => 'Your analysis of laminar vs. turbulent flow is correct. Ensure the lab logbook scans are attached to show the raw data collection process.', 'created_at' => now(), 'updated_at' => now()],

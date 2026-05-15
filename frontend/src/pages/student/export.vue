@@ -7,8 +7,8 @@
 
     const route = useRoute();
 
-    const { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addGoals } 
-      = useExportData(route.params.id)
+    // Deconstructs the functions so that they can be called individually
+    const { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addGoals } = useExportData(route.params.id)
 
     const profileSelected = ref(false);
     const certificationsSelected = ref(false);
