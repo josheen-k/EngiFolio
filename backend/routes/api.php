@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ElevatorPitchController;
 use App\Http\Controllers\GoalFeedbackController;
+use App\Http\Controllers\CdlModuleController;
 
 //  User Routes
 Route::get('/users', [UserController::class, 'index']);
@@ -152,3 +153,6 @@ Route::delete('/competency-evidence/{id}', [CompetencyEvidenceController::class,
 Route::get('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'show']);
 Route::post('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'store']);
 Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class, 'update']);
+
+//CDL Page
+Route::get('/cdl-modules', [CdlModuleController::class, 'index']);
