@@ -99,30 +99,39 @@
                 <td>{{ user.goals }}</td>
                 <td>{{ user.completedGoals }}</td>
                 <td>{{ user.updatedAt }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
+                <td class="actions-cell">
+                  <div class="actions-stack">
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : 'View profile'">
                       <button
                         type="button"
-                        class="btn page-btn-outline"
+                        class="action-icon-btn"
+                        aria-label="View profile"
                         :disabled="!user.profile_id"
-                        @click="viewUser(user)"
+                        @click="viewProfile(user)"
                       >
-                        View
+                        <img :src="profileIcon" alt="" class="action-icon-image" aria-hidden="true" />
                       </button>
                     </span>
-                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : 'Career development plan'">
                       <button
                         type="button"
-                        class="btn page-btn-primary"
+                        class="action-icon-btn"
+                        aria-label="Career development plan"
                         :disabled="!user.profile_id"
-                        @click="editUser(user)"
+                        @click="viewGoals(user)"
                       >
-                        Edit
+                        <img :src="goalsIcon" alt="" class="action-icon-image" aria-hidden="true" />
                       </button>
                     </span>
-                    <button type="button" class="btn page-btn-danger" :disabled="deletingUserId === user.user_id" @click="deleteUser(user)">
-                      {{ deletingUserId === user.user_id ? 'Deleting...' : 'Delete' }}
+                    <button
+                      type="button"
+                      class="action-icon-btn"
+                      aria-label="Delete user"
+                      title="Delete"
+                      :disabled="deletingUserId === user.user_id"
+                      @click="deleteUser(user)"
+                    >
+                      <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                     </button>
                   </div>
                 </td>
@@ -155,6 +164,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import api from '@/services/api'
+import profileIcon from '@/assets/default.jpg'
+import goalsIcon from '@/assets/edit.png'
+import deleteIcon from '@/assets/delete.png'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -279,20 +291,18 @@ const createUser = async () => {
   }
 }
 
-const viewUser = (user) => {
+const viewProfile = (user) => {
   if (!user.profile_id) {
-    // Admin and staff users do not have student profile pages.
     return
   }
-  router.push(`/goals/${user.profile_id}`)
+  router.push(`/profile/${user.profile_id}`)
 }
 
-const editUser = (user) => {
+const viewGoals = (user) => {
   if (!user.profile_id) {
-    // Admin and staff users do not have student profile pages.
     return
   }
-  router.push(`/settings/profile/${user.profile_id}`)
+  router.push(`/student/career-development/${user.profile_id}`)
 }
 
 const deleteUser = async (user) => {
@@ -463,9 +473,54 @@ const deleteUser = async (user) => {
   font-size: 0.92rem;
 }
 
-.action-buttons {
+.actions-cell {
+  vertical-align: middle !important;
+}
+
+.actions-stack {
   display: flex;
-  gap: 0.45rem;
+  flex-direction: row;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.action-icon-image {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.action-icon-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.action-icon-btn:focus-visible {
+  outline: 2px solid #9db8e6;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.action-icon-btn:active:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.action-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .action-tooltip {
