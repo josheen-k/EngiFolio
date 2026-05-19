@@ -353,25 +353,29 @@
 
                       <div v-else class="upload-zone">
                         <input
-                          :id="`comment-file-$${event.event_id}`"
+                          :id="`comment-file-${event.event_id}`"
                           class="upload-input"
                           type="file"
                           :accept="getCommentDraft(event.event_id).comment_type === 'image' ? 'image/*' : 'video/*'"
-                          @change="handleCOmmentFileChange(event.event_id, $event.target.files)" />
+                          @change="handleCommentFileChange(event.event_id, $event)" />
                           <label :for="`comment-file-${event.event_id}`" class="upload-card">
                             <strong >Click to upload or drag & drop</strong>
                             <span >{{ getCommentDraft(event.event_id).comment_type === 'image' ? 'PNG, JPG, JPEG, GIF' :'MP4, MOV' }}</span>
                           </label>
-                          <p class="upload-not" v-if="!getCommentDraft(event.event_id).file_name">
-                            {{ getCommentDraft(event.event_id).comment_type == 'image' ? 'Upload and image file' : 'Upload a video file' }}
-                          </p>
-                          <p class="upload-file-name" v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
+                        <p class="upload-note" v-if="!getCommentDraft(event.event_id).file_name">
+                          {{ getCommentDraft(event.event_id).comment_type == 'image' ? 'Upload and image file' : 'Upload a video file' }}
+                        </p>
+                        <p class="upload-file-name" v-else></p>
                       </div>
                     </div>
                   </div>
 
                   <div class="inline-actions">
-                    <button class="action-button small-button" @click="submitComment(event.event_id)">
+                    <button
+                      v-if="getCommentDraft(event.event_id).comment_type === 'link'"
+                      class="action-button small-button"
+                      @click="submitComment(event.event_id)"
+                    >
                       {{ editingCommentIds[event.event_id] ? 'Update' : 'Add' }}
                     </button>
                     <button
@@ -403,13 +407,10 @@
                       >
                         {{ comment.file_name || 'Open file' }}
                       </a>
-                      <span v-else>No file available.</span>
+                      <span v-else>No file available</span>
                     </div>
 
                     <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editComment(event.event_id, comment)">
-                        Edit
-                      </button>
                       <button
                         class="delete-button small-button"
                         @click="deleteComment(event.event_id, comment.id)"
@@ -456,7 +457,7 @@
         <p class="confirm-message">{{ pitchDialog.message }}</p>
 
         <div class="confirm-actions">
-          <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}"</button>
+          <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}</button>
         </div>
       </div>
     </div>
@@ -1054,13 +1055,20 @@ function editComment(eventId, comment) {
   commentEditSnapshots.value[eventId] = {...draft}
 }
 
-function handleCommentFileChange(eventId, fileList) {
+async function handleCommentFileChange(eventId, event) {
   const draft = getCommentDraft(eventId)
-  const file = fileList?.[0] || null
+  const file = event.target.files?.[0] || null
 
   draft.file = file
   draft.file_name = file ? file.name : ''
 
+  if(!file) return
+
+  try {
+    await submitComment(eventId)
+  } finally {
+    event.target.value = ''
+  }
 }
 
 async function submitComment(eventId) {
@@ -2060,9 +2068,9 @@ function goToToday() {
 
 .upload-card {
   min-height: 150px;
-  border: 3px dashed #87c8dd;
+  border: 3px dashed #d6d6d6;
   border-radius: 1.4rem;
-  background: #eef9fc;
+  background: #ffffff;
   color: #50606f;
   display: flex;
   flex-direction: column;
@@ -2078,8 +2086,8 @@ function goToToday() {
 
 .upload-card:hover {
   transform: translateY(-1px);
-  background: #e5f5fa;
-  border-color: #69b8d1;
+  background: #fafafa;
+  border-color: #c8c8c8;
 }
 
 .upload-card strong {
@@ -2103,4 +2111,7 @@ function goToToday() {
   color: #13202c;
   font-weight: 600;
 }
+
+
+
 </style>
