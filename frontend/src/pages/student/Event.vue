@@ -353,22 +353,19 @@
 
                       <div v-else class="upload-zone">
                         <input
+                          :id="`comment-file-$${event.event_id}`"
+                          class="upload-input"
                           type="file"
-                          :accept="getCommentDraft(event.event_id).comment_type === 'image'
-                            ? 'image/*'
-                            : 'video/*'"
-                          @change="handleCommentFileChange(event.event_id, $event.target.files)"
-                        />
-
-                        <p v-if="!getCommentDraft(event.event_id).file_name">
-                          {{
-                            getCommentDraft(event.event_id).comment_type === 'image'
-                              ? 'Upload an image file'
-                              : 'Upload a video file'
-                          }}
-                        </p>
-
-                        <p v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
+                          :accept="getCommentDraft(event.event_id).comment_type === 'image' ? 'image/*' : 'video/*'"
+                          @change="handleCOmmentFileChange(event.event_id, $event.target.files)" />
+                          <label :for="`comment-file-${event.event_id}`" class="upload-card">
+                            <strong >Click to upload or drag & drop</strong>
+                            <span >{{ getCommentDraft(event.event_id).comment_type === 'image' ? 'PNG, JPG, JPEG, GIF' :'MP4, MOV' }}</span>
+                          </label>
+                          <p class="upload-not" v-if="!getCommentDraft(event.event_id).file_name">
+                            {{ getCommentDraft(event.event_id).comment_type == 'image' ? 'Upload and image file' : 'Upload a video file' }}
+                          </p>
+                          <p class="upload-file-name" v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
                       </div>
                     </div>
                   </div>
@@ -453,6 +450,16 @@
         </div>
       </div>
     </div>
+    <div v-if="showPitchDialog" class="confirm-overlay" @click.self="closePitchDialog">
+      <div class="confirm-widget">
+        <p class="confirm-title">{{ pitchDialog.title }}</p>
+        <p class="confirm-message">{{ pitchDialog.message }}</p>
+
+        <div class="confirm-actions">
+          <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}"</button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -505,6 +512,13 @@ const yearScrollContainer = ref(null)
 
 const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
+const showPitchDialog = ref(false);
+const pitchDialog = ref({
+  title: "",
+  message: "",
+  buttonLabel: "OK",
+});
+
 const contacts = ref([])
 let confirmResolver = null
 let syncingYearScroll = false
@@ -581,7 +595,7 @@ function createMonthGrid(baseDate) {
   const firstDayOfMonth = new Date(year, month, 1)
   const mondayFirstOffset = (firstDayOfMonth.getDay() + 6) % 7
   const gridStartDate = new Date(year, month, 1 - mondayFirstOffset)
-
+  //
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(gridStartDate)
     date.setDate(gridStartDate.getDate() + index)
@@ -672,6 +686,12 @@ const fetchElevatorPitch = async() => {
 }
 
 const saveElevatorPitch = async() => {
+  const trimmedPitch = elevatorPitch.value.trim();
+
+  if(!trimmedPitch) {
+    openPitchDialog('Elevator Pitch', "It's empty. Please enter something first.");
+    return;
+  }
   savingPitch.value = true
   try {
     await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,})
@@ -679,6 +699,20 @@ const saveElevatorPitch = async() => {
     savingPitch.value = false
   }
 }
+
+const openPitchDialog = (title,message) => {
+  pitchDialog.value = {
+    title,
+    message,
+    buttonLabel: "OK",
+  }
+  showPitchDialog.value = true
+}
+
+const closePitchDialog = () => {
+  showPitchDialog.value = false
+}
+
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
     const dateKey = normalizeEventDate(event.event_datetime)
@@ -1446,7 +1480,7 @@ function goToToday() {
 .delete-button,
 .icon-button {
   border-radius: 999px;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Montserrat Alternates', sans-serif;
 }
 
 .day-pill {
@@ -1956,5 +1990,117 @@ function goToToday() {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+}
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 17, 28, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1100;
+}
+
+.confirm-widget {
+  width: min(28rem, 100%);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d6e0ea;
+  border-radius: 1.15rem;
+  box-shadow: 0 1rem 2.5rem rgba(18, 30, 45, 0.18);
+  padding: 1.25rem;
+}
+
+.confirm-title {
+  margin: 0 0 0.45rem;
+  color: #13202c;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.comment-evidence-grid{
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  gap: 1.25rem 1.5rem;
+  align-items: start;
+}
+
+.comment-evidence-field{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comment-evidence-field select{
+  border: 1px solid #ccd8e2;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  font: inherit;
+  background: #ffffff;
+  color: #13202c;
+}
+
+.comment-evidence-input input[disabled] {
+  border: 1px solid #ccd8e2;
+  border-radius: 1.25rem;
+  padding: 1rem 1.2rem;
+  background: #fbfdff;
+  color: #7a8fa3;
+}
+
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upload-input {
+  display: none;
+}
+
+.upload-card {
+  min-height: 150px;
+  border: 3px dashed #87c8dd;
+  border-radius: 1.4rem;
+  background: #eef9fc;
+  color: #50606f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  text-align: center;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+
+.upload-card:hover {
+  transform: translateY(-1px);
+  background: #e5f5fa;
+  border-color: #69b8d1;
+}
+
+.upload-card strong {
+  color: #4c555d;
+  font-size: 1.05rem;
+}
+
+.upload-card span {
+  color: #5f6a73;
+  font-size: 0.95rem;
+}
+
+.upload-note {
+  margin: 0;
+  color: #5a738a;
+  font-size: 0.95rem;
+}
+
+.upload-file-name {
+  margin: 0;
+  color: #13202c;
+  font-weight: 600;
 }
 </style>

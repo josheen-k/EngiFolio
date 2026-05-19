@@ -141,6 +141,16 @@
         </div>
       </div>
 
+      <div v-if="showPitchDialog" class="confirm-overlay" @click.self="closePitchDialog">
+        <div class="confirm-widget">
+          <p class="confirm-title">{{ pitchDialog.title }}</p>
+          <p class="confirm-message">{{ pitchDialog.message }}</p>
+          <div class="confirm-actions">
+            <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}</button>
+          </div>
+        </div>
+      </div>
+
     </section>
 
 
@@ -168,6 +178,12 @@ const openMenuId = ref(null);
 
 const elevatorPitch = ref("");
 const savingPitch =ref(false);
+const showPitchDialog = ref(false);
+const pitchDialog = ref({
+  title: "",
+  message: "",
+  buttonLabel: "OK",
+});
 
 const form = ref({
   contact_id: null,
@@ -189,11 +205,18 @@ const fetchElevatorPitch = async () => {
 }
 
 const saveElevatorPitch = async () => {
+  const trimmedPitch = elevatorPitch.value.trim();
+
+  if (!trimmedPitch) {
+    openPitchDialog("Elevator Pitch", "It's empty. Please enter something first.");
+    return;
+  }
+
   savingPitch.value = true;
 
   try{
     await api.put(`/profile/${route.params.id}/elevator-pitch`,{
-      pitch_text: elevatorPitch.value,
+      pitch_text: trimmedPitch,
     })
   } finally {
     savingPitch.value = false;
@@ -240,6 +263,19 @@ const getAvatar = (name) => {
 const formatUrl = (url) => {
   if(!url) return "";
   return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+};
+
+const openPitchDialog = (title, message) => {
+  pitchDialog.value = {
+    title,
+    message,
+    buttonLabel: "OK",
+  };
+  showPitchDialog.value = true;
+};
+
+const closePitchDialog = () => {
+  showPitchDialog.value = false;
 };
 
 /* ACTIONS */
@@ -317,10 +353,9 @@ const deleteContact = async (id) => {
 
 <style scoped>
 .page {
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Montserrat Alternates', sans-serif;
   background: #f4f6f8;
   min-height: 100vh;
-  font-family: 'Maven Pro', sans-serif;
 }
 
 /* HEADER */
@@ -541,6 +576,32 @@ const deleteContact = async (id) => {
   font-size: 0.85rem;
 }
 
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 17, 28, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1100;
+}
+
+.confirm-widget {
+  width: min(28rem, 100%);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d6e0ea;
+  border-radius: 1.15rem;
+  box-shadow: 0 1rem 2.5rem rgba(18, 30, 45, 0.18);
+  padding: 1.25rem;
+}
+
+.confirm-title {
+  margin: 0 0 0.45rem;
+  color: #13202c;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
 
 </style>
 
