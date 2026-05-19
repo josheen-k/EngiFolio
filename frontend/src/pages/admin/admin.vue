@@ -56,7 +56,27 @@
 
       <section class="panel-card mb-4">
         <div class="panel-head">
-          <h2 class="panel-title mb-0">User Management</h2>
+          <div class="panel-head-left">
+            <h2 class="panel-title mb-0">User Management</h2>
+            <div class="export-actions">
+              <button
+                type="button"
+                class="btn btn-csv"
+                :disabled="loading || users.length === 0"
+                @click="exportUsersCsv"
+              >
+                Export CSV
+              </button>
+              <button
+                type="button"
+                class="btn btn-pdf"
+                :disabled="loading || users.length === 0"
+                @click="exportUsersPdf"
+              >
+                Export PDF
+              </button>
+            </div>
+          </div>
           <div class="filters-wrap">
             <input
               v-model="searchQuery"
@@ -305,6 +325,110 @@ const viewGoals = (user) => {
   router.push(`/student/career-development/${user.profile_id}`)
 }
 
+const escapeCsvCell = (value) => {
+  const text = String(value ?? '')
+  return `"${text.replace(/"/g, '""')}"`
+}
+
+const exportUsersCsv = () => {
+  if (users.value.length === 0) {
+    alert('No users to export.')
+    return
+  }
+
+  const lines = [
+    '"----- User Management -----"',
+    [
+      'Name',
+      'Email',
+      'Role',
+      'ID',
+      'Goals',
+      'Completed',
+      'Last Updated'
+    ]
+      .map(escapeCsvCell)
+      .join(',')
+  ]
+
+  users.value.forEach((user) => {
+    lines.push(
+      [
+        user.name,
+        user.email,
+        user.role,
+        user.username || '-',
+        user.goals,
+        user.completedGoals,
+        user.updatedAt || ''
+      ]
+        .map(escapeCsvCell)
+        .join(',')
+    )
+  })
+
+  lines.push('')
+  lines.push(
+    [
+      escapeCsvCell('Total Users'),
+      escapeCsvCell(stats.value.totalUsers),
+      escapeCsvCell('Total Goals'),
+      escapeCsvCell(stats.value.totalGoals),
+      escapeCsvCell('Completed Goals'),
+      escapeCsvCell(stats.value.totalCompletedGoals)
+    ].join(',')
+  )
+
+  const blob = new Blob(['\ufeff', lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', 'user_management_export.csv')
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+
+  alert('Downloading exported data')
+}
+
+const exportUsersPdf = async () => {
+  if (users.value.length === 0) {
+    alert('No users to export.')
+    return
+  }
+
+  try {
+    const params = {}
+    const query = searchQuery.value.trim()
+    if (query) {
+      params.q = query
+    }
+
+    const response = await api.get('/admin/users-overview/export-pdf', {
+      params,
+      responseType: 'blob',
+      headers: { Accept: 'application/pdf' }
+    })
+
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'user_management_export.pdf')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    alert('PDF downloaded successfully')
+  } catch (error) {
+    console.error('Failed to export user management PDF:', error)
+    alert('Error generating the PDF.')
+  }
+}
+
 const deleteUser = async (user) => {
   // Simple confirmation guard for a destructive operation.
   const confirmed = window.confirm(`Delete user ${user.username || user.email}? This cannot be undone.`)
@@ -401,6 +525,13 @@ const deleteUser = async (user) => {
   margin-bottom: 0.85rem;
 }
 
+.panel-head-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
 .panel-title {
   margin: 0;
   font-family: 'Martel', serif;
@@ -411,7 +542,50 @@ const deleteUser = async (user) => {
 .filters-wrap {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.55rem;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-csv {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.5rem;
+  background: #bdbdbd;
+  border: none;
+  color: #2b2b2b;
+  padding: 0.45rem 1rem;
+  white-space: nowrap;
+}
+
+.btn-csv:hover:not(:disabled) {
+  background: #979797;
+}
+
+.btn-pdf {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.9rem;
+  color: #ffffff;
+  background: #555555;
+  border: none;
+  padding: 0.45rem 1rem;
+  white-space: nowrap;
+}
+
+.btn-pdf:hover:not(:disabled) {
+  color: #ffffff;
+  background: #222222;
+}
+
+.btn-csv:disabled,
+.btn-pdf:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .filter-input,

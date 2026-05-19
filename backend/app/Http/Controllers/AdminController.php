@@ -13,12 +13,34 @@ class AdminController extends Controller
 {
     public function usersOverview(Request $request)
     {
-        // Allow lightweight server-side search for the admin page table.
+        $data = $this->buildUsersOverview($request);
+
+        return response()->json($data);
+    }
+
+    public function exportUsersOverviewPdf(Request $request)
+    {
+        $data = $this->buildUsersOverview($request);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
+            'users' => $data['users'],
+            'stats' => $data['stats'],
+            'searchQuery' => $request->input('q'),
+            'generatedAt' => now()->format('Y-m-d H:i'),
+        ]);
+
+        return $pdf->download('user_management_export.pdf');
+    }
+
+    /**
+     * @return array{stats: array{totalUsers: int, totalGoals: int, totalCompletedGoals: int}, users: \Illuminate\Support\Collection<int, array<string, mixed>>}
+     */
+    private function buildUsersOverview(Request $request): array
+    {
         $validated = $request->validate([
             'q' => 'nullable|string|max:100',
         ]);
 
-        // Build one aggregated dataset so frontend can render table + stats in a single call.
         $query = User::query()
             ->leftJoin('roles as r', 'r.role_id', '=', 'users.role_id')
             ->leftJoin('student_profiles as sp', 'sp.user_id', '=', 'users.user_id')
@@ -87,14 +109,14 @@ class AdminController extends Controller
             ];
         })->values();
 
-        return response()->json([
+        return [
             'stats' => [
                 'totalUsers' => $users->count(),
                 'totalGoals' => (int) $users->sum('goals'),
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
             ],
             'users' => $users,
-        ]);
+        ];
     }
 
     public function createUser(Request $request)
