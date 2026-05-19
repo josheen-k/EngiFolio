@@ -358,7 +358,6 @@ const loadPlanId = async () => {
     if (response.data && response.data.length > 0) {
       // Use the first available career plan as the parent plan for new goals.
       planId.value = response.data[0].plan_id
-      newGoalData.plan_id = response.data[0].plan_id
     } else {
       console.warn('No career development plan found')
       alert('Please create a Career Development Plan first')

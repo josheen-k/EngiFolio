@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentProfile;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -22,8 +22,7 @@ class AdminController extends Controller
         $query = User::query()
             ->leftJoin('roles as r', 'r.role_id', '=', 'users.role_id')
             ->leftJoin('student_profiles as sp', 'sp.user_id', '=', 'users.user_id')
-            ->leftJoin('career_development_plans as cdp', 'cdp.profile_id', '=', 'sp.profile_id')
-            ->leftJoin('smart_goals as sg', 'sg.plan_id', '=', 'cdp.plan_id')
+            ->leftJoin('smart_goals as sg', 'sg.profile_id', '=', 'sp.profile_id')
             ->select([
                 'users.user_id',
                 'users.username',
@@ -48,7 +47,7 @@ class AdminController extends Controller
                 'r.role_name',
             ]);
 
-        if (!empty($validated['q'])) {
+        if (! empty($validated['q'])) {
             $search = trim($validated['q']);
             // Search by common admin fields: name, email, or username.
             $query->where(function ($q) use ($search) {
