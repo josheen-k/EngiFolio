@@ -151,6 +151,19 @@
         </div>
       </div>
 
+      <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
+        <div class="confirm-widget">
+          <p class="confirm-title">{{confirmDialog.title }}</p>
+          <p class="confirm-message">{{confirmDialog.message }}</p>
+          <div class="confirm-actions">
+            <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">{{ confirmDialog.cancelLabel }}</button>
+            <button class="small-button" :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'" @click="resolveConfirmDialog(true)">
+              {{ confirmDialog.confirmLabel }}
+            </button>
+          </div>
+        </div>
+      </div>
+
     </section>
 
 
@@ -179,6 +192,17 @@ const openMenuId = ref(null);
 const elevatorPitch = ref("");
 const savingPitch =ref(false);
 const showPitchDialog = ref(false);
+const showConfirmDialog = ref(false); 
+
+const confirmDialog = ref({
+  title: "",
+  message: "",
+  confirmLabel: "Confirm",
+  cancelLabel: "Cancel",
+  variant: "default",
+});
+let confirmResolver = null; 
+
 const pitchDialog = ref({
   title: "",
   message: "",
@@ -280,6 +304,31 @@ const closePitchDialog = () => {
   showPitchDialog.value = false;
 };
 
+const openConfirmDialog = (options) => {
+  confirmDialog.value = {
+    title: "",
+    message: "",
+    confirmLabel: "Confirm",
+    cancelLabel: "Cancel",
+    variant: "default",
+    ...options,
+  };
+
+  showConfirmDialog.value = true;
+
+  return new Promise((resolve) => {
+    confirmResolver = resolve;
+  });
+};
+
+const resolveConfirmDialog = (result) => {
+  showConfirmDialog.value = false;
+
+  if(confirmResolver) {
+    confirmResolver(result);
+    confirmResolver = null;
+  }
+};
 /* ACTIONS */
 const toggleMenu = (id) => {
   openMenuId.value = openMenuId.value === id ? null : id;
@@ -324,6 +373,19 @@ const saveContact = async () => {
     }
   }
 
+  if(editMode.value) {
+    const shouldUpdate = await openConfirmDialog({
+      title: "Confirm update",
+      message: "Save these changes to this contact?",
+      confirmLabel: "Update",
+      cancelLabel: "Undo",
+    });
+
+    if(!shouldUpdate) {
+      return;
+    }
+  }
+
   try {
     if(editMode.value) {
       await api.put(`/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,payload);
@@ -362,6 +424,18 @@ const editContact = (c) => {
 };
 
 const deleteContact = async (id) => {
+  const shouldDelete = await openConfirmDialog({
+    title: "Confirm delete",
+    message: "Delete this contact?",
+    confirmLabel: "Delete",
+    cancelLabel: "Keep",
+    variant: "danger",
+  });
+
+  if(!shouldDelete){
+    return;
+  }
+
   await api.delete(`/users/${profileId.value}/industry-contacts/${id}`);
   selectedContact.value = null;
   openMenuId.value = null;
@@ -621,5 +695,33 @@ const deleteContact = async (id) => {
   font-weight: 700;
 }
 
+.confirm-message{
+  margin: 0;
+  color: #4e6577;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.ghost-button {
+  background: #f5f8fb;
+  border: 1px solid #d4dfe9;
+  color: #2d4658;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.delete-button {
+  background: #fff1f1;
+  border: 1px solid #f3c6c6;
+  color: #a63f3f;
+  border-radius: 999px;
+  cursor: pointer;
+}
 </style>
 
