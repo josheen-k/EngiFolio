@@ -54,7 +54,6 @@
         <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
       </section>
 
-      <!-- `user.id` is a display key from the API (e.g. STU-0001); goal columns count SMART goals for linked student profiles only. -->
       <section class="panel-card mb-4">
         <div class="panel-head">
           <h2 class="panel-title mb-0">User Management</h2>
@@ -169,7 +168,7 @@ const actionSuccess = ref('')
 
 const newUser = ref({
   // Role mapping in this project: 1 = Admin, 2 = Staff, 3 = Student.
-  // Defaulting to Student because that's the most common account type to create.
+  // Defaulting to Student
   role_id: 3,
   username: '',
   email: '',
@@ -207,7 +206,10 @@ const fetchUsersOverview = async () => {
       params.q = query
     }
 
+    // Fetch the filtered user list and summary numbers from the admin API.
     const response = await api.get('/admin/users-overview', { params })
+
+    // Use empty defaults if the API omits either field.
     users.value = response.data.users || []
     stats.value = response.data.stats || {
       totalUsers: 0,
@@ -215,6 +217,7 @@ const fetchUsersOverview = async () => {
       totalCompletedGoals: 0
     }
   } catch (error) {
+    // Reset displayed data on failure so stale results are not shown.
     console.error('Failed to load admin users overview:', error)
     users.value = []
     stats.value = {
@@ -222,6 +225,7 @@ const fetchUsersOverview = async () => {
       totalGoals: 0,
       totalCompletedGoals: 0
     }
+    // Prefer the backend error message when available.
     loadError.value = error.response?.data?.message || 'Failed to load user management data'
   } finally {
     loading.value = false
