@@ -695,7 +695,9 @@ const saveElevatorPitch = async() => {
   }
   savingPitch.value = true
   try {
-    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,})
+    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
+
+    openPitchDialog("Saved", "Your elevator pitch has been saved.");
   } finally {
     savingPitch.value = false
   }

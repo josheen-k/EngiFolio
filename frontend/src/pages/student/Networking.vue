@@ -217,7 +217,9 @@ const saveElevatorPitch = async () => {
   try{
     await api.put(`/profile/${route.params.id}/elevator-pitch`,{
       pitch_text: trimmedPitch,
-    })
+    });
+
+    openPitchDialog("Saved", "Your elevator pitch has been saved.");
   } finally {
     savingPitch.value = false;
   }
@@ -305,30 +307,46 @@ const closeForm = () => {
 
 const saveContact = async () => {
   const payload = { ...form.value };
+  const trimmedLink = (payload.link_url || "").trim();
+
+  if(trimmedLink) {
+    try {
+      const parsedUrl = new URL(trimmedLink);
+
+      if((parsedUrl.protocol !== "http:" && parsedUrl.protocol !=="https:") || !parsedUrl.hostname.includes(".")){
+        throw new Error("Invalid link");
+      }
+
+      payload.link_url = trimmedLink;
+    } catch {
+      openPitchDialog("Invalid Link", "This is not a valid link. Please enter a full link, for example: https://linkedin.com/in/your-name");
+      return;
+    }
+  }
 
   try {
-    if (editMode.value) {
-      await api.put(
-        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
-        payload
-      );
+    if(editMode.value) {
+      await api.put(`/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,payload);
     } else {
-      await api.post(
-        `/users/${profileId.value}/industry-contacts`,
-        payload
-      );
+      await api.post(`/users/${profileId.value}/industry-contacts`,payload);
     }
 
     closeForm();
     await fetchContacts();
   } catch (error) {
+    const linkErrors = error.response?.data?.errors?.link_url;
+
+    if (linkErrors?.length) {
+      openPitchDialog("Invalid Link", "This is not a valid link. Please enter a full link, for example https://linkedin.com/in/your-name");
+      return;
+    }
+
     console.error("Save contact failed:", error);
 
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-      alert(`Save failed: ${JSON.stringify(error.response.data)}`);
+    if(error.response) {
+      openPitchDialog("Save Failed", "Something went wrong while saving this contact.");
     } else {
-      alert("Save failed. Check browser console for details.");
+      openPitchDialog("Save Failed", "Please check your connection and try again.");
     }
   }
 };
