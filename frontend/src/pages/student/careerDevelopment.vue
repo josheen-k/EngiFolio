@@ -1,3 +1,423 @@
+<template>
+  <div class="goals-page career-development-page">
+    <Navbar />
+    <div class="toggle">
+      <div class="toggle-line">
+        <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
+        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
+        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-left' : 'pill-right'"></div>
+      </div>
+    </div>
+    <main class="container-xl py-4 px-4 px-md-5 goals-main">
+      <!-- Page header and main action, matching the SMART Goals page structure. -->
+      <section class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+          <h1 class="page-title mb-2">Career Development Plan</h1>
+          <p class="page-subtitle mb-0">Plan your pathway and connect your career direction with SMART goals.</p>
+        </div>
+        <button class="btn page-btn-primary px-4 py-2" @click="openCreatePlanForm">New Plan</button>
+      </section>
+
+      <!-- Create/edit form for plan details and linked SMART goals. -->
+      <div v-if="showPlanForm" class="goal-form-card mb-4">
+        <h3 class="form-title">{{ editingPlanId ? 'Edit Career Plan' : 'Create Career Plan' }}</h3>
+        <form @submit.prevent="savePlan">
+          <label>
+            Plan Year:
+            <input v-model.number="planForm.plan_year" type="number" min="1" required />
+          </label>
+
+          <label>
+            Professional Interests:
+            <textarea v-model="planForm.professional_interests" placeholder="Roles, industries, or fields you are interested in"></textarea>
+          </label>
+
+          <label>
+            Employers Of Interest:
+            <textarea v-model="planForm.employers_of_interest" placeholder="Separate employers with commas or new lines"></textarea>
+          </label>
+
+          <label>
+            Personal Values:
+            <textarea v-model="planForm.personal_values" placeholder="What matters most in your future workplace"></textarea>
+          </label>
+
+          <label>
+            Development Focus:
+            <textarea v-model="planForm.development_focus" placeholder="Skills, competencies, or career goals for this year"></textarea>
+          </label>
+
+          <label>
+            Extra-Curricular Activities:
+            <textarea v-model="planForm.extracurriculars" placeholder="Clubs, societies, part-time work, volunteering"></textarea>
+          </label>
+
+          <label>
+            Networking Plan:
+            <textarea v-model="planForm.networking_plan" placeholder="People, events, or communities you want to connect with"></textarea>
+          </label>
+
+          <div class="goal-link-field">
+            <span class="goal-link-label">Link SMART Goals:</span>
+            <div v-if="allGoals.length" class="goal-select-grid">
+              <button
+                v-for="goal in allGoals"
+                :key="goal.goal_id"
+                type="button"
+                class="goal-select-card"
+                :class="{ selected: isGoalSelected(goal.goal_id) }"
+                @click="toggleGoalSelection(goal.goal_id)"
+              >
+                <span class="goal-select-title">{{ goal.goal_description }}</span>
+                <span class="goal-select-meta">{{ getGoalStatus(goal) }}</span>
+                <span class="goal-select-check">{{ isGoalSelected(goal.goal_id) ? 'Selected' : 'Select' }}</span>
+              </button>
+            </div>
+            <p v-else class="form-hint mb-0">No SMART goals available to link yet.</p>
+            <span class="form-hint">Selected SMART goals are linked to this plan. The same goal can be linked to more than one plan.</span>
+          </div>
+
+          <p v-if="planFormError" class="form-error mb-0">{{ planFormError }}</p>
+
+          <div class="d-flex gap-2 pt-1 form-actions">
+            <button type="submit" class="btn page-btn-primary" :disabled="savingPlan">
+              {{ savingPlan ? 'Saving...' : editingPlanId ? 'Update Plan' : 'Create Plan' }}
+            </button>
+            <button type="button" class="btn page-btn-outline" @click="cancelPlanForm">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div v-if="loading" class="status-msg">Loading career development plan...</div>
+      <div v-else-if="errorMessage" class="status-msg error-msg">{{ errorMessage }}</div>
+      <div v-else-if="sortedPlans.length === 0" class="status-msg">No career development plan has been added yet.</div>
+
+      <div v-else>
+        <!-- Desktop table view mirrors the SMART Goals table layout. -->
+        <div class="table-scroll desktop-plan-table">
+          <table class="goals-table career-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Professional Interests</th>
+                <th>Employers</th>
+                <th>Personal Values</th>
+                <th>Development Focus</th>
+                <th>Extra-Curricular</th>
+                <th>Networking Plan</th>
+                <th>Linked SMART Goals</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="plan in sortedPlans" :key="plan.plan_id">
+                <td class="year-cell">Year {{ plan.plan_year }}</td>
+                <td class="text-preview-cell">
+                  <template v-if="!getPlanFieldRaw(plan, 'professional_interests')">Not added yet.</template>
+                  <div
+                    v-else-if="hasLongText(getPlanFieldRaw(plan, 'professional_interests'))"
+                    class="text-preview-stack"
+                  >
+                    <p class="text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'professional_interests')) }}</p>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('Professional Interests', getPlanFieldRaw(plan, 'professional_interests'))"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <span v-else>{{ getPlanFieldRaw(plan, 'professional_interests') }}</span>
+                </td>
+                <td>
+                  <template v-if="!splitList(plan.employers_of_interest).length">Not added yet.</template>
+                  <div v-else-if="hasLongText(employersJoined(plan))" class="text-preview-stack">
+                    <p class="text-preview">{{ getTextPreview(employersJoined(plan)) }}</p>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('Employers', employersModalBody(plan))"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <ul v-else class="compact-list">
+                    <li v-for="employer in splitList(plan.employers_of_interest)" :key="employer">{{ employer }}</li>
+                  </ul>
+                </td>
+                <td class="text-preview-cell">
+                  <template v-if="!getPlanFieldRaw(plan, 'personal_values')">Not added yet.</template>
+                  <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'personal_values'))" class="text-preview-stack">
+                    <p class="text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'personal_values')) }}</p>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('Personal Values', getPlanFieldRaw(plan, 'personal_values'))"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <span v-else>{{ getPlanFieldRaw(plan, 'personal_values') }}</span>
+                </td>
+                <td class="text-preview-cell">
+                  <template v-if="!getPlanFieldRaw(plan, 'development_focus')">Not added yet.</template>
+                  <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'development_focus'))" class="text-preview-stack">
+                    <p class="text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'development_focus')) }}</p>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('Development Focus', getPlanFieldRaw(plan, 'development_focus'))"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <span v-else>{{ getPlanFieldRaw(plan, 'development_focus') }}</span>
+                </td>
+                <td class="text-preview-cell">
+                  <template v-if="!getPlanFieldRaw(plan, 'extracurriculars')">Not added yet.</template>
+                  <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'extracurriculars'))" class="text-preview-stack">
+                    <p class="text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'extracurriculars')) }}</p>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('Extra-Curricular Activities', getPlanFieldRaw(plan, 'extracurriculars'))"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <span v-else>{{ getPlanFieldRaw(plan, 'extracurriculars') }}</span>
+                </td>
+                <td class="text-preview-cell">
+                  <template v-if="!getPlanFieldRaw(plan, 'networking_plan')">Not added yet.</template>
+                  <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'networking_plan'))" class="text-preview-stack">
+                    <p class="text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'networking_plan')) }}</p>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('Networking Plan', getPlanFieldRaw(plan, 'networking_plan'))"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <span v-else>{{ getPlanFieldRaw(plan, 'networking_plan') }}</span>
+                </td>
+                <td>
+                  <div v-if="getPlanGoals(plan).length" class="goal-stack">
+                    <article v-for="goal in getPlanGoals(plan)" :key="goal.goal_id" class="linked-goal">
+                      <div v-if="hasLongText(goal.goal_description || '')" class="text-preview-stack linked-goal-preview">
+                        <p class="text-preview">{{ getTextPreview(goal.goal_description || '') }}</p>
+                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
+                        <button
+                          type="button"
+                          class="btn btn-link view-more-btn p-0"
+                          @click="openTextModal('SMART Goal', goal.goal_description || '')"
+                        >
+                          View more
+                        </button>
+                      </div>
+                      <div v-else class="linked-goal-head">
+                        <span>{{ goal.goal_description }}</span>
+                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
+                      </div>
+                    </article>
+                  </div>
+                  <span v-else>No SMART goals linked yet.</span>
+                </td>
+                <td>
+                  <div class="actions-stack">
+                    <button
+                      type="button"
+                      class="action-icon-btn"
+                      aria-label="Edit career plan"
+                      title="Edit"
+                      @click="openEditPlanForm(plan)"
+                    >
+                      <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      class="action-icon-btn"
+                      aria-label="Delete career plan"
+                      title="Delete"
+                      @click="deletePlan(plan)"
+                    >
+                      <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile card view keeps the same data readable on narrow screens. -->
+        <div class="mobile-plan-list">
+          <article v-for="plan in sortedPlans" :key="`mobile-${plan.plan_id}`" class="mobile-plan-card">
+            <div class="mobile-plan-head">
+              <h2 class="mobile-plan-title">Year {{ plan.plan_year }}</h2>
+              <span class="mobile-status-badge">{{ getPlanGoals(plan).length }} SMART goals</span>
+            </div>
+
+            <section class="mobile-section">
+              <p class="mobile-label">Professional Interests</p>
+              <template v-if="!getPlanFieldRaw(plan, 'professional_interests')">
+                <p class="mobile-value">Not added yet.</p>
+              </template>
+              <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'professional_interests'))" class="text-preview-stack">
+                <p class="mobile-value text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'professional_interests')) }}</p>
+                <button
+                  type="button"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="openTextModal('Professional Interests', getPlanFieldRaw(plan, 'professional_interests'))"
+                >
+                  View more
+                </button>
+              </div>
+              <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'professional_interests') }}</p>
+            </section>
+
+            <section class="mobile-section">
+              <p class="mobile-label">Employers</p>
+              <template v-if="!splitList(plan.employers_of_interest).length">
+                <p class="mobile-value">Not added yet.</p>
+              </template>
+              <div v-else-if="hasLongText(employersJoined(plan))" class="text-preview-stack">
+                <p class="mobile-value text-preview">{{ getTextPreview(employersJoined(plan)) }}</p>
+                <button
+                  type="button"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="openTextModal('Employers', employersModalBody(plan))"
+                >
+                  View more
+                </button>
+              </div>
+              <ul v-else class="compact-list">
+                <li v-for="employer in splitList(plan.employers_of_interest)" :key="`mobile-employer-${employer}`">{{ employer }}</li>
+              </ul>
+            </section>
+
+            <div class="mobile-grid">
+              <section>
+                <p class="mobile-label">Personal Values</p>
+                <template v-if="!getPlanFieldRaw(plan, 'personal_values')">
+                  <p class="mobile-value">Not added yet.</p>
+                </template>
+                <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'personal_values'))" class="text-preview-stack">
+                  <p class="mobile-value text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'personal_values')) }}</p>
+                  <button
+                    type="button"
+                    class="btn btn-link view-more-btn p-0"
+                    @click="openTextModal('Personal Values', getPlanFieldRaw(plan, 'personal_values'))"
+                  >
+                    View more
+                  </button>
+                </div>
+                <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'personal_values') }}</p>
+              </section>
+              <section>
+                <p class="mobile-label">Development Focus</p>
+                <template v-if="!getPlanFieldRaw(plan, 'development_focus')">
+                  <p class="mobile-value">Not added yet.</p>
+                </template>
+                <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'development_focus'))" class="text-preview-stack">
+                  <p class="mobile-value text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'development_focus')) }}</p>
+                  <button
+                    type="button"
+                    class="btn btn-link view-more-btn p-0"
+                    @click="openTextModal('Development Focus', getPlanFieldRaw(plan, 'development_focus'))"
+                  >
+                    View more
+                  </button>
+                </div>
+                <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'development_focus') }}</p>
+              </section>
+            </div>
+
+            <section class="mobile-section">
+              <p class="mobile-label">Extra-Curricular Activities</p>
+              <template v-if="!getPlanFieldRaw(plan, 'extracurriculars')">
+                <p class="mobile-value">Not added yet.</p>
+              </template>
+              <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'extracurriculars'))" class="text-preview-stack">
+                <p class="mobile-value text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'extracurriculars')) }}</p>
+                <button
+                  type="button"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="openTextModal('Extra-Curricular Activities', getPlanFieldRaw(plan, 'extracurriculars'))"
+                >
+                  View more
+                </button>
+              </div>
+              <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'extracurriculars') }}</p>
+            </section>
+
+            <section class="mobile-section">
+              <p class="mobile-label">Networking Plan</p>
+              <template v-if="!getPlanFieldRaw(plan, 'networking_plan')">
+                <p class="mobile-value">Not added yet.</p>
+              </template>
+              <div v-else-if="hasLongText(getPlanFieldRaw(plan, 'networking_plan'))" class="text-preview-stack">
+                <p class="mobile-value text-preview">{{ getTextPreview(getPlanFieldRaw(plan, 'networking_plan')) }}</p>
+                <button
+                  type="button"
+                  class="btn btn-link view-more-btn p-0"
+                  @click="openTextModal('Networking Plan', getPlanFieldRaw(plan, 'networking_plan'))"
+                >
+                  View more
+                </button>
+              </div>
+              <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'networking_plan') }}</p>
+            </section>
+
+            <section class="mobile-section">
+              <p class="mobile-label">Linked SMART Goals</p>
+              <div v-if="getPlanGoals(plan).length" class="goal-stack">
+                <article v-for="goal in getPlanGoals(plan)" :key="`mobile-goal-${goal.goal_id}`" class="linked-goal">
+                  <div v-if="hasLongText(goal.goal_description || '')" class="text-preview-stack linked-goal-preview">
+                    <p class="mobile-value text-preview">{{ getTextPreview(goal.goal_description || '') }}</p>
+                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-link view-more-btn p-0"
+                      @click="openTextModal('SMART Goal', goal.goal_description || '')"
+                    >
+                      View more
+                    </button>
+                  </div>
+                  <div v-else class="linked-goal-head">
+                    <span>{{ goal.goal_description }}</span>
+                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
+                  </div>
+                </article>
+              </div>
+              <p v-else class="mobile-value">No SMART goals linked yet.</p>
+            </section>
+
+            <div class="mobile-actions">
+              <button class="btn page-btn-outline w-100" @click="openEditPlanForm(plan)">Edit</button>
+              <button class="btn page-btn-danger w-100" @click="deletePlan(plan)">Delete</button>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div v-if="showTextModal" class="modal-backdrop" @click.self="closeTextModal">
+        <div class="text-modal-card">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+              <h3 class="form-title mb-1">{{ textModalTitle }}</h3>
+            </div>
+            <button type="button" class="btn page-btn-outline" @click="closeTextModal">Close</button>
+          </div>
+          <div class="text-modal-body">{{ textModalContent }}</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+
+
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -53,14 +473,52 @@ const splitList = (value) => {
     .filter(Boolean)
 }
 
+const getPlanFieldRaw = (plan, field) => {
+  const v = plan[field]
+  if (v == null || v === '') {
+    return ''
+  }
+  return String(v).trim()
+}
+
 const getPlanField = (plan, field) => {
-  return plan[field] || 'Not added yet.'
+  const raw = getPlanFieldRaw(plan, field)
+  return raw || 'Not added yet.'
+}
+
+const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
+const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
+
+const showTextModal = ref(false)
+const textModalTitle = ref('')
+const textModalContent = ref('')
+const TEXT_PREVIEW_LIMIT = 90
+
+const normalizeDisplayText = (value) => String(value ?? '').trim()
+const hasLongText = (value) => normalizeDisplayText(value).length > TEXT_PREVIEW_LIMIT
+const getTextPreview = (value) => {
+  const text = normalizeDisplayText(value)
+  if (text.length <= TEXT_PREVIEW_LIMIT) {
+    return text || '-'
+  }
+  return `${text.slice(0, TEXT_PREVIEW_LIMIT).trimEnd()}...`
+}
+const openTextModal = (title, content) => {
+  textModalTitle.value = title
+  textModalContent.value = normalizeDisplayText(content)
+  showTextModal.value = true
+}
+const closeTextModal = () => {
+  showTextModal.value = false
+  textModalTitle.value = ''
+  textModalContent.value = ''
 }
 
 const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
-const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
 const getGoalStatus = (goal) => goal.status?.status || 'No status'
-const currTab = computed(() => route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS')
+const currTab = computed(() =>
+  route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
+)
 const goToGoals = () => {
   if (route.name !== 'GoalsPage') {
     router.push(`/goals/${route.params.id}`)
@@ -153,7 +611,7 @@ const fetchSmartGoals = async () => {
   }
 }
 
-// Save creates or updates the plan, then moves selected SMART goals into that plan.
+// Save creates or updates the plan, then syncs linked SMART goals for this plan only (goals may link to multiple plans).
 const savePlan = async () => {
   try {
     savingPlan.value = true
@@ -166,12 +624,10 @@ const savePlan = async () => {
 
     const savedPlan = response.data
 
-    if (selectedGoalIds.value.length > 0) {
-      await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
-        profile_id: Number(route.params.id),
-        goal_ids: selectedGoalIds.value
-      })
-    }
+    await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
+      profile_id: Number(route.params.id),
+      goal_ids: selectedGoalIds.value
+    })
 
     showPlanForm.value = false
     resetPlanForm()
@@ -212,240 +668,6 @@ onMounted(() => {
 })
 </script>
 
-<template>
-  <div class="goals-page career-development-page">
-    <Navbar />
-    <div class="toggle">
-      <div class="toggle-line">
-        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
-        <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
-        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-right' : 'pill-left'"></div>
-      </div>
-    </div>
-    <main class="container-xl py-4 px-4 px-md-5 goals-main">
-      <!-- Page header and main action, matching the SMART Goals page structure. -->
-      <section class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-        <div>
-          <h1 class="page-title mb-2">Career Development Plan</h1>
-          <p class="page-subtitle mb-0">Plan your pathway and connect your career direction with SMART goals.</p>
-        </div>
-        <button class="btn page-btn-primary px-4 py-2" @click="openCreatePlanForm">New Plan</button>
-      </section>
-
-      <!-- Create/edit form for plan details and linked SMART goals. -->
-      <div v-if="showPlanForm" class="goal-form-card mb-4">
-        <h3 class="form-title">{{ editingPlanId ? 'Edit Career Plan' : 'Create Career Plan' }}</h3>
-        <form @submit.prevent="savePlan">
-          <label>
-            Plan Year:
-            <input v-model.number="planForm.plan_year" type="number" min="1" required />
-          </label>
-
-          <label>
-            Professional Interests:
-            <textarea v-model="planForm.professional_interests" placeholder="Roles, industries, or fields you are interested in"></textarea>
-          </label>
-
-          <label>
-            Employers Of Interest:
-            <textarea v-model="planForm.employers_of_interest" placeholder="Separate employers with commas or new lines"></textarea>
-          </label>
-
-          <label>
-            Personal Values:
-            <textarea v-model="planForm.personal_values" placeholder="What matters most in your future workplace"></textarea>
-          </label>
-
-          <label>
-            Development Focus:
-            <textarea v-model="planForm.development_focus" placeholder="Skills, competencies, or career goals for this year"></textarea>
-          </label>
-
-          <label>
-            Extra-Curricular Activities:
-            <textarea v-model="planForm.extracurriculars" placeholder="Clubs, societies, part-time work, volunteering"></textarea>
-          </label>
-
-          <label>
-            Networking Plan:
-            <textarea v-model="planForm.networking_plan" placeholder="People, events, or communities you want to connect with"></textarea>
-          </label>
-
-          <div class="goal-link-field">
-            <span class="goal-link-label">Link SMART Goals:</span>
-            <div v-if="allGoals.length" class="goal-select-grid">
-              <button
-                v-for="goal in allGoals"
-                :key="goal.goal_id"
-                type="button"
-                class="goal-select-card"
-                :class="{ selected: isGoalSelected(goal.goal_id) }"
-                @click="toggleGoalSelection(goal.goal_id)"
-              >
-                <span class="goal-select-title">{{ goal.goal_description }}</span>
-                <span class="goal-select-meta">{{ getGoalStatus(goal) }}</span>
-                <span class="goal-select-check">{{ isGoalSelected(goal.goal_id) ? 'Selected' : 'Select' }}</span>
-              </button>
-            </div>
-            <p v-else class="form-hint mb-0">No SMART goals available to link yet.</p>
-            <span class="form-hint">Selected SMART goals will be moved to this career plan.</span>
-          </div>
-
-          <p v-if="planFormError" class="form-error mb-0">{{ planFormError }}</p>
-
-          <div class="d-flex gap-2 pt-1 form-actions">
-            <button type="submit" class="btn page-btn-primary" :disabled="savingPlan">
-              {{ savingPlan ? 'Saving...' : editingPlanId ? 'Update Plan' : 'Create Plan' }}
-            </button>
-            <button type="button" class="btn page-btn-outline" @click="cancelPlanForm">Cancel</button>
-          </div>
-        </form>
-      </div>
-
-      <div v-if="loading" class="status-msg">Loading career development plan...</div>
-      <div v-else-if="errorMessage" class="status-msg error-msg">{{ errorMessage }}</div>
-      <div v-else-if="sortedPlans.length === 0" class="status-msg">No career development plan has been added yet.</div>
-
-      <div v-else>
-        <!-- Desktop table view mirrors the SMART Goals table layout. -->
-        <div class="table-scroll desktop-plan-table">
-          <table class="goals-table career-table">
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>Professional Interests</th>
-                <th>Employers</th>
-                <th>Personal Values</th>
-                <th>Development Focus</th>
-                <th>Extra-Curricular</th>
-                <th>Networking Plan</th>
-                <th>Linked SMART Goals</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="plan in sortedPlans" :key="plan.plan_id">
-                <td class="year-cell">Year {{ plan.plan_year }}</td>
-                <td>{{ getPlanField(plan, 'professional_interests') }}</td>
-                <td>
-                  <ul v-if="splitList(plan.employers_of_interest).length" class="compact-list">
-                    <li v-for="employer in splitList(plan.employers_of_interest)" :key="employer">{{ employer }}</li>
-                  </ul>
-                  <span v-else>Not added yet.</span>
-                </td>
-                <td>{{ getPlanField(plan, 'personal_values') }}</td>
-                <td>{{ getPlanField(plan, 'development_focus') }}</td>
-                <td>{{ getPlanField(plan, 'extracurriculars') }}</td>
-                <td>{{ getPlanField(plan, 'networking_plan') }}</td>
-                <td>
-                  <div v-if="getPlanGoals(plan).length" class="goal-stack">
-                    <article v-for="goal in getPlanGoals(plan)" :key="goal.goal_id" class="linked-goal">
-                      <div class="linked-goal-head">
-                        <span>{{ goal.goal_description }}</span>
-                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                      </div>
-                      <ul v-if="getGoalSteps(goal).length" class="compact-list mt-2">
-                        <li v-for="step in getGoalSteps(goal)" :key="step.step_id">{{ step.step_description }}</li>
-                      </ul>
-                    </article>
-                  </div>
-                  <span v-else>No SMART goals linked yet.</span>
-                </td>
-                <td>
-                  <div class="actions-stack">
-                    <button
-                      type="button"
-                      class="action-icon-btn"
-                      aria-label="Edit career plan"
-                      title="Edit"
-                      @click="openEditPlanForm(plan)"
-                    >
-                      <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      class="action-icon-btn"
-                      aria-label="Delete career plan"
-                      title="Delete"
-                      @click="deletePlan(plan)"
-                    >
-                      <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Mobile card view keeps the same data readable on narrow screens. -->
-        <div class="mobile-plan-list">
-          <article v-for="plan in sortedPlans" :key="`mobile-${plan.plan_id}`" class="mobile-plan-card">
-            <div class="mobile-plan-head">
-              <h2 class="mobile-plan-title">Year {{ plan.plan_year }}</h2>
-              <span class="mobile-status-badge">{{ getPlanGoals(plan).length }} SMART goals</span>
-            </div>
-
-            <section class="mobile-section">
-              <p class="mobile-label">Professional Interests</p>
-              <p class="mobile-value">{{ getPlanField(plan, 'professional_interests') }}</p>
-            </section>
-
-            <section class="mobile-section">
-              <p class="mobile-label">Employers</p>
-              <ul v-if="splitList(plan.employers_of_interest).length" class="compact-list">
-                <li v-for="employer in splitList(plan.employers_of_interest)" :key="`mobile-employer-${employer}`">{{ employer }}</li>
-              </ul>
-              <p v-else class="mobile-value">Not added yet.</p>
-            </section>
-
-            <div class="mobile-grid">
-              <section>
-                <p class="mobile-label">Personal Values</p>
-                <p class="mobile-value">{{ getPlanField(plan, 'personal_values') }}</p>
-              </section>
-              <section>
-                <p class="mobile-label">Development Focus</p>
-                <p class="mobile-value">{{ getPlanField(plan, 'development_focus') }}</p>
-              </section>
-            </div>
-
-            <section class="mobile-section">
-              <p class="mobile-label">Extra-Curricular Activities</p>
-              <p class="mobile-value">{{ getPlanField(plan, 'extracurriculars') }}</p>
-            </section>
-
-            <section class="mobile-section">
-              <p class="mobile-label">Networking Plan</p>
-              <p class="mobile-value">{{ getPlanField(plan, 'networking_plan') }}</p>
-            </section>
-
-            <section class="mobile-section">
-              <p class="mobile-label">Linked SMART Goals</p>
-              <div v-if="getPlanGoals(plan).length" class="goal-stack">
-                <article v-for="goal in getPlanGoals(plan)" :key="`mobile-goal-${goal.goal_id}`" class="linked-goal">
-                  <div class="linked-goal-head">
-                    <span>{{ goal.goal_description }}</span>
-                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                  </div>
-                  <ul v-if="getGoalSteps(goal).length" class="compact-list mt-2">
-                    <li v-for="step in getGoalSteps(goal)" :key="`mobile-step-${step.step_id}`">{{ step.step_description }}</li>
-                  </ul>
-                </article>
-              </div>
-              <p v-else class="mobile-value">No SMART goals linked yet.</p>
-            </section>
-
-            <div class="mobile-actions">
-              <button class="btn page-btn-outline w-100" @click="openEditPlanForm(plan)">Edit</button>
-              <button class="btn page-btn-danger w-100" @click="deletePlan(plan)">Delete</button>
-            </div>
-          </article>
-        </div>
-      </div>
-    </main>
-  </div>
-</template>
 
 <style scoped>
 /* Shared page styling copied from the SMART Goals visual language. */
@@ -709,6 +931,74 @@ onMounted(() => {
   color: #b42318;
 }
 
+.view-more-btn {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.92rem;
+  color: #3f7ccf;
+  text-decoration: none;
+}
+
+.view-more-btn:hover {
+  color: #245ea8;
+  text-decoration: underline;
+}
+
+.text-preview-cell {
+  vertical-align: middle !important;
+}
+
+.text-preview-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.text-preview {
+  display: -webkit-box;
+  margin: 0;
+  max-width: min(18rem, 100%);
+  overflow: hidden;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+  text-align: center;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  z-index: 1050;
+}
+
+.text-modal-card {
+  width: min(100%, 42rem);
+  max-height: 82vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 1.4rem;
+  padding: 1.4rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.14);
+}
+
+.text-modal-body {
+  padding: 1rem;
+  border: 1px solid #e4e4e4;
+  border-radius: 1rem;
+  background: #fafafa;
+  color: #2b2b2b;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .table-scroll {
   width: 100%;
   overflow-x: auto;
@@ -762,6 +1052,34 @@ onMounted(() => {
 
 .goals-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Career plan table: headers and cell copy stay centered. */
+.career-development-page .career-table th,
+.career-development-page .career-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.career-development-page .career-table .compact-list {
+  list-style-position: inside;
+  padding-left: 0;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-block;
+  text-align: center;
+}
+
+.career-development-page .career-table .linked-goal-head {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.career-development-page .career-table .goal-stack {
+  justify-items: center;
 }
 
 /* Career plan table column widths. */
@@ -883,6 +1201,37 @@ onMounted(() => {
   display: none;
 }
 
+/* Mobile career cards: same centered copy as the desktop table. */
+.career-development-page .mobile-plan-card {
+  text-align: center;
+}
+
+.career-development-page .mobile-plan-head {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.career-development-page .mobile-section .compact-list {
+  list-style-position: inside;
+  padding-left: 0;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-block;
+  text-align: center;
+}
+
+.career-development-page .mobile-section .linked-goal-head {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.career-development-page .mobile-section .goal-stack {
+  justify-items: center;
+}
+
 /* Mobile-only card layout for career plans. */
 .mobile-plan-card {
   border: 1px solid #e3e3e3;
@@ -999,6 +1348,17 @@ onMounted(() => {
 
   .goal-select-grid {
     grid-template-columns: 1fr;
+  }
+
+  .modal-backdrop {
+    padding: 0.75rem;
+  }
+
+  .text-modal-card {
+    width: 100%;
+    max-height: 92vh;
+    padding: 1rem;
+    border-radius: 1rem;
   }
 }
 </style>

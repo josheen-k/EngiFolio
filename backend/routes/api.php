@@ -60,6 +60,7 @@ Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
 // Admin user management routes
 Route::get('/admin/users-overview', [AdminController::class, 'usersOverview']);
+Route::get('/admin/users-overview/export-pdf', [AdminController::class, 'exportUsersOverviewPdf']);
 Route::post('/admin/users', [AdminController::class, 'createUser']);
 Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
 

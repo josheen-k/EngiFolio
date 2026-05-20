@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentProfile;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,17 +13,38 @@ class AdminController extends Controller
 {
     public function usersOverview(Request $request)
     {
-        // Allow lightweight server-side search for the admin page table.
+        $data = $this->buildUsersOverview($request);
+
+        return response()->json($data);
+    }
+
+    public function exportUsersOverviewPdf(Request $request)
+    {
+        $data = $this->buildUsersOverview($request);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
+            'users' => $data['users'],
+            'stats' => $data['stats'],
+            'searchQuery' => $request->input('q'),
+            'generatedAt' => now()->format('Y-m-d H:i'),
+        ]);
+
+        return $pdf->download('user_management_export.pdf');
+    }
+
+    /**
+     * @return array{stats: array{totalUsers: int, totalGoals: int, totalCompletedGoals: int}, users: \Illuminate\Support\Collection<int, array<string, mixed>>}
+     */
+    private function buildUsersOverview(Request $request): array
+    {
         $validated = $request->validate([
             'q' => 'nullable|string|max:100',
         ]);
 
-        // Build one aggregated dataset so frontend can render table + stats in a single call.
         $query = User::query()
             ->leftJoin('roles as r', 'r.role_id', '=', 'users.role_id')
             ->leftJoin('student_profiles as sp', 'sp.user_id', '=', 'users.user_id')
-            ->leftJoin('career_development_plans as cdp', 'cdp.profile_id', '=', 'sp.profile_id')
-            ->leftJoin('smart_goals as sg', 'sg.plan_id', '=', 'cdp.plan_id')
+            ->leftJoin('smart_goals as sg', 'sg.profile_id', '=', 'sp.profile_id')
             ->select([
                 'users.user_id',
                 'users.username',
@@ -48,7 +69,7 @@ class AdminController extends Controller
                 'r.role_name',
             ]);
 
-        if (!empty($validated['q'])) {
+        if (! empty($validated['q'])) {
             $search = trim($validated['q']);
             // Search by common admin fields: name, email, or username.
             $query->where(function ($q) use ($search) {
@@ -88,14 +109,14 @@ class AdminController extends Controller
             ];
         })->values();
 
-        return response()->json([
+        return [
             'stats' => [
                 'totalUsers' => $users->count(),
                 'totalGoals' => (int) $users->sum('goals'),
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
             ],
             'users' => $users,
-        ]);
+        ];
     }
 
     public function createUser(Request $request)

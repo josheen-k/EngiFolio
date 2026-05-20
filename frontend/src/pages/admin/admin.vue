@@ -1,8 +1,192 @@
+<template>
+  <div class="admin-page">
+    <Navbar />
+
+    <main class="container-xl py-4 px-4 px-md-5 admin-main">
+      <section class="page-header mb-4">
+        <div>
+          <h1 class="page-title mb-2">Admin Console</h1>
+          <p class="page-subtitle mb-0">Manage users, monitor progress, and quickly identify students who need support.</p>
+        </div>
+      </section>
+
+      <!-- Summary cards: totals mirror backend aggregation over the current result set (same request as the table). -->
+      <section class="stats-grid mb-4">
+        <article class="stat-card">
+          <p class="stat-label">Total Users</p>
+          <p class="stat-value">{{ totalUsers }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Total Goals Logged</p>
+          <p class="stat-value">{{ totalGoals }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Completed Goals</p>
+          <p class="stat-value">{{ totalCompletedGoals }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Open Goals</p>
+          <!-- Derived on the client; backend exposes completed count via goal_status_id = 3. -->
+          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
+        </article>
+      </section>
+
+      <!-- POST /admin/users — server hashes password; role_id 3 also creates a student_profiles row for View/Edit. -->
+      <section class="panel-card mb-4">
+        <h2 class="panel-title mb-3">Create User</h2>
+        <form class="create-user-form" @submit.prevent="createUser">
+          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
+          <select v-model.number="newUser.role_id" class="filter-select" required>
+            <option :value="1">Admin</option>
+            <option :value="2">Staff</option>
+            <option :value="3">Student</option>
+          </select>
+          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
+          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
+          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
+          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
+          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
+          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
+            {{ creatingUser ? 'Creating...' : 'Create User' }}
+          </button>
+        </form>
+        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
+        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
+      </section>
+
+      <section class="panel-card mb-4">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <h2 class="panel-title mb-0">User Management</h2>
+            <div class="export-actions">
+              <button
+                type="button"
+                class="btn btn-csv"
+                :disabled="loading || users.length === 0"
+                @click="exportUsersCsv"
+              >
+                Export CSV
+              </button>
+              <button
+                type="button"
+                class="btn btn-pdf"
+                :disabled="loading || users.length === 0"
+                @click="exportUsersPdf"
+              >
+                Export PDF
+              </button>
+            </div>
+          </div>
+          <div class="filters-wrap">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="filter-input"
+              placeholder="Search by name, email, or ID"
+            />
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>ID</th>
+                <th>Goals</th>
+                <th>Completed</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loading">
+                <td colspan="7" class="empty-state">Loading users...</td>
+              </tr>
+              <tr v-else-if="loadError">
+                <td colspan="7" class="empty-state">{{ loadError }}</td>
+              </tr>
+              <tr v-for="user in filteredUsers" :key="user.id">
+                <td>
+                  <p class="user-name mb-0">{{ user.name }}</p>
+                  <p class="user-email mb-0">{{ user.email }}</p>
+                </td>
+                <td>{{ user.role }}</td>
+                <td>
+                  {{ user.username || '-' }}
+                </td>
+                <td>{{ user.goals }}</td>
+                <td>{{ user.completedGoals }}</td>
+                <td>{{ user.updatedAt }}</td>
+                <td class="actions-cell">
+                  <div class="actions-stack">
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : 'View profile'">
+                      <button
+                        type="button"
+                        class="action-icon-btn"
+                        aria-label="View profile"
+                        :disabled="!user.profile_id"
+                        @click="viewProfile(user)"
+                      >
+                        <img :src="profileIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                      </button>
+                    </span>
+                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : 'Career development plan'">
+                      <button
+                        type="button"
+                        class="action-icon-btn"
+                        aria-label="Career development plan"
+                        :disabled="!user.profile_id"
+                        @click="viewGoals(user)"
+                      >
+                        <img :src="goalsIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                      </button>
+                    </span>
+                    <button
+                      type="button"
+                      class="action-icon-btn"
+                      aria-label="Delete user"
+                      title="Delete"
+                      :disabled="deletingUserId === user.user_id"
+                      @click="deleteUser(user)"
+                    >
+                      <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="!loading && !loadError && filteredUsers.length === 0">
+                <td colspan="7" class="empty-state">No users match this filter.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- UI placeholders only — wire to routes or modals when those features exist.
+      <section class="panel-card quick-actions">
+        <h2 class="panel-title">Quick Actions</h2>
+        <div class="quick-action-grid">
+          <button type="button" class="btn page-btn-primary">Create Announcement</button>
+          <button type="button" class="btn page-btn-outline">Export Summary</button>
+          <button type="button" class="btn page-btn-outline">Send Reminder Emails</button>
+        </div>
+      </section>
+      -->
+    </main>
+  </div>
+</template>
+
+
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import api from '@/services/api'
+import profileIcon from '@/assets/default.jpg'
+import goalsIcon from '@/assets/edit.png'
+import deleteIcon from '@/assets/delete.png'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -16,7 +200,7 @@ const actionSuccess = ref('')
 
 const newUser = ref({
   // Role mapping in this project: 1 = Admin, 2 = Staff, 3 = Student.
-  // Defaulting to Student because that's the most common account type to create.
+  // Defaulting to Student
   role_id: 3,
   username: '',
   email: '',
@@ -25,6 +209,7 @@ const newUser = ref({
   password: ''
 })
 
+// Populated from the same /admin/users-overview response as the table (totals are sums over returned rows).
 const stats = ref({
   totalUsers: 0,
   totalGoals: 0,
@@ -45,6 +230,7 @@ const fetchUsersOverview = async () => {
     loading.value = true
     loadError.value = ''
 
+    // Optional `q` matches name, email, or username (ID) on the server.
     const params = {}
 
     const query = searchQuery.value.trim()
@@ -52,7 +238,10 @@ const fetchUsersOverview = async () => {
       params.q = query
     }
 
+    // Fetch the filtered user list and summary numbers from the admin API.
     const response = await api.get('/admin/users-overview', { params })
+
+    // Use empty defaults if the API omits either field.
     users.value = response.data.users || []
     stats.value = response.data.stats || {
       totalUsers: 0,
@@ -60,6 +249,7 @@ const fetchUsersOverview = async () => {
       totalCompletedGoals: 0
     }
   } catch (error) {
+    // Reset displayed data on failure so stale results are not shown.
     console.error('Failed to load admin users overview:', error)
     users.value = []
     stats.value = {
@@ -67,6 +257,7 @@ const fetchUsersOverview = async () => {
       totalGoals: 0,
       totalCompletedGoals: 0
     }
+    // Prefer the backend error message when available.
     loadError.value = error.response?.data?.message || 'Failed to load user management data'
   } finally {
     loading.value = false
@@ -75,6 +266,7 @@ const fetchUsersOverview = async () => {
 
 let searchDebounceTimer = null
 
+// Debounce search input so we do not refetch on every keystroke.
 watch(searchQuery, () => {
   if (searchDebounceTimer) {
     clearTimeout(searchDebounceTimer)
@@ -85,6 +277,7 @@ watch(searchQuery, () => {
 })
 
 onMounted(() => {
+  // Initial load; subsequent loads are triggered by the debounced search watcher.
   fetchUsersOverview()
 })
 
@@ -118,20 +311,122 @@ const createUser = async () => {
   }
 }
 
-const viewUser = (user) => {
+const viewProfile = (user) => {
   if (!user.profile_id) {
-    // Admin and staff users do not have student profile pages.
     return
   }
-  router.push(`/goals/${user.profile_id}`)
+  router.push(`/profile/${user.profile_id}`)
 }
 
-const editUser = (user) => {
+const viewGoals = (user) => {
   if (!user.profile_id) {
-    // Admin and staff users do not have student profile pages.
     return
   }
-  router.push(`/settings/profile/${user.profile_id}`)
+  router.push(`/student/career-development/${user.profile_id}`)
+}
+
+const escapeCsvCell = (value) => {
+  const text = String(value ?? '')
+  return `"${text.replace(/"/g, '""')}"`
+}
+
+const exportUsersCsv = () => {
+  if (users.value.length === 0) {
+    alert('No users to export.')
+    return
+  }
+
+  const lines = [
+    '"----- User Management -----"',
+    [
+      'Name',
+      'Email',
+      'Role',
+      'ID',
+      'Goals',
+      'Completed',
+      'Last Updated'
+    ]
+      .map(escapeCsvCell)
+      .join(',')
+  ]
+
+  users.value.forEach((user) => {
+    lines.push(
+      [
+        user.name,
+        user.email,
+        user.role,
+        user.username || '-',
+        user.goals,
+        user.completedGoals,
+        user.updatedAt || ''
+      ]
+        .map(escapeCsvCell)
+        .join(',')
+    )
+  })
+
+  lines.push('')
+  lines.push(
+    [
+      escapeCsvCell('Total Users'),
+      escapeCsvCell(stats.value.totalUsers),
+      escapeCsvCell('Total Goals'),
+      escapeCsvCell(stats.value.totalGoals),
+      escapeCsvCell('Completed Goals'),
+      escapeCsvCell(stats.value.totalCompletedGoals)
+    ].join(',')
+  )
+
+  const blob = new Blob(['\ufeff', lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', 'user_management_export.csv')
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+
+  alert('Downloading exported data')
+}
+
+const exportUsersPdf = async () => {
+  if (users.value.length === 0) {
+    alert('No users to export.')
+    return
+  }
+
+  try {
+    const params = {}
+    const query = searchQuery.value.trim()
+    if (query) {
+      params.q = query
+    }
+
+    const response = await api.get('/admin/users-overview/export-pdf', {
+      params,
+      responseType: 'blob',
+      headers: { Accept: 'application/pdf' }
+    })
+
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'user_management_export.pdf')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    alert('PDF downloaded successfully')
+  } catch (error) {
+    console.error('Failed to export user management PDF:', error)
+    alert('Error generating the PDF.')
+  }
 }
 
 const deleteUser = async (user) => {
@@ -157,151 +452,7 @@ const deleteUser = async (user) => {
 }
 </script>
 
-<template>
-  <div class="admin-page">
-    <Navbar />
 
-    <main class="container-xl py-4 px-4 px-md-5 admin-main">
-      <section class="page-header mb-4">
-        <div>
-          <h1 class="page-title mb-2">Admin Console</h1>
-          <p class="page-subtitle mb-0">Manage users, monitor progress, and quickly identify students who need support.</p>
-        </div>
-      </section>
-
-      <section class="stats-grid mb-4">
-        <article class="stat-card">
-          <p class="stat-label">Total Users</p>
-          <p class="stat-value">{{ totalUsers }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Total Goals Logged</p>
-          <p class="stat-value">{{ totalGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Completed Goals</p>
-          <p class="stat-value">{{ totalCompletedGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Open Goals</p>
-          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
-        </article>
-      </section>
-
-      <section class="panel-card mb-4">
-        <h2 class="panel-title mb-3">Create User</h2>
-        <form class="create-user-form" @submit.prevent="createUser">
-          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
-          <select v-model.number="newUser.role_id" class="filter-select" required>
-            <option :value="1">Admin</option>
-            <option :value="2">Staff</option>
-            <option :value="3">Student</option>
-          </select>
-          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="Username (max 9 chars)" maxlength="9" required />
-          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
-          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
-          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
-          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
-          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
-            {{ creatingUser ? 'Creating...' : 'Create User' }}
-          </button>
-        </form>
-        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
-        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
-      </section>
-
-      <section class="panel-card mb-4">
-        <div class="panel-head">
-          <h2 class="panel-title mb-0">User Management</h2>
-          <div class="filters-wrap">
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="filter-input"
-              placeholder="Search by name, email, or ID"
-            />
-          </div>
-        </div>
-
-        <div class="table-scroll">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>Username</th>
-                <th>Goals</th>
-                <th>Completed</th>
-                <th>Last Updated</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="7" class="empty-state">Loading users...</td>
-              </tr>
-              <tr v-else-if="loadError">
-                <td colspan="7" class="empty-state">{{ loadError }}</td>
-              </tr>
-              <tr v-for="user in filteredUsers" :key="user.id">
-                <td>
-                  <p class="user-name mb-0">{{ user.name }}</p>
-                  <p class="user-email mb-0">{{ user.email }}</p>
-                </td>
-                <td>{{ user.role }}</td>
-                <td>
-                  {{ user.username || '-' }}
-                </td>
-                <td>{{ user.goals }}</td>
-                <td>{{ user.completedGoals }}</td>
-                <td>{{ user.updatedAt }}</td>
-                <td>
-                  <div class="action-buttons">
-                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
-                      <button
-                        type="button"
-                        class="btn page-btn-outline"
-                        :disabled="!user.profile_id"
-                        @click="viewUser(user)"
-                      >
-                        View
-                      </button>
-                    </span>
-                    <span class="action-tooltip" :title="!user.profile_id ? 'Only student users have profile pages.' : ''">
-                      <button
-                        type="button"
-                        class="btn page-btn-primary"
-                        :disabled="!user.profile_id"
-                        @click="editUser(user)"
-                      >
-                        Edit
-                      </button>
-                    </span>
-                    <button type="button" class="btn page-btn-danger" :disabled="deletingUserId === user.user_id" @click="deleteUser(user)">
-                      {{ deletingUserId === user.user_id ? 'Deleting...' : 'Delete' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="!loading && !loadError && filteredUsers.length === 0">
-                <td colspan="7" class="empty-state">No users match this filter.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel-card quick-actions">
-        <h2 class="panel-title">Quick Actions</h2>
-        <div class="quick-action-grid">
-          <button type="button" class="btn page-btn-primary">Create Announcement</button>
-          <button type="button" class="btn page-btn-outline">Export Summary</button>
-          <button type="button" class="btn page-btn-outline">Send Reminder Emails</button>
-        </div>
-      </section>
-    </main>
-  </div>
-</template>
 
 <style scoped>
 .admin-page {
@@ -374,6 +525,13 @@ const deleteUser = async (user) => {
   margin-bottom: 0.85rem;
 }
 
+.panel-head-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
 .panel-title {
   margin: 0;
   font-family: 'Martel', serif;
@@ -384,7 +542,50 @@ const deleteUser = async (user) => {
 .filters-wrap {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.55rem;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-csv {
+  font-family: 'Montserrat Alternates', sans-serif;
+  border-radius: 1.5rem;
+  background: #bdbdbd;
+  border: none;
+  color: #2b2b2b;
+  padding: 0.45rem 1rem;
+  white-space: nowrap;
+}
+
+.btn-csv:hover:not(:disabled) {
+  background: #979797;
+}
+
+.btn-pdf {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.9rem;
+  color: #ffffff;
+  background: #555555;
+  border: none;
+  padding: 0.45rem 1rem;
+  white-space: nowrap;
+}
+
+.btn-pdf:hover:not(:disabled) {
+  color: #ffffff;
+  background: #222222;
+}
+
+.btn-csv:disabled,
+.btn-pdf:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .filter-input,
@@ -446,9 +647,54 @@ const deleteUser = async (user) => {
   font-size: 0.92rem;
 }
 
-.action-buttons {
+.actions-cell {
+  vertical-align: middle !important;
+}
+
+.actions-stack {
   display: flex;
-  gap: 0.45rem;
+  flex-direction: row;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.action-icon-image {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.action-icon-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.action-icon-btn:focus-visible {
+  outline: 2px solid #9db8e6;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.action-icon-btn:active:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.action-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .action-tooltip {
