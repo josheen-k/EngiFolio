@@ -97,25 +97,16 @@ class DatabaseSeeder extends Seeder
 
         DB::table('career_development_plans')->insert([
             ['plan_id' => 1, 'profile_id' => 1, 'plan_year' => 2026, 'professional_interests' => 'Solar power', 'created_at' => now(), 'updated_at' => now()],
-            ['plan_id' => 2, 'profile_id' => 1, 'plan_year' => 2025, 'professional_interests' => 'Wind power', 'created_at' => now(), 'updated_at' => now()],
-            ['plan_id' => 3, 'profile_id' => 2, 'plan_year' => 2026, 'professional_interests' => 'Bridge design', 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 2, 'profile_id' => 2, 'plan_year' => 2026, 'professional_interests' => 'Bridge design', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('smart_goals')->insert([
-            ['goal_id' => 3, 'plan_id' => 1, 'goal_description' => 'Achieve a Distinction in Engineering Modelling and Design', 'goal_status_id' => 1, 'start_date' => '2026-03-01', 'end_date' => '2026-06-20', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 4, 'plan_id' => 1, 'goal_description' => 'Complete 20 hours of volunteer work with Engineers Without Borders', 'goal_status_id' => 1, 'start_date' => '2026-03-15', 'end_date' => '2026-10-30', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 5, 'plan_id' => 1, 'goal_description' => 'Master Revit basics for structural drafting by end of semester', 'goal_status_id' => 2, 'start_date' => '2026-02-15', 'end_date' => '2026-07-01', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 6, 'plan_id' => 2, 'goal_description' => 'Attend three industry networking events to build contact list', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-11-30', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 7, 'plan_id' => 2, 'goal_description' => 'Complete a Python certification via Coursera for automation skills', 'goal_status_id' => 1, 'start_date' => '2026-06-01', 'end_date' => '2026-09-01', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 8, 'plan_id' => 2, 'goal_description' => 'Apply for the Undergraduate Research Opportunity Program (UROP)', 'goal_status_id' => 2, 'start_date' => '2026-04-01', 'end_date' => '2026-05-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 1, 'profile_id' => 1, 'goal_description' => 'Complete Statics Course', 'goal_status_id' => 2, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 2, 'profile_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('goal_feedback')->insert([
-            ['goal_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Make sure to schedule specific weekly study sessions for the modelling component.', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 5, 'staff_id' => 6, 'feedback_content' => 'Focus specifically on the structural analysis tools within Revit to align with your Statics course.', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 6, 'staff_id' => 5, 'feedback_content' => 'I recommend looking into the Engineers Australia South Australia branch events for relevant networking.', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 7, 'staff_id' => 4, 'feedback_content' => 'This is a great technical goal. Consider how you will demonstrate these skills in your portfolio.', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 8, 'staff_id' => 6, 'feedback_content' => 'Ensure your CV highlights your CAD experience from the Bridge Project for a better chance at UROP selection.', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('industry_contacts')->insert([
