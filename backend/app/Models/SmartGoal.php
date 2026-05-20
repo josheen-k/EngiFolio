@@ -10,9 +10,11 @@ class SmartGoal extends Model
     use HasFactory;
 
     protected $table = 'smart_goals';
+
     protected $primaryKey = 'goal_id';
+
     protected $fillable = [
-        'plan_id',
+        'profile_id',
         'goal_description',
         'timeline',
         'progress_notes',
@@ -26,9 +28,21 @@ class SmartGoal extends Model
         'goal_order',
     ];
 
-    public function plan()
+    public function profile()
     {
-        return $this->belongsTo(CareerDevelopmentPlan::class, 'plan_id', 'plan_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
+    }
+
+    public function plans()
+    {
+        return $this->belongsToMany(
+            CareerDevelopmentPlan::class,
+            'career_development_plan_smart_goal',
+            'goal_id',
+            'plan_id',
+            'goal_id',
+            'plan_id'
+        )->withTimestamps();
     }
 
     public function actionSteps()

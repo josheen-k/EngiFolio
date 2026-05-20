@@ -192,7 +192,7 @@ class DatabaseSeeder extends Seeder
             ['indicator_id' => 6, 'attainment_indicator' => 'Appreciates the social, environmental and economic principles of sustainable engineering practice.'],
             ['indicator_id' => 6, 'attainment_indicator' => 'Understands the fundamental principles of engineering project management as a basis for planning, organising and managing resources.'],
             ['indicator_id' => 6, 'attainment_indicator' => 'Appreciates the formal structures and methodologies of systems engineering as a holistic basis for managing complexity and sustainability in engineering practice.'],
-            
+
             // 2.1
             ['indicator_id' => 7, 'attainment_indicator' => 'Ensures that all aspects of an engineering activity are soundly based on fundamental principles - by diagnosing, and taking appropriate action with data, calculations, results, proposals, processes, practices, and documented information that may be ill-founded, illogical, erroneous, unreliable or unrealistic.'],
             ['indicator_id' => 7, 'attainment_indicator' => 'Competently addresses complex engineering problems which involve uncertainty, ambiguity, imprecise information and wide-ranging and sometimes conflicting technical and non-technical factors.'],
@@ -244,7 +244,7 @@ class DatabaseSeeder extends Seeder
             ['indicator_id' => 10, 'attainment_indicator' => 'Proficiently applies basic systems engineering and/or project management tools and processes to the planning and execution of project work, targeting the delivery of a significant outcome to a professional standard.'],
             ['indicator_id' => 10, 'attainment_indicator' => 'Is aware of the need to plan and quantify performance over the full life-cycle of a project, managing engineering performance within the overall implementation context.'],
             ['indicator_id' => 10, 'attainment_indicator' => 'Demonstrates commitment to sustainable engineering practices and the achievement of sustainable outcomes in all facets of engineering project work.'],
-            
+
             // 3.1
             ['indicator_id' => 11, 'attainment_indicator' => 'Demonstrates commitment to uphold the Engineers Australia Code of Ethics, and established norms of professional conduct pertinent to the engineering discipline.'],
             ['indicator_id' => 11, 'attainment_indicator' => 'Understands the need for due-diligence in certification, compliance and risk management processes.'],
@@ -459,13 +459,13 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
-                'profile_id' => 1, 
-                'title' => 'Sustainable Energy Innovation Prize', 
-                'body' => 'Awarded by Engineers Australia for the best undergraduate project on solar-thermal storage systems.', 
-                'file_path' => '/uploads/certs/innovation_prize.pdf', 
-                'issued_date' => '2026-03-15', 
-                'created_at' => now(), 
-                'updated_at' => now()
+                'profile_id' => 1,
+                'title' => 'Sustainable Energy Innovation Prize',
+                'body' => 'Awarded by Engineers Australia for the best undergraduate project on solar-thermal storage systems.',
+                'file_path' => '/uploads/certs/innovation_prize.pdf',
+                'issued_date' => '2026-03-15',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -474,7 +474,7 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/certs/scholarship_2024.pdf',
                 'issued_date' => '2024-02-01',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -483,7 +483,7 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/certs/team_project_award.pdf',
                 'issued_date' => '2025-06-05',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -492,52 +492,52 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/certs/volunteer_award.pdf',
                 'issued_date' => '2023-11-18',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
-                'profile_id' => 2, 
-                'title' => 'Civil Engineering Scholarship', 
-                'body' => 'Structural Engineering Industry Excellence Scholarship for high-performing female students.', 
-                'file_path' => '/uploads/certs/scholarship_kate.pdf', 
-                'issued_date' => '2026-02-01', 
-                'created_at' => now(), 
-                'updated_at' => now()
+                'profile_id' => 2,
+                'title' => 'Civil Engineering Scholarship',
+                'body' => 'Structural Engineering Industry Excellence Scholarship for high-performing female students.',
+                'file_path' => '/uploads/certs/scholarship_kate.pdf',
+                'issued_date' => '2026-02-01',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ]);
 
         DB::table('attainment_certs')->insert([
             [
-                'profile_id' => 1, 
-                'title' => 'Construction White Card', 
-                'body' => 'General Construction Induction (CPCCWHS1001) required for all industrial site visits.', 
-                'file_path' => '/uploads/attain/white_card_alex.pdf', 
-                'issued_date' => '2025-05-20', 
+                'profile_id' => 1,
+                'title' => 'Construction White Card',
+                'body' => 'General Construction Induction (CPCCWHS1001) required for all industrial site visits.',
+                'file_path' => '/uploads/attain/white_card_alex.pdf',
+                'issued_date' => '2025-05-20',
                 'expiry_date' => null,
-                'created_at' => now(), 
-                'updated_at' => now()
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'profile_id' => 1, 
-                'title' => 'First Aid + CPR', 
-                'body' => 'HLTAID011 Provide First Aid. Includes emergency response training for remote work sites.', 
-                'file_path' => '/uploads/attain/first_aid_alex.pdf', 
-                'issued_date' => '2026-01-10', 
-                'expiry_date' => '2029-01-10', 
-                'created_at' => now(), 
-                'updated_at' => now()
+                'profile_id' => 1,
+                'title' => 'First Aid + CPR',
+                'body' => 'HLTAID011 Provide First Aid. Includes emergency response training for remote work sites.',
+                'file_path' => '/uploads/attain/first_aid_alex.pdf',
+                'issued_date' => '2026-01-10',
+                'expiry_date' => '2029-01-10',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'profile_id' => 2, 
-                'title' => 'Working at Heights', 
-                'body' => 'Safety certification for structural site inspections and scaffolding access.', 
-                'file_path' => '/uploads/attain/heights_kate.pdf', 
-                'issued_date' => '2026-04-15', 
-                'expiry_date' => '2028-04-15', 
-                'created_at' => now(), 
-                'updated_at' => now()
+                'profile_id' => 2,
+                'title' => 'Working at Heights',
+                'body' => 'Safety certification for structural site inspections and scaffolding access.',
+                'file_path' => '/uploads/attain/heights_kate.pdf',
+                'issued_date' => '2026-04-15',
+                'expiry_date' => '2028-04-15',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ]);
-        
+
         DB::table('competency_feedback')->insert([
             ['entry_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Strong use of the pandas library. For your next iteration, try to modularise your functions to improve code reusability.', 'created_at' => now(), 'updated_at' => now()],
             ['entry_id' => 4, 'staff_id' => 5, 'feedback_content' => 'Great leadership initiative. It would be beneficial to see a short reflection on how you resolved specific technical disagreements within the team.', 'created_at' => now(), 'updated_at' => now()],

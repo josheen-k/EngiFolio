@@ -7,7 +7,7 @@
         <label class="pitch-label"> Elevator Pitch</label>
         <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
         <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Submit' }}</button>
+          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
         </div>
       </div>
       <div class="page-header">
@@ -353,28 +353,29 @@
 
                       <div v-else class="upload-zone">
                         <input
+                          :id="`comment-file-${event.event_id}`"
+                          class="upload-input"
                           type="file"
-                          :accept="getCommentDraft(event.event_id).comment_type === 'image'
-                            ? 'image/*'
-                            : 'video/*'"
-                          @change="handleCommentFileChange(event.event_id, $event.target.files)"
-                        />
-
-                        <p v-if="!getCommentDraft(event.event_id).file_name">
-                          {{
-                            getCommentDraft(event.event_id).comment_type === 'image'
-                              ? 'Upload an image file'
-                              : 'Upload a video file'
-                          }}
+                          :accept="getCommentDraft(event.event_id).comment_type === 'image' ? 'image/*' : 'video/*'"
+                          @change="handleCommentFileChange(event.event_id, $event)" />
+                          <label :for="`comment-file-${event.event_id}`" class="upload-card">
+                            <strong >Click to upload or drag & drop</strong>
+                            <span >{{ getCommentDraft(event.event_id).comment_type === 'image' ? 'PNG, JPG, JPEG, GIF' :'MP4, MOV' }}</span>
+                          </label>
+                        <p class="upload-note" v-if="!getCommentDraft(event.event_id).file_name">
+                          {{ getCommentDraft(event.event_id).comment_type == 'image' ? 'Upload and image file' : 'Upload a video file' }}
                         </p>
-
-                        <p v-else>{{ getCommentDraft(event.event_id).file_name }}</p>
+                        <p class="upload-file-name" v-else></p>
                       </div>
                     </div>
                   </div>
 
                   <div class="inline-actions">
-                    <button class="action-button small-button" @click="submitComment(event.event_id)">
+                    <button
+                      v-if="getCommentDraft(event.event_id).comment_type === 'link'"
+                      class="action-button small-button"
+                      @click="submitComment(event.event_id)"
+                    >
                       {{ editingCommentIds[event.event_id] ? 'Update' : 'Add' }}
                     </button>
                     <button
@@ -406,13 +407,10 @@
                       >
                         {{ comment.file_name || 'Open file' }}
                       </a>
-                      <span v-else>No file available.</span>
+                      <span v-else>No file available</span>
                     </div>
 
                     <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editComment(event.event_id, comment)">
-                        Edit
-                      </button>
                       <button
                         class="delete-button small-button"
                         @click="deleteComment(event.event_id, comment.id)"
@@ -450,6 +448,16 @@
           >
             {{ confirmDialog.confirmLabel }}
           </button>
+        </div>
+      </div>
+    </div>
+    <div v-if="showPitchDialog" class="confirm-overlay" @click.self="closePitchDialog">
+      <div class="confirm-widget">
+        <p class="confirm-title">{{ pitchDialog.title }}</p>
+        <p class="confirm-message">{{ pitchDialog.message }}</p>
+
+        <div class="confirm-actions">
+          <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}</button>
         </div>
       </div>
     </div>
@@ -505,6 +513,13 @@ const yearScrollContainer = ref(null)
 
 const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
+const showPitchDialog = ref(false);
+const pitchDialog = ref({
+  title: "",
+  message: "",
+  buttonLabel: "OK",
+});
+
 const contacts = ref([])
 let confirmResolver = null
 let syncingYearScroll = false
@@ -581,7 +596,7 @@ function createMonthGrid(baseDate) {
   const firstDayOfMonth = new Date(year, month, 1)
   const mondayFirstOffset = (firstDayOfMonth.getDay() + 6) % 7
   const gridStartDate = new Date(year, month, 1 - mondayFirstOffset)
-
+  //
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(gridStartDate)
     date.setDate(gridStartDate.getDate() + index)
@@ -672,13 +687,35 @@ const fetchElevatorPitch = async() => {
 }
 
 const saveElevatorPitch = async() => {
+  const trimmedPitch = elevatorPitch.value.trim();
+
+  if(!trimmedPitch) {
+    openPitchDialog('Elevator Pitch', "It's empty. Please enter something first.");
+    return;
+  }
   savingPitch.value = true
   try {
-    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,})
+    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
+
+    openPitchDialog("Saved", "Your elevator pitch has been saved.");
   } finally {
     savingPitch.value = false
   }
 }
+
+const openPitchDialog = (title,message) => {
+  pitchDialog.value = {
+    title,
+    message,
+    buttonLabel: "OK",
+  }
+  showPitchDialog.value = true
+}
+
+const closePitchDialog = () => {
+  showPitchDialog.value = false
+}
+
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
     const dateKey = normalizeEventDate(event.event_datetime)
@@ -1020,13 +1057,20 @@ function editComment(eventId, comment) {
   commentEditSnapshots.value[eventId] = {...draft}
 }
 
-function handleCommentFileChange(eventId, fileList) {
+async function handleCommentFileChange(eventId, event) {
   const draft = getCommentDraft(eventId)
-  const file = fileList?.[0] || null
+  const file = event.target.files?.[0] || null
 
   draft.file = file
   draft.file_name = file ? file.name : ''
 
+  if(!file) return
+
+  try {
+    await submitComment(eventId)
+  } finally {
+    event.target.value = ''
+  }
 }
 
 async function submitComment(eventId) {
@@ -1135,13 +1179,8 @@ function goToToday() {
 <style scoped>
 .networking-page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(29, 158, 207, 0.18), transparent 20rem),
-    linear-gradient(180deg, #f6f8fb 0%, #eef2f7 100%);
-  color: #1f2933;
-  padding: 1.5rem;
-  padding-bottom: 2rem;
-  font-family: 'Montserrat Alternates', sans-serif;
+  background: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
 }
 
 .networking-shell {
@@ -1179,7 +1218,7 @@ function goToToday() {
 .calendar-title,
 .modal-header h2,
 .event-detail-card h3 {
-  font-family: 'Martel', serif;
+  font-family: 'Maven Pro', sans-serif;
   margin: 0;
   color: #13202c;
 }
@@ -1301,7 +1340,7 @@ function goToToday() {
 .year-section-title {
   margin: 0 0 1rem;
   color: #13202c;
-  font-family: 'Martel', serif;
+  font-family: 'Maven Pro', sans-serif;
   font-size: clamp(2rem, 3vw, 2.6rem);
 }
 
@@ -1332,7 +1371,7 @@ function goToToday() {
   border: 0;
   background: transparent;
   color: #f05c48;
-  font-family: 'Martel', serif;
+  font-family: 'Maven Pro', sans-serif;
   font-size: 1.2rem;
   padding: 0;
   margin-bottom: 0.8rem;
@@ -1827,8 +1866,7 @@ function goToToday() {
   }
 
   .networking-page {
-    padding: 1rem;
-    padding-bottom: 2rem;
+    background: #ffffff;
   }
 }
 
@@ -1963,4 +2001,119 @@ function goToToday() {
   justify-content: flex-end;
   margin-top: 10px;
 }
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 17, 28, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1100;
+}
+
+.confirm-widget {
+  width: min(28rem, 100%);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d6e0ea;
+  border-radius: 1.15rem;
+  box-shadow: 0 1rem 2.5rem rgba(18, 30, 45, 0.18);
+  padding: 1.25rem;
+}
+
+.confirm-title {
+  margin: 0 0 0.45rem;
+  color: #13202c;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.comment-evidence-grid{
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  gap: 1.25rem 1.5rem;
+  align-items: start;
+}
+
+.comment-evidence-field{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comment-evidence-field select{
+  border: 1px solid #ccd8e2;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  font: inherit;
+  background: #ffffff;
+  color: #13202c;
+}
+
+.comment-evidence-input input[disabled] {
+  border: 1px solid #ccd8e2;
+  border-radius: 1.25rem;
+  padding: 1rem 1.2rem;
+  background: #fbfdff;
+  color: #7a8fa3;
+}
+
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upload-input {
+  display: none;
+}
+
+.upload-card {
+  min-height: 150px;
+  border: 3px dashed #d6d6d6;
+  border-radius: 1.4rem;
+  background: #ffffff;
+  color: #50606f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  text-align: center;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+
+.upload-card:hover {
+  transform: translateY(-1px);
+  background: #fafafa;
+  border-color: #c8c8c8;
+}
+
+.upload-card strong {
+  color: #4c555d;
+  font-size: 1.05rem;
+}
+
+.upload-card span {
+  color: #5f6a73;
+  font-size: 0.95rem;
+}
+
+.upload-note {
+  margin: 0;
+  color: #5a738a;
+  font-size: 0.95rem;
+}
+
+.upload-file-name {
+  margin: 0;
+  color: #13202c;
+  font-weight: 600;
+}
+
+
+
 </style>
