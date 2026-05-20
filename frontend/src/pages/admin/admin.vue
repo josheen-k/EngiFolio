@@ -107,7 +107,7 @@
               <tr v-else-if="loadError">
                 <td colspan="7" class="empty-state">{{ loadError }}</td>
               </tr>
-              <tr v-for="user in filteredUsers" :key="user.id">
+              <tr v-for="user in filteredUsers" :key="user.user_id">
                 <td>
                   <p class="user-name mb-0">{{ user.name }}</p>
                   <p class="user-email mb-0">{{ user.email }}</p>
