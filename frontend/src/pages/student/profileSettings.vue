@@ -89,7 +89,9 @@
       <button class="btn btn-filter" @click="cancel">Cancel</button>
       <button class="btn btn-ql" @click="saveChanges">Save Changes</button>
     </footer>
-
+    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+      {{ popUp.message }}
+    </div>
   </div>
 
   <div v-else class="container py-5 text-center loading">
@@ -108,16 +110,26 @@
   const profile = ref(null);
   const loading = ref(true);
   const linksToDelete = ref([]);
+  const errors = ref({})
+
+  // Set up a pop up notification instead of having an alert
+  const popUp = ref({ show: false, message: '', type: '' })
+
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, 3000)
+  }
+
+
 
   const loadProfile = async () => {
     // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
       profile.value = response.data.profile || response.data;
+      loading.value = false;
     } catch (error) {
       console.error("Error while fetching profile:", error);
-    } finally {
-      loading.value = false;
     }
   };
 
@@ -144,7 +156,7 @@ const saveChanges = async () => {
   try {
     // Saves the main profile
     await api.put(`/profile/${route.params.id}`, profile.value);
-
+    
     // Deletes the required links
     const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
 
@@ -168,17 +180,18 @@ const saveChanges = async () => {
     linksToDelete.value = [];
 
     await api.post(`/student-actions/new`, {action: "Updated profile", student_profile_id: route.params.id});
-    
+
     router.push({ name: 'profile', params: { id: route.params.id } });
   } catch (error) {
     console.error("Save failed:", error);
-    alert("There was an error saving your changes.");
+    showPopUp("There was an error saving your changes.", "error");
   }
 };
 
-  const cancel = () => {
-      router.push({ name: 'profile', params: { id: route.params.id } });
-  };
+// Redirect back to profile page without saving changes
+const cancel = () => {
+  router.push({ name: 'profile', params: { id: route.params.id } });
+};
 
 onMounted(() => {
   loadProfile();
@@ -314,6 +327,29 @@ onMounted(() => {
 
 .loading {
   min-height: calc(100vh);
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
