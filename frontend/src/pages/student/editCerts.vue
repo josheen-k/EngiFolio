@@ -170,7 +170,6 @@
 		profile.value.attainment_certs.splice(index, 1);
 	};
 
-
 const saveChanges = async () => {
   try {
     // 1. Deletions (Handles both types of certs)

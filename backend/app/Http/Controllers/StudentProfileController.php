@@ -44,10 +44,14 @@ class StudentProfileController extends Controller
      */
     public function show($id)
     {
-        // Fails if no profile is found
-        $studentProfile = StudentProfile::with('links', 'user', 'achievementCerts', 'attainmentCerts')->findOrFail($id);
+        $studentProfile = StudentProfile::with([
+            'links', 
+            'user', 
+            'achievementCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}, 
+            'attainmentCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}
+        ])->findOrFail($id);
 
-        return response()->json($studentProfile);
+    return response()->json($studentProfile);
     }
 
 
