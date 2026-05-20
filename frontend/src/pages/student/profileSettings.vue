@@ -12,7 +12,7 @@
 
         <div class="flex-grow-1">
           <label class="field-label">Profile Image URL</label>
-          <input v-model.lazy="profile.profile_image_url" class="field-input form-control"
+          <input v-model.lazy="profile.profile_image_url" maxlength="255" class="field-input form-control"
             placeholder="Link to your profile picture"/>
         </div>
       </div>
@@ -24,24 +24,24 @@
       <div class="row g-3">
         <div class="col-12 col-sm-4">
           <label class="field-label">First name</label>
-          <input v-model="profile.user.first_name" class="field-input form-control" placeholder="First name"/>
+          <input v-model="profile.user.first_name" maxlength="50" class="field-input form-control" placeholder="First name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Last name</label>
-          <input v-model="profile.user.last_name" class="field-input form-control" placeholder="Last name"/>
+          <input v-model="profile.user.last_name" maxlength="50" class="field-input form-control" placeholder="Last name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Preferred name</label>
-          <input v-model="profile.preferred_name" class="field-input form-control" placeholder="Preferred name"/>
+          <input v-model="profile.preferred_name" maxlength="50" class="field-input form-control" placeholder="Preferred name"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Degree undertaking</label>
-          <input v-model="profile.degree_title" class="field-input form-control"
+          <input v-model="profile.degree_title" maxlength="40" class="field-input form-control"
             placeholder="eg: Bachelor of Engineering"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Specialisation chosen</label>
-          <input v-model="profile.specialisation" class="field-input form-control" placeholder="eg: Electrical"/>
+          <input v-model="profile.specialisation" maxlength="60"  class="field-input form-control" placeholder="eg: Electrical"/>
         </div>
       </div>
     </section>
@@ -50,7 +50,7 @@
     <section class="edit-card mb-4">
       <h3 class="card-title mb-4">Personal Introduction</h3>
       <label class="field-label">About you</label>
-      <textarea v-model="profile.personal_intro" class="field-input form-control" rows="5"
+      <textarea v-model="profile.personal_intro" maxlength="500" class="field-input form-control" rows="5"
         placeholder="Write a short introduction about yourself…"></textarea>
     </section>
 
@@ -110,7 +110,6 @@
   const profile = ref(null);
   const loading = ref(true);
   const linksToDelete = ref([]);
-  const errors = ref({})
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -134,33 +133,51 @@
   };
 
   // Adds an empty link to the frontend profile data when add link is clicked
+  // Restricted to 8 links
   const addLink = () => {
-    profile.value.links.push({
-      link_label: '',
-      link_url: '',
-      profile_id: route.params.id
-    });
+    if (profile.value.links.length - linksToDelete.value.length < 8) {
+      profile.value.links.push({
+        link_label: '',
+        link_url: '',
+        profile_id: route.params.id
+      });
+    } else {
+      showPopUp("You have too many links. Edit or delete some of your existing.", "error");
+    }
   };
 
 const removeLink = (index) => {
   const link = profile.value.links[index];
     if (link.link_id) {
       linksToDelete.value.push(link.link_id);
-    }
-    
+    }  
     profile.value.links.splice(index, 1);
   };
 
+// Attempt to make a URL object to test if link is correct
+function isValidUrl(url) {
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
 
 const saveChanges = async () => {
   try {
+    if (!profile.value.user.last_name) {
+      showPopUp("Cannot save profile. Last name cannot be blank", "error");
+      return;
+    }
+
     // Saves the main profile
     await api.put(`/profile/${route.params.id}`, profile.value);
     
     // Deletes the required links
     const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
 
-    // 3. Handle Updates and Creations
+    // Handle Updates and Creations
     const upsertPromises = profile.value.links.map(link => {
       // Ignore empty rows
       if (!link.link_url || link.link_url.trim() === '') return null;
