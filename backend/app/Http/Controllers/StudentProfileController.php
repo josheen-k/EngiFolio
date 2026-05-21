@@ -47,8 +47,8 @@ class StudentProfileController extends Controller
         $studentProfile = StudentProfile::with([
             'links', 
             'user', 
-            'achievementCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}, 
-            'attainmentCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}
+            'achievementCerts' => function ($query) {$query->orderBy('sort_order', 'asc');}, 
+            'attainmentCerts' => function ($query) {$query->orderBy('sort_order', 'asc');}
         ])->findOrFail($id);
 
     return response()->json($studentProfile);
