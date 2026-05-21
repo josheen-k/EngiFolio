@@ -12,7 +12,7 @@
 
         <div class="flex-grow-1">
           <label class="field-label">Profile Image URL</label>
-          <input v-model.lazy="profile.profile_image_url" maxlength="255" class="field-input form-control"
+          <input v-model.trim.lazy="profile.profile_image_url" maxlength="255" class="field-input form-control"
             placeholder="Link to your profile picture"/>
         </div>
       </div>
@@ -24,24 +24,24 @@
       <div class="row g-3">
         <div class="col-12 col-sm-4">
           <label class="field-label">First name</label>
-          <input v-model="profile.user.first_name" maxlength="50" class="field-input form-control" placeholder="First name"/>
+          <input v-model.trim="profile.user.first_name" maxlength="50" class="field-input form-control" placeholder="First name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Last name</label>
-          <input v-model="profile.user.last_name" maxlength="50" class="field-input form-control" placeholder="Last name"/>
+          <input v-model.trim="profile.user.last_name" maxlength="50" class="field-input form-control" placeholder="Last name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Preferred name</label>
-          <input v-model="profile.preferred_name" maxlength="50" class="field-input form-control" placeholder="Preferred name"/>
+          <input v-model.trim="profile.preferred_name" maxlength="50" class="field-input form-control" placeholder="Preferred name"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Degree undertaking</label>
-          <input v-model="profile.degree_title" maxlength="40" class="field-input form-control"
+          <input v-model.trim="profile.degree_title" maxlength="40" class="field-input form-control"
             placeholder="eg: Bachelor of Engineering"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Specialisation chosen</label>
-          <input v-model="profile.specialisation" maxlength="60"  class="field-input form-control" placeholder="eg: Electrical"/>
+          <input v-model.trim="profile.specialisation" maxlength="60"  class="field-input form-control" placeholder="eg: Electrical"/>
         </div>
       </div>
     </section>
@@ -50,7 +50,7 @@
     <section class="edit-card mb-4">
       <h3 class="card-title mb-4">Personal Introduction</h3>
       <label class="field-label">About you</label>
-      <textarea v-model="profile.personal_intro" maxlength="500" class="field-input form-control" rows="5"
+      <textarea v-model.trim="profile.personal_intro" maxlength="500" class="field-input form-control" rows="5"
         placeholder="Write a short introduction about yourself…"></textarea>
     </section>
 
@@ -66,11 +66,11 @@
           <div class="row g-2 align-items-end">
             <div class="col-12 col-sm-4">
               <label class="field-label">Label</label>
-              <input v-model="link.link_label" class="field-input form-control" placeholder="e.g. LinkedIn"/>
+              <input v-model.trim="link.link_label" class="field-input form-control" placeholder="e.g. LinkedIn"/>
             </div>
             <div class="col-12 col-sm-6">
               <label class="field-label">URL</label>
-              <input v-model="link.link_url" class="field-input form-control" placeholder="https://example.com"/>
+              <input v-model.trim="link.link_url" class="field-input form-control" placeholder="https://example.com"/>
             </div>
             <div class="col-12 col-sm-2 d-flex align-items-end">
               <button class="remove-btn" @click="removeLink(index)" title="Remove link">
@@ -166,9 +166,22 @@ function isValidUrl(url) {
 
 const saveChanges = async () => {
   try {
-    if (!profile.value.user.last_name) {
-      showPopUp("Cannot save profile. Last name cannot be blank", "error");
+    // Check if last name is empty
+    if (!profile.value.user.last_name || profile.value.user.last_name.trim() === '') {
+      showPopUp("Cannot save profile. Last name cannot be blank.", "error");
       return;
+    }
+
+    // Loop through each link
+    for (const link of profile.value.links) {
+      if (!link.link_label) {
+        showPopUp("Cannot save profile. Link titles cannot be blank.", "error");
+        return;
+      }
+      if (! isValidUrl(link.link_url)) {
+        showPopUp("Cannot save profile. Link URL is not valid.", "error");
+        return;
+      }
     }
 
     // Saves the main profile
