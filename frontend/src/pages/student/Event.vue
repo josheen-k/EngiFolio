@@ -363,7 +363,7 @@
                             <span >{{ getCommentDraft(event.event_id).comment_type === 'image' ? 'PNG, JPG, JPEG, GIF' :'MP4, MOV' }}</span>
                           </label>
                         <p class="upload-note" v-if="!getCommentDraft(event.event_id).file_name">
-                          {{ getCommentDraft(event.event_id).comment_type == 'image' ? 'Upload and image file' : 'Upload a video file' }}
+                          {{ getCommentDraft(event.event_id).comment_type == 'image' ? 'Upload an image file' : 'Upload a video file' }}
                         </p>
                         <p class="upload-file-name" v-else></p>
                       </div>
