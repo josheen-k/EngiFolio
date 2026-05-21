@@ -192,7 +192,7 @@ const deleteContact = async (id) => {
 
 <style scoped>
 .page {
-  font-family: 'Martel', sans-serif;
+  font-family: 'Maven Pro', sans-serif;
   background: #fff;
   min-height: 100vh;
 }

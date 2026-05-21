@@ -1340,7 +1340,7 @@ function goToToday() {
 .year-section-title {
   margin: 0 0 1rem;
   color: #13202c;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Martel', sans-serif;
   font-size: clamp(2rem, 3vw, 2.6rem);
 }
 
@@ -1371,7 +1371,7 @@ function goToToday() {
   border: 0;
   background: transparent;
   color: #f05c48;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Martel', sans-serif;
   font-size: 1.2rem;
   padding: 0;
   margin-bottom: 0.8rem;
