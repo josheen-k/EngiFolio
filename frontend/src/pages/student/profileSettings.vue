@@ -175,11 +175,11 @@ const saveChanges = async () => {
     // Loop through each link
     for (const link of profile.value.links) {
       if (!link.link_label) {
-        showPopUp("Cannot save profile. Link titles cannot be blank.", "error");
+        showPopUp("Could not save profile. Link titles cannot be blank.", "error");
         return;
       }
       if (! isValidUrl(link.link_url)) {
-        showPopUp("Cannot save profile. Link URL is not valid.", "error");
+        showPopUp("Could not save profile. Link URL is not valid.", "error");
         return;
       }
     }

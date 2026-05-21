@@ -14,7 +14,7 @@
           <!-- header-->
           <div class="d-flex align-items-center gap-2 mb-3">
             <img src="@/assets/cert.png" class="cert-icon" alt="certificate" />
-            <span class="cert-type-label">Certificate of Achievement</span>
+            <span class="cert-type-label">{{ cert.title || 'New Certificate' }}</span>
             <button class="remove-btn ms-auto" @click="removeAchCert(index)">
               <img src="@/assets/delete.png" class="del-icon" alt="remove" />
             </button>
@@ -24,7 +24,7 @@
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
-              <input v-model.trim="cert.title" class="field-input form-control" placeholder="eg: Dean's Award" />
+              <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" placeholder="eg: Dean's Award" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
@@ -33,7 +33,7 @@
             </div>
             <div class="col-12">
               <label class="field-label">File path / URL</label>
-              <input v-model.trim="cert.file_path" class="field-input form-control"
+              <input v-model.trim="cert.file_path" maxlength="255" class="field-input form-control"
                 placeholder="https://example.com/cert.pdf" />
             </div>
             <div class="col-12 col-md-4">
@@ -68,7 +68,7 @@
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
-              <input v-model.trim="cert.title" class="field-input form-control" placeholder="e.g. Certified Engineer" />
+              <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" placeholder="e.g. Certified Engineer" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
@@ -77,7 +77,7 @@
             </div>
             <div class="col-12">
               <label class="field-label">File path / URL</label>
-              <input v-model.trim="cert.file_path" class="field-input form-control"
+              <input v-model.trim="cert.file_path" maxlength="255" class="field-input form-control"
                 placeholder="https://example.com/cert.pdf" />
             </div>
             <div class="col-12 col-md-4">
@@ -106,10 +106,13 @@
   <div v-else class="container py-5 text-center loading">
     <p class="text-muted small">Loading settings...</p>
   </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, popScopeId } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
@@ -121,15 +124,22 @@
   const achievementCertsToDelete = ref([]);
   const attainmentCertsToDelete = ref([]);
 
+  // Set up a pop up notification instead of having an alert
+  const popUp = ref({ show: false, message: '', type: '' })
+
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, 3000)
+  }
+
   const loadProfile = async () => {
     // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
       profile.value = response.data.profile || response.data;
-    } catch (error) {
-      console.error("Error while fetching profile:", error);
-    } finally {
       loading.value = false;
+    } catch (error) {
+      showPopUp("Error while fetching profile:", "error");
     }
   };
 
@@ -138,6 +148,7 @@
 		profile.value.achievement_certs.unshift({
 			title: '',
 			body: '',
+      file_path: '',
 			issued_date: '',
 			profile_id: route.params.id
 		});
@@ -147,6 +158,7 @@
 		profile.value.attainment_certs.unshift({
 			title: '',
 			body: '',
+      file_path: '',
 			issued_date: '',
 			expiry_date: '',
 			profile_id: route.params.id
@@ -170,13 +182,47 @@
 		profile.value.attainment_certs.splice(index, 1);
 	};
 
+  // Attempt to make a URL object to test if link is correct
+  function isValidUrl(url) {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
 const saveChanges = async () => {
   try {
-    // 1. Deletions (Handles both types of certs)
+    // Loop through each cert and check for errors
+    for (const cert of profile.value.achievement_certs) {
+      if (!cert.title) {
+        showPopUp("Could not save certificates. Achievement certificates must have a title.", "error");
+        return;
+      }
+      if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
+        showPopUp("Could not save certificates. Achievement certificate URL must be valid.", "error");
+        return;
+      }
+    }
+
+    for (const cert of profile.value.attainment_certs) {
+      if (!cert.title) {
+        showPopUp("Could not save certificates. Attainment certificates must have a title.", "error");
+        return;
+      }
+      if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
+        showPopUp("Could not save certificates. Achievement certificate URL must be valid.", "error");
+        return;
+      }
+    }
+
+
+    // Deletions (Handles both types of certs)
     const deleteAchPromises = achievementCertsToDelete.value.map(id => api.delete(`/achievement-cert/${id}`));
     const deleteAttPromises = attainmentCertsToDelete.value.map(id => api.delete(`/attainment-cert/${id}`));
 
-    // 2. Handle Achievement Upserts
+    // Handle Achievement Upserts
     const achUpsertPromises = profile.value.achievement_certs.map(cert => {
       if (!cert.title || cert.title.trim() === '') return null; // Ignore empty rows
 
@@ -188,7 +234,7 @@ const saveChanges = async () => {
       }
     }).filter(p => p !== null);
 
-    // 3. Handle Attainment Upserts
+    // Handle Attainment Upserts
     const attUpsertPromises = profile.value.attainment_certs.map(cert => {
       if (!cert.title || cert.title.trim() === '') return null;
 
@@ -199,7 +245,7 @@ const saveChanges = async () => {
       }
     }).filter(p => p !== null);
 
-    // 4. Execute all API calls concurrently
+    // Execute all API calls concurrently
     await Promise.all([
         ...deleteAchPromises, 
         ...deleteAttPromises, 
@@ -214,8 +260,7 @@ const saveChanges = async () => {
     // Redirect back to the view page
     router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
   } catch (error) {
-    console.error("Save failed:", error);
-    alert("There was an error saving your certifications.");
+    showPopUp("There was an error saving your certifications.", "error");
   }
 };
 
@@ -340,6 +385,30 @@ onMounted(() => {
   .loading {
     min-height: calc(100vh);
   }
+
+  .popUp-msg {
+    position: fixed;
+    top: 5rem;   
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: max-content;
+    padding: 0.75rem 2rem;
+    border-radius: 2rem; 
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1.15rem;
+  }
+
+  .popUp-msg.success {
+    background: #5d5d5d;
+    color: #fff;
+  }
+
+  .popUp-msg.error {
+    background: #db7979;
+    color: #fff;
+  }
+
   
   @media (min-width: 820px) {
       .container-lg {
