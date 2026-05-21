@@ -12,16 +12,19 @@
         <div class="cert-row" v-for="(cert, index) in profile.achievement_certs" :key="index">
 
           <!-- header-->
-          <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="d-flex align-items-center gap-2 header" @click="toggleAchCert(index)">
             <img src="@/assets/cert.png" class="cert-icon" alt="certificate" />
             <span class="cert-type-label">{{ cert.title || 'New Certificate' }}</span>
-            <button class="remove-btn ms-auto" @click="removeAchCert(index)">
+            <button class="remove-btn ms-auto" @click.stop="toggleAchCert(index)">
+              <img src="@/assets/triangle.png" class="triangle" :class="{ open: expandedAchCerts === index }" alt="toggle"/>
+            </button>
+            <button class="remove-btn" @click.stop="removeAchCert(index)">
               <img src="@/assets/delete.png" class="del-icon" alt="remove" />
             </button>
           </div>
-
-          <!--form-->
-          <div class="row g-3">
+          
+          <!--drop down-->
+          <div v-if="expandedAchCerts === index" class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
               <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" placeholder="eg: Dean's Award" />
@@ -57,15 +60,20 @@
       <div v-if="profile.attainment_certs.length" class="d-flex flex-column gap-3">
         <div class="cert-row" v-for="(cert, index) in profile.attainment_certs" :key="index">
 
-          <div class="d-flex align-items-center gap-2 mb-3">
+          <!-- header-->
+          <div class="d-flex align-items-center gap-2 header" @click="toggleAttCert(index)">
             <img src="@/assets/cert.png" class="cert-icon" alt="certificate" />
-            <span class="cert-type-label">Certificate of Attainment</span>
-            <button class="remove-btn ms-auto" @click="removeAttCert(index)">
+            <span class="cert-type-label">{{ cert.title || 'New Certificate' }}</span>
+            <button class="remove-btn ms-auto" @click.stop="toggleAttCert(index)">
+              <img src="@/assets/triangle.png" class="triangle" :class="{ open: expandedAttCerts === index }" alt="toggle"/>
+            </button>
+            <button class="remove-btn" @click.stop="removeAttCert(index)">
               <img src="@/assets/delete.png" class="del-icon" alt="remove" />
             </button>
           </div>
 
-          <div class="row g-3">
+          <!--drop down-->
+          <div v-if="expandedAttCerts === index"  class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
               <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" placeholder="e.g. Certified Engineer" />
@@ -123,6 +131,8 @@
   const loading = ref(true);
   const achievementCertsToDelete = ref([]);
   const attainmentCertsToDelete = ref([]);
+  const expandedAchCerts = ref();
+  const expandedAttCerts = ref();
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -143,6 +153,24 @@
     }
   };
 
+  // Used for drop down for the achievement certificates
+  const toggleAttCert = (index) => {
+      if (expandedAttCerts.value === index) {
+        expandedAttCerts.value = -1;
+      } else {
+        expandedAttCerts.value = index;
+      }  
+    }
+
+    // Used for drop down for the attainment certificates
+    const toggleAchCert = (index) => {
+    if (expandedAchCerts.value === index) {
+      expandedAchCerts.value = -1;
+    } else {
+      expandedAchCerts.value = index;
+    }  
+  }
+
   // Adds an empty cert to the frontend profile data when add cert is clicked
   const addAchCert = () => {
 		profile.value.achievement_certs.unshift({
@@ -152,6 +180,7 @@
 			issued_date: '',
 			profile_id: route.params.id
 		});
+    expandedAchCerts.value = 0;
 	};
 
 	const addAttCert = () => {
@@ -163,6 +192,7 @@
 			expiry_date: '',
 			profile_id: route.params.id
 		});
+    expandedAttCerts.value = 0;
 	};
 
 	const removeAchCert = (index) => {
@@ -409,6 +439,22 @@ onMounted(() => {
     color: #fff;
   }
 
+  .triangle {
+    width: 0.8rem;
+    height: 0.8rem;
+    transition: transform 0.2s ease;
+  }
+
+  .triangle.open {
+    transform: rotate(90deg);
+  }
+
+  /* Give the header a negative margin so can click the whole header to extend the cert */
+  .header {
+    cursor: pointer; 
+    margin: -1.5rem -1.75rem; 
+    padding: 1.5rem 1.75rem;
+  }
   
   @media (min-width: 820px) {
       .container-lg {
