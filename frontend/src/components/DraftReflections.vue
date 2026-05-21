@@ -248,7 +248,6 @@ const confirmDelete = async () => {
     emit('refresh') 
 
   } catch (error) {
-    console.error(error)
     alert("Error when deleting the draft: ", error)
   }
 }

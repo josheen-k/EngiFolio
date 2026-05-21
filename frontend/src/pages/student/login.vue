@@ -18,7 +18,8 @@
     <main class="login-content">
       <div class="login-card shadow-lg">
         <header class="text-center mb-4">
-          <h1 class="fw-bold login-title">EngiFolio Login</h1>
+          <h1 class="fw-bold login-title mb-3">EngiFolio Login</h1>
+		  <p class="text-muted small">Sign in to your portfolio</p>
         </header>
 
         <section>
@@ -35,9 +36,13 @@
 
         <footer class="login-footer border-top pt-4 text-center">
           <p class="small text-muted mb-2">Hardcoded Links:</p>
-          <div class="d-flex justify-content-center gap-2">
+          <div class="d-flex justify-content-center gap-2 mb-2">
             <router-link to="/student/dashboard/1" class="btn btn-outline-secondary btn-sm rounded-pill">Student 1</router-link>
             <router-link to="/student/dashboard/2" class="btn btn-outline-secondary btn-sm rounded-pill">Student 2</router-link>
+          </div>
+					<div class="d-flex justify-content-center gap-2">
+            <router-link to="/" class="btn btn-outline-secondary btn-sm rounded-pill">Teacher</router-link>
+            <router-link to="/admin/1" class="btn btn-outline-secondary btn-sm rounded-pill">Admin</router-link>
           </div>
         </footer>
       </div>
@@ -50,6 +55,7 @@
 		display: flex;
 		background-color: #f8f9fa;
 		min-height: calc(100vh - 135px);
+		background: linear-gradient(#f0f0ff 10%, #e8e8f8 90%);
 	}
 
 	.login-title {
@@ -62,6 +68,13 @@
 		border-radius: 15px;
 		border: 1px solid #dee2e6;
 		background-color: #fdfdfd;
+		padding: 0.65rem 1rem;
+	}
+
+	.login-input:focus {
+		border-color: #140f50;
+		box-shadow: 0 0 0 3px rgba(20, 15, 80, 0.1);
+		outline: none;
 	}
 
 	.login-content {
@@ -78,7 +91,7 @@
 		max-width: 420px;
 		padding: 2.5rem;
 		border-radius: 1.5rem;
-		border: none;
+		border-top: 2px solid #140f50;
 	}
 
 	.nav-wrapper {
@@ -146,5 +159,13 @@
 		color: #ffffff;
 	}
 
+	@media (max-width: 768px) {
+		.login-footer {
+			display: none;
+		}
+		.login-title {
+			padding: 2rem;
+		}
+	}
 </style>
 

@@ -1,7 +1,13 @@
+{{--
+  Admin User Management PDF (DomPDF).
+  Variables: $users (from AdminController::buildUsersOverview), $stats (totals).
+  Optional search is applied in the controller before render; not shown in this template.
+--}}
 <!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	{{-- Inline styles only; DomPDF does not load external CSS reliably. --}}
 	<style>
 		body {
 			font-family: Arial, sans-serif;
@@ -16,11 +22,6 @@
 			border-bottom: 2px solid #2974a3;
 			padding-bottom: 6px;
 			margin-bottom: 12px;
-		}
-		.meta {
-			margin-bottom: 16px;
-			font-size: 9px;
-			color: #555;
 		}
 		.stats {
 			margin-bottom: 18px;
@@ -54,12 +55,6 @@
 </head>
 <body>
 	<h1>User Management Export</h1>
-	<div class="meta">
-		<div>Generated: {{ $generatedAt }}</div>
-		@if(!empty($searchQuery))
-			<div>Filter: {{ $searchQuery }}</div>
-		@endif
-	</div>
 
 	<div class="stats">
 		<span><strong>Total Users:</strong> {{ $stats['totalUsers'] }}</span>

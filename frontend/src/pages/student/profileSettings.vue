@@ -12,7 +12,7 @@
 
         <div class="flex-grow-1">
           <label class="field-label">Profile Image URL</label>
-          <input v-model.lazy="profile.profile_image_url" class="field-input form-control"
+          <input v-model.trim.lazy="profile.profile_image_url" maxlength="255" class="field-input form-control"
             placeholder="Link to your profile picture"/>
         </div>
       </div>
@@ -24,24 +24,24 @@
       <div class="row g-3">
         <div class="col-12 col-sm-4">
           <label class="field-label">First name</label>
-          <input v-model="profile.user.first_name" class="field-input form-control" placeholder="First name"/>
+          <input v-model.trim="profile.user.first_name" maxlength="50" class="field-input form-control" placeholder="First name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Last name</label>
-          <input v-model="profile.user.last_name" class="field-input form-control" placeholder="Last name"/>
+          <input v-model.trim="profile.user.last_name" maxlength="50" class="field-input form-control" placeholder="Last name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Preferred name</label>
-          <input v-model="profile.preferred_name" class="field-input form-control" placeholder="Preferred name"/>
+          <input v-model.trim="profile.preferred_name" maxlength="50" class="field-input form-control" placeholder="Preferred name"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Degree undertaking</label>
-          <input v-model="profile.degree_title" class="field-input form-control"
+          <input v-model.trim="profile.degree_title" maxlength="40" class="field-input form-control"
             placeholder="eg: Bachelor of Engineering"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Specialisation chosen</label>
-          <input v-model="profile.specialisation" class="field-input form-control" placeholder="eg: Electrical"/>
+          <input v-model.trim="profile.specialisation" maxlength="60"  class="field-input form-control" placeholder="eg: Electrical"/>
         </div>
       </div>
     </section>
@@ -50,7 +50,7 @@
     <section class="edit-card mb-4">
       <h3 class="card-title mb-4">Personal Introduction</h3>
       <label class="field-label">About you</label>
-      <textarea v-model="profile.personal_intro" class="field-input form-control" rows="5"
+      <textarea v-model.trim="profile.personal_intro" maxlength="500" class="field-input form-control" rows="5"
         placeholder="Write a short introduction about yourself…"></textarea>
     </section>
 
@@ -66,11 +66,11 @@
           <div class="row g-2 align-items-end">
             <div class="col-12 col-sm-4">
               <label class="field-label">Label</label>
-              <input v-model="link.link_label" class="field-input form-control" placeholder="e.g. LinkedIn"/>
+              <input v-model.trim="link.link_label" class="field-input form-control" placeholder="e.g. LinkedIn"/>
             </div>
             <div class="col-12 col-sm-6">
               <label class="field-label">URL</label>
-              <input v-model="link.link_url" class="field-input form-control" placeholder="https://example.com"/>
+              <input v-model.trim="link.link_url" class="field-input form-control" placeholder="https://example.com"/>
             </div>
             <div class="col-12 col-sm-2 d-flex align-items-end">
               <button class="remove-btn" @click="removeLink(index)" title="Remove link">
@@ -89,7 +89,9 @@
       <button class="btn btn-filter" @click="cancel">Cancel</button>
       <button class="btn btn-ql" @click="saveChanges">Save Changes</button>
     </footer>
-
+    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+      {{ popUp.message }}
+    </div>
   </div>
 
   <div v-else class="container py-5 text-center loading">
@@ -109,46 +111,86 @@
   const loading = ref(true);
   const linksToDelete = ref([]);
 
+  // Set up a pop up notification instead of having an alert
+  const popUp = ref({ show: false, message: '', type: '' })
+
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, 3000)
+  }
+
+
+
   const loadProfile = async () => {
     // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
       profile.value = response.data.profile || response.data;
+      loading.value = false;
     } catch (error) {
       console.error("Error while fetching profile:", error);
-    } finally {
-      loading.value = false;
     }
   };
 
   // Adds an empty link to the frontend profile data when add link is clicked
+  // Restricted to 8 links
   const addLink = () => {
-    profile.value.links.push({
-      link_label: '',
-      link_url: '',
-      profile_id: route.params.id
-    });
+    if (profile.value.links.length - linksToDelete.value.length < 8) {
+      profile.value.links.push({
+        link_label: '',
+        link_url: '',
+        profile_id: route.params.id
+      });
+    } else {
+      showPopUp("You have too many links. Edit or delete some of your existing.", "error");
+    }
   };
 
 const removeLink = (index) => {
   const link = profile.value.links[index];
     if (link.link_id) {
       linksToDelete.value.push(link.link_id);
-    }
-    
+    }  
     profile.value.links.splice(index, 1);
   };
 
+// Attempt to make a URL object to test if link is correct
+function isValidUrl(url) {
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
 
 const saveChanges = async () => {
   try {
+    // Check if last name is empty
+    if (!profile.value.user.last_name || profile.value.user.last_name.trim() === '') {
+      showPopUp("Cannot save profile. Last name cannot be blank.", "error");
+      return;
+    }
+
+    // Loop through each link
+    for (const link of profile.value.links) {
+      if (!link.link_label) {
+        showPopUp("Could not save profile. Link titles cannot be blank.", "error");
+        return;
+      }
+      if (! isValidUrl(link.link_url)) {
+        showPopUp("Could not save profile. Link URL is not valid.", "error");
+        return;
+      }
+    }
+
     // Saves the main profile
     await api.put(`/profile/${route.params.id}`, profile.value);
-
+    
     // Deletes the required links
     const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
 
-    // 3. Handle Updates and Creations
+    // Handle Updates and Creations
     const upsertPromises = profile.value.links.map(link => {
       // Ignore empty rows
       if (!link.link_url || link.link_url.trim() === '') return null;
@@ -168,17 +210,18 @@ const saveChanges = async () => {
     linksToDelete.value = [];
 
     await api.post(`/student-actions/new`, {action: "Updated profile", student_profile_id: route.params.id});
-    
+
     router.push({ name: 'profile', params: { id: route.params.id } });
   } catch (error) {
     console.error("Save failed:", error);
-    alert("There was an error saving your changes.");
+    showPopUp("There was an error saving your changes.", "error");
   }
 };
 
-  const cancel = () => {
-      router.push({ name: 'profile', params: { id: route.params.id } });
-  };
+// Redirect back to profile page without saving changes
+const cancel = () => {
+  router.push({ name: 'profile', params: { id: route.params.id } });
+};
 
 onMounted(() => {
   loadProfile();
@@ -314,6 +357,29 @@ onMounted(() => {
 
 .loading {
   min-height: calc(100vh);
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (max-width: 768px) {

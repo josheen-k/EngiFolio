@@ -246,7 +246,6 @@ async function submit(statusId) {
     emit('close');
 
   } catch (error) {
-    console.error("Submission failed:", error);
     alert("Submission could not be saved. Please check that all required fields are filled");
   }
 }

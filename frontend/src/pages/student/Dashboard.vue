@@ -150,11 +150,13 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="item in focusItems.slice(0,7)" :key="item.indicator_id">
-                <tr v-if="!item.highest_entry || item.highest_entry.competency_level_weighting < 2">
-                  <td><a href="#" class="table-link">{{ item.display_id }}</a></td>
+              <template v-for="item in filteredFocusItems" :key="item.indicator_id">
+                <tr>
+                  <td><router-link :to="`/student/eaCompetency/${$route.params.id}?indicator=${item.indicator_id}`" class="table-link">
+                      {{ item.display_id }}
+                  </router-link></td>
                   <td>{{ item.description }}</td>
-                  <td class="text-center">{{ item.entries_count || 0 }}</td>            
+                  <td class="text-center">{{ item.entries_count || 0 }}</td>
                   <td class="text-center">
                     <div v-if="item.highest_entry">{{ item.highest_entry.competency_level }}</div>
                     <div v-else class="text-muted">Not started</div>
@@ -317,10 +319,16 @@
       })
     })
 
+    // Get only the first 7 entries and all entries that have highest confident
+    const filteredFocusItems = computed(() => 
+      focusItems.value.filter(item => !item.highest_entry || item.highest_entry.competency_level_weighting < 4).slice(0, 7)
+    )
+
+    // Load individual backend calls
     const loadProfileData = async () => {
       try {
         const response = await api.get(`/profile/${route.params.id}`);
-        profile.value = response.data.profile || response.data;
+        profile.value = response.data;
       } catch (error) {
         console.error("Error while fetching profile info:", error);
       }
@@ -338,13 +346,13 @@
     const loadCompetencyIndicators = async () => {
       try {
         const response = await api.get(`/competency-indicators`);
-        
-        competencyIndicators.value = response.data.filter(compt => !compt.discontinuedDate)
+        competencyIndicators.value = response.data.filter(compt => !compt.discontinued_date);
       } catch (error) {
         console.error("Error while fetching competencies:", error);
       }
 		};
 
+    // Gets highest level competency for each category
     const loadCompetencyIndicatorsWithCount = async () => {
       try {
         const response = await api.get(`/student-competency-indicators/${route.params.id}`);
@@ -442,18 +450,23 @@
     const loadData = async () => {
       loading.value = true;
       try {
-        await loadProfileData();
-        await loadUserCompetencyData();
-        await loadCompetencyIndicators();
-        await loadUserGoals();
-        await loadUserActions();
-        await loadCompetencyIndicatorsWithCount();
-        await updateChart();
-        await loadNetworkingEvents()
+        // Run all backend calls at the same time
+        await Promise.all([
+          loadProfileData(),
+          loadUserCompetencyData(),
+          loadCompetencyIndicators(),
+          loadUserGoals(),
+          loadUserActions(),
+          loadCompetencyIndicatorsWithCount(),
+          loadNetworkingEvents()
+        ])
 
-        // Calculate the total weight based of the weight of each competency
+        // Depends on data fetched above so runs afterwards
+        await updateChart()
+
+        // Calculate the total weight based of the weight of each competency. reduce goes through and accumulates a single value
         const totalWeight = focusItems.value.reduce((acc, item) => {
-            const weight = Number(item.highest_entry?.competency_level_weighting) || 0;
+            const weight = item.highest_entry?.competency_level_weighting || 0;
             return acc + weight;
         }, 0);
         

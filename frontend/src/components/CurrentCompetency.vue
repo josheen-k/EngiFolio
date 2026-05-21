@@ -149,7 +149,7 @@
             <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
                 <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
-                <!-- <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5> -->
+                <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5>
                 <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                   <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
                     {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
@@ -190,16 +190,38 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
 import { getLvl, publishedReflec, formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
 import { onClickOutside } from '@vueuse/core';
 
+const route = useRoute()
+const router = useRouter()
+
 // Allows for the eaCompetency page to pass the vales along
 const props = defineProps({
   categories: { type: Array, required: true },
-  levelOptions: { type: Array, required: true }
+  levelOptions: { type: Array, required: true },
+  initialIndicatorId: { type: [String, Number], default: null }
 });
+
+// Watch for an indicatorId
+watch(
+  [() => props.initialIndicatorId, () => props.categories],
+  ([id, cats]) => {
+    if (id && cats.length) {
+      for (const cat of cats) {
+        const match = cat.compt.find(c => Number(c.id) === Number(id))
+        if (match) {
+          openDetail(match, cat.label)
+          break
+        }
+      }
+    }
+  },
+  { immediate: true }
+)
 
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
@@ -374,6 +396,13 @@ function openDetail(compt, catLabel) {
 
 function closeDetail() {
   selectedCompt.value = null
+  router.replace({ 
+    query: { 
+      ...route.query,       
+      tab: 'current',
+      indicator: undefined 
+    }
+  });
 }
 
 //detailed reflection view

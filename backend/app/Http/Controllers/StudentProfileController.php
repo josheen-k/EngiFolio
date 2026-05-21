@@ -44,10 +44,14 @@ class StudentProfileController extends Controller
      */
     public function show($id)
     {
-        // Fails if no profile is found
-        $studentProfile = StudentProfile::with('links', 'user', 'achievementCerts', 'attainmentCerts')->findOrFail($id);
+        $studentProfile = StudentProfile::with([
+            'links', 
+            'user', 
+            'achievementCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}, 
+            'attainmentCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}
+        ])->findOrFail($id);
 
-        return response()->json($studentProfile);
+    return response()->json($studentProfile);
     }
 
 
@@ -100,6 +104,7 @@ class StudentProfileController extends Controller
 
     public function exportPdf(Request $request, $id)
     {
+        // Get tables of all data that can be exported
         $profile = StudentProfile::with([
             'user', 
             'competencyEntries', 
@@ -120,7 +125,7 @@ class StudentProfileController extends Controller
         $selections = $request->input('selections', []);
 
         // Use pdf template to generate pdf for downloading
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('portfolio', [
+        $pdf = Pdf::loadView('portfolio', [
             'profile' => $profile, 
             'selections' => $selections
         ]);
