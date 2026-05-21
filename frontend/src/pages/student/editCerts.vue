@@ -24,21 +24,21 @@
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
-              <input v-model="cert.title" class="field-input form-control" placeholder="eg: Dean's Award" />
+              <input v-model.trim="cert.title" class="field-input form-control" placeholder="eg: Dean's Award" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
-              <input v-model="cert.body" class="field-input form-control"
+              <input v-model.trim="cert.body" class="field-input form-control"
                 placeholder="Brief description of this certification" />
             </div>
             <div class="col-12">
               <label class="field-label">File path / URL</label>
-              <input v-model="cert.file_path" class="field-input form-control"
+              <input v-model.trim="cert.file_path" class="field-input form-control"
                 placeholder="https://example.com/cert.pdf" />
             </div>
             <div class="col-12 col-md-4">
               <label class="field-label">Issued date</label>
-              <input type="date" v-model="cert.issued_date" class="field-input form-control" />
+              <input type="date" v-model.trim="cert.issued_date" class="field-input form-control" />
             </div>
           </div>
 
@@ -68,25 +68,25 @@
           <div class="row g-3">
             <div class="col-12 col-md-6">
               <label class="field-label">Title</label>
-              <input v-model="cert.title" class="field-input form-control" placeholder="e.g. Certified Engineer" />
+              <input v-model.trim="cert.title" class="field-input form-control" placeholder="e.g. Certified Engineer" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
-              <input v-model="cert.body" class="field-input form-control"
+              <input v-model.trim="cert.body" class="field-input form-control"
                 placeholder="Brief description of this certification" />
             </div>
             <div class="col-12">
               <label class="field-label">File path / URL</label>
-              <input v-model="cert.file_path" class="field-input form-control"
+              <input v-model.trim="cert.file_path" class="field-input form-control"
                 placeholder="https://example.com/cert.pdf" />
             </div>
             <div class="col-12 col-md-4">
               <label class="field-label">Issued date</label>
-              <input type="date" v-model="cert.issued_date" class="field-input form-control" />
+              <input type="date" v-model.trim="cert.issued_date" class="field-input form-control" />
             </div>
             <div class="col-12 col-md-4">
               <label class="field-label">Expiry date</label>
-              <input type="date" v-model="cert.expiry_date" class="field-input form-control" />
+              <input type="date" v-model.trim="cert.expiry_date" class="field-input form-control" />
             </div>
           </div>
 
@@ -135,7 +135,7 @@
 
   // Adds an empty cert to the frontend profile data when add cert is clicked
   const addAchCert = () => {
-		profile.value.achievement_certs.push({
+		profile.value.achievement_certs.unshift({
 			title: '',
 			body: '',
 			issued_date: '',
@@ -144,7 +144,7 @@
 	};
 
 	const addAttCert = () => {
-		profile.value.attainment_certs.push({
+		profile.value.attainment_certs.unshift({
 			title: '',
 			body: '',
 			issued_date: '',
