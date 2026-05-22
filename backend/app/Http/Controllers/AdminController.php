@@ -29,8 +29,8 @@ class AdminController extends Controller
         $data = $this->buildUsersOverview($request);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
-            'users' => $data['users'],
             'stats' => $data['stats'],
+            'roleSections' => $this->groupUsersByRoleForPdf($data['users']),
         ]);
 
         return $pdf->download('user_management_export.pdf');
