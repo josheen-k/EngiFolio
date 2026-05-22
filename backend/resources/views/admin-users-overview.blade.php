@@ -1,6 +1,6 @@
 {{--
   Admin User Management PDF (DomPDF).
-  Variables: $stats, $roleSections (Students / Staff / Admins — each with title + users collection).
+  Variables: $stats, $roleSections (Students / Staffs / Admins — each with title + users collection).
 --}}
 <!DOCTYPE html>
 <html>
