@@ -92,6 +92,9 @@
     </div>
   </div>
 </div>
+<div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+  {{ popUp.message }}
+</div>
 
   <ViewReflection 
     v-if="viewReflec.show"
@@ -101,7 +104,7 @@
     :index="viewReflec.index"
     :levelOptions="levelOptions"
     @close="viewReflec.show = false" 
-    @refresh="$emit('refresh')"
+    @refresh="onSaveReflec"
   />
 </template>
 
@@ -121,6 +124,23 @@ const props = defineProps({
 
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
+
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
+function onSaveReflec(statusId, entryName) {
+  viewReflec.value.show = false
+  emit('refresh')
+  if (Number(statusId) === 2) {
+    showPopUp(`${entryName} has been published.`, "success")
+  } else {
+    showPopUp(`${entryName} has been saved to drafts.`, "success")
+  }
+}
 
 const sortRef = ref(null)
 const sortDdOpen = ref(false)
@@ -418,6 +438,29 @@ const confirmDelete = async () => {
 
 .btn-filter-sm {
   font-size: 0.8rem !important;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (min-width: 768px) {

@@ -319,7 +319,7 @@ async function submit(statusId) {
     }
 
     // RefreshClose window
-    emit('refresh');
+    emit('refresh', statusId, f.value.title || 'Untitled');
     emit('close');
 
   } catch (error) {

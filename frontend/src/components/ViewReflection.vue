@@ -414,7 +414,7 @@
       }
 
       // Close window
-      emit('refresh')
+      emit('refresh', statusId, ef.value.experience_title || 'Untitled')
       emit('close');
       
     } catch (error) {

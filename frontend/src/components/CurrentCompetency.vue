@@ -186,6 +186,10 @@
     @add="onAddReflec"
     @refresh="onSaveReflec"
   />
+
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
@@ -258,7 +262,6 @@ watch(() => props.categories, () => {
   }
 }, { deep: true })
 
-
 const reflecOption = [
   { value: 'all', label: 'All competencies' },
   { value: 'has-reflections', label: 'Has at least one reflection' },
@@ -268,6 +271,13 @@ const reflecOption = [
 const hasActiveFilter = computed(function () {
   return filterReflec.value !== 'all' || filterLevel.value.length > 0
 })
+
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
 
 function toggleDd() {
   ddOpen.value = !ddOpen.value
@@ -426,9 +436,14 @@ function closeReflec() {
   viewReflec.value.show = false
 }
 
-function onSaveReflec() {
+function onSaveReflec(statusId, entryName) {
   viewReflec.value.show = false 
   emit('refresh')
+  if (Number(statusId) === 2) {
+    showPopUp(`${entryName} has been published.`, "success")
+  } else {
+    showPopUp(`${entryName} has been saved to drafts.`, "success")
+  }
 }
 
 // add reflection popup 
@@ -692,6 +707,29 @@ function onAddReflec() {
 
 .btn-filter-sm {
   font-size: 0.8rem !important;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (min-width: 768px) {
