@@ -125,9 +125,9 @@
 
           <!-- date range-->
           <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
-            <input v-model.trim="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
             <span class="body-txt">–</span>
-            <input v-model.trim="ef.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="ef.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
           </div>
         </div>
 
@@ -136,22 +136,22 @@
 
           <!-- experience & tasks -->
           <div>
-            <label class="form-label field-label">Experience &amp; tasks</label>
-            <textarea v-model.trim="ef.experience_tasks" class="form-control field-input rounded-3" rows="4"
+            <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
+            <textarea v-model.trim="ef.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="Describe the experience and tasks you undertook"></textarea>
           </div>
 
           <!-- key learnings -->
           <div>
-            <label class="form-label field-label">Key learnings</label>
-            <textarea v-model.trim="ef.key_learnings" class="form-control field-input rounded-3" rows="4"
+            <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
+            <textarea v-model.trim="ef.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="What did you learn that was most valuable?"></textarea>
           </div>
 
           <!-- future application -->
           <div>
-            <label class="form-label field-label">Future application</label>
-            <textarea v-model.trim="ef.future_applications" class="form-control field-input rounded-3" rows="4"
+            <label class="form-label field-label">Future application: (Max 500 characters)</label>
+            <textarea v-model.trim="ef.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="How will you apply these learnings in the future?"></textarea>
           </div>
 

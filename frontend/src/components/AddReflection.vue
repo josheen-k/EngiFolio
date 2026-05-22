@@ -31,7 +31,7 @@
           </div>
           <div class="col-7">
             <label class="form-label field-label">Experience title</label>
-            <input v-model="f.title" class="form-control field-input rounded-3" placeholder="My experience"/>
+            <input v-model="f.title" maxlength="50" class="form-control field-input rounded-3" placeholder="My experience"/>
           </div>
         </div>
 
@@ -59,22 +59,22 @@
 
         <!-- exp and tasks textbox-->
         <div>
-          <label class="form-label field-label">Experience & tasks</label>
-          <textarea v-model="f.tasks" class="form-control field-input rounded-3" rows="4"
+          <label class="form-label field-label">Experience & tasks: (Max 500 characters)</label>
+          <textarea v-model="f.tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="Describe the experience and tasks you undertook"></textarea>
         </div>
 
         <!-- key learnings textbox-->
         <div>
-          <label class="form-label field-label">Key learnings</label>
-          <textarea v-model="f.learnings" class="form-control field-input rounded-3" rows="4"
+          <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
+          <textarea v-model="f.learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="What did you learn that was most valuable?"></textarea>
         </div>
 
         <!-- future application textbox-->
         <div>
-          <label class="form-label field-label">Future application</label>
-          <textarea v-model="f.future" class="form-control field-input rounded-3" rows="4"
+          <label class="form-label field-label">Future application: (Max 500 characters)</label>
+          <textarea v-model="f.future" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="How will you apply these learnings in the future?"></textarea>
         </div>
 
