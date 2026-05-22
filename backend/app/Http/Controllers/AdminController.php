@@ -123,6 +123,24 @@ class AdminController extends Controller
         ];
     }
 
+    /**
+     * Split overview rows into Student / Staff / Admin lists for the PDF export layout.
+     */
+    private function groupUsersByRoleForPdf($users): array
+    {
+        $pick = static function (string $role) use ($users) {
+            return $users
+                ->filter(static fn (array $user): bool => strcasecmp((string) ($user['role'] ?? ''), $role) === 0)
+                ->values();
+        };
+
+        return [
+            ['title' => 'Students', 'users' => $pick('Student')],
+            ['title' => 'Staffs', 'users' => $pick('Staff')],
+            ['title' => 'Admins', 'users' => $pick('Admin')],
+        ];
+    }
+
     public function createUser(Request $request)
     {
         // Keep validation aligned with the admin create-user form constraints.
