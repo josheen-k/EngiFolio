@@ -172,13 +172,16 @@ const saveChanges = async () => {
       return;
     }
 
+    // Remove all links without a label or a url
+    profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
+
     // Loop through each link
     for (const link of profile.value.links) {
       if (!link.link_label) {
         showPopUp("Could not save profile. Link titles cannot be blank.", "error");
         return;
       }
-      if (! isValidUrl(link.link_url)) {
+      if (!isValidUrl(link.link_url)) {
         showPopUp("Could not save profile. Link URL is not valid.", "error");
         return;
       }

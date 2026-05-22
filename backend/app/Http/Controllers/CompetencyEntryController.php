@@ -29,7 +29,7 @@ class CompetencyEntryController extends Controller
         $validated = $request->validate([
             'profile_id' => 'required|exists:student_profiles,profile_id',
             'indicator_id'   => 'required|exists:competency_indicators,indicator_id',
-            'experience_title'     => 'required|string|max:255',
+            'experience_title'     => 'required|string|max:50',
             'associated_year'     => 'required|integer',
             'experience_tasks'   => 'required|string',
             'key_learnings'   => 'nullable|string',
@@ -65,7 +65,7 @@ class CompetencyEntryController extends Controller
         $validated = $request->validate([
             'profile_id' => 'required|exists:student_profiles,profile_id',
             'indicator_id'   => 'required|exists:competency_indicators,indicator_id',
-            'experience_title'     => 'required|string|max:255',
+            'experience_title'     => 'required|string|max:50',
             'associated_year'     => 'required|integer',
             'experience_tasks'   => 'required|string',
             'key_learnings'   => 'nullable|string',

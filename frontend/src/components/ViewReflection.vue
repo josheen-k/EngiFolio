@@ -90,7 +90,7 @@
 
         <!-- editable title in box-->
         <div class="border-bottom p-3">
-          <input v-model="ef.experience_title" class="form-control rounded-3 text-center edit-title-input"/>
+          <input v-model="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"/>
 
           <!-- competency name and desc-->
           <div class="row g-4">
@@ -208,10 +208,10 @@
               </button>
             </div>
 
-            <button class="btn btn-filter rounded-pill px-3 py-1"
-            @click="ef.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
+            <button  v-if="ef.evidenceEntries.length < 3"
+            class="btn btn-filter rounded-pill px-3 py-1" 
+            @click="addEvidence()">+ Add evidence</button>
           </div>
-
         </div>
 
         <!-- edit footer -->
@@ -222,6 +222,9 @@
             <button class="btn btn-filter" @click="editing = false">Cancel</button>
             <button class="btn btn-add" @click="saveEdit">Done</button>
           </div>
+        </div>
+        <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+          {{ popUp.message }}
         </div>
       </template>
     </div>
@@ -261,6 +264,14 @@ const props = defineProps({
 const emit = defineEmits(['close', 'refresh'])
 const route = useRoute()
 
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
 // local state
 const editing = ref(false)
 const showDeleteConfirm = ref(false)
@@ -281,6 +292,15 @@ const ef = ref({
   evidenceEntries: []
 })
 
+const addEvidence = () => {
+  if (ef.value.evidenceEntries.length < 3) {
+    ef.value.evidenceEntries.push({
+      type: '',
+      value: '',
+      fileName: '',
+    })
+  }
+};
 
 // reset edit state when popup closes
 watch(() => props.show, (v) => {
@@ -327,6 +347,9 @@ function enterEdit() {
 
 async function saveEntry(statusId) {
   try {
+    // Removes empty evidence
+    const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.value)
+
     await api.put(`/competency-entries/${ef.value.id}`, {
       profile_id: route.params.id,
       indicator_id: Number(ef.value.indicator_id),
@@ -347,7 +370,6 @@ async function saveEntry(statusId) {
     }
 
     // Save current evidence entries
-    const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
     for (const ev of evidenceToSave) {
       await api.post('/competency-evidence', {
         entry_id: ef.value.id,
@@ -361,7 +383,7 @@ async function saveEntry(statusId) {
     emit('close');
     
   } catch (error) {
-    alert("Submission could not be saved. Please check that all required fields are filled.", error);
+    showPopUp("Error saving submission.", "error");
   }
 }
 
@@ -661,5 +683,28 @@ async function doDelete() {
   color: #666666;
   line-height: 1.6;
   margin-bottom: 0;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 </style>
