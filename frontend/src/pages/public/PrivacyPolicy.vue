@@ -2,7 +2,7 @@
     <div class="page">
         <nav class="nav-wrapper">
             <div>
-                <button class="navLogo" @click="goHome"></button>
+                <div class="navLogo" @click="goHome"></div>
             </div>
         </nav>
 
