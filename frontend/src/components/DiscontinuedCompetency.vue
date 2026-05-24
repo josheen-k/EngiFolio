@@ -24,7 +24,7 @@
       <div v-if="processedReflec.length" class="row g-3">
         <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="reflec in processedReflec" :key="reflec.entry_id">
           <div class="card compt-card p-3 h-70 reflec-card" @click="openReflec(reflec, reflec.entry_id)">
-            <p class="compt-label mb-2">{{ reflec.experience_title }}</p>
+            <p class="compt-label mb-2" :data-tooltip='reflec.experience_title'>{{ reflec.experience_title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="reflecs rounded-pill">{{ reflec.associated_year === 0 ? 'PRIOR' : 'YEAR ' + reflec.associated_year }}</span>
               <span class="txt-lvl">{{ reflec.entry_level?.competency_level }}</span>
