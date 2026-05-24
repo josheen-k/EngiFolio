@@ -474,7 +474,7 @@
   // 1 for draft, 2 for submitted
   const saveEdit = () => saveEntry(2)
   const saveAsDraft = () => saveEntry(1)
-
+ 
   // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
     const noChange = JSON.stringify(ef.value) === originalEf.value
@@ -490,6 +490,7 @@
     try {
       await api.delete(`/competency-entries/${props.reflec.entry_id}`)
       showDeleteConfirm.value = false
+      await api.post(`/student-actions/new`, {action: `Deleted entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
       emit('refresh')
       emit('close')
     } catch (error) {
