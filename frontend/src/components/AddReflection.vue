@@ -161,12 +161,23 @@
 
         <div class="d-flex gap-2">
           <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
-          <button class="btn btn-filter" @click="$emit('close')">Cancel</button>
+          <button class="btn btn-filter" @click="handleCancel">Cancel</button>
           <button class="btn btn-add" @click="save">Done</button>
         </div>
       </div>
       <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
         {{ popUp.message }}
+      </div>
+    </div>
+  </div>
+
+  <div v-if="showCancelConfirm" class="view-popup" @click.self="showCancelConfirm = false">
+    <div class="cancel-box text-center p-4">
+      <h5 class="fw-bold mb-2 cancel-title">Cancel editing?</h5>
+      <p class="field-desc mb-4">All changes to this reflection will be lost.</p>
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showCancelConfirm = false">Continue editing</button>
+        <button class="btn btn-add rounded-pill px-4" @click="emit('close'); showCancelConfirm = false">Exit editing</button>
       </div>
     </div>
   </div>
@@ -186,6 +197,7 @@
   })
   
   const errors = ref({});
+  const showCancelConfirm = ref(false)
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -337,6 +349,8 @@ async function submit(statusId) {
       })
     }
 
+    // Add a post to student actions for an added competency
+    await api.post(`/student-actions/new`, {action: `Added entry to competency ${selectedCompt.value?.displayId}`, student_profile_id: route.params.id});
     // RefreshClose window
     emit('refresh', statusId, f.value.title || 'Untitled');
     emit('close');
@@ -350,6 +364,17 @@ async function submit(statusId) {
   // 1 for draft, 2 for submitted
   const save = () => submit(2)
   const saveAsDraft = () => submit(1)
+
+  // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
+  const handleCancel = () => {
+    // Copy all data from newForm and add the competency id before checking if there was a change
+    const noChange = JSON.stringify(f.value) === JSON.stringify({ ...newForm(), comptId: props.initialComptId })
+    if (noChange) {
+      emit('close')
+    } else {
+      showCancelConfirm.value = true
+    }
+  }
 </script>
 
 <style scoped>
@@ -531,5 +556,31 @@ async function submit(statusId) {
 
 .error-message {
   color:  #db7979;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.cancel-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.cancel-title {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1.1rem;
+  color: #222222;
 }
 </style>

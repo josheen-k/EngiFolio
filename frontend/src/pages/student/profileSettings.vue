@@ -200,8 +200,8 @@ function isValidUrl(url) {
 const saveChanges = async () => {
   try {
     // Check to see if any changes have been made. Ignore rest of the logic if no change
-    const hasChanged = JSON.stringify(profile.value) === originalProfile.value
-    if (hasChanged) {
+    const noChange = JSON.stringify(profile.value) === originalProfile.value
+    if (noChange) {
       cancel();
       return;
     }
@@ -273,8 +273,8 @@ const saveChanges = async () => {
 // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
 const handleCancel = () => {
   // Convert objects so strings and compare for any changes
-  const hasChanged = JSON.stringify(profile.value) === originalProfile.value
-  if (hasChanged) {
+  const noChange = JSON.stringify(profile.value) === originalProfile.value
+  if (noChange) {
     cancel()
   } else {
     showCancelConfirm.value = true

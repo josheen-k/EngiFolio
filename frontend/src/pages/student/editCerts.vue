@@ -319,8 +319,8 @@
   const saveChanges = async () => {
     try {
       // Check to see if any changes have been made. Ignore rest of the logic if no change
-      const hasChanged = JSON.stringify(profile.value) === originalProfile.value
-      if (hasChanged) {
+      const noChange = JSON.stringify(profile.value) === originalProfile.value
+      if (noChange) {
         cancel();
         return;
       }
@@ -394,7 +394,7 @@
       achievementCertsToDelete.value = [];
       attainmentCertsToDelete.value = [];
 
-    // Add a post to student actions for updated certificates
+      // Add a post to student actions for updated certificates
       await api.post(`/student-actions/new`, {action: "Updated certificates", student_profile_id: route.params.id});
       
       // Redirect back to the view page
@@ -407,8 +407,8 @@
   // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
     // Convert objects so strings and compare for any changes
-    const hasChanged = JSON.stringify(profile.value) !== originalProfile.value
-    if (hasChanged) {
+    const noChange = JSON.stringify(profile.value) !== originalProfile.value
+    if (noChange) {
       showCancelConfirm.value = true
     } else {
       cancel()

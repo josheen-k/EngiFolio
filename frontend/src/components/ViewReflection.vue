@@ -232,7 +232,7 @@
           <span class="date-txt"><u>Scroll to see full reflection</u></span>
           <div class="d-flex gap-2">
             <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
-            <button class="btn btn-filter" @click="editing = false, errors = {}">Cancel</button>
+            <button class="btn btn-filter" @click="handleCancel">Cancel</button>
             <button class="btn btn-add" @click="saveEdit">Done</button>
           </div>
         </div>
@@ -253,6 +253,17 @@
       <div class="d-flex gap-2 justify-content-center">
         <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
         <button class="btn btn-add rounded-pill px-4" @click="doDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="showCancelConfirm" class="view-popup" @click.self="showCancelConfirm = false">
+    <div class="delete-box text-center p-4">
+      <h5 class="fw-bold mb-2 cancel-title">Cancel editing?</h5>
+      <p class="field-desc mb-4">All changes to this reflection will be lost.</p>
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showCancelConfirm = false">Continue editing</button>
+        <button class="btn btn-add rounded-pill px-4" @click="editing = false; errors = {}; showCancelConfirm = false">Exit editing</button>
       </div>
     </div>
   </div>
@@ -277,6 +288,8 @@
   const errors = ref({});
   const emit = defineEmits(['close', 'refresh'])
   const route = useRoute()
+  const originalEf = ref(null)
+  const showCancelConfirm = ref(false)
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -357,6 +370,8 @@
         : [{ type: '', value: '', fileName: '' }]
     }
     editing.value = true
+    // Store original entry as string to check for changes
+    originalEf.value = JSON.stringify(ef.value)
   }
 
   // Check to see if url sent is valid
@@ -373,6 +388,13 @@
     try {
       // Reset errors
       errors.value = {} 
+
+      // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
+      const noChange = JSON.stringify(ef.value) === originalEf.value
+        if (noChange) {
+          emit('close');
+          return;
+        }
 
       // Removes empty evidence
       const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
@@ -434,6 +456,11 @@
         })
       }
 
+      if (Number(statusId) === 2) {
+        // Add a post to student actions for updated certificates
+        await api.post(`/student-actions/new`, {action: `Updated entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
+      }
+
       // Close window
       emit('refresh', statusId, ef.value.experience_title || 'Untitled')
       emit('close');
@@ -448,6 +475,16 @@
   const saveEdit = () => saveEntry(2)
   const saveAsDraft = () => saveEntry(1)
 
+  // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
+  const handleCancel = () => {
+    const noChange = JSON.stringify(ef.value) === originalEf.value
+    if (noChange) {
+      editing.value = false
+      errors.value = {}
+    } else {
+      showCancelConfirm.value = true
+    }
+  }
 
   async function doDelete() {
     try {
