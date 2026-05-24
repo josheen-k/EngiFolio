@@ -63,7 +63,7 @@
     <div v-if="processedDrafts.length" class="row g-3">
       <div class="col-6 col-sm-4 col-md-3" v-for="(item, i) in processedDrafts" :key="i">
         <div class="draft-card h-100" @click="openReflec(item)">
-          <p class="draft-title">{{ item.reflec.experience_title }}</p>
+          <p class="draft-title" :data-tooltip='item.reflec.experience_title'>{{ item.reflec.experience_title }}</p>
           <div class="d-flex align-items-center gap-2">
             <span class="compt-pill">Competency {{ item.comptId }}</span>
             <!-- Simplified Delete -->
@@ -366,6 +366,36 @@ const confirmDelete = async () => {
   color: #444444;
   text-decoration: underline;
   margin-bottom: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.draft-title::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #727272;
+  color: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.75rem;
+  white-space: normal;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.draft-title:hover::after {
+  opacity: 1;
 }
 
 .compt-pill {
