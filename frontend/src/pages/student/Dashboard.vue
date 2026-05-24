@@ -3,9 +3,9 @@
 
   <main class="container-xl py-5 px-4" v-if="profile">
     <div class="row g-4 mb-4">
-      <h2 class="sec-title text-center" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
-      <h2 class="sec-title text-center" v-else-if="profile.user.first_name">Welcome, {{ profile.user.first_name }}</h2>
-      <h2 class="sec-title text-center" v-else>Welcome, {{ profile.user.last_name }}</h2>
+      <h2 class="sec-title text-center px-2" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
+      <h2 class="sec-title text-center px-2" v-else-if="profile.user.first_name">Welcome, {{ profile.user.first_name }}</h2>
+      <h2 class="sec-title text-center px-2" v-else>Welcome, {{ profile.user.last_name }}</h2>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center">Your Stats</h2>
 
@@ -118,15 +118,15 @@
       <div class="col-12 col-lg-6">
         <h2 class="sec-title text-center">Upcoming Events</h2>
         <div class="week-card">
-
-          <!--days-->
-          <div class="week-grid">
-            <div class="day-col" v-for="day in weekDays" :key="day.label">
-              <p class="day-label">{{ day.label }}</p>
-              <div class="day-events">
-                <div class="event" v-for="ev in day.events" :key="ev.id" :title="ev.name" @click="goToEvent(ev.id)">
-                  <span class="ev-name">{{ ev.name }}</span>
-                  <span class="ev-time">{{ ev.time }}</span>
+          <div class="week-scroll">
+            <div class="week-grid">
+              <div class="day-col" v-for="day in weekDays" :key="day.label">
+                <p class="day-label">{{ day.label }}</p>
+                <div class="day-events">
+                  <div class="event" v-for="ev in day.events" :key="ev.id" :title="ev.name" @click="goToEvent(ev.id)">
+                    <span class="ev-name">{{ ev.name }}</span>
+                    <span class="ev-time">{{ ev.time }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@
     <div class="row g-5">
       <div class="col-12 col-lg-8">
         <h2 class="sec-title text-center">Need More Focus On</h2>
-        <div class="table-style">
+        <div class="table-responsive table-style">
           <table class="table table-bordered focus-table">
             <thead>
               <tr>
@@ -548,17 +548,18 @@
 <style scoped>
 .sec-title {
   font-family: 'Martel', serif;
-  font-size: 2rem;
+  font-size: clamp(1.3rem, 4vw, 2rem);
   color: #2b2b2bc5;
   font-weight: lighter;
-  margin-bottom: 2rem;
-  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .stat-card {
   border-radius: 1.5rem;
   border: 1px solid #bababa;
-  height: 12rem;
+  height: auto;
+  min-height: 12rem;
   padding: 0.5rem;
 }
 
@@ -572,20 +573,20 @@
 
 .stat-title {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1.5rem;
+  font-size: clamp(0.75rem, 2.5vw, 1.5rem);
   color: #878787;
 }
 
 .stat-data {
   font-family: 'Martian Mono', monospace;
-  font-size: 1.8rem;
+  font-size: clamp(1.1rem, 3vw, 1.8rem);
   font-weight: 300;
   color: #606060;
 }
 
 .circle {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: clamp(1.8rem, 4vw, 2.5rem);
+  height: clamp(1.8rem, 4vw, 2.5rem);
   border-radius: 2rem;
   display: flex;
   justify-content: center;
@@ -608,8 +609,8 @@
 }
 
 .arrow-img {
-  width: 2rem;
-  height: 2rem;
+  width: clamp(1.2rem, 3vw, 2rem);
+  height: clamp(1.2rem, 3vw, 2rem);
   object-fit: contain;
 }
 
@@ -617,8 +618,7 @@
   background: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 1.5rem;
-  padding: 1.5rem 1.75rem;
-  min-height: 20rem;
+  padding: 1rem 1.25rem;
 }
 
 .goal-grp {
@@ -635,7 +635,7 @@
 
 .goal-heading {
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   font-weight: 500;
   color: #222222;
   margin-bottom: 0;
@@ -678,7 +678,7 @@
 
 .ac-name {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   color: #333333;
 }
 
@@ -691,15 +691,20 @@
   background: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  min-height: 15rem;
+  padding: 1rem 1.25rem;
+}
+
+.week-scroll {
+  overflow-x: auto;
+  margin-bottom: 0.5rem;
 }
 
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(2.5rem, 1fr));
   gap: 0.25rem;
   margin-bottom: 0.75rem;
+  min-width: 20rem;
 }
 
 .day-col {
@@ -710,17 +715,20 @@
 
 .day-label {
   font-family: 'Martian Mono', monospace;
-  font-size: 0.7rem;
+  font-size: clamp(0.55rem, 1.5vw, 0.7rem);
   color: #888888;
   text-align: center;
   margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .day-events {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-height: 15rem;
+  min-height: 8rem;
   background: #f8f8f8;
   border-radius: 0.5rem;
   padding: 0.25rem;
@@ -737,7 +745,7 @@
 
 .ev-name {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 0.65rem;
+  font-size: clamp(0.55rem, 1.5vw, 0.65rem);
   color: #333333;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -760,14 +768,14 @@
 
 .focus-table {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 0.95rem;
+  font-size: clamp(0.75rem, 2vw, 0.95rem);
 }
 
 .focus-table thead th {
   font-family: 'Martian Mono', monospace;
   color: #222222;
   font-weight: 200;
-  font-size: 1.2rem;
+  font-size: clamp(0.85rem, 2vw, 1.2rem);
   background-color: #f1f1f1;
   border-color: #d0d0d0;
 }
@@ -786,7 +794,7 @@
 
 .btn-ql {
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   color: #ffffff;
   background: #555555;
   padding: 0.5rem 1rem;
@@ -810,5 +818,30 @@
 
 .loading {
   min-height: calc(100vh);
+}
+
+@media (max-width: 576px) {
+  .stat-card {
+    min-height: 8rem;
+  }
+
+  .todo-card, .week-card {
+    padding: 0.75rem 1rem;
+  }
+
+  .day-events {
+    min-height: 6rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .todo-card, .week-card {
+    padding: 1.5rem 1.75rem;
+    min-height: 20rem;
+  }
+
+  .day-events {
+    min-height: 15rem;
+  }
 }
 </style>
