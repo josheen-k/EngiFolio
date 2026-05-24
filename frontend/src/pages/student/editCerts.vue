@@ -9,10 +9,13 @@
         <button class="btn btn-ql" @click="addAchCert">Add Achievement</button>
       </div>
       <div v-if="profile.achievement_certs.length" class="d-flex flex-column gap-3">
-        <div class="cert-row" v-for="(cert, index) in profile.achievement_certs" :key="index" :class="{ 'cert-dragging': movedAchCertId  === cert.achievement_cert_id}"
-            @dragenter.prevent
-            @dragover.prevent
-            @drop="achCertRearange(cert)"
+        <div class="cert-row" v-for="(cert, index) in profile.achievement_certs" :key="index" :class="{ 
+            'cert-dragging': movedAchCertId  === cert.achievement_cert_id,
+            'cert-error': (errors[`achieveTitle_${index}`] || errors[`achieveURL_${index}`]) && expandedAchCerts !== index
+          }"
+          @dragenter.prevent
+          @dragover.prevent
+          @drop="achCertRearange(cert)"
           >
 
           <!-- header-->
@@ -34,8 +37,11 @@
           <!--drop down-->
           <div v-if="expandedAchCerts === index" class="row g-3">
             <div class="col-12 col-md-6">
-              <label class="field-label">Title</label>
-              <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" placeholder="eg: Dean's Award" />
+              <div class="d-flex justify-content-between align-items-center">  
+                <label class="field-label">Title</label>
+                <label v-if="errors[`achieveTitle_${index}`]" class="field-label error-message">*Title cannot be empty</label>
+              </div>
+              <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" :class="{ 'field-error': errors[`achieveTitle_${index}`] }" @input="delete errors[`achieveTitle_${index}`]" placeholder="eg: Dean's Award" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
@@ -43,8 +49,11 @@
                 placeholder="Brief description of this certification" />
             </div>
             <div class="col-12">
-              <label class="field-label">File path / URL</label>
-              <input v-model.trim="cert.file_path" maxlength="255" class="field-input form-control"
+              <div class="d-flex justify-content-between align-items-center">  
+                <label class="field-label">File path / URL</label>
+                <label v-if="errors[`achieveURL_${index}`]" class="field-label error-message">*Must be a valid path</label>
+              </div>
+              <input v-model.trim="cert.file_path" maxlength="255" :class="{ 'field-error': errors[`achieveURL_${index}`] }" @input="delete errors[`achieveURL_${index}`]" class="field-input form-control"
                 placeholder="https://example.com/cert.pdf" />
             </div>
             <div class="col-12 col-md-4">
@@ -66,11 +75,14 @@
       </div>
 
       <div v-if="profile.attainment_certs.length" class="d-flex flex-column gap-3">
-        <div class="cert-row" v-for="(cert, index) in profile.attainment_certs" :key="index" :class="{ 'cert-dragging': movedAttCertId  === cert.attainment_cert_id}"
-            @dragenter.prevent
-            @dragover.prevent
-            @drop="attCertRearange(cert)"
-          >
+        <div class="cert-row" v-for="(cert, index) in profile.attainment_certs" :key="index" :class="{ 
+            'cert-dragging': movedAttCertId  === cert.attainment_cert_id,
+            'cert-error': (errors[`attainTitle_${index}`] || errors[`attainURL_${index}`]) && expandedAttCerts !== index
+          }"
+          @dragenter.prevent
+          @dragover.prevent
+          @drop="attCertRearange(cert)"
+        >
 
           <!-- header-->
           <div class="d-flex align-items-center gap-2 header" @click="toggleAttCert(index)">
@@ -90,8 +102,11 @@
           <!--drop down-->
           <div v-if="expandedAttCerts === index"  class="row g-3">
             <div class="col-12 col-md-6">
-              <label class="field-label">Title</label>
-              <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" placeholder="e.g. Certified Engineer" />
+              <div class="d-flex justify-content-between align-items-center">  
+                <label class="field-label">Title</label>
+                <label v-if="errors[`attainTitle_${index}`]" class="field-label error-message">*Title cannot be empty</label>
+              </div>
+              <input v-model.trim="cert.title" maxlength="100" class="field-input form-control" :class="{ 'field-error': errors[`attainTitle_${index}`] }" @input="delete errors[`attainTitle_${index}`]" placeholder="e.g. Certified Engineer" />
             </div>
             <div class="col-12">
               <label class="field-label">Description</label>
@@ -99,8 +114,11 @@
                 placeholder="Brief description of this certification" />
             </div>
             <div class="col-12">
-              <label class="field-label">File path / URL</label>
-              <input v-model.trim="cert.file_path" maxlength="255" class="field-input form-control"
+              <div class="d-flex justify-content-between align-items-center">  
+                <label class="field-label">File path / URL</label>
+                <label v-if="errors[`attainURL_${index}`]" class="field-label error-message">*Must be a valid path</label>
+              </div>
+              <input v-model.trim="cert.file_path" maxlength="255" :class="{ 'field-error': errors[`attainURL_${index}`] }" @input="delete errors[`attainURL_${index}`]" class="field-input form-control"
                 placeholder="https://example.com/cert.pdf" />
             </div>
             <div class="col-12 col-md-4">
@@ -116,7 +134,7 @@
         </div>
       </div>
 
-      <p v-else class="empty-txt text-center py-4">No attainment certifications yet! Click add to getstarted.</p>
+      <p v-else class="empty-txt text-center py-4">No attainment certifications yet! Click add to get started.</p>
     </section>
 
     <!--footer-->
@@ -150,6 +168,7 @@
   const expandedAttCerts = ref();
   const movedAchCertId = ref(null);
   const movedAttCertId = ref(null);
+  const errors = ref({});
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -281,15 +300,15 @@
 
   const saveChanges = async () => {
     try {
+      errors.value = {}
+
       // Loop through each cert and check for errors and assign order, entries deconstructs the array into index and entry pairs
       for (const [index, cert] of profile.value.achievement_certs.entries()) {
         if (!cert.title) {
-          showPopUp("Could not save certificates. Achievement certificates must have a title.", "error");
-          return;
+          errors.value[`achieveTitle_${index}`] = true
         }
         if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
-          showPopUp("Could not save certificates. Achievement certificate URL must be valid.", "error");
-          return;
+          errors.value[`achieveURL_${index}`] = true
         }
         // Set the order based off the array
         cert.sort_order = index + 1;
@@ -297,15 +316,19 @@
 
       for (const [index, cert] of profile.value.attainment_certs.entries()) {
         if (!cert.title) {
-          showPopUp("Could not save certificates. Attainment certificates must have a title.", "error");
-          return;
+          errors.value[`attainTitle_${index}`] = true
         }
         if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
-          showPopUp("Could not save certificates. Attainment certificate URL must be valid.", "error");
-          return;
+          errors.value[`attainURL_${index}`] = true
         }
         // Set the order based off the array
         cert.sort_order = index + 1;
+      }
+
+      // Check if error object contains any key value pairs by converting it into an array of keys
+      if (Object.keys(errors.value).length) {
+        showPopUp("Could not save certificates. Please fix highlighted fields.", "error");
+        return;
       }
 
       // Deletions (Handles both types of certs)
@@ -545,6 +568,22 @@ onMounted(() => {
     font-size: 1.05rem;
     letter-spacing: -0.1rem;
   }
+
+  .field-input.form-control.field-error {
+    border-color: #db7979;
+    background: #fff5f5;
+    box-shadow: #db7979;
+  }
+
+  .error-message {
+    color:  #db7979;
+  }
+
+  .cert-error {
+    border-color: #db7979;
+    background: #fff5f5;
+  }
+
     
   @media (min-width: 820px) {
       .container-lg {
