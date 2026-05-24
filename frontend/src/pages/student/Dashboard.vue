@@ -171,7 +171,7 @@
         <h2 class="sec-title text-center">Quick Links</h2>
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
-          <button class="btn btn-ql rounded-pill">Add a new reflection</button>
+          <button class="btn btn-ql rounded-pill" @click="goToAddReflec">Add a new reflection</button>
           <router-link :to="`/settings/profile/${$route.params.id}`" class="btn btn-ql rounded-pill">Edit profile</router-link>
           <router-link :to="`/student/networking/${$route.params.id}`" class="btn btn-ql rounded-pill">Add a new networking event</router-link>
           <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-ql rounded-pill">Export profile</router-link>
@@ -258,6 +258,13 @@
     
     function goToGoals() {
       router.push(`/goals/${route.params.id}`)
+    }
+
+    function goToAddReflec() {
+      router.push({
+        path: `/student/eaCompetency/${route.params.id}`,
+        query: { openAdd: 'true' }
+      })
     }
     // For formatting the date used by recent activity
     const formatDate = (dateString) => {
