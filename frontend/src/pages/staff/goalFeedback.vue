@@ -182,57 +182,51 @@
               <td class="completion-notes-cell">{{ goal.completion_notes || '-' }}</td>
 
               <td>
-                <div v-for="f in feedback" :key="f.goal_id">
+                <!-- <div v-for="f in feedback" :key="f.goal_id">
                   <div v-if="f.goal_id==goal.goal_id">
                     {{ f.feedback_content }}
-                    <div>
-                      <button
-                        type="button"
-                        class="action-icon-btn"
-                        aria-label="Edit feedback"
-                        title="Edit"
-                        @click="editForm(f)"
-                      >
-                        <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
-                      </button>
-
-                      <button
-                        type="button"
-                        class="action-icon-btn"
-                        aria-label="Delete goal"
-                        title="Delete"
-                        @click="deleteForm(f)"
-                      >
-                        <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
-                      </button>
-
-
-                      <div v-if="showForm" class="form-box">
-                      <!-- <div class="form-box"> -->
-                        <!-- <h3>{{ editMode ? 'Edit Entry' : 'Add Entry' }}</h3> -->
-
-                        <input v-model="form.feedback_content" placeholder="Feedback content" />
-
-                        <div class="btn-row">
-                            <button class="btn btn-dark" @click="saveEntry">
-                              {{ editMode ? 'Update' : 'Create' }}
-                            </button>
-
-                            <button class="btn btn-light" @click="closeForm">
-                              Cancel
-                            </button>
-                          </div>
-                      </div>
-                    </div>
                   </div>
+                </div> -->
+                <div>{{ getFeedbackContent(goal.goal_id) }}</div>
+                <div>
+                  <button
+                    type="button"
+                    class="action-icon-btn"
+                    aria-label="Edit feedback"
+                    title="Edit"
+                    @click="editForm(getFeedback(goal.goal_id))"
+                  >
+                    <img :src="editIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                  </button>
+
+                  <!-- <button
+                    type="button"
+                    class="action-icon-btn"
+                    aria-label="Delete goal"
+                    title="Delete"
+                    @click="deleteForm(f)"
+                  >
+                    <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
+                  </button> -->
+
+
+                  <!-- <div v-if="showForm" class="form-box"> -->
+                  <!-- <div class="form-box"> -->
+                    <!-- <h3>{{ editMode ? 'Edit Entry' : 'Add Entry' }}</h3> -->
+
+                    <!-- <input v-model="form.feedback_content" placeholder="Feedback content" />
+
+                    <div class="btn-row">
+                        <button class="btn btn-dark" @click="saveEntry">
+                          {{ editMode ? 'Update' : 'Create' }}
+                        </button>
+
+                        <button class="btn btn-light" @click="closeForm">
+                          Cancel
+                        </button>
+                      </div>
+                  </div> -->
                 </div>
-
-
-
-
-
-
-
               </td>
             </tr>
           </tbody>
@@ -295,6 +289,30 @@
   <!-- </main> -->
 
   <!-- <Footer /> -->
+  
+    <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
+      <div class="modal-card form-modal">
+        <div class="modal-header">
+          <p class="modal-label">Edit Feedback</p>
+          <h2>Edit feedback</h2>
+        </div>
+
+        <button class="icon-button" @click="closeForm">Close</button>
+      </div>
+
+      <div class="form-input">
+        <label class="field">
+          <span>Goal Feedback</span>
+          <textarea v-model="feedback_content" required></textarea>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="ghost-button" @click="closeForm">Cancel</button>
+        <button class="action-button" @click="addFeedback">Save</button>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -348,6 +366,8 @@ const form = reactive({
   feedback_content: '',
 })
 
+const feedback_content = ref("");
+
 const openForm = () => {
   editMode.value = false
   form.value = {
@@ -362,7 +382,9 @@ const closeForm = () => {
 
 const editForm = (entry) => {
   editMode.value = true
-  form.value = { ...entry }
+  form.value = { 
+    feedback_content: entry.feedback_content
+   }
   showForm.value = true
 }
 
@@ -413,14 +435,16 @@ const toggleSteps = (goalId) => {
   }
 }
 
-const getFeedback = async (goalID) => {
-  try {
-    const response = await api.get(`/smart-goals/${goalID}/feedback/get`)
-    feedbackByGoal.value = response.data
-  } catch (error) {
-    console.error('Error getting feedback from goal_id', error)
-  }
-}
+
+
+// const getFeedback = async (goalID) => {
+//   try {
+//     const response = await api.get(`/smart-goals/${goalID}/feedback/get`)
+//     feedbackByGoal.value = response.data
+//   } catch (error) {
+//     console.error('Error getting feedback from goal_id', error)
+//   }
+// }
 
 // loadGoals taken from GoalsPage.vue
 const loadGoals = async () => {
@@ -471,6 +495,27 @@ const loadFeedback = async () => {
     console.error('Error fetching feedback', error)
     // feedback.value = []
   }
+}
+
+const getFeedback = (goalId) => {
+  const f = feedback.value
+  for (let index = 0; index < f.length; index++) {
+    const element = f[index];
+    if (element.goal_id==goalId) {
+      return element
+    }
+  }
+}
+
+const getFeedbackContent = (goalId) => {
+  const f = feedback.value
+  for (let index = 0; index < f.length; index++) {
+    const element = f[index];
+    if (element.goal_id==goalId) {
+      return element.feedback_content
+    }
+  }
+  return ''
 }
 
 const loadPlanId = async () => {

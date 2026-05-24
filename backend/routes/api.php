@@ -100,15 +100,6 @@ Route::put('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'up
 Route::delete('/smart-goals/{goalID}/feedback', [GoalFeedbackController::class, 'destroy']);
 Route::get('/smart-goals/{goalID}/feedback/get', [GoalFeedbackController::class, 'getFeedbackByGoal']);
 
-// // Mentor Student Mapping routes
-// Route::get('/mapping/staff/{staffID}', [MentorStudentMappingController::class, 'getMappedStudents']);
-// Route::get('/mapping/student/{profileID}', [MentorStudentMappingController::class, 'getMappedStaff']);
-// Route::post('/mapping', [MentorStudentMappingController::class, 'store']);
-// Route::put('/mapping/{mappingID}', [MentorStudentMappingController::class, 'update']);
-// Route::put('/mapping/student/{profileID}', [MentorStudentMappingController::class, 'updateMappedStaff']);
-// Route::delete('/mapping/{mappingID}', [MentorStudentMappingController::class, 'destroy']);
-// Route::delete('/mapping/student/{profileID}', [MentorStudentMappingController::class, 'destroyMappedStaff']);
-
 /* ================= CAREER PLAN ================= */
 
 Route::get('/career-plans', [CareerDevelopmentPlanController::class, 'index']);
