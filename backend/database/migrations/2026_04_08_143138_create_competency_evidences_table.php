@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('competency_evidences', function (Blueprint $table) {
             $table->id('evidence_id');
             $table->foreignId('entry_id')->constrained('competency_entries', 'entry_id')->onDelete('cascade');
-            $table->foreignId('evidence_type_id')->constrained('competency_evidence_types', 'evidence_type_id')->onDelete('restrict');
+            $table->string('evidence_type', 15);
             $table->string('evidence_value', 500);
             $table->timestamps();
         });

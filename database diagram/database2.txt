@@ -288,6 +288,15 @@ Table competency_indicators {
   updated_at datetime [not null]
 }
 
+// Attainment indicators for the competency indicators
+Table attainment_indicators {
+  attainment_indicator_id bigint [pk, increment]
+  indicator_id bigint [not null, ref: > competency_indicators.indicator_id, note: "On delete: cascade"]
+  attainment_indicator text
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
 // Student competency records
 Table competency_entries {
   entry_id bigint [pk, increment]
@@ -299,7 +308,7 @@ Table competency_entries {
   associated_year int [not null, note: 'Academic year']
   experience_tasks text [not null, note: 'Description of experience and tasks']
   key_learnings text [note: 'Key learnings from that experience']
-  future_applications text [note: 'How the learning will be apllied in future']
+  future_applications text [note: 'How the learning will be applied in future']
 
   entry_level_id bigint [not null, ref: > competency_entry_levels.entry_level_id, note: "On delete: restrict"]
   entry_status_id bigint [not null, ref: > competency_entry_statuses.entry_status_id, note: "On delete: restrict"]
@@ -313,6 +322,7 @@ Table competency_entries {
 Table competency_entry_levels {
   entry_level_id bigint [pk, increment]
   competency_level varchar(15) [not null, note: "Emerging, Developing, Proficient, Confident"]
+  competency_level_weighting int [not null, unique]
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -330,19 +340,11 @@ Table competency_entry_statuses {
 Table competency_evidence {
   evidence_id bigint [pk, increment]
   entry_id bigint [not null, ref: > competency_entries.entry_id, note: 'On delete: cascade']
-  evidence_type_id bigint [not null, ref: > competency_evidence_types.evidence_type_id, note: 'On delete: restrict']
+  evidence_type_id varchar(15) [not null]
   evidence_value varchar(500) [not null, note: 'Stores evidence path']
   created_at datetime [not null]
   updated_at datetime [not null]
 }
-
-Table competency_evidence_types {
-  evidence_type_id bigint [pk, increment]
-  evidence_type varchar(15) [not null, note: "url, file"]
-  created_at datetime [not null]
-  updated_at datetime [not null]  
-}
-
 
 // =====================================================
 // STAFF FEEDBACK

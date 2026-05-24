@@ -18,25 +18,51 @@ class ElevatorPitchController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, $profile)
     {
         //
+        $validated = $request->validate([
+            'pitch_text' => 'nullable|string',
+        ]);
+
+        $pitch = ElevatorPitch::updateOrCreate(
+            ['profile_id' => $profile],
+            ['pitch_text' => $validated['pitch_text'] ?? '']
+        );
+
+        return response()->json($pitch, 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(ElevatorPitch $elevatorPitch)
+    public function show($profile)
     {
         //
+        $pitch = ElevatorPitch::where('profile_id', $profile)->first();
+
+        return response()->json([
+            'profile_id' => $profile,
+            'pitch_text' => $pitch?->pitch_text?? '',
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ElevatorPitch $elevatorPitch)
+    public function update(Request $request, $profile)
     {
         //
+        $validated = $request->validate([
+            'pitch_text' => 'nullable|string',
+        ]);
+
+        $pitch = ElevatorPitch::updateOrCreate(
+            ['profile_id' => $profile],
+            ['pitch_text' => $validated['pitch_text'] ?? '']
+        );
+
+        return response()->json($pitch);
     }
 
     /**

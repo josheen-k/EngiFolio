@@ -10,13 +10,13 @@ class StudentAction extends Model
     use HasFactory;
 
     protected $table = 'student_actions';  
-    protected $primaryKey = 'action_id';
+    protected $primaryKey = 'student_action_id';
     protected $fillable = [
-        'profile_id',
+        'student_profile_id',
         'action',
     ];
     public function profile()
     {
-            return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
+            return $this->belongsTo(StudentProfile::class, 'student_profile_id', 'profile_id');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\NetworkingEvent;
 
 class IndustryContact extends Model
 {
@@ -15,7 +16,6 @@ class IndustryContact extends Model
         'profile_id',
         'contact_name',
         'company',
-        'progress_notes',
         'date_met',
         'linkedin_url',
     ];
@@ -33,5 +33,10 @@ class IndustryContact extends Model
     public function contactMethods()
     {
         return $this->hasMany(IndustryContactMethod::class, 'contact_id', 'contact_id');
+    }
+
+    public function events()
+    {
+        return $this->belongsToMany(NetworkingEvent::class, 'networking_event_contacts', 'contact_id', 'event_id');
     }
 }

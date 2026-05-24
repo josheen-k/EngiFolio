@@ -4,183 +4,226 @@
 
     <section class="container-lg py-5">
 
-      <!-- Header -->
+      <!-- HEADER -->
       <div class="header">
-        <h2 class="page-title">Industry Contacts</h2>
+        <div class="title-wrap">
+          <!-- <img
+            src="https://cdn-icons-png.flaticon.com/512/174/174857.png"
+            class="linkedin-icon"
+            alt="LinkedIn"
+          /> -->
+          <h2 class="page-title">Industry Contacts</h2>
+
+          <div class="networking-switch">
+            <RouterLink :to="`/student/networking/${route.params.id ||1}`" class="switch-pill"> Events Calender </RouterLink>
+            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill active"> Industry Contacts</RouterLink>
+          </div>
+        </div>
+
         <button class="btn btn-dark btn-main" @click="openForm">
           + Add Contact
         </button>
       </div>
 
-      <!-- Controls -->
+      <!-- SEARCH + SORT -->
       <div class="controls">
-        <input v-model="search" class="search" placeholder="Search contacts" />
+        <input
+          v-model="search"
+          class="search"
+          placeholder="Search contacts"
+        />
 
-        <select v-model="sortBy" class="filter-select">
-          <option disabled value="">Sort by</option>
-          <option value="name">Name</option>
-          <option value="company">Company</option>
-          <option value="date_newest">Newest</option>
-          <option value="date_oldest">Oldest</option>
-        </select>
-
-        <select v-model="filterBy" class="filter-select">
-          <option value="all">All</option>
-          <option value="with_linkedin">With LinkedIn</option>
-          <option value="without_linkedin">No LinkedIn</option>
+        <select v-model="sortBy" class="sort">
+          <option disabled value="">Sort</option>
+          <option value="name_asc">A-Z</option>
+          <option value="name_desc">Z-A</option>
+          <option value="date_desc">Newest</option>
+          <option value="date_asc">Oldest</option>
         </select>
       </div>
 
-      <!-- Cards -->
+      <!-- CARDS -->
       <div class="card-grid">
         <div
-          class="contact-card"
-          v-for="c in filteredContacts"
+          v-for="c in sortedContacts"
           :key="c.contact_id"
+          class="contact-card"
+          @click="openDetails(c)"
         >
-          <div class="card-top">
-            <div class="contact-main">
-              <div class="avatar">
-                {{ getInitials(c.contact_name) }}
-              </div>
 
-              <div>
-                <h3 class="contact-name">{{ c.contact_name }}</h3>
-                <p class="company">{{ c.company || "No company" }}</p>
-              </div>
+          <!-- MENU -->
+          <div class="menu-wrapper" @click.stop>
+            <button class="menu-btn" @click="toggleMenu(c.contact_id)">
+              ⋯
+            </button>
+
+            <div v-if="openMenuId === c.contact_id" class="dropdown">
+              <ButtonsStyle
+                @edit="editContact(c)"
+                @delete="deleteContact(c.contact_id)"
+              />
             </div>
-
-            <ButtonsStyle
-              @edit="editContact(c)"
-              @delete="deleteContact(c.contact_id)"
-            />
           </div>
 
-          <p class="notes">
-            {{ c.progress_notes || "No notes" }}
-          </p>
+          <!-- CARD -->
+          <div class="card-top">
+            <div class="avatar">
+              <img :src="getAvatar(c.contact_name)" />
+            </div>
 
-          <a
-            v-if="c.linkedin_url"
-            :href="c.linkedin_url"
-            target="_blank"
-            class="linkedin-link"
-          >
-            LinkedIn
-          </a>
+            <div class="info">
+              <h3 class="contact-name">{{ c.contact_name }}</h3>
 
-          <p class="date">
-            {{ c.date_met || "No date" }}
-          </p>
-        </div>
+              <p class="meta">📅 {{ c.date_met }}</p>
 
-        <div v-if="filteredContacts.length === 0" class="empty">
-          No contacts found
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- Modal -->
+      <!-- DETAILS MODAL -->
+      <div v-if="selectedContact" class="modal-overlay" @click.self="selectedContact = null">
+        <div class="modal-box">
+
+          <h3>{{ selectedContact.contact_name }}</h3>
+
+          <p><b>Company:</b> {{ selectedContact.company }}</p>
+          <p><b>Date Met:</b> {{ selectedContact.date_met }}</p>
+
+          <p v-if="selectedContact.link_url">
+            <b>Link:</b>
+            <a :href="formatUrl(selectedContact.link_url)" target="_blank" rel="noopener noreferrer">Open Link</a>
+          </p>
+
+
+          <div class="btn-row">
+            <ButtonsStyle
+              @edit="editContact(selectedContact)"
+              @delete="deleteContact(selectedContact.contact_id)"
+            />
+            <button class="btn btn-light" @click="selectedContact = null">
+              Close
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FORM -->
       <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
-        <div class="modal-card">
-          <h3>{{ editMode ? "Edit Contact" : "Add Contact" }}</h3>
+        <div class="modal-box">
+
+          <h3>{{ editMode ? "Edit Contact" : "Create Contact" }}</h3>
 
           <input v-model="form.contact_name" placeholder="Name" />
           <input v-model="form.company" placeholder="Company" />
-          <textarea v-model="form.progress_notes" placeholder="Notes"></textarea>
-          <input v-model="form.linkedin_url" type="url" placeholder="LinkedIn URL" />
+          <input v-model="form.link_url" type="url" placeholder="Link" />
           <input type="date" v-model="form.date_met" />
 
           <div class="btn-row">
             <button class="btn btn-dark" @click="saveContact">
               {{ editMode ? "Update" : "Create" }}
             </button>
-            <button class="btn btn-light" @click="closeForm">Cancel</button>
+
+            <button class="btn btn-light" @click="closeForm">
+              Cancel
+            </button>
           </div>
+
         </div>
       </div>
 
     </section>
 
-    <Footer />
+  <Footer />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import api from "@/services/api";
 
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
 
-const user = JSON.parse(localStorage.getItem("user"));
-const userId = user?.user_id || 1;
 
+const route = useRoute();
+const profileId = computed(() =>(route.params.id || 1));
 const contacts = ref([]);
 const search = ref("");
-const sortBy = ref("");
 const filterBy = ref("all");
+const sortBy = ref("");
 
 const showForm = ref(false);
 const editMode = ref(false);
+const selectedContact = ref(null);
+const openMenuId = ref(null);
+
 
 const form = ref({
   contact_id: null,
   contact_name: "",
   company: "",
-  progress_notes: "",
+  link_url: "",
   date_met: "",
   linkedin_url: "",
 });
 
+/* FETCH */
 const fetchContacts = async () => {
-  const res = await api.get(`/users/${userId}/industry-contacts`);
+  const res = await api.get(`/users/${profileId.value}/industry-contacts`);
   contacts.value = res.data;
 };
-
 onMounted(fetchContacts);
 
-const getInitials = (name) => {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map(w => w[0].toUpperCase())
-    .join("")
-    .slice(0, 2);
+/* FILTER */
+const filteredContacts = computed(() => {
+  return contacts.value.filter(c =>
+    c.contact_name?.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
+
+/* SORT */
+const sortedContacts = computed(() => {
+  let list = [...filteredContacts.value];
+
+  switch (sortBy.value) {
+    case "name_asc":
+      return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name));
+    case "name_desc":
+      return list.sort((a, b) => b.contact_name.localeCompare(a.contact_name));
+    case "date_desc":
+      return list.sort((a, b) => new Date(b.date_met) - new Date(a.date_met));
+    case "date_asc":
+      return list.sort((a, b) => new Date(a.date_met) - new Date(b.date_met));
+    default:
+      return list;
+  }
+});
+
+/* HELPERS */
+
+
+const getAvatar = (name) => {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`;
 };
 
-const filteredContacts = computed(() => {
-  let result = contacts.value.filter(c => {
-    const matchesSearch =
-      c.contact_name?.toLowerCase().includes(search.value.toLowerCase()) ||
-      c.company?.toLowerCase().includes(search.value.toLowerCase());
+const formatUrl = (url) => {
+  if(!url) return "";
+  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+};
 
-    const matchesFilter =
-      filterBy.value === "all" ||
-      (filterBy.value === "with_linkedin" && c.linkedin_url) ||
-      (filterBy.value === "without_linkedin" && !c.linkedin_url);
+/* ACTIONS */
+const toggleMenu = (id) => {
+  openMenuId.value = openMenuId.value === id ? null : id;
+};
 
-    return matchesSearch && matchesFilter;
-  });
-
-  result = [...result].sort((a, b) => {
-    if (!sortBy.value || sortBy.value === "name") {
-      return (a.contact_name || "").localeCompare(b.contact_name || "");
-    }
-    if (sortBy.value === "company") {
-      return (a.company || "").localeCompare(b.company || "");
-    }
-    if (sortBy.value === "date_newest") {
-      return new Date(b.date_met || 0) - new Date(a.date_met || 0);
-    }
-    if (sortBy.value === "date_oldest") {
-      return new Date(a.date_met || 0) - new Date(b.date_met || 0);
-    }
-    return 0;
-  });
-
-  return result;
-});
+const openDetails = (c) => {
+  selectedContact.value = c;
+};
 
 const openForm = () => {
   editMode.value = false;
@@ -188,167 +231,232 @@ const openForm = () => {
     contact_id: null,
     contact_name: "",
     company: "",
-    progress_notes: "",
+    link_url: "",
     date_met: "",
     linkedin_url: "",
   };
   showForm.value = true;
 };
 
-const closeForm = () => (showForm.value = false);
+const closeForm = () => {
+  showForm.value = false;
+};
 
 const saveContact = async () => {
   const payload = { ...form.value };
 
-  if (editMode.value) {
-    await api.put(`/users/${userId}/industry-contacts/${form.value.contact_id}`, payload);
-  } else {
-    await api.post(`/users/${userId}/industry-contacts`, payload);
-  }
+  try {
+    if (editMode.value) {
+      await api.put(
+        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
+        payload
+      );
+    } else {
+      await api.post(
+        `/users/${profileId.value}/industry-contacts`,
+        payload
+      );
+    }
 
-  closeForm();
-  fetchContacts();
+    closeForm();
+    await fetchContacts();
+  } catch (error) {
+    console.error("Save contact failed:", error);
+
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      alert(`Save failed: ${JSON.stringify(error.response.data)}`);
+    } else {
+      alert("Save failed. Check browser console for details.");
+    }
+  }
 };
 
+
 const editContact = (c) => {
+  selectedContact.value = null;
+  openMenuId.value = null;
+
   editMode.value = true;
   form.value = { ...c };
   showForm.value = true;
 };
 
 const deleteContact = async (id) => {
-  if (!confirm("Delete this contact?")) return;
-  await api.delete(`/users/${userId}/industry-contacts/${id}`);
+  await api.delete(`/users/${profileId.value}/industry-contacts/${id}`);
+  selectedContact.value = null;
+  openMenuId.value = null;
   fetchContacts();
 };
 </script>
 
 <style scoped>
 .page {
-  font-family: "Martel", sans-serif;
+  font-family: 'Martel', sans-serif;
+  background: #f4f6f8;
+  min-height: 100vh;
 }
 
-/* Header */
+/* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
-/* Controls */
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.linkedin-icon {
+  width: 24px;
+}
+
+/* CONTROLS */
 .controls {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
-.search, .filter-select {
+.search {
+  width: 240px;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #ddd;
   font-size: 0.85rem;
 }
 
-/* Cards (compact) */
+.sort {
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+}
+
+/* GRID */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
 }
 
+/* CARD */
 .contact-card {
   background: white;
-  padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease;
+  border-radius: 12px;
+  padding: 14px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
 }
 
-.contact-card:hover {
-  transform: translateY(-3px);
+/* MENU */
+.menu-wrapper {
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* DROPDOWN */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 24px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* CARD CONTENT */
 .card-top {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.contact-main {
-  display: flex;
   gap: 10px;
   align-items: center;
 }
 
-.avatar {
-  width: 38px;
-  height: 38px;
+.avatar img {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #e6e6e6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
 }
 
 .contact-name {
-  font-size: 1.1rem;
-}
-
-.company {
   font-size: 0.85rem;
-  color: #555;
+  font-weight: 600;
 }
 
-.notes {
-  font-size: 0.8rem;
-  margin-top: 8px;
-}
-
-.date {
-  font-size: 0.75rem;
+.meta {
+  font-size: 0.7rem;
   color: #777;
-  margin-top: 5px;
 }
 
 .linkedin-link {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #0a66c2;
-  margin-top: 6px;
-  display: block;
+  text-decoration: none;
 }
 
-.empty {
-  text-align: center;
-}
-
-/* Modal */
+/* MODAL */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.4);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.modal-card {
+.modal-box {
   background: white;
   padding: 20px;
-  border-radius: 14px;
-  width: 360px;
+  border-radius: 12px;
+  width: 380px;
 }
 
-.modal-card input,
-.modal-card textarea {
+.modal-box input,
+.modal-box textarea {
   width: 100%;
   margin-bottom: 10px;
-  font-size: 0.85rem;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
 }
 
 .btn-row {
   display: flex;
   gap: 10px;
 }
+
+.networking-switch {
+  display: inline-flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.switch-pill {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d6e0ea;
+  text-decoration: none;
+  color: #4e6577;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.switch-pill.active {
+  background: #172334;
+  color: #fff;
+  border-color: #172334;
+}
 </style>
+

@@ -7,14 +7,15 @@
         <h2>Student Competency Review</h2>
       </div>
 
-      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      <p v-if="errorMessage" class="error">
+        {{ errorMessage }}
+      </p>
 
-      <!-- Search -->
       <div class="controls">
         <input
           v-model="search"
           class="search"
-          placeholder="Search competency entries"
+          placeholder="Search students"
         />
       </div>
 
@@ -30,17 +31,25 @@
           </thead>
 
           <tbody>
-            <tr v-for="student in students" :key="student.user_id" class="student-row">
+            <tr
+              v-for="student in filteredStudents"
+              :key="student.user_id"
+              class="student-row"
+              @click="openStudentProfile(student)"
+            >
               <td>
-                {{ student.first_name }} {{ student.last_name }}
+                {{ student.first_name }}
+                {{ student.last_name }}
               </td>
 
-              <td>{{ student.email }}</td>
-
               <td>
+                {{ student.email }}
+              </td>
+
+              <td @click.stop>
                 <button
                   class="btn btn-dark btn-sm"
-                  @click="selectStudent(student)"
+                  @click.stop="selectStudent(student)"
                 >
                   View Entries
                 </button>
@@ -50,26 +59,38 @@
         </table>
       </div>
 
-
-      <h3 v-if="selectedStudent" class="selected-heading">
+      <!-- Selected student -->
+      <h3 v-if="selectedStudent" class="selected-heading" >
         Competency Entries for
         {{ selectedStudent.first_name }}
         {{ selectedStudent.last_name }}
       </h3>
 
-      <p v-if="loading" class="loading">Loading...</p>
+      <p
+        v-if="loading"
+        class="loading"
+      >
+        Loading...
+      </p>
 
-      <div v-if="!loading && selectedStudent && filteredEntries.length === 0" class="empty" >
+      <div
+        v-if="!loading && selectedStudent && filteredEntries.length === 0"
+        class="empty"
+      >
         No competency entries found for this student.
       </div>
 
       <!-- Entries Table -->
-      <div v-if="filteredEntries.length > 0" class="table-box">
+      <div
+        v-if="filteredEntries.length > 0"
+        class="table-box"
+      >
         <table class="entries-table">
           <thead>
             <tr>
               <th>Title</th>
               <th>Indicator</th>
+              <th>Level</th>
               <th>Year</th>
               <th>Tasks</th>
               <th>Start Date</th>
@@ -83,23 +104,43 @@
               :key="entry.entry_id"
               @click="openDetails(entry)"
             >
-              <td>{{ entry.experience_title }}</td>
-
               <td>
-                {{ entry.indicator?.display_id }} -
-                {{ entry.indicator?.indicator_name }}
+                {{ entry.experience_title }}
               </td>
 
-              <td>{{ entry.associated_year }}</td>
+              <td>
+                {{ entry.indicator?.display_id }}
+                -
+                {{
+                  entry.indicator?.indicator_name ||
+                  entry.indicator?.description
+                }}
+              </td>
+
+              <td>
+                {{
+                  entry.entry_level?.competency_level ||
+                  'Not specified'
+                }}
+              </td>
+
+              <td>
+                {{ entry.associated_year }}
+              </td>
 
               <td class="truncate">
                 {{ entry.experience_tasks }}
               </td>
 
-              <td>{{ entry.start_date }}</td>
+              <td>
+                {{ entry.start_date }}
+              </td>
 
               <td @click.stop>
-                <button class="btn btn-dark btn-sm" @click="openFeedback(entry)" >
+                <button
+                  class="btn btn-dark btn-sm"
+                  @click="openFeedback(entry)"
+                >
                   Feedback
                 </button>
               </td>
@@ -108,19 +149,33 @@
         </table>
       </div>
 
-
+      <!-- Details Modal -->
       <div
         v-if="selectedDetails"
         class="modal-overlay"
         @click.self="closeDetails"
       >
         <div class="modal-card">
-          <h3>{{ selectedDetails.experience_title }}</h3>
+          <h3>
+            {{ selectedDetails.experience_title }}
+          </h3>
 
           <p>
             <strong>Indicator:</strong>
-            {{ selectedDetails.indicator?.display_id }} -
-            {{ selectedDetails.indicator?.indicator_name }}
+            {{ selectedDetails.indicator?.display_id }}
+            -
+            {{
+              selectedDetails.indicator?.indicator_name ||
+              selectedDetails.indicator?.description
+            }}
+          </p>
+
+          <p>
+            <strong>Level:</strong>
+            {{
+              selectedDetails.entry_level?.competency_level ||
+              'Not specified'
+            }}
           </p>
 
           <p>
@@ -135,40 +190,60 @@
 
           <p>
             <strong>End Date:</strong>
-            {{ selectedDetails.end_date || "Not specified" }}
+            {{ selectedDetails.end_date || 'Not specified' }}
           </p>
 
           <hr />
 
-          <p><strong>Experience Tasks:</strong></p>
-          <p>{{ selectedDetails.experience_tasks }}</p>
-
-          <p><strong>Key Learnings:</strong></p>
           <p>
-            {{ selectedDetails.key_learnings || "No key learnings added." }}
+            <strong>Experience Tasks:</strong>
           </p>
 
-          <p><strong>Future Applications:</strong></p>
+          <p>
+            {{ selectedDetails.experience_tasks }}
+          </p>
+
+          <p>
+            <strong>Key Learnings:</strong>
+          </p>
+
+          <p>
+            {{
+              selectedDetails.key_learnings ||
+              'No key learnings added.'
+            }}
+          </p>
+
+          <p>
+            <strong>Future Applications:</strong>
+          </p>
+
           <p>
             {{
               selectedDetails.future_applications ||
-              "No future applications added."
+              'No future applications added.'
             }}
           </p>
 
           <div class="btn-row">
-            <button class="btn btn-dark" @click="openFeedback(selectedDetails)" >
+            <button
+              class="btn btn-dark"
+              @click="openFeedback(selectedDetails)"
+            >
               Give Feedback
             </button>
 
-            <button class="btn btn-light" @click="closeDetails">
+            <button
+              class="btn btn-light"
+              @click="closeDetails"
+            >
               Close
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Feedback Modal -->
+      <!-- FEEDBACK MODAL -->
       <div
         v-if="selectedEntry"
         class="modal-overlay"
@@ -176,17 +251,27 @@
       >
         <div class="modal-card">
           <h3>
-            Feedback for {{ selectedEntry.experience_title }}
+            Feedback for
+            {{ selectedEntry.experience_title }}
           </h3>
 
-          <textarea v-model="feedbackText" placeholder="Write feedback..."> </textarea>
+          <textarea
+            v-model="feedbackText"
+            placeholder="Write feedback..."
+          ></textarea>
 
           <div class="btn-row">
-            <button class="btn btn-dark" @click="submitFeedback">
+            <button
+              class="btn btn-dark"
+              @click="submitFeedback"
+            >
               Submit Feedback
             </button>
 
-            <button class="btn btn-light" @click="closeFeedback">
+            <button
+              class="btn btn-light"
+              @click="closeFeedback"
+            >
               Cancel
             </button>
           </div>
@@ -199,128 +284,152 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import StaffNavbar from '@/components/StaffNavbar.vue'
-import Footer from "@/components/Footer.vue";
-import api from "@/services/api";
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-const router = useRouter();
+import StaffNavbar from '@/components/StaffNavbar.vue'
+import Footer from '@/components/Footer.vue'
+import api from '@/services/api'
 
-const user = JSON.parse(localStorage.getItem("user"));
-const staffUserId = user?.user_id || 4;
+const router = useRouter()
 
-const students = ref([]);
-const entries = ref([]);
+// TEMPORARY hardcoded staff id
+const staffUserId = 4
 
-const selectedUserId = ref("");
-const selectedStudent = ref(null);
+const students = ref([])
+const entries = ref([])
 
-const search = ref("");
-const loading = ref(false);
-const errorMessage = ref("");
+const selectedUserId = ref('')
+const selectedStudent = ref(null)
 
-const selectedEntry = ref(null);
-const selectedDetails = ref(null);
+const search = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
 
-const feedbackText = ref("");
+const selectedEntry = ref(null)
+const selectedDetails = ref(null)
+
+const feedbackText = ref('')
 
 const fetchStudents = async () => {
   try {
-    loading.value = true;
-    errorMessage.value = "";
+    loading.value = true
+    errorMessage.value = ''
 
     const res = await api.get(
       `/staff/my-students?staff_id=${staffUserId}`
-    );
+    )
 
-    students.value = res.data;
+    console.log('students response:', res.data)
+
+    students.value = res.data
   } catch (err) {
     console.error(
-      "Fetch students error:",
+      'Fetch students error:',
       err.response?.data || err
-    );
+    )
 
     errorMessage.value =
-      "Could not load assigned students.";
+      'Could not load assigned students.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
+
+const filteredStudents = computed(() => {
+  const term = search.value.toLowerCase()
+
+  return students.value.filter(student =>
+    student.first_name?.toLowerCase().includes(term) ||
+    student.last_name?.toLowerCase().includes(term) ||
+    student.email?.toLowerCase().includes(term)
+  )
+})
 
 const openStudentProfile = (student) => {
   router.push(`/profile/${student.user_id}`)
 }
 
 const selectStudent = async (student) => {
-  selectedStudent.value = student;
-  selectedUserId.value = student.user_id;
+  selectedStudent.value = student
+  selectedUserId.value = student.profile_id
 
-  await fetchEntries();
-};
+  await fetchEntries()
+}
 
 const fetchEntries = async () => {
-  if (!selectedUserId.value) return;
+  if (!selectedUserId.value) return
 
   try {
-    loading.value = true;
-    errorMessage.value = "";
+    loading.value = true
+    errorMessage.value = ''
 
     const res = await api.get(
-      `/users/${selectedUserId.value}/competency-entries`
-    );
+      `/competency-entries/${selectedUserId.value}`
+    )
 
-    entries.value = res.data;
+    entries.value = Array.isArray(res.data)
+      ? res.data
+      : []
   } catch (err) {
     console.error(
-      "Fetch entries error:",
+      'Fetch entries error:',
       err.response?.data || err
-    );
+    )
 
-    errorMessage.value =
-      "Could not load competency entries.";
+    if (err.response?.status === 404) {
+      entries.value = []
+      errorMessage.value = ''
+    } else {
+      errorMessage.value =
+        'Could not load competency entries.'
+    }
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const filteredEntries = computed(() => {
-  return entries.value.filter((entry) =>
-    entry.experience_title
-      ?.toLowerCase()
-      .includes(search.value.toLowerCase()) ||
+  const term = search.value.toLowerCase()
+
+  return entries.value.filter(entry =>
+    entry.experience_title?.toLowerCase().includes(term) ||
+    entry.experience_tasks?.toLowerCase().includes(term) ||
     entry.indicator?.indicator_name
       ?.toLowerCase()
-      .includes(search.value.toLowerCase()) ||
+      .includes(term) ||
     entry.indicator?.display_id
       ?.toLowerCase()
-      .includes(search.value.toLowerCase())
-  );
-});
+      .includes(term) ||
+    entry.indicator?.description
+      ?.toLowerCase()
+      .includes(term)
+  )
+})
 
 const openDetails = (entry) => {
-  selectedDetails.value = entry;
-};
+  selectedDetails.value = entry
+}
 
 const closeDetails = () => {
-  selectedDetails.value = null;
-};
+  selectedDetails.value = null
+}
 
 const openFeedback = (entry) => {
-  selectedEntry.value = entry;
-  selectedDetails.value = null;
-  feedbackText.value = "";
-};
+  selectedEntry.value = entry
+  selectedDetails.value = null
+  feedbackText.value = ''
+}
 
 const closeFeedback = () => {
-  selectedEntry.value = null;
-  feedbackText.value = "";
-};
+  selectedEntry.value = null
+  feedbackText.value = ''
+}
 
 const submitFeedback = async () => {
   if (!feedbackText.value.trim()) {
-    alert("Please enter feedback before submitting.");
-    return;
+    alert('Please enter feedback before submitting.')
+    return
   }
 
   try {
@@ -330,22 +439,22 @@ const submitFeedback = async () => {
         staff_id: staffUserId,
         feedback_content: feedbackText.value,
       }
-    );
+    )
 
-    closeFeedback();
+    closeFeedback()
 
-    alert("Feedback submitted");
+    alert('Feedback submitted')
   } catch (err) {
     console.error(
-      "Submit feedback error:",
+      'Submit feedback error:',
       err.response?.data || err
-    );
+    )
 
-    alert("Could not submit feedback");
+    alert('Could not submit feedback')
   }
-};
+}
 
-onMounted(fetchStudents);
+onMounted(fetchStudents)
 </script>
 
 <style scoped>
@@ -403,12 +512,16 @@ onMounted(fetchStudents);
   vertical-align: top;
 }
 
+.entries-table tbody tr {
+  cursor: pointer;
+}
+
 .entries-table tbody tr:hover {
   background: #fafafa;
 }
 
-.entries-table tbody tr {
-  cursor: pointer;
+.student-row:hover {
+  background: #f7f7ff !important;
 }
 
 .truncate {
@@ -439,9 +552,11 @@ onMounted(fetchStudents);
   inset: 0;
   background: rgba(0,0,0,0.35);
   backdrop-filter: blur(6px);
+
   display: flex;
   justify-content: center;
   align-items: center;
+
   z-index: 1000;
 }
 
@@ -451,8 +566,10 @@ onMounted(fetchStudents);
   max-width: 92%;
   max-height: 85vh;
   overflow-y: auto;
+
   padding: 25px;
   border-radius: 18px;
+
   box-shadow: 0 20px 60px rgba(0,0,0,0.25);
 }
 
@@ -461,6 +578,7 @@ onMounted(fetchStudents);
   min-height: 160px;
   margin-bottom: 12px;
   padding: 10px;
+
   border-radius: 10px;
   border: 1px solid #ddd;
 }

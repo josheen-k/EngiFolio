@@ -14,6 +14,7 @@ class CompetencyIndicator extends Model
     protected $fillable = [
         'group_id',
         'display_id',
+        'indicator_name',
         'description',
         'indicator_link',
         'discontinued_date',
@@ -27,5 +28,21 @@ class CompetencyIndicator extends Model
     public function entries()
     {
         return $this->hasMany(CompetencyEntry::class, 'indicator_id', 'indicator_id');
+    }
+
+    public function attainmentIndicators()
+    {
+        return $this->hasMany(AttainmentIndicator::class, 'indicator_id', 'indicator_id');
+    }
+
+    // Called by the controller to find the highest weighted entry
+    public function highestEntry()
+    {
+        // Return the first entry when joining entries to entry levels and ordering from highest weight first
+        return $this->hasOne(CompetencyEntry::class, 'indicator_id', 'indicator_id')
+            // Ignore all entries that are drafts
+            ->where('competency_entries.entry_status_id', '!=', 1)
+            ->join('competency_entry_levels', 'competency_entries.entry_level_id', '=', 'competency_entry_levels.entry_level_id')
+            ->orderByDesc('competency_entry_levels.competency_level_weighting');
     }
 }

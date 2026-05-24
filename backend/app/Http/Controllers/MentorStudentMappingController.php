@@ -16,12 +16,15 @@ class MentorStudentMappingController extends Controller
             ->where('staff_id', $staffId)
             ->get()
             ->map(function ($mapping) {
+
                 return [
                     'profile_id' => $mapping->profile->profile_id,
                     'user_id' => $mapping->profile->user->user_id,
                     'first_name' => $mapping->profile->user->first_name,
                     'last_name' => $mapping->profile->user->last_name,
                     'email' => $mapping->profile->user->email,
+                    'specialisation' => $mapping->profile->specialisation,
+                    'degree_title' => $mapping->profile->degree_title,
                 ];
             });
 

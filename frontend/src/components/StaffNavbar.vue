@@ -25,15 +25,10 @@
           </li>
 
           <li class="nav-item">
-            <router-link active-class="active-link" to="/staff/competency-review" @click="closeMenu">
-              Competency Reviews
-            </router-link>
-          </li>
-          <li class="nav-item">
           <router-link active-class="active-link" to="/staff/students" @click="closeMenu" >
-    My Students
-  </router-link>
-</li>
+            My Students
+          </router-link>
+          </li>
         </ul>
       </div>
 
@@ -74,11 +69,7 @@
         Dashboard
       </router-link>
 
-      <router-link
-        active-class="active-link"
-        to="/staff/competency-review"
-        @click="closeMenu"
-      >
+      <router-link active-class="active-link" to="/staff/competency-review" @click="closeMenu">
         Competency Reviews
       </router-link>
     </div>

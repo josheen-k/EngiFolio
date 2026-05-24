@@ -2,21 +2,7 @@
   <div class="page">
     <StaffNavbar />
 
-
-
     <main class="container py-5">
-
-      <section class="dash">
-        <p class="eyebrow">Staff Portal</p>
-
-        <h1>Staff Dashboard</h1>
-
-        <p class="subtitle">
-          Manage assigned students, review competency submissions,
-          and provide feedback from one place.
-        </p>
-      </section>
-
 
       <section class="dashboard-grid">
 
@@ -26,59 +12,70 @@
         >
           <div class="card-icon">👥</div>
 
-          <h3>My Students</h3>
+          <h3>Student Management</h3>
 
           <p>
-            View students assigned to you and access their profiles.
+            View assigned students, access profiles,
+            review competencies, and provide feedback.
           </p>
         </router-link>
-
-        <router-link
-          to="/staff/competency-review"
-          class="dashboard-card"
-        >
-          <div class="card-icon">📝</div>
-
-          <h3>Competency Reviews</h3>
-
-          <p>
-            Review competency entries and provide structured feedback.
-          </p>
-        </router-link>
-
 
       </section>
 
+      <!-- Recently submitted entries -->
       <section class="activity-section">
-  <div class="activity-card">
-    <div class="activity-header">
-      <h3>Recent Competency Entries</h3>
-      <span class="activity-badge">
-  {{ recentEntries.length - readEntries.length }} unread
-</span>
-    </div>
 
-    <div v-if="recentEntries.length === 0" class="empty">
-      No recent entries found.
-    </div>
+        <div class="activity-card">
 
-    <div v-for="entry in recentEntries" :key="entry.entry_id" class="activity-item clickable" @click="openEntry(entry)" >
-      <div
-  v-if="!readEntries.includes(entry.entry_id)"
-  class="activity-dot"
-></div>
+          <div class="activity-header">
+            <h3>Recent Competency Entries</h3>
 
-      <div>
-        <strong>{{ entry.experience_title }}</strong>
-        <p>
-          {{ entry.student_name }} —
-          {{ entry.indicator?.display_id }}
-          {{ entry.indicator?.indicator_name }}
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
+            <span class="activity-badge">
+              {{ unreadCount }} unread
+            </span>
+          </div>
+
+          <div
+            v-if="recentEntries.length === 0"
+            class="empty"
+          >
+            No recent entries found.
+          </div>
+
+          <div
+            v-for="entry in recentEntries"
+            :key="entry.entry_id"
+            class="activity-item clickable"
+            @click="openEntry(entry)"
+          >
+
+            <div
+              v-if="!readEntries.includes(entry.entry_id)"
+              class="activity-dot"
+            ></div>
+
+            <div>
+              <strong>
+                {{ entry.experience_title }}
+              </strong>
+
+              <p>
+                {{ entry.student_name }}
+                —
+                {{ entry.indicator?.display_id }}
+
+                {{
+                  entry.indicator?.indicator_name ||
+                  entry.indicator?.description
+                }}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
 
     </main>
 
@@ -88,46 +85,91 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
 import api from '@/services/api'
 import Footer from '@/components/Footer.vue'
 import StaffNavbar from '@/components/StaffNavbar.vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
-const user = JSON.parse(localStorage.getItem('user'))
-const staffUserId = user?.user_id || 4
+// Temporary hardcoded staff id
+const staffUserId = 4
 
 const students = ref([])
 const allEntries = ref([])
+
 const readEntries = ref(
   JSON.parse(localStorage.getItem('readEntries') || '[]')
 )
 
 const fetchDashboardData = async () => {
   try {
-    const studentRes = await api.get(`/staff/my-students?staff_id=${staffUserId}`)
+
+    // fetch assigned students
+    const studentRes = await api.get(
+      `/staff/my-students?staff_id=${staffUserId}`
+    )
+
     students.value = studentRes.data
 
+    // fetch competency entries for each student
     const entryRequests = students.value.map(student =>
-      api.get(`/users/${student.user_id}/competency-entries`)
+      api.get(`/competency-entries/${student.profile_id}`)
     )
 
-    const entryResponses = await Promise.all(entryRequests)
+    const entryResponses = await Promise.allSettled(entryRequests)
 
-    allEntries.value = entryResponses.flatMap((res, index) =>
-      res.data.map(entry => ({
+    allEntries.value = entryResponses.flatMap((result, index) => {
+
+      if (result.status !== 'fulfilled') {
+        return []
+      }
+
+      return result.value.data.map(entry => ({
         ...entry,
-        student_name: `${students.value[index].first_name} ${students.value[index].last_name}`,
+
+        student_name:
+          `${students.value[index].first_name} ${students.value[index].last_name}`,
+
+        student_profile_id:
+          students.value[index].profile_id,
       }))
-    )
+    })
+
   } catch (err) {
-    console.error('Dashboard fetch error:', err.response?.data || err)
+
+    console.error(
+      'Dashboard fetch error:',
+      err.response?.data || err
+    )
   }
 }
-// this is for notifications on the staff homepage
+
+const recentEntries = computed(() => {
+
+  return [...allEntries.value]
+    .sort(
+      (a, b) =>
+        new Date(b.created_at) - new Date(a.created_at)
+    )
+    .slice(0, 5) // just show the first 5 entries after sorting
+})
+
+const unreadCount = computed(() => {
+
+  return recentEntries.value.filter(
+    entry =>
+      !readEntries.value.includes(entry.entry_id)
+  ).length
+})
+
+// notification click
 const openEntry = (entry) => {
+
+  // mark as read
   if (!readEntries.value.includes(entry.entry_id)) {
+
     readEntries.value.push(entry.entry_id)
 
     localStorage.setItem(
@@ -136,14 +178,9 @@ const openEntry = (entry) => {
     )
   }
 
-  router.push('/staff/competency-review')
+  // redirect to assigned students page
+  router.push('/staff/students')
 }
-
-const recentEntries = computed(() => {
-  return [...allEntries.value]
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 5)
-})
 
 onMounted(fetchDashboardData)
 </script>
@@ -155,9 +192,14 @@ onMounted(fetchDashboardData)
 }
 
 
-
 .dash {
-  background: linear-gradient(135deg, #140f50, #302a86);
+  background:
+    linear-gradient(
+      135deg,
+      #140f50,
+      #302a86
+    );
+
   color: white;
   padding: 42px;
   border-radius: 24px;
@@ -188,9 +230,12 @@ onMounted(fetchDashboardData)
   font-size: 1.05rem;
 }
 
+/* Dashboard cards */
+
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns:
+  repeat(auto-fill, minmax(280px, 1fr));  /*repeat the same pattern multiple times, with as many columns */
   gap: 22px;
   margin-bottom: 34px;
 }
@@ -211,13 +256,7 @@ onMounted(fetchDashboardData)
 
 .dashboard-card:hover {
   transform: translateY(-6px);
-
-  box-shadow:
-    0 12px 32px rgba(0,0,0,0.1);
-}
-
-.muted-card {
-  opacity: 0.78;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
 }
 
 .card-icon {
@@ -225,11 +264,9 @@ onMounted(fetchDashboardData)
   height: 52px;
   border-radius: 16px;
   background: #f0efff;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 1.6rem;
   margin-bottom: 18px;
 }
@@ -300,8 +337,10 @@ onMounted(fetchDashboardData)
 
 .activity-item p {
   margin: 4px 0 0;
+
   color: #666;
 }
+
 .clickable {
   cursor: pointer;
   transition: background 0.2s ease;
@@ -311,7 +350,8 @@ onMounted(fetchDashboardData)
   background: #f8f8ff;
   border-radius: 12px;
 }
-</style>
 
-// need to integrate both the pages into one single page, and in a tabular format, add the view profile as a button, and also we need the row
-// to pop out
+.empty {
+  color: #777;
+}
+</style>

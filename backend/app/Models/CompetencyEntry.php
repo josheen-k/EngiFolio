@@ -35,13 +35,21 @@ class CompetencyEntry extends Model
     {
         return $this->belongsTo(CompetencyIndicator::class, 'indicator_id', 'indicator_id');
     }
+    public function entryLevel() // this function links competency entry to comepetency entry level through entry level id
+{
+    return $this->belongsTo(
+        CompetencyEntryLevel::class, // competency entries-emerging, developing, and proficient
+        'entry_level_id',
+        'entry_level_id'
+    );
+}
 
-    public function feedback()
+    public function competencyFeedback()
     {
         return $this->hasMany(CompetencyFeedback::class, 'entry_id', 'entry_id');
     }
 
-    public function evidence()
+    public function competencyEvidence()
     {
         return $this->hasMany(CompetencyEvidence::class, 'entry_id', 'entry_id');
     }

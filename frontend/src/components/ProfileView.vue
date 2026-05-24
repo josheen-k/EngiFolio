@@ -1,42 +1,52 @@
 <template>
     <div class="profile-wrap" v-if="profile">
         <!--header row: left (name+avatar), right (academic info card)-->
-        <div class="header-row">
+        <div class="row align-items-start g-5 mb-5">
             <!--preferred name above av -->
-            <div class="av-col">
+            <div class="col-12 col-md-auto text-center av-col">
                 <h1 class="sec-title mb-3">{{ profile.preferred_name || profile.user.first_name }}</h1>
                 <img :src="profile.profile_image_url || defaultAvatar" @error="(e) => e.target.src = defaultAvatar"
                     alt="Profile Picture" class="profile-pic" />
             </div>
 
             <!--academic card-->
-            <div class="academic-col">
+            <div class="col-12 col-md ps-md-5">
                 <h2 class="sec-title mb-3">Academic Information</h2>
                 <div class="academic-card">
-                    <div class="info-row mb-4">
-                        <div class="info">
-                            <span class="info-label">First name</span>
-                            <span class="info-value">{{ profile.user.first_name }}</span>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-4">
+                            <div class="info">
+                                <span class="info-label">First name</span>
+                                <span class="info-value">{{ profile.user.first_name }}</span>
+                            </div>
                         </div>
-                        <div class="info">
-                            <span class="info-label">Last name</span>
-                            <span class="info-value">{{ profile.user.last_name }}</span>
+                        <div class="col-12 col-sm-4">
+                            <div class="info">
+                                <span class="info-label">Last name</span>
+                                <span class="info-value">{{ profile.user.last_name }}</span>
+                            </div>
                         </div>
-                        <div class="info">
-                            <span class="info-label">Preferred name</span>
-                            <span class="info-value">{{ profile.preferred_name || '—' }}</span>
+                        <div class="col-12 col-sm-4">
+                            <div class="info">
+                                <span class="info-label">Preferred name</span>
+                                <span class="info-value">{{ profile.preferred_name || '—' }}</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- bottom row: degree, specialisation -->
-                    <div class="info-row">
-                        <div class="info">
-                            <span class="info-label">Degree undertaking</span>
-                            <span class="info-value">{{ profile.degree_title }}</span>
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="info">
+                                <span class="info-label">Degree undertaking</span>
+                                <span class="info-value">{{ profile.degree_title }}</span>
+                            </div>
                         </div>
-                        <div class="info">
-                            <span class="info-label">Specialisation&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                            <span class="info-value">{{ profile.specialisation }}</span>
+                        <div class="col-12 col-sm-6">
+                            <div class="info">
+                                <span class="info-label">Specialisation chosen</span>
+                                <span class="info-value">{{ profile.specialisation }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -76,8 +86,7 @@
         </div>
     </div>
 
-    <div v-else-if="loading" class="text-center py-5">
-        <div class="spinner-border" role="status"></div>
+    <div v-else-if="loading" class="text-center py-5 loading">
         <p>Loading profile...</p>
     </div>
 
@@ -114,23 +123,13 @@ onMounted(() => {
 
 <style scoped>
 .profile-wrap {
-    max-width: 60%;
+    max-width: 55%;
     margin: 0 auto;
     padding: 3rem 1.5rem;
 }
 
-.header-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 3rem;
-    margin-bottom: 3.5rem;
-}
-
 .av-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 13rem;
+    width: 14rem;
 }
 
 .profile-pic {
@@ -143,16 +142,11 @@ onMounted(() => {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
-.academic-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .sec-title {
     font-family: 'Martel', serif;
     font-size: 2.0rem;
     color: #303030c5;
+    text-align: center;
 }
 
 .academic-card {
@@ -160,12 +154,6 @@ onMounted(() => {
     border: 1px solid #cccccc;
     border-radius: 2rem;
     padding: 1.5rem 1.75rem;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 5rem;
 }
 
 .info {
@@ -200,7 +188,7 @@ onMounted(() => {
     font-size: 1rem;
     color: #888888;
     line-height: 1.8;
-    margin: 0;
+    margin: 0.3rem;
 }
 
 .quote-img {
@@ -295,4 +283,32 @@ onMounted(() => {
     background: #666666;
     color: #ffffff;
 }
+
+.loading {
+    min-height: calc(100vh);
+}
+
+@media (max-width: 768px) {
+    .profile-wrap {
+      max-width: 100%;
+      padding: 2rem 1rem;
+    }
+
+    .av-col {
+        width: 100%;
+    }
+  
+    .intro-card {
+      padding: 2rem 1.5rem;
+    }
+  
+    .link-label {
+      min-width: 7rem;
+      font-size: 0.85rem;
+    }
+  
+    .link-url {
+      font-size: 0.85rem;
+    }
+  }
 </style>

@@ -12,7 +12,9 @@ class CompetencyGroupController extends Controller
      */
     public function index()
     {
-        //
+        $groups = CompetencyGroup::get(); 
+
+        return response()->json($groups);    
     }
 
     /**
@@ -45,5 +47,18 @@ class CompetencyGroupController extends Controller
     public function destroy(CompetencyGroup $competencyGroup)
     {
         //
+    }
+
+    // Gets student competencies
+    public function getStudentCompetencies($profileId)
+    {
+    $data = CompetencyGroup::with([
+        'indicators.attainmentIndicators',
+        'indicators.entries' => function ($query) use ($profileId) {
+            $query->where('profile_id', $profileId)->with('entryLevel', 'competencyFeedback.staff', 'competencyEvidence');
+        }
+    ])->get();
+
+    return response()->json($data);
     }
 }

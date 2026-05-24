@@ -1,57 +1,5 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
-
-const username = ref('')
-const password = ref('')
-
-const login = () => {
-  let user = null
-
-// for testing purposes
-  if (username.value === 'Alex') {
-    user = {
-      user_id: 1,
-      role: 'student'
-    }
-  }
-
-  else if (username.value === 'Kate') {
-    user = {
-      user_id: 2,
-      role: 'student'
-    }
-  }
-
-  else if (username.value === 'Eleanor') {
-    user = {
-      user_id: 4,
-      role: 'staff'
-    }
-  }
-
-  if (!user || password.value !== 'testpassword') {
-    alert('Invalid username or password')
-    return
-  }
-
-  // Save logged in user
-  localStorage.setItem(
-    'user',
-    JSON.stringify(user)
-  )
-
-  // Redirect by role
-  if (user.role === 'staff') {
-    router.push('/staff/dashboard')
-  }
-
-  else if (user.role === 'student') {
-    router.push(`/student/dashboard/${user.user_id}`)
-  }
-}
 </script>
 
 <template>
@@ -59,86 +7,90 @@ const login = () => {
     <div>
       <div class="navLogo"></div>
     </div>
-
     <div class="nav-bar">
       <div class="nav-item">
-        <router-link to="/" class="btn-back-custom">
-          Go back
-        </router-link>
+        <router-link to="/" class="btn-back-custom">Go back</router-link>
       </div>
     </div>
   </nav>
 
-  <div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
-
-        <header>
-          <div class="d-flex align-items-center mb-4 px-3">
-            <h1 class="h2 fw-bold mb-0">
-              Login
-            </h1>
-          </div>
+  <div class="login-page">
+    <main class="login-content">
+      <div class="login-card shadow-lg">
+        <header class="text-center mb-4">
+          <h1 class="fw-bold login-title">EngiFolio Login</h1>
         </header>
 
-        <main>
-          <div class="container mt-5" style="max-width: 400px;">
+        <section>
+          <form>
+            <div class="mb-3">
+              <input type="text" class="form-control login-input" id="username" placeholder="Username" required>
+            </div>
+            <div class="mb-4">
+              <input type="password" class="form-control login-input" id="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-login w-100 mb-4">Login</button>
+          </form>
+        </section>
 
-            <form @submit.prevent="login">
-
-              <div class="mb-3">
-                <label for="username" class="form-label">
-                  Username
-                </label>
-
-                <input
-                  v-model="username"
-                  type="text"
-                  class="form-control"
-                  id="username"
-                  placeholder="Username"
-                  required
-                >
-              </div>
-
-              <div class="mb-3">
-                <label for="password" class="form-label">
-                  Password
-                </label>
-
-                <input
-                  v-model="password"
-                  type="password"
-                  class="form-control"
-                  id="password"
-                  placeholder="Password"
-                  required
-                >
-              </div>
-
-              <button type="submit" class="btn btn-primary">
-                Login
-              </button>
-
-            </form>
-
+        <footer class="login-footer border-top pt-4 text-center">
+          <p class="small text-muted mb-2">Hardcoded Links:</p>
+          <div class="d-flex justify-content-center gap-2">
+            <router-link to="/student/dashboard/1" class="btn btn-outline-secondary btn-sm rounded-pill">Student 1</router-link>
+            <router-link to="/student/dashboard/2" class="btn btn-outline-secondary btn-sm rounded-pill">Student 2</router-link>
+            <router-link to="/staff/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill">Staff 1</router-link>
           </div>
-        </main>
-
+        </footer>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.nav-wrapper {
-  width: 100vw;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #140f50;
-  padding: 0;
-}
+	.login-page {
+		display: flex;
+		background-color: #f8f9fa;
+		min-height: calc(100vh - 135px);
+	}
+
+	.login-title {
+		font-family: 'Maven Pro', sans-serif;
+		color: #140f50;
+		font-size: 1.8rem;
+	}
+
+	.login-input {
+		border-radius: 15px;
+		border: 1px solid #dee2e6;
+		background-color: #fdfdfd;
+	}
+
+	.login-content {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 20px;
+	}
+
+	.login-card {
+		background: white;
+		width: 100%;
+		max-width: 420px;
+		padding: 2.5rem;
+		border-radius: 1.5rem;
+		border: none;
+	}
+
+	.nav-wrapper {
+		width: 100%;
+		height: 60px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background-color: #140f50;
+		padding: 0;
+	}
 
 .navLogo {
   width: 6.25rem;
@@ -156,34 +108,41 @@ const login = () => {
   align-items: center;
 }
 
-.nav-item {
-  padding-right: 20px;
-}
+	.nav-item {
+		display: flex;
+		align-items: center;
+		padding-right: 20px;
+	}
 
-.btn-back-custom {
-  color: #a7a7a7;
-  border: none;
-  border-radius: 30px;
-  padding: 6px 18px;
-  font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 1.2rem;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
+	.btn-back-custom {
+		color: #a7a7a7;
+		border: none;
+		border-radius: 30px;
+		padding: 6px 18px;
+		font-family: 'Montserrat Alternates', sans-serif;
+		font-size: 1.2rem;
+		text-decoration: none;
+		cursor: pointer;
+		transition: color 0.3s ease;
+	}
 
-.btn-back-custom:hover {
-  color: #ffffff;
-}
+	.btn-back-custom:hover {
+		color: #ffffff;
+	}
 
-.btn {
-  font-family: 'Montserrat Alternates', sans-serif;
-  border-radius: 30px;
-}
+	.btn-login {
+		font-family: 'Montserrat Alternates', sans-serif;
+		border-radius: 1.5rem;
+		font-size: 1rem;
+		font-weight: 400;
+		color: white;
+		background: #140f50;
+	}
 
-.test-users {
-  background: #f5f5f5;
-  border-radius: 14px;
-  padding: 16px;
-  font-size: 0.95rem;
-}
+	.btn-login:hover {
+		background: #646464;
+		color: #ffffff;
+	}
+
 </style>
+

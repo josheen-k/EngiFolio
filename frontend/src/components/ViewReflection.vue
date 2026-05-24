@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center justify-content-between border-bottom p-3">
           <img class="plus-btn" src="@/assets/back.png" @click="$emit('close')">
 
-          <h2 class="text-center view-title mb-0">{{ reflec.title }}</h2>
+          <h2 class="text-center view-title mb-0">{{ reflec?.experience_title }}</h2>
           <div class="d-flex gap-2">
             <img class="plus-btn" src="@/assets/del.png" @click="showDeleteConfirm = true" title="Delete">
             <img class="plus-btn" src="@/assets/edit.png" @click="enterEdit" title="Edit">
@@ -17,62 +17,71 @@
 
         <!-- competency, level, year-->
         <div class="d-flex justify-content-center gap-2 pt-3 pb-2">
-          <span class="pill-tag">Competency {{ compt.id }}</span>
-          <span class="pill-tag">{{ reflec.year===0 ? 'PRIOR':'YEAR ' + reflec.year }}</span>
-          <span class="pill-tag">{{ reflec.level }}</span>
+          <span class="pill-tag">Competency {{ compt?.displayId }}</span>
+          <span class="pill-tag">{{ reflec?.associated_year === 0 ? 'PRIOR':'YEAR ' + reflec?.associated_year }}</span>
+          <span class="pill-tag">{{ reflec?.entry_level?.competency_level }}</span>
         </div>
         <!-- date range-->
-        <p class="text-center date-txt pb-2">{{ reflec.startDate }} – {{ reflec.endDate}}</p>
+        <p class="text-center date-txt pb-2">{{ reflec?.start_date }} – {{ reflec?.end_date}}</p>
 
         <div class="view-popup-scroll px-4 py-3 d-flex flex-column gap-4">
           <!-- experience & tasks -->
           <div>
             <p class="section-label">Experience & tasks:</p>
-            <p class="body-txt">{{ reflec.tasks}}</p>
+            <p class="body-txt">{{ reflec?.experience_tasks}}</p>
           </div>
 
           <!-- key learnings -->
           <div>
             <p class="section-label">Key learnings:</p>
-            <p class="body-txt">{{ reflec.learnings}}</p>
+            <p class="body-txt">{{ reflec?.key_learnings}}</p>
           </div>
 
           <!-- future application -->
           <div>
             <p class="section-label">Future Application:</p>
-            <p class="body-txt">{{ reflec.future}}</p>
+            <p class="body-txt">{{ reflec?.future_applications}}</p>
           </div>
 
           <!-- evidence-->
-          <div>
+         <div>
             <p class="section-label">Evidence:</p>
-            <div v-for="(ev, i) in reflec.evidenceEntries.filter(e=> e.value || e.fileName)" :key="i"
-            class="d-flex align-items-center gap-3 mb-2">
-
-              <span class="ev-label">{{ evLabel(ev.type) }}:</span>
-              <span class="evidence-pill">
-                <a v-if="ev.type==='url'" :href="ev.value">{{ ev.value }}</a>
-                <span v-else>{{ ev.fileName || ev.value }}</span>
-              </span>
+            <div v-if="reflec?.evidence?.length">
+              <div v-for="(ev, i) in reflec.evidence" :key="i"
+                class="d-flex align-items-center gap-3 mb-2">
+                <span class="ev-label">{{ evLabel(ev.evidence_type) }}:</span>
+                <span class="evidence-pill">
+                  <a v-if="ev.evidence_type === 'url'" :href="ev.evidence_value" target="_blank">
+                    {{ ev.evidence_value }}
+                  </a>
+                  <span v-else>{{ ev.evidence_value }}</span>
+                </span>
+              </div>
             </div>
+            <p v-else class="body-txt">No evidence added yet</p>
           </div>
 
           <!-- feedback received -->
           <div>
-            <p class="section-label">Feedback Received:</p>
-            <div v-if="reflec.feedback" class="feedback-received">
-              <span class="feedback-author">{{ reflec.feedbackAuthor }} commented:</span>
-              <p class="feedback-received-txt">{{ reflec.feedback }}</p>
+          <p class="section-label">Feedback Received:</p>
+          
+          <div v-if="reflec?.feedback?.length" class="d-flex flex-column gap-3">
+            <div v-for="(fb, i) in reflec.feedback" :key="i" class="feedback-received">
+              <span class="feedback-author">{{ fb.staff.first_name }} {{ fb.staff.last_name }} commented:</span>
+              <p class="feedback-received-txt">{{ fb.feedback_content }}</p>
+              <span class="date-txt">{{ new Date(fb.created_at).toLocaleDateString() }}</span>
             </div>
-            <!-- no feedback yet-->
-            <p v-else class="body-txt">No feedback received yet</p>
           </div>
+          <p v-else class="body-txt">No feedback received yet</p>
+        </div>
         </div>
 
         <!-- footer -->
         <div class="d-flex justify-content-between align-items-center p-3 border-top date-txt">
           <span><u>Scroll to see full reflection</u></span>
-          <span>Last updated on {{ reflec.date }}</span>
+          <span>
+            Last updated on {{ reflec?.updated_at ? new Date(reflec.updated_at).toLocaleDateString() : 'Unknown' }}
+          </span>
         </div>
       </template>
 
@@ -81,15 +90,25 @@
 
         <!-- editable title in box-->
         <div class="border-bottom p-3">
-          <input v-model="ef.title" class="form-control rounded-3 text-center edit-title-input"/>
+          <input v-model="ef.experience_title" class="form-control rounded-3 text-center edit-title-input"/>
 
-          <!-- compt, level and year -->
+          <!-- competency name and desc-->
+          <div class="row g-4">
+            <div class="col-5">
+              <label class="form-label field-label">Adding reflection for:</label>
+              <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
+                Competency {{ compt?.displayId }}
+              </div>
+            </div>
+            <div class="col-7">
+              <label class="form-label field-label">Description:</label>
+              <p class="field-desc">{{ compt?.description }}</p>
+            </div>
+          </div>
+
+          <!-- level and year -->
           <div class="d-flex justify-content-center gap-2 mt-3">
-            <select v-model="ef.comptId" class="pill-select">
-              <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.id }}</option>
-            </select>
-
-            <select v-model="ef.year" class="pill-select">
+            <select v-model="ef.associated_year" class="pill-select">
               <option value="0">Prior to degree</option>
               <option value="1">Year 1</option>
               <option value="2">Year 2</option>
@@ -97,19 +116,18 @@
               <option value="4">Year 4</option>
             </select>
 
-            <select v-model="ef.level" class="pill-select">
-              <option>Emerging</option>
-              <option>Developing</option>
-              <option>Proficient</option>
-              <option>Confident</option>
+            <select v-model="ef.entry_level_id" class="pill-select">
+              <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
             </select>
           </div>
 
           <!-- date range-->
           <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
-            <input v-model="ef.startDate" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
             <span class="body-txt">–</span>
-            <input v-model="ef.endDate" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="ef.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
           </div>
         </div>
 
@@ -119,21 +137,21 @@
           <!-- experience & tasks -->
           <div>
             <label class="form-label field-label">Experience &amp; tasks</label>
-            <textarea v-model="ef.tasks" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model="ef.experience_tasks" class="form-control field-input rounded-3" rows="4"
               placeholder="Describe the experience and tasks you undertook"></textarea>
           </div>
 
           <!-- key learnings -->
           <div>
             <label class="form-label field-label">Key learnings</label>
-            <textarea v-model="ef.learnings" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model="ef.key_learnings" class="form-control field-input rounded-3" rows="4"
               placeholder="What did you learn that was most valuable?"></textarea>
           </div>
 
           <!-- future application -->
           <div>
             <label class="form-label field-label">Future application</label>
-            <textarea v-model="ef.future" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model="ef.future_applications" class="form-control field-input rounded-3" rows="4"
               placeholder="How will you apply these learnings in the future?"></textarea>
           </div>
 
@@ -191,7 +209,7 @@
             </div>
 
             <button class="btn btn-filter rounded-pill px-3 py-1"
-            @click="ef.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add another</button>
+            @click="ef.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
           </div>
 
         </div>
@@ -225,39 +243,44 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { getAllCompts, todayStr } from '@/useCompetencies.js'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+import api from "@/services/api"
 
 const props = defineProps({
   show: Boolean,
   reflec: Object,
   compt: Object,
-  index: Number
+  index: Number,
+  initialComptId: [String, Number], 
+  levelOptions: Array,
+  categories: Array
 })
-const emit = defineEmits(['close', 'delete', 'save'])
+
+const emit = defineEmits(['close', 'refresh'])
+const route = useRoute()
 
 // local state
 const editing = ref(false)
 const showDeleteConfirm = ref(false)
-const allCompts = computed(()=> getAllCompts())
 
 // edit form
 const ef = ref({
-  title: '',
-  comptId: '',
-  year: '',
-  level: '',
-  startDate: '',
-  endDate: '',
-  tasks: '',
-  learnings: '',
-  future: '',
+  profile_id: route.params.id,
+  indicator_id: null,
+  experience_title: '',
+  associated_year: 0,
+  entry_level_id: null,
+  entry_status_id: 0,
+  start_date: '',
+  end_date: '',
+  experience_tasks: '',
+  key_learnings: '',
+  future_applications: '',
   evidenceEntries: []
 })
 
-const hasEvidence = computed(() =>
-  props.reflec.evidenceEntries.some(e => e.value || e.fileName)
-)
 
 // reset edit state when popup closes
 watch(() => props.show, (v) => {
@@ -266,48 +289,6 @@ watch(() => props.show, (v) => {
     showDeleteConfirm.value = false
   }
 })
-
-// evidence helpers
-function evLabel(type) {
-  switch (type) {
-    case 'url':
-      return 'URL'
-    case 'document':
-      return 'File'
-    case 'image':
-      return 'Image'
-    case 'video':
-      return 'Video'
-    default:
-      return type || 'File'
-  }
-}
-
-function fileAccept(type) {
-  switch (type) {
-    case 'image':
-      return 'image/*'
-    case 'video':
-      return 'video/*'
-    case 'document':
-      return '.pdf,.doc,.docx,.txt,.ppt,.pptx'
-    default:
-      return '*'
-  }
-}
-
-function uploadHint(type) {
-  switch (type) {
-    case 'image':
-      return 'PNG, JPG, JPEG, GIF'
-    case 'video':
-      return 'MP4, MOV'
-    case 'document':
-      return 'PDF, DOC, DOCX, TXT, PPT, PPTX'
-    default:
-      return ''
-  }
-}
 
 function handleFile(e, ev) {
   const file = e.target.files[0]
@@ -319,50 +300,89 @@ function handleFile(e, ev) {
 
 // enter edit
 function enterEdit() {
+  const existingEvidence = (props.reflec.evidence || []).map(ev => ({
+    evidence_id: ev.evidence_id,
+    type: ev.evidence_type,
+    value: ev.evidence_value,
+    fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
+  }))
+
   ef.value = {
-    title: props.reflec.title || '',
-    comptId: props.compt.id || '',
-    year: props.reflec.year ?? '',
-    level: props.reflec.level ?? '',
-    startDate: props.reflec.startDate || '',
-    endDate: props.reflec.endDate || '',
-    tasks: props.reflec.tasks || '',
-    learnings: props.reflec.learnings || '',
-    future: props.reflec.future || '',
-    evidenceEntries: JSON.parse(JSON.stringify(props.reflec.evidenceEntries || []))
+    id: props.reflec.entry_id,
+    experience_title: props.reflec.experience_title || '',
+    indicator_id: props.compt?.id || '',
+    associated_year: props.reflec.associated_year ?? 0,
+    entry_level_id: props.reflec.entry_level_id || null,
+    start_date: props.reflec.start_date || '',
+    end_date: props.reflec.end_date || '',
+    experience_tasks: props.reflec.experience_tasks || '',
+    key_learnings: props.reflec.key_learnings || '',
+    future_applications: props.reflec.future_applications || '',
+    evidenceEntries: existingEvidence.length 
+      ? existingEvidence
+      : [{ type: '', value: '', fileName: '' }]
   }
   editing.value = true
 }
 
-function saveEdit(asDraft) {
-  const keepAsDraft = asDraft === true
-  emit('save', {
-    index: props.index,
-    updated: {
-      title: ef.value.title,
-      year: Number(ef.value.year),
-      level: ef.value.level,
-      startDate: ef.value.startDate,
-      endDate: ef.value.endDate,
-      tasks: ef.value.tasks,
-      learnings: ef.value.learnings,
-      future: ef.value.future,
-      evidenceEntries: ef.value.evidenceEntries,
-      date: todayStr(),
-      isDraft: keepAsDraft
+async function saveEntry(statusId) {
+  try {
+    await api.put(`/competency-entries/${ef.value.id}`, {
+      profile_id: route.params.id,
+      indicator_id: Number(ef.value.indicator_id),
+      experience_title: ef.value.experience_title || 'Untitled',
+      associated_year: Number(ef.value.associated_year),
+      entry_level_id: ef.value.entry_level_id,
+      entry_status_id: statusId,
+      start_date: ef.value.start_date,
+      end_date: ef.value.end_date,
+      experience_tasks: ef.value.experience_tasks,
+      key_learnings: ef.value.key_learnings,
+      future_applications: ef.value.future_applications,
+    })
+
+    const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
+    for (const id of existingIds) {
+      await api.delete(`/competency-evidence/${id}`)
     }
-  })
-  editing.value = false
+
+    // Save current evidence entries
+    const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
+    for (const ev of evidenceToSave) {
+      await api.post('/competency-evidence', {
+        entry_id: ef.value.id,
+        evidence_type: ev.type,
+        evidence_value: ev.value
+      })
+    }
+
+    // Close window
+    emit('refresh')
+    emit('close');
+    
+  } catch (error) {
+    console.error("Submission Failled:", error);
+    alert("Submission could not be saved. Please check that all required fields are filled.", error);
+  }
 }
 
-function saveAsDraft() {
-  saveEdit(true)
-  emit('close')
-}
+// Pass the entry status id when saving the entry
+// 1 for draft, 2 for submitted
+const saveEdit = () => saveEntry(2)
+const saveAsDraft = () => saveEntry(1)
 
-function doDelete() {
-  emit('delete', props.index)
-  showDeleteConfirm.value = false
+
+async function doDelete() {
+  console.log('deleting entry:', props.reflec.entry_id)
+  try {
+    await api.delete(`/competency-entries/${props.reflec.entry_id}`)
+    showDeleteConfirm.value = false
+    emit('refresh')
+    emit('close')
+  } catch (error) {
+    console.error('Delete failed:', error)
+    alert('Could not delete this reflection')
+  }
 }
 </script>
 
