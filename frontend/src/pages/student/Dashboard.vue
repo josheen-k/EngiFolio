@@ -17,7 +17,7 @@
                 <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
                 
                 <div class="d-flex align-items-center justify-content-between">
-                  <span class="circle circle-light">
+                  <span class="circle circle-light" @click="goToReflections" style="cursor:pointer">
                     <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
                   </span>
                   <span class="stat-data">{{ stats.totalReflections }}</span>
@@ -33,7 +33,7 @@
                 <p class="stat-title mb-2">Mastered<br/>Competencies</p>
                 
                 <div class="d-flex align-items-center justify-content-between">
-                  <span class="circle circle-dark">
+                  <span class="circle circle-dark" @click="goToMastered" style="cursor:pointer">
                     <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
                   </span>
                   <span class="stat-data">{{ stats.comptMastered }}</span>
@@ -49,7 +49,7 @@
                 <p class="stat-title mb-2">SMART Goals<br/>Completed</p>
                 
                 <div class="d-flex align-items-center justify-content-between">
-                  <span class="circle circle-dark">
+                  <span class="circle circle-dark" @click="goToGoals" style="cursor:pointer">
                     <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
                   </span>
                   <span class="stat-data">{{ stats.goalsDone }}</span>
@@ -203,10 +203,12 @@
 <script setup>
     import { ref, computed, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
+    import { useRouter } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
 
     const route = useRoute();
+    const router = useRouter()
     const profile = ref(null);
     const userCompetencies = ref([]);
     const competencyIndicators = ref([]);
@@ -240,6 +242,23 @@
       ]
     })
 
+    function goToReflections() {
+      router.push({
+        path: `/student/eaCompetency/${route.params.id}`,
+        query: { filterReflec: 'has-reflections' }
+      })
+    }
+
+    function goToMastered() {
+      router.push({
+        path: `/student/eaCompetency/${route.params.id}`,
+        query: { filterLevel: 'Confident' }
+      })
+    }
+    
+    function goToGoals() {
+      router.push(`/goals/${route.params.id}`)
+    }
     // For formatting the date used by recent activity
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -524,7 +543,7 @@
 
 .stat-card {
   border-radius: 1.5rem;
-  border-color: #000000;
+  border: 1px solid #bababa;
   height: 12rem;
   padding: 0.5rem;
 }
@@ -557,6 +576,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.circle:hover {
+  transform: translateY(-5px) rotate(30deg);
+  box-shadow: 0 3px 8px #c9c9c9;
+  border: 1px solid #c7c7c7;
 }
 
 .circle-light {
@@ -594,9 +620,9 @@
 }
 
 .goal-heading {
-  font-family: 'Martian Mono', monospace;
+  font-family: 'Montserrat Alternates', sans-serif;
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 500;
   color: #222222;
   margin-bottom: 0;
   flex: 1;
