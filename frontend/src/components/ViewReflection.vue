@@ -92,22 +92,12 @@
         <div class="border-bottom p-3">
           <input v-model.trim="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"/>
 
-          <!-- competency name and desc-->
-          <div class="row g-4">
-            <div class="col-5">
-              <label class="form-label field-label">Adding reflection for:</label>
-              <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
-                Competency {{ compt?.displayId }}
-              </div>
-            </div>
-            <div class="col-7">
-              <label class="form-label field-label">Description:</label>
-              <p class="field-desc">{{ compt?.description }}</p>
-            </div>
-          </div>
-
-          <!-- level and year -->
+          <!-- compt, level and year -->
           <div class="d-flex justify-content-center gap-2 mt-3">
+            <select v-model="ef.indicator_id" class="pill-select">
+              <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
+            </select>
+
             <select v-model="ef.associated_year" class="pill-select">
               <option value="0">Prior to degree</option>
               <option value="1">Year 1</option>
@@ -246,7 +236,7 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue'
+  import { ref, watch, computed } from 'vue'
   import { useRoute } from 'vue-router'
   import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
   import api from "@/services/api"
@@ -290,6 +280,16 @@
     key_learnings: '',
     future_applications: '',
     evidenceEntries: []
+  })
+
+  const allCompts = computed(() => {
+    if (!props.categories) return []
+    return props.categories.flatMap(cat =>
+      cat.compt.map(c => ({
+        id: c.id,
+        displayId: c.displayId,
+      }))
+    )
   })
 
   const addEvidence = () => {
