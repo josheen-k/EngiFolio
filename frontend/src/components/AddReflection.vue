@@ -30,16 +30,23 @@
           </select>
           </div>
           <div class="col-7">
-            <label class="form-label field-label">Experience title</label>
-            <input v-model="f.title" maxlength="50" class="form-control field-input rounded-3" placeholder="My experience"/>
+            <div class="d-flex justify-content-between align-items-center">  
+              <label class="form-label field-label">Experience title</label>
+              <label v-if="errors.title" class="field-label error-message">*Title cannot be empty</label>
+            </div>
+            <input v-model="f.title" maxlength="50" class="form-control field-input rounded-3" :class="{ 'field-error': errors.title }" @input="delete errors.title" placeholder="My experience"/>
           </div>
         </div>
 
         <!-- dates and associalted year -->
         <div class="row g-3">
           <div class="col-4">
-            <label class="form-label field-label">Start date</label>
-            <input v-model="f.startDate" type="date" class="form-control field-input rounded-3"/>
+            <div class="d-flex justify-content-between align-items-center">  
+              <label class="form-label field-label">Start date</label>
+              <label v-if="errors.startDate" class="field-label error-message">*Invalid start date</label>
+            </div>
+            <input v-model="f.startDate" type="date" class="form-control field-input rounded-3" 
+            :class="{ 'field-error': errors.startDate }" @input="delete errors.startDate"/>
           </div>
           <div class="col-4">
             <label class="form-label field-label">End date</label>
@@ -59,8 +66,12 @@
 
         <!-- exp and tasks textbox-->
         <div>
-          <label class="form-label field-label">Experience & tasks: (Max 500 characters)</label>
+          <div class="d-flex justify-content-between align-items-center">  
+            <label class="form-label field-label">Experience & tasks: (Max 500 characters)</label>
+            <label v-if="errors.tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
+          </div>
           <textarea v-model="f.tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          :class="{ 'field-error': errors.tasks }" @input="delete errors.tasks"
           placeholder="Describe the experience and tasks you undertook"></textarea>
         </div>
 
@@ -97,16 +108,21 @@
             </div>
 
             <!-- evidence input field -->
-            <div class="flex-grow-1">
-              <label class="form-label field-label mb-3">Evidence input</label>
-
+            <div class="flex-grow-1">  
+              <div class="d-flex justify-content-between align-items-center"> 
+                <label class="form-label field-label mb-3">Evidence input</label>
+                <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
+              </div> 
+            
               <!-- nothing selected-->
               <input v-if="!ev.type" class="form-control field-input rounded-3"
               disabled placeholder="Select a type first"/>
 
               <!-- if link selected-->
               <input v-else-if="ev.type==='url'" v-model="ev.value" type="url"
-                class="form-control field-input rounded-3" placeholder="https://example.com"/>
+                class="form-control field-input rounded-3" 
+                :class="{ 'field-error': errors[`evidenceURL_${idx}`] }" @input="delete errors[`evidenceURL_${idx}`]"
+                placeholder="https://example.com"/>
 
               <!-- if file upload selected -->
               <div v-else>
@@ -168,6 +184,8 @@
     levelOptions: Array,
     categories: Array
   })
+  
+  const errors = ref({});
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -264,32 +282,30 @@ async function submit(statusId) {
     if (Number(statusId) === 2) {
       // Check for valid title
       if (!f.value.title) {
-        showPopUp("Cannot publish entry with a blank title.", "error");
-        return;
+        errors.value.title = true
       }
 
       // Check for valid title
       if (!f.value.startDate) {
-        showPopUp("Cannot publish entry without a start date.", "error");
-        return;
+        errors.value.startDate = true
       }
 
       // Check for experiences field
       if (!f.value.tasks) {
-        showPopUp("Experience and tasks cannot be blank", "error");
-        return;
+        errors.value.tasks = true
       }
 
       // Check for valid links
-      for (const ev of evidenceToSave) {
-        console.log('checking ev:', ev.type, ev.value)
-        if (ev.type === 'url') {
-          if (!isValidUrl(ev.value)) {
-            showPopUp("Evidence URL is invalid. Please enter in a valid URL.", "error");
-            return;
-          }
+      for (let i = 0; i < evidenceToSave.length; i++) {
+        if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
+          errors.value[`evidenceURL_${i}`] = true
         }
       }
+    }
+
+    if (Object.keys(errors.value).length) {
+      showPopUp("Could not submit entry. Please fix highlighted fields.", "error");
+      return;
     }
 
     const payload = {
@@ -502,5 +518,16 @@ async function submit(statusId) {
 .popUp-msg.error {
   background: #db7979;
   color: #fff;
+}
+
+
+.field-input.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
 }
 </style>
