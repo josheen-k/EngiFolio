@@ -27,8 +27,13 @@
           <input v-model.trim="profile.user.first_name" maxlength="50" class="field-input form-control" placeholder="First name"/>
         </div>
         <div class="col-12 col-sm-4">
-          <label class="field-label">Last name</label>
-          <input v-model.trim="profile.user.last_name" maxlength="50" class="field-input form-control" placeholder="Last name"/>
+          <div class="d-flex justify-content-between align-items-center">          
+            <label class="field-label">Last name</label>
+            <!-- Error message -->
+            <label v-if="errors.lastName" class="field-label error-message">*Last name cannot be empty</label>
+          </div>
+          <!-- Change class if error or delete error if the user changes the input text -->
+          <input v-model.trim="profile.user.last_name" maxlength="50" class="field-input form-control" :class="{ 'field-error': errors.lastName }" @input="delete errors.lastName" placeholder="Last name"/>
         </div>
         <div class="col-12 col-sm-4">
           <label class="field-label">Preferred name</label>
@@ -65,12 +70,20 @@
         <div class="link-edit-row" v-for="(link, index) in profile.links" :key="index">
           <div class="row g-2 align-items-end">
             <div class="col-12 col-sm-4">
-              <label class="field-label">Label</label>
-              <input v-model.trim="link.link_label" class="field-input form-control" placeholder="e.g. LinkedIn"/>
+              <div class="d-flex justify-content-between align-items-center">  
+                <label class="field-label">Label</label>
+                <!-- Error message -->
+                <label v-if="errors[`linkLabel_${index}`]" class="field-label error-message">*Link label cannot be empty</label>
+              </div> 
+              <input v-model.trim="link.link_label" class="field-input form-control" :class="{ 'field-error': errors[`linkLabel_${index}`] }" @input="delete errors[`linkLabel_${index}`]" placeholder="e.g. LinkedIn"/>
             </div>
             <div class="col-12 col-sm-6">
-              <label class="field-label">URL</label>
-              <input v-model.trim="link.link_url" class="field-input form-control" placeholder="https://example.com"/>
+              <div class="d-flex justify-content-between align-items-center">  
+                <label class="field-label">URL</label>
+                <!-- Error message -->
+                <label v-if="errors[`linkUrl_${index}`]" class="field-label error-message">*Link URL must be valid</label>
+              </div> 
+              <input v-model.trim="link.link_url" class="field-input form-control" :class="{ 'field-error': errors[`linkUrl_${index}`] }" @input="delete errors[`linkUrl_${index}`]" placeholder="https://example.com"/>
             </div>
             <div class="col-12 col-sm-2 d-flex align-items-end">
               <button class="remove-btn" @click="removeLink(index)" title="Remove link">
@@ -110,6 +123,7 @@
   const profile = ref(null);
   const loading = ref(true);
   const linksToDelete = ref([]);
+  const errors = ref({});
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -166,25 +180,33 @@ function isValidUrl(url) {
 
 const saveChanges = async () => {
   try {
-    // Check if last name is empty
-    if (!profile.value.user.last_name || profile.value.user.last_name.trim() === '') {
-      showPopUp("Cannot save profile. Last name cannot be blank.", "error");
-      return;
+    // Reset errors
+    errors.value = {}
+
+    // Check if last name is empty and add to errors if so
+    if (!profile.value.user.last_name.trim()) {
+      errors.value.lastName = true
     }
 
     // Remove all links without a label or a url
     profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
 
-    // Loop through each link
-    for (const link of profile.value.links) {
+    // Loop through each link, add entry to errors for the links located at position i
+    for (let i = 0; i < profile.value.links.length; i++) {
+      const link = profile.value.links[i]
       if (!link.link_label) {
-        showPopUp("Could not save profile. Link titles cannot be blank.", "error");
-        return;
+        errors.value[`linkLabel_${i}`] = true
       }
       if (!isValidUrl(link.link_url)) {
-        showPopUp("Could not save profile. Link URL is not valid.", "error");
-        return;
-      }
+        errors.value[`linkUrl_${i}`] = true
+      } 
+    }
+
+
+    // Check if error object contains any key value pairs by converting it into an array of keys
+    if (Object.keys(errors.value).length) {
+      showPopUp("Could not save profile. Please fix highlighted fields.", "error");
+      return;
     }
 
     // Saves the main profile
@@ -383,6 +405,16 @@ onMounted(() => {
 .popUp-msg.error {
   background: #db7979;
   color: #fff;
+}
+
+.field-input.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
 }
 
 @media (max-width: 768px) {

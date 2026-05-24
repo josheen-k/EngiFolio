@@ -218,8 +218,7 @@
         <div class="d-flex justify-content-between align-items-center px-4 pb-4 pt-3 border-top">
           <span class="date-txt"><u>Scroll to see full reflection</u></span>
           <div class="d-flex gap-2">
-            <!-- Non-breaking space to fix no space between as and draft -->
-            <button class="btn btn-filter" @click="saveAsDraft">Save as&nbsp; draft</button>
+            <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
             <button class="btn btn-filter" @click="editing = false">Cancel</button>
             <button class="btn btn-add" @click="saveEdit">Done</button>
           </div>
