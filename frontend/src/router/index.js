@@ -14,7 +14,6 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
-import CompetencyPage from '@/pages/staff/competencyPage.vue'
 import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 import CDL from '@/pages/student/CDL.vue'
@@ -88,7 +87,7 @@ const routes = [
   },
 
   {
-    path: '/staff/goal-feedback/:id',
+    path: '/staff/goal-feedback',
     name: 'goalFeedback',
     component: GoalFeedback
   },
@@ -113,10 +112,6 @@ const routes = [
     path: '/certification-settings/:id',
     name: 'certificationSettings',
     component: CertificationSettings
-  },
-  {
-    path: '/competency',
-    component: CompetencyPage
   },
   {
     path: '/student/CDL/:id',
