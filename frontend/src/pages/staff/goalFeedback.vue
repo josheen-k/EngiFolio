@@ -93,9 +93,17 @@
 
         <label class="filter-field">
           <span class="filter-label">Selected student</span>
-          <select class="student-select">
-                <option v-for="mapping in mappedStudents" :key="mapping.value" :value="mapping.value"
-                >{{ mapping.first_name }} {{ mapping.last_name }}</option>
+          <!-- <select 
+            class="student-select"
+            v-model.number="mappedStudents.user_id" 
+            @change="updateStudentSelect()"
+          > -->
+          <select 
+            class="student-select"
+          >
+            <option v-for="mapping in mappedStudents" :key="mapping.value" :value="mapping.value">
+              {{ mapping.first_name }} {{ mapping.last_name }}
+            </option>
           </select>
         </label>
 
@@ -182,11 +190,6 @@
               <td class="completion-notes-cell">{{ goal.completion_notes || '-' }}</td>
 
               <td>
-                <!-- <div v-for="f in feedback" :key="f.goal_id">
-                  <div v-if="f.goal_id==goal.goal_id">
-                    {{ f.feedback_content }}
-                  </div>
-                </div> -->
                 <div>{{ getFeedbackContent(goal.goal_id) }}</div>
                 <div>
                   <button
@@ -348,11 +351,7 @@ const route = useRoute()
 const feedbackModalGoal = ref(null)
 const profileId = computed(() => Number(route.params.id)) //computed(() => Number(route.params.id))
 const mappedStudents = ref([])
-const studentNames = ref([])
-const studentName = ref('')
-const coolTest = ref(null)
-
-const feedbackByGoal = ref([])
+const selectedStudent = ref([])
 
 const progressStatusOptions = [
   { value: 1, label: 'Planned' },
@@ -366,7 +365,8 @@ const form = reactive({
   feedback_content: '',
 })
 
-const feedback_content = ref("");
+const feedbackContent = ref("");
+const feedbackCurrent = ref([]);
 
 const openForm = () => {
   editMode.value = false
@@ -382,11 +382,11 @@ const closeForm = () => {
 
 const editForm = (entry) => {
   editMode.value = true
-  form.value = { 
-    feedback_content: entry.feedback_content
-   }
+  form.value = { ...entry }
   showForm.value = true
 }
+
+// const saveFeedbackForm = () => {}
 
 const deleteForm = async (feedback) => {
   if (confirm(`Are you sure you want to delete this feedback: "${feedback.feedback_content}"?`)) {
@@ -434,8 +434,6 @@ const toggleSteps = (goalId) => {
     [goalId]: !isStepsExpanded(goalId)
   }
 }
-
-
 
 // const getFeedback = async (goalID) => {
 //   try {
@@ -487,22 +485,13 @@ const loadMappedStudents = async () => {
   }
 }
 
-const loadFeedback = async () => {
-  try {
-    const response = await api.get(`/smart-goals/all/feedback/${profileId.value}`);
-    feedback.value = response.data
-  } catch (error) {
-    console.error('Error fetching feedback', error)
-    // feedback.value = []
-  }
-}
-
 const getFeedback = (goalId) => {
   const f = feedback.value
   for (let index = 0; index < f.length; index++) {
     const element = f[index];
     if (element.goal_id==goalId) {
-      return element
+      feedbackCurrent.value = element
+      return feedbackCurrent
     }
   }
 }
@@ -512,10 +501,22 @@ const getFeedbackContent = (goalId) => {
   for (let index = 0; index < f.length; index++) {
     const element = f[index];
     if (element.goal_id==goalId) {
-      return element.feedback_content
+      feedbackContent.value = element.feedback_content
+      return feedbackContent
     }
   }
-  return ''
+  feedbackContent.value = ''
+  return feedbackContent
+}
+
+const loadFeedback = async () => {
+  try {
+    const response = await api.get(`/smart-goals/all/feedback/${profileId.value}`);
+    feedback.value = response.data
+  } catch (error) {
+    console.error('Error fetching feedback', error)
+    // feedback.value = []
+  }
 }
 
 const loadPlanId = async () => {
@@ -546,8 +547,6 @@ onMounted(() => {
   loadGoals()
 })
 
-
-
 const normalizeGoalPayload = (goal) => {
   // Convert optional empty form fields to null so backend validation/database handling stays consistent.
   return {
@@ -568,41 +567,41 @@ const addFeedback = () => {
   })
 }
 
-const editFeedback = (feedback) => {
-  editingFeedback.value = feedback
-  Object.assign(editFeedbackData, {
-    goal_id: feedback.goal_id,
-    staff_id: feedback.staff_id,
-    feedback_content: feedback.feedback_content || '',
-  })
+// const editFeedback = (feedback) => {
+//   editingFeedback.value = feedback
+//   Object.assign(editFeedbackData, {
+//     goal_id: feedback.goal_id,
+//     staff_id: feedback.staff_id,
+//     feedback_content: feedback.feedback_content || '',
+//   })
 
-  // if()
+//   // if()
 
-  showEditFeedbackForm.value = true
-}
+//   showEditFeedbackForm.value = true
+// }
 
-// Open step editor modal and clone/sort existing step data into local draft state.
-const editSteps = (goal) => {
-  stepModalGoal.value = goal
-  // Laravel serializes relations as snake_case in JSON responses.
-  const sortedSteps = [...getGoalSteps(goal)].sort((a, b) => (a.step_order ?? 0) - (b.step_order ?? 0))
-  stepDrafts.value = sortedSteps.map((step, index) => ({
-    step_id: step.step_id,
-    step_description: step.step_description || '',
-    step_order: step.step_order ?? index + 1,
-    localKey: `existing-${step.step_id}`
-  }))
+// // Open step editor modal and clone/sort existing step data into local draft state.
+// const editSteps = (goal) => {
+//   stepModalGoal.value = goal
+//   // Laravel serializes relations as snake_case in JSON responses.
+//   const sortedSteps = [...getGoalSteps(goal)].sort((a, b) => (a.step_order ?? 0) - (b.step_order ?? 0))
+//   stepDrafts.value = sortedSteps.map((step, index) => ({
+//     step_id: step.step_id,
+//     step_description: step.step_description || '',
+//     step_order: step.step_order ?? index + 1,
+//     localKey: `existing-${step.step_id}`
+//   }))
 
-  if (stepDrafts.value.length === 0) {
-    addStep()
-  }
+//   if (stepDrafts.value.length === 0) {
+//     addStep()
+//   }
 
-  showStepModal.value = true
-}
+//   showStepModal.value = true
+// }
 
-const updateFeedback = (goal) => {}
+// const updateFeedback = (goal) => {}
 
-const deleteFeedback = (goal) => {}
+// const deleteFeedback = (goal) => {}
 
 
 </script>
