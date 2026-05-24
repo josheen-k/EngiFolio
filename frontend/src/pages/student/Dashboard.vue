@@ -124,7 +124,7 @@
             <div class="day-col" v-for="day in weekDays" :key="day.label">
               <p class="day-label">{{ day.label }}</p>
               <div class="day-events">
-                <div class="event" v-for="ev in day.events" :key="ev.id" :title="ev.name">
+                <div class="event" v-for="ev in day.events" :key="ev.id" :title="ev.name" @click="goToEvent(ev.id)">
                   <span class="ev-name">{{ ev.name }}</span>
                   <span class="ev-time">{{ ev.time }}</span>
                 </div>
@@ -266,6 +266,13 @@
         query: { openAdd: 'true' }
       })
     }
+
+    function goToEvent(eventId) {
+      router.push({
+        path: `/student/networking/${route.params.id}`,
+        query: { eventId }
+      })
+}
     // For formatting the date used by recent activity
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -335,7 +342,7 @@
           .map(function (ev) {
             const d = new Date(ev.event_datetime)
             return {
-              id: ev.id,
+              id: ev.event_id,
               name: ev.event_name,
               time: d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
             }
@@ -725,7 +732,7 @@
   padding: 0.25rem 0.35rem;
   display: flex;
   flex-direction: column;
-  cursor: default;
+  cursor: pointer;
 }
 
 .ev-name {
