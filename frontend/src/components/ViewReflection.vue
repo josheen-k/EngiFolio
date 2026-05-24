@@ -22,7 +22,7 @@
           <span class="pill-tag">{{ reflec?.entry_level?.competency_level }}</span>
         </div>
         <!-- date range-->
-        <p class="text-center date-txt pb-2">{{ reflec?.start_date }} – {{ reflec?.end_date}}</p>
+        <p class="text-center date-txt pb-2">{{ reflec?.start_date }} <span v-if="reflec?.end_date">–</span> {{ reflec?.end_date}}</p>
 
         <div class="view-popup-scroll px-4 py-3 d-flex flex-column gap-4">
           <!-- experience & tasks -->
@@ -90,24 +90,14 @@
 
         <!-- editable title in box-->
         <div class="border-bottom p-3">
-          <input v-model="ef.experience_title" class="form-control rounded-3 text-center edit-title-input"/>
+          <input v-model.trim="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"/>
 
-          <!-- competency name and desc-->
-          <div class="row g-4">
-            <div class="col-5">
-              <label class="form-label field-label">Adding reflection for:</label>
-              <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
-                Competency {{ compt?.displayId }}
-              </div>
-            </div>
-            <div class="col-7">
-              <label class="form-label field-label">Description:</label>
-              <p class="field-desc">{{ compt?.description }}</p>
-            </div>
-          </div>
-
-          <!-- level and year -->
+          <!-- compt, level and year -->
           <div class="d-flex justify-content-center gap-2 mt-3">
+            <select v-model="ef.indicator_id" class="pill-select">
+              <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
+            </select>
+
             <select v-model="ef.associated_year" class="pill-select">
               <option value="0">Prior to degree</option>
               <option value="1">Year 1</option>
@@ -136,22 +126,22 @@
 
           <!-- experience & tasks -->
           <div>
-            <label class="form-label field-label">Experience &amp; tasks</label>
-            <textarea v-model="ef.experience_tasks" class="form-control field-input rounded-3" rows="4"
+            <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
+            <textarea v-model.trim="ef.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="Describe the experience and tasks you undertook"></textarea>
           </div>
 
           <!-- key learnings -->
           <div>
-            <label class="form-label field-label">Key learnings</label>
-            <textarea v-model="ef.key_learnings" class="form-control field-input rounded-3" rows="4"
+            <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
+            <textarea v-model.trim="ef.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="What did you learn that was most valuable?"></textarea>
           </div>
 
           <!-- future application -->
           <div>
-            <label class="form-label field-label">Future application</label>
-            <textarea v-model="ef.future_applications" class="form-control field-input rounded-3" rows="4"
+            <label class="form-label field-label">Future application: (Max 500 characters)</label>
+            <textarea v-model.trim="ef.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="How will you apply these learnings in the future?"></textarea>
           </div>
 
@@ -208,10 +198,10 @@
               </button>
             </div>
 
-            <button class="btn btn-filter rounded-pill px-3 py-1"
-            @click="ef.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
+            <button  v-if="ef.evidenceEntries.length < 3"
+            class="btn btn-filter rounded-pill px-3 py-1" 
+            @click="addEvidence()">+ Add evidence</button>
           </div>
-
         </div>
 
         <!-- edit footer -->
@@ -222,6 +212,9 @@
             <button class="btn btn-filter" @click="editing = false">Cancel</button>
             <button class="btn btn-add" @click="saveEdit">Done</button>
           </div>
+        </div>
+        <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+          {{ popUp.message }}
         </div>
       </template>
     </div>
@@ -243,147 +236,208 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
-import api from "@/services/api"
+  import { ref, watch, computed } from 'vue'
+  import { useRoute } from 'vue-router'
+  import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+  import api from "@/services/api"
 
-const props = defineProps({
-  show: Boolean,
-  reflec: Object,
-  compt: Object,
-  index: Number,
-  initialComptId: [String, Number], 
-  levelOptions: Array,
-  categories: Array
-})
+  const props = defineProps({
+    show: Boolean,
+    reflec: Object,
+    compt: Object,
+    index: Number,
+    initialComptId: [String, Number], 
+    levelOptions: Array,
+    categories: Array
+  })
 
-const emit = defineEmits(['close', 'refresh'])
-const route = useRoute()
+  const emit = defineEmits(['close', 'refresh'])
+  const route = useRoute()
 
-// local state
-const editing = ref(false)
-const showDeleteConfirm = ref(false)
+  // Set up a pop up notification instead of having an alert
+  const popUp = ref({ show: false, message: '', type: '' })
 
-// edit form
-const ef = ref({
-  profile_id: route.params.id,
-  indicator_id: null,
-  experience_title: '',
-  associated_year: 0,
-  entry_level_id: null,
-  entry_status_id: 0,
-  start_date: '',
-  end_date: '',
-  experience_tasks: '',
-  key_learnings: '',
-  future_applications: '',
-  evidenceEntries: []
-})
-
-
-// reset edit state when popup closes
-watch(() => props.show, (v) => {
-  if (!v) {
-    editing.value = false
-    showDeleteConfirm.value = false
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, 3000)
   }
-})
 
-function handleFile(e, ev) {
-  const file = e.target.files[0]
-  if (file) {
-    ev.fileName = file.name
-    ev.value = file.name
-  }
-}
+  // local state
+  const editing = ref(false)
+  const showDeleteConfirm = ref(false)
 
-// enter edit
-function enterEdit() {
-  const existingEvidence = (props.reflec.evidence || []).map(ev => ({
-    evidence_id: ev.evidence_id,
-    type: ev.evidence_type,
-    value: ev.evidence_value,
-    fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
-  }))
+  // edit form
+  const ef = ref({
+    profile_id: route.params.id,
+    indicator_id: null,
+    experience_title: '',
+    associated_year: 0,
+    entry_level_id: null,
+    entry_status_id: 0,
+    start_date: '',
+    end_date: '',
+    experience_tasks: '',
+    key_learnings: '',
+    future_applications: '',
+    evidenceEntries: []
+  })
 
-  ef.value = {
-    id: props.reflec.entry_id,
-    experience_title: props.reflec.experience_title || '',
-    indicator_id: props.compt?.id || '',
-    associated_year: props.reflec.associated_year ?? 0,
-    entry_level_id: props.reflec.entry_level_id || null,
-    start_date: props.reflec.start_date || '',
-    end_date: props.reflec.end_date || '',
-    experience_tasks: props.reflec.experience_tasks || '',
-    key_learnings: props.reflec.key_learnings || '',
-    future_applications: props.reflec.future_applications || '',
-    evidenceEntries: existingEvidence.length 
-      ? existingEvidence
-      : [{ type: '', value: '', fileName: '' }]
-  }
-  editing.value = true
-}
+  const allCompts = computed(() => {
+    if (!props.categories) return []
+    return props.categories.flatMap(cat =>
+      cat.compt.map(c => ({
+        id: c.id,
+        displayId: c.displayId,
+      }))
+    )
+  })
 
-async function saveEntry(statusId) {
-  try {
-    await api.put(`/competency-entries/${ef.value.id}`, {
-      profile_id: route.params.id,
-      indicator_id: Number(ef.value.indicator_id),
-      experience_title: ef.value.experience_title || 'Untitled',
-      associated_year: Number(ef.value.associated_year),
-      entry_level_id: ef.value.entry_level_id,
-      entry_status_id: statusId,
-      start_date: ef.value.start_date,
-      end_date: ef.value.end_date,
-      experience_tasks: ef.value.experience_tasks,
-      key_learnings: ef.value.key_learnings,
-      future_applications: ef.value.future_applications,
-    })
-
-    const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
-    for (const id of existingIds) {
-      await api.delete(`/competency-evidence/${id}`)
-    }
-
-    // Save current evidence entries
-    const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
-    for (const ev of evidenceToSave) {
-      await api.post('/competency-evidence', {
-        entry_id: ef.value.id,
-        evidence_type: ev.type,
-        evidence_value: ev.value
+  const addEvidence = () => {
+    if (ef.value.evidenceEntries.length < 3) {
+      ef.value.evidenceEntries.push({
+        type: '',
+        value: '',
+        fileName: '',
       })
     }
+  };
 
-    // Close window
-    emit('refresh')
-    emit('close');
-    
-  } catch (error) {
-    console.error("Submission Failled:", error);
-    alert("Submission could not be saved. Please check that all required fields are filled.", error);
+  // reset edit state when popup closes
+  watch(() => props.show, (v) => {
+    if (!v) {
+      editing.value = false
+      showDeleteConfirm.value = false
+    }
+  })
+
+  function handleFile(e, ev) {
+    const file = e.target.files[0]
+    if (file) {
+      ev.fileName = file.name
+      ev.value = file.name
+    }
   }
-}
 
-// Pass the entry status id when saving the entry
-// 1 for draft, 2 for submitted
-const saveEdit = () => saveEntry(2)
-const saveAsDraft = () => saveEntry(1)
+  // enter edit
+  function enterEdit() {
+    const existingEvidence = (props.reflec.evidence || []).map(ev => ({
+      evidence_id: ev.evidence_id,
+      type: ev.evidence_type,
+      value: ev.evidence_value,
+      fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
+    }))
 
-
-async function doDelete() {
-  console.log('deleting entry:', props.reflec.entry_id)
-  try {
-    await api.delete(`/competency-entries/${props.reflec.entry_id}`)
-    showDeleteConfirm.value = false
-    emit('refresh')
-    emit('close')
-  } catch (error) {
-    console.error('Delete failed:', error)
-    alert('Could not delete this reflection')
+    ef.value = {
+      id: props.reflec.entry_id,
+      experience_title: props.reflec.experience_title || '',
+      indicator_id: props.compt?.id || '',
+      associated_year: props.reflec.associated_year ?? 0,
+      entry_level_id: props.reflec.entry_level_id || null,
+      start_date: props.reflec.start_date || '',
+      end_date: props.reflec.end_date || '',
+      experience_tasks: props.reflec.experience_tasks || '',
+      key_learnings: props.reflec.key_learnings || '',
+      future_applications: props.reflec.future_applications || '',
+      evidenceEntries: existingEvidence.length 
+        ? existingEvidence
+        : [{ type: '', value: '', fileName: '' }]
+    }
+    editing.value = true
   }
-}
+
+  // Check to see if url sent is valid
+  function isValidUrl(url) {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function saveEntry(statusId) {
+    try {
+      // Removes empty evidence
+      const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
+
+      // If the user is trying to publish the entry, not triggered for drafts
+      if (Number(statusId) === 2) {
+        // Check for valid title
+        if (!ef.value.experience_title) {
+          showPopUp("Cannot publish entry with a blank title.", "error");
+          return;
+        }
+
+        // Check for experiences field
+        if (!ef.value.experience_tasks) {
+          showPopUp("Experience and tasks cannot be blank", "error");
+          return;
+        }
+
+        // Check for valid links
+        for (const ev of evidenceToSave) {
+          if (ev.type === 'url') {
+            if (!isValidUrl(ev.value)) {
+              showPopUp("Evidence URL is invalid. Please enter in a valid URL.", "error");
+              return;
+            }
+          }
+        }
+      }
+
+      await api.put(`/competency-entries/${ef.value.id}`, {
+        profile_id: route.params.id,
+        indicator_id: Number(ef.value.indicator_id),
+        experience_title: ef.value.experience_title || 'Untitled',
+        associated_year: Number(ef.value.associated_year),
+        entry_level_id: ef.value.entry_level_id,
+        entry_status_id: statusId,
+        start_date: ef.value.start_date,
+        end_date: ef.value.end_date,
+        experience_tasks: ef.value.experience_tasks || 'Empty',
+        key_learnings: ef.value.key_learnings,
+        future_applications: ef.value.future_applications,
+      })
+
+      const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
+      for (const id of existingIds) {
+        await api.delete(`/competency-evidence/${id}`)
+      }
+
+      // Save current evidence entries
+      for (const ev of evidenceToSave) {
+        await api.post('/competency-evidence', {
+          entry_id: ef.value.id,
+          evidence_type: ev.type,
+          evidence_value: ev.value
+        })
+      }
+
+      // Close window
+      emit('refresh', statusId, ef.value.experience_title || 'Untitled')
+      emit('close');
+      
+    } catch (error) {
+      showPopUp("Error saving submission.", "error");
+    }
+  }
+
+  // Pass the entry status id when saving the entry
+  // 1 for draft, 2 for submitted
+  const saveEdit = () => saveEntry(2)
+  const saveAsDraft = () => saveEntry(1)
+
+
+  async function doDelete() {
+    try {
+      await api.delete(`/competency-entries/${props.reflec.entry_id}`)
+      showDeleteConfirm.value = false
+      emit('refresh')
+      emit('close')
+    } catch (error) {
+      showPopUp('Could not delete this reflection', "error")
+    }
+  }
 </script>
 
 <style scoped>
@@ -664,5 +718,28 @@ async function doDelete() {
   color: #666666;
   line-height: 1.6;
   margin-bottom: 0;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 </style>

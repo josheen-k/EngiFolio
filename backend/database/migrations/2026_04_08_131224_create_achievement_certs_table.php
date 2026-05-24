@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('body')->nullable();
             $table->string('file_path', 255)->nullable();
             $table->date('issued_date')->nullable();
+            $table->integer('sort_order');
             $table->timestamps();
         });
     }

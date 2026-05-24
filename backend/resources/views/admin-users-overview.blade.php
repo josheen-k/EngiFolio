@@ -1,3 +1,7 @@
+{{--
+  Admin User Management PDF (DomPDF).
+  Variables: $stats, $roleSections (Students / Staffs / Admins — each with title + users collection).
+--}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,10 +21,17 @@
 			padding-bottom: 6px;
 			margin-bottom: 12px;
 		}
-		.meta {
-			margin-bottom: 16px;
-			font-size: 9px;
-			color: #555;
+		h2 {
+			font-size: 14px;
+			color: #1a5276;
+			margin: 18px 0 8px;
+		}
+		.role-section {
+			margin-bottom: 22px;
+			page-break-inside: avoid;
+		}
+		.role-section + .role-section {
+			page-break-before: auto;
 		}
 		.stats {
 			margin-bottom: 18px;
@@ -32,6 +43,7 @@
 		table {
 			width: 100%;
 			border-collapse: collapse;
+			margin-bottom: 8px;
 		}
 		th, td {
 			border: 1px solid #ccc;
@@ -46,20 +58,14 @@
 		tr:nth-child(even) td {
 			background: #fafafa;
 		}
-		.email {
-			font-size: 9px;
-			color: #666;
+		.empty-row {
+			color: #707070;
+			font-style: italic;
 		}
 	</style>
 </head>
 <body>
 	<h1>User Management Export</h1>
-	<div class="meta">
-		<div>Generated: {{ $generatedAt }}</div>
-		@if(!empty($searchQuery))
-			<div>Filter: {{ $searchQuery }}</div>
-		@endif
-	</div>
 
 	<div class="stats">
 		<span><strong>Total Users:</strong> {{ $stats['totalUsers'] }}</span>
@@ -68,36 +74,38 @@
 		<span><strong>Open Goals:</strong> {{ max(0, $stats['totalGoals'] - $stats['totalCompletedGoals']) }}</span>
 	</div>
 
-	<table>
-		<thead>
-			<tr>
-				<th style="width: 22%;">User</th>
-				<th style="width: 12%;">Role</th>
-				<th style="width: 12%;">ID</th>
-				<th style="width: 10%;">Goals</th>
-				<th style="width: 12%;">Completed</th>
-				<th style="width: 14%;">Last Updated</th>
-			</tr>
-		</thead>
-		<tbody>
-			@forelse($users as $user)
-				<tr>
-					<td>
-						<strong>{{ $user['name'] }}</strong><br>
-						<span class="email">{{ $user['email'] }}</span>
-					</td>
-					<td>{{ $user['role'] }}</td>
-					<td>{{ $user['username'] ?? '-' }}</td>
-					<td>{{ $user['goals'] }}</td>
-					<td>{{ $user['completedGoals'] }}</td>
-					<td>{{ $user['updatedAt'] ?? '-' }}</td>
-				</tr>
-			@empty
-				<tr>
-					<td colspan="6">No users match this filter.</td>
-				</tr>
-			@endforelse
-		</tbody>
-	</table>
+	@foreach($roleSections as $section)
+		<div class="role-section">
+			<h2>{{ $section['title'] }} ({{ $section['users']->count() }})</h2>
+			<table>
+				<thead>
+					<tr>
+						<th style="width: 18%;">Name</th>
+						<th style="width: 26%;">Email</th>
+						<th style="width: 12%;">ID</th>
+						<th style="width: 10%;">Goals</th>
+						<th style="width: 12%;">Completed</th>
+						<th style="width: 14%;">Last Updated</th>
+					</tr>
+				</thead>
+				<tbody>
+					@forelse($section['users'] as $user)
+						<tr>
+							<td>{{ $user['name'] }}</td>
+							<td>{{ $user['email'] }}</td>
+							<td>{{ $user['username'] ?? '-' }}</td>
+							<td>{{ $user['goals'] }}</td>
+							<td>{{ $user['completedGoals'] }}</td>
+							<td>{{ $user['updatedAt'] ?? '-' }}</td>
+						</tr>
+					@empty
+						<tr>
+							<td colspan="6" class="empty-row">No users in this group.</td>
+						</tr>
+					@endforelse
+				</tbody>
+			</table>
+		</div>
+	@endforeach
 </body>
 </html>

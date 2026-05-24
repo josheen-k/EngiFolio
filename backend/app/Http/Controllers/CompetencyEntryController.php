@@ -32,16 +32,17 @@ class CompetencyEntryController extends Controller
         }
 
         $validated = $request->validate([
-            'indicator_id' => 'required|integer',
-            'experience_title' => 'required|string|max:255',
-            'associated_year' => 'required|integer',
-            'experience_tasks' => 'required|string',
-            'key_learnings' => 'nullable|string',
-            'future_applications' => 'nullable|string',
-            'entry_level_id' => 'required|string',
-            'entry_status_id' => 'required|string',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date',
+            'profile_id' => 'required|exists:student_profiles,profile_id',
+            'indicator_id'   => 'required|exists:competency_indicators,indicator_id',
+            'experience_title'     => 'required|string|max:50',
+            'associated_year'     => 'required|integer',
+            'experience_tasks'   => 'required|string',
+            'key_learnings'   => 'nullable|string',
+            'future_applications'   => 'nullable|string',
+            'entry_level_id'   => 'required|integer|exists:competency_entry_levels,entry_level_id',
+            'entry_status_id'   => 'required|integer|exists:competency_entry_statuses,entry_status_id',
+            'start_date'   => 'required|date',
+            'end_date'   => 'nullable|date',
         ]);
 
         $validated['profile_id'] = $profile->profile_id;
@@ -88,16 +89,17 @@ class CompetencyEntryController extends Controller
         }
 
         $validated = $request->validate([
-            'indicator_id' => 'sometimes|required|integer',
-            'experience_title' => 'sometimes|required|string|max:255',
-            'associated_year' => 'sometimes|required|integer',
-            'experience_tasks' => 'sometimes|required|string',
-            'key_learnings' => 'nullable|string',
-            'future_applications' => 'nullable|string',
-            'entry_level_id' => 'sometimes|required|integer',
-            'entry_status_id' => 'sometimes|required|integer',
-            'start_date' => 'sometimes|required|date',
-            'end_date' => 'nullable|date',
+            'profile_id' => 'required|exists:student_profiles,profile_id',
+            'indicator_id'   => 'required|exists:competency_indicators,indicator_id',
+            'experience_title'     => 'required|string|max:50',
+            'associated_year'     => 'required|integer',
+            'experience_tasks'   => 'required|string|max:500',
+            'key_learnings'   => 'nullable|string|max:500',
+            'future_applications'   => 'nullable|string|max:500',
+            'entry_level_id'   => 'required|integer|exists:competency_entry_levels,entry_level_id',
+            'entry_status_id'   => 'required|integer|exists:competency_entry_statuses,entry_status_id',
+            'start_date'   => 'required|date',
+            'end_date'   => 'nullable|date',
         ]);
 
         $entry->update($validated);

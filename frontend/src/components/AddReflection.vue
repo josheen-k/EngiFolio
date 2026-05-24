@@ -9,13 +9,13 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Adding reflection for:</label>
-            <div class="form-control field-input rounded-3 bg-light border-0 fw-bold">
-              Competency {{ selectedCompt.displayId }}
-            </div>
+            <select v-model="f.comptId" class="form-select field-select rounded-3">
+              <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
+            </select>
           </div>
           <div class="col-7">
             <label class="form-label field-label">Description:</label>
-            <p class="field-desc">{{ selectedCompt.desc }}</p>
+            <p class="field-desc">{{ selectedCompt?.desc || 'No description available'}}</p>
           </div>
         </div>
 
@@ -24,14 +24,14 @@
           <div class="col-5">
             <label class="form-label field-label">Attainment level</label>
             <select v-model="f.level" class="form-select field-select rounded-3">
-            <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+            <option v-for="opt in levelOptions.filter(o=> o.label !== 'Not Started')" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
           </select>
           </div>
           <div class="col-7">
             <label class="form-label field-label">Experience title</label>
-            <input v-model="f.title" class="form-control field-input rounded-3" placeholder="My experience"/>
+            <input v-model="f.title" maxlength="50" class="form-control field-input rounded-3" placeholder="My experience"/>
           </div>
         </div>
 
@@ -59,22 +59,22 @@
 
         <!-- exp and tasks textbox-->
         <div>
-          <label class="form-label field-label">Experience & tasks</label>
-          <textarea v-model="f.tasks" class="form-control field-input rounded-3" rows="4"
+          <label class="form-label field-label">Experience & tasks: (Max 500 characters)</label>
+          <textarea v-model="f.tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="Describe the experience and tasks you undertook"></textarea>
         </div>
 
         <!-- key learnings textbox-->
         <div>
-          <label class="form-label field-label">Key learnings</label>
-          <textarea v-model="f.learnings" class="form-control field-input rounded-3" rows="4"
+          <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
+          <textarea v-model="f.learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="What did you learn that was most valuable?"></textarea>
         </div>
 
         <!-- future application textbox-->
         <div>
-          <label class="form-label field-label">Future application</label>
-          <textarea v-model="f.future" class="form-control field-input rounded-3" rows="4"
+          <label class="form-label field-label">Future application: (Max 500 characters)</label>
+          <textarea v-model="f.future" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="How will you apply these learnings in the future?"></textarea>
         </div>
 
@@ -134,8 +134,8 @@
             </button>
           </div>
 
-          <button class="btn btn-filter rounded-pill px-3 py-1 mt-1"
-          @click="f.evidenceEntries.push({ type: '', value: '', fileName: '' })">+ Add evidence</button>
+          <button v-if="f.evidenceEntries.length < 3" class="btn btn-filter rounded-pill px-3 py-1 mt-1"
+          @click="addEvidence()">+ Add evidence</button>
         </div>
       </div>
 
@@ -149,70 +149,149 @@
           <button class="btn btn-add" @click="save">Done</button>
         </div>
       </div>
+      <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+        {{ popUp.message }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { blankForm, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
-import { useRoute } from 'vue-router'
-import api from "@/services/api"
+  import { ref, computed, watch } from 'vue'
+  import { fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+  import { useRoute } from 'vue-router'
+  import api from "@/services/api"
 
-const props = defineProps({
-  show: Boolean,
-  initialComptId: [String, Number], 
-  levelOptions: Array,
-  categories: Array
-})
+  const props = defineProps({
+    show: Boolean,
+    initialComptId: [String, Number], 
+    levelOptions: Array,
+    categories: Array
+  })
 
-const emit = defineEmits(['close', 'refresh']);
-const route = useRoute();
+  // Set up a pop up notification instead of having an alert
+  const popUp = ref({ show: false, message: '', type: '' })
 
-const allCompts = computed(() => {
-  // Get the indicator id and description for the selected competency
-  return props.categories.flatMap(category => {
-    return category.compt.map(indicator => ({
-      id: indicator.id, 
-      displayId: indicator.displayId,
-      desc: indicator.desc || '' 
-    }));
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, 3000)
+  }
+
+  const emit = defineEmits(['close', 'refresh']);
+  const route = useRoute();
+
+  const allCompts = computed(() => {
+    // Get the indicator id and description for the selected competency
+    return props.categories.flatMap(category => {
+      return category.compt.map(indicator => ({
+        id: indicator.id, 
+        displayId: indicator.displayId,
+        desc: indicator.desc || '' 
+      }));
+    });
   });
-});
 
-// form state
-const f = ref(blankForm())
+  const addEvidence = () => {
+    if (f.value.evidenceEntries.length < 3) {
+      f.value.evidenceEntries.push({
+        type: '',
+        value: '',
+        fileName: '',
+      })
+    }
+  };
 
-// when popup opens or initialComptId changes, reset and prefill
-watch(() => props.show, (v) => {
-  if (v) {
-    f.value = blankForm();
-    f.value.comptId = props.initialComptId;
-  }}, 
-  // Run straight away
-  { immediate: true });
+  const newForm = () => ({
+    comptId: null,
+    title: '',
+    year: 1,
+    level: 1,
+    startDate: '',
+    endDate: '',
+    tasks: '',
+    learnings: '',
+    future: '',
+    evidenceEntries: [{ type: '', value: '', fileName: '' }]
+  })
 
-watch(()=> props.initialComptId, (id)=> {
-  if (props.show) {
-    f.value.comptId = id
+  // form state
+  const f = ref(newForm())
+
+  // when popup opens or initialComptId changes, reset and prefill
+  watch(() => props.show, (v) => {
+    if (v) {
+      f.value = newForm();
+      f.value.comptId = props.initialComptId;
+    }}, 
+    // Run straight away
+    { immediate: true });
+
+  watch(()=> props.initialComptId, (id)=> {
+    if (props.show) {
+      f.value.comptId = id
+    }
+  })
+
+  const selectedCompt = computed(()=>
+    allCompts.value.find(c=> c.id===f.value.comptId)
+  )
+
+  function handleFile(e, ev) {
+    const file = e.target.files[0]
+    if (file) { 
+      ev.fileName = file.name; 
+      ev.value = file.name 
+    }
   }
-})
 
-const selectedCompt = computed(()=>
-  allCompts.value.find(c=> c.id===f.value.comptId)
-)
-
-function handleFile(e, ev) {
-  const file = e.target.files[0]
-  if (file) { 
-    ev.fileName = file.name; 
-    ev.value = file.name 
+  // Check to see if url sent is valid
+  function isValidUrl(url) {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
   }
-}
 
 // submit form
 async function submit(statusId) {
   try {
+    // Removes empty evidence
+    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
+
+    // If the user is trying to publish the entry, not triggered for drafts
+    if (Number(statusId) === 2) {
+      // Check for valid title
+      if (!f.value.title) {
+        showPopUp("Cannot publish entry with a blank title.", "error");
+        return;
+      }
+
+      // Check for valid title
+      if (!f.value.startDate) {
+        showPopUp("Cannot publish entry without a start date.", "error");
+        return;
+      }
+
+      // Check for experiences field
+      if (!f.value.tasks) {
+        showPopUp("Experience and tasks cannot be blank", "error");
+        return;
+      }
+
+      // Check for valid links
+      for (const ev of evidenceToSave) {
+        console.log('checking ev:', ev.type, ev.value)
+        if (ev.type === 'url') {
+          if (!isValidUrl(ev.value)) {
+            showPopUp("Evidence URL is invalid. Please enter in a valid URL.", "error");
+            return;
+          }
+        }
+      }
+    }
+
     const payload = {
       profile_id: route.params.id,
       indicator_id: Number(f.value.comptId),
@@ -220,19 +299,17 @@ async function submit(statusId) {
       associated_year: Number(f.value.year),
       entry_level_id: f.value.level, 
       entry_status_id: statusId, 
-      start_date: f.value.startDate,
+      start_date: f.value.startDate || new Date().toISOString().split('T')[0],
       end_date: f.value.endDate,
-      experience_tasks: f.value.tasks,
+      experience_tasks: f.value.tasks || "Draft",
       key_learnings: f.value.learnings,
       future_applications: f.value.future,
     };
 
     const res = await api.post('/competency-entries', payload);
-
     const entryId = res.data.entry_id
 
     // Save each evidence entry
-    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
     for (const ev of evidenceToSave) {
       await api.post('/competency-evidence', {
         entry_id: entryId,
@@ -242,19 +319,18 @@ async function submit(statusId) {
     }
 
     // RefreshClose window
-    emit('refresh');
+    emit('refresh', statusId, f.value.title || 'Untitled');
     emit('close');
 
   } catch (error) {
-    console.error("Submission failed:", error);
-    alert("Submission could not be saved. Please check that all required fields are filled");
+    showPopUp("Error saving submission.", "error");
   }
 }
 
-// Pass the entry status id when saving the entry
-// 1 for draft, 2 for submitted
-const save = () => submit(2)
-const saveAsDraft = () => submit(1)
+  // Pass the entry status id when saving the entry
+  // 1 for draft, 2 for submitted
+  const save = () => submit(2)
+  const saveAsDraft = () => submit(1)
 </script>
 
 <style scoped>
@@ -402,5 +478,29 @@ const saveAsDraft = () => submit(1)
 .btn-add:hover {
   background: #333333;
   color: #ffffff;
+}
+
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 </style>

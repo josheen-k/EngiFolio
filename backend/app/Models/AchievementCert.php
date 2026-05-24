@@ -18,6 +18,7 @@ class AchievementCert extends Model
         'body',
         'file_path',
         'issued_date',
+        'sort_order'
     ];
 
     public function profile()

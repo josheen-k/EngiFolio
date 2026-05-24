@@ -97,7 +97,7 @@
                 <th>Goals</th>
                 <th>Completed</th>
                 <th>Last Updated</th>
-                <th>Actions</th>
+                <th class="actions-col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -107,7 +107,7 @@
               <tr v-else-if="loadError">
                 <td colspan="7" class="empty-state">{{ loadError }}</td>
               </tr>
-              <tr v-for="user in filteredUsers" :key="user.id">
+              <tr v-for="user in filteredUsers" :key="user.user_id">
                 <td>
                   <p class="user-name mb-0">{{ user.name }}</p>
                   <p class="user-email mb-0">{{ user.email }}</p>
@@ -647,6 +647,12 @@ const deleteUser = async (user) => {
   font-size: 0.92rem;
 }
 
+.actions-col,
+.actions-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .actions-cell {
   vertical-align: middle !important;
 }
@@ -656,7 +662,7 @@ const deleteUser = async (user) => {
   flex-direction: row;
   gap: 0.55rem;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .action-icon-btn {

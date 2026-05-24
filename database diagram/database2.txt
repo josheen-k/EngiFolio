@@ -103,6 +103,7 @@ Table achievement_certs {
   body text [note: 'Upload awards, scholarships, or other certificates that demonstrate your academic or extracurricular success.']
   file_path varchar(255) [note: 'if applicable']
   issued_date date
+  sort_order int
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -115,6 +116,7 @@ Table attainment_certs {
   file_path varchar(255) [note: 'if applicable']
   issued_date date
   expiry_date date
+  sort_order int
   created_at datetime [not null]
   updated_at datetime [not null]
 }
@@ -304,11 +306,11 @@ Table competency_entries {
   indicator_id bigint [not null, ref: > competency_indicators.indicator_id]
 
   // Reflection details
-  experience_title varchar(255) [not null, note: 'Short title of the experience']
+  experience_title varchar(50) [not null, note: 'Short title of the experience']
   associated_year int [not null, note: 'Academic year']
-  experience_tasks text [not null, note: 'Description of experience and tasks']
-  key_learnings text [note: 'Key learnings from that experience']
-  future_applications text [note: 'How the learning will be applied in future']
+  experience_tasks varchar(500) [not null, note: 'Description of experience and tasks']
+  key_learnings varchar(500) [note: 'Key learnings from that experience']
+  future_applications varchar(500) [note: 'How the learning will be applied in future']
 
   entry_level_id bigint [not null, ref: > competency_entry_levels.entry_level_id, note: "On delete: restrict"]
   entry_status_id bigint [not null, ref: > competency_entry_statuses.entry_status_id, note: "On delete: restrict"]
