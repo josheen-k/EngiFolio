@@ -18,6 +18,7 @@ import CompetencyPage from '@/pages/staff/competencyPage.vue'
 import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 import CDL from '@/pages/student/CDL.vue'
+import PrivacyPolicy from '@/pages/public/PrivacyPolicy.vue'
 
 const routes = [
   {
@@ -123,6 +124,11 @@ const routes = [
     component: CDL
   },
 
+  {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicy',
+    component: PrivacyPolicy
+  },
 ]
 
 const router = createRouter({
