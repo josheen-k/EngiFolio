@@ -144,7 +144,8 @@
         <span class="scroll-txt"><u>Scroll to see all fields</u></span>
 
         <div class="d-flex gap-2">
-          <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
+          <!-- Non-breaking space to fix no space between as and draft -->
+          <button class="btn btn-filter" @click="saveAsDraft">Save as&nbsp; draft</button>
           <button class="btn btn-filter" @click="$emit('close')">Cancel</button>
           <button class="btn btn-add" @click="save">Done</button>
         </div>
