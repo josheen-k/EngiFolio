@@ -63,7 +63,7 @@ Table student_profiles {
   specialisation varchar(60)
   personal_intro text
   upcoming_actions text [note: 'Future personal development actions']
-  profile_image_url varchar(255)
+  profile_image_url text
   created_at datetime [not null]
   updated_at datetime [not null]
 }

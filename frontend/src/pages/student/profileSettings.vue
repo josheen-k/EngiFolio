@@ -7,13 +7,23 @@
     <section class="edit-card mb-4">
       <h3 class="card-title mb-4">Profile Image</h3>
       <div class="d-flex align-items-center gap-4">
-        <img :src="profile.profile_image_url || '/src/assets/default.jpg'" @error="(e) => e.target.src = '/default.jpg'"
-        class="profile-pic" style="flex-shrink: 0;"/>
+        <img :src="profile.profile_image_url || '/src/assets/default.jpg'"
+          class="profile-pic" style="flex-shrink: 0; max-width: 150px; border-radius: 50%;"/>
 
+        <!-- Profile image upload field -->
         <div class="flex-grow-1">
-          <label class="field-label">Profile Image URL</label>
-          <input v-model.trim.lazy="profile.profile_image_url" maxlength="255" class="field-input form-control"
-            placeholder="Link to your profile picture"/>
+          <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': imageFileName }">
+            <input type="file" accept="image/png, image/jpg, image/jpeg" class="position-absolute w-100 h-100 opacity-0" 
+              @change="imageUpload"/>
+
+            <div v-if="!imageFileName">
+              <p><b>Click to upload or drag & drop</b></p>
+              <p class="mb-0">PNG, JPG, JPEG</p>
+            </div>
+            <div v-else class="d-flex align-items-center gap-2">
+              <span>{{ imageFileName }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -41,8 +51,7 @@
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Degree undertaking</label>
-          <input v-model.trim="profile.degree_title" maxlength="40" class="field-input form-control"
-            placeholder="eg: Bachelor of Engineering"/>
+          <input v-model.trim="profile.degree_title" maxlength="40" class="field-input form-control" placeholder="eg: Bachelor of Engineering"/>
         </div>
         <div class="col-12 col-sm-6">
           <label class="field-label">Specialisation chosen</label>
@@ -141,6 +150,9 @@
   const errors = ref({});
   const showCancelConfirm = ref(false)
   const originalProfile = ref(null)
+  const imageFileName = ref('')
+  const imageFile = ref(null)
+
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -149,8 +161,6 @@
     popUp.value = { show: true, message, type }
     setTimeout(() => popUp.value.show = false, 3000)
   }
-
-
 
   const loadProfile = async () => {
     // Get profile data, throw error if unsuccessful
@@ -179,116 +189,148 @@
     }
   };
 
-const removeLink = (index) => {
-  const link = profile.value.links[index];
+  const removeLink = (index) => {
+    const link = profile.value.links[index];
     if (link.link_id) {
       linksToDelete.value.push(link.link_id);
     }  
     profile.value.links.splice(index, 1);
   };
 
-// Attempt to make a URL object to test if link is correct
-function isValidUrl(url) {
-  try {
-    new URL(url)
-    return true
-  } catch {
-    return false
+  // Attempt to make a URL object to test if link is correct
+  function isValidUrl(url) {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
   }
-}
 
-const saveChanges = async () => {
-  try {
-    // Check to see if any changes have been made. Ignore rest of the logic if no change
-    const noChange = JSON.stringify(profile.value) === originalProfile.value
+  const saveChanges = async () => {
+    try {
+      // Check to see if any changes have been made. Ignore rest of the logic if no change
+      const noChange = JSON.stringify(profile.value) === originalProfile.value;
+      if (noChange && !imageFile.value) {
+        cancel();
+        return;
+      }
+
+      // Reset errors
+      errors.value = {}
+
+      // Check if last name is empty and add to errors if so
+      if (!profile.value.user.last_name.trim()) {
+        errors.value.lastName = true
+      }
+
+      // Remove all links without a label or a url
+      profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
+
+      // Loop through each link, add entry to errors for the links located at position i
+      for (let i = 0; i < profile.value.links.length; i++) {
+        const link = profile.value.links[i]
+        if (!link.link_label) {
+          errors.value[`linkLabel_${i}`] = true
+        }
+        if (!isValidUrl(link.link_url)) {
+          errors.value[`linkUrl_${i}`] = true
+        } 
+      }
+
+      // Check if error object contains any key value pairs by converting it into an array of keys
+      if (Object.keys(errors.value).length) {
+        showPopUp("Could not save profile. Please fix highlighted fields.", "error");
+        return;
+      }
+
+      // Handle image upload
+      if (imageFile.value) {
+        // Create a special object for sending files over HTTP, handles binary data
+        const formData = new FormData()
+        // Image is read by backend to confirm the file type
+        formData.append('image', imageFile.value)
+        
+        // Set the content type so laravel knows to parse it as a file upload
+        const res = await api.post(`/profile/${route.params.id}/image`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        
+        // Assign the path returned from posting the image to the profile image url
+        const savedUrl = res.data.image_url;
+        profile.value.profile_image_url = savedUrl;
+
+        // Local storage used by the dashboard for persistent profile images
+        localStorage.setItem(`profile_img_${route.params.id}`, savedUrl);
+      }
+
+      // Saves the main profile
+      await api.put(`/profile/${route.params.id}`, profile.value);
+      
+      // Deletes the required links
+      const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
+
+      // Handle Updates and Creations
+      const upsertPromises = profile.value.links.map(link => {
+        // Ignore empty rows
+        if (!link.link_url.trim()) {
+          return null;
+        }
+
+        // Create or update the link
+        if (link.link_id) {
+          return api.put(`/link/${link.link_id}`, link);
+        } else {
+          return api.post(`/link`, link);
+        }
+      }).filter(p => p !== null);
+
+      // Execute all API calls
+      await Promise.all([...deletePromises, ...upsertPromises]);
+
+      // Clear the delete tracking for next time
+      linksToDelete.value = [];
+
+      // Add a post to student actions for an updated profile
+      await api.post(`/student-actions/new`, { action: "Updated profile", student_profile_id: route.params.id });
+
+      router.push({ name: 'profile', params: { id: route.params.id } });
+    } catch (error) {
+      console.error("Save failed:", error);
+      showPopUp("There was an error saving your changes.", "error");
+    }
+  };
+
+  function imageUpload(e) {
+    // The event object passed, target is the input and the file[0] represents the image
+    const file = e.target.files[0]
+    if (file) {
+      imageFileName.value = file.name
+      imageFile.value = file
+      // Creates a temporary blob url to the file in memory for the temporary display
+      profile.value.profile_image_url = URL.createObjectURL(file)
+    }
+  }
+
+  // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
+  const handleCancel = () => {
+    // Convert objects so strings and compare for any changes, also check if there is a new image file
+    const noChange = JSON.stringify(profile.value) === originalProfile.value && !imageFile.value;
     if (noChange) {
-      cancel();
-      return;
+      cancel()
+    } else {
+      showCancelConfirm.value = true
     }
+  }
 
-    // Reset errors
-    errors.value = {}
-
-    // Check if last name is empty and add to errors if so
-    if (!profile.value.user.last_name.trim()) {
-      errors.value.lastName = true
-    }
-
-    // Remove all links without a label or a url
-    profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
-
-    // Loop through each link, add entry to errors for the links located at position i
-    for (let i = 0; i < profile.value.links.length; i++) {
-      const link = profile.value.links[i]
-      if (!link.link_label) {
-        errors.value[`linkLabel_${i}`] = true
-      }
-      if (!isValidUrl(link.link_url)) {
-        errors.value[`linkUrl_${i}`] = true
-      } 
-    }
-
-
-    // Check if error object contains any key value pairs by converting it into an array of keys
-    if (Object.keys(errors.value).length) {
-      showPopUp("Could not save profile. Please fix highlighted fields.", "error");
-      return;
-    }
-
-    // Saves the main profile
-    await api.put(`/profile/${route.params.id}`, profile.value);
-    
-    // Deletes the required links
-    const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
-
-    // Handle Updates and Creations
-    const upsertPromises = profile.value.links.map(link => {
-      // Ignore empty rows
-      if (!link.link_url || link.link_url.trim() === '') return null;
-
-      // Create or update the link
-      if (link.link_id) {
-        return api.put(`/link/${link.link_id}`, link);
-      } else {
-        return api.post(`/link`, link);
-      }
-    }).filter(p => p !== null);
-
-    // Execute all API calls
-    await Promise.all([...deletePromises, ...upsertPromises]);
-    
-    // Clear the delete tracking for next time
-    linksToDelete.value = [];
-
-    // Add a post to student actions for an updated profile
-    await api.post(`/student-actions/new`, {action: "Updated profile", student_profile_id: route.params.id});
-
+  // Redirect back to profile page without saving changes
+  const cancel = () => {
     router.push({ name: 'profile', params: { id: route.params.id } });
-  } catch (error) {
-    console.error("Save failed:", error);
-    showPopUp("There was an error saving your changes.", "error");
-  }
-};
+  };
 
-// Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
-const handleCancel = () => {
-  // Convert objects so strings and compare for any changes
-  const noChange = JSON.stringify(profile.value) === originalProfile.value
-  if (noChange) {
-    cancel()
-  } else {
-    showCancelConfirm.value = true
-  }
-}
-
-// Redirect back to profile page without saving changes
-const cancel = () => {
-  router.push({ name: 'profile', params: { id: route.params.id } });
-};
-
-onMounted(() => {
-  loadProfile();
-})
+  onMounted(() => {
+    loadProfile();
+  })
 </script>
 
 <style scoped>
@@ -502,6 +544,37 @@ onMounted(() => {
   font-family: 'Montserrat Alternates', sans-serif;
   font-size: 1.1rem;
   color: #222222;
+}
+
+.upload-zone {
+  position: relative;
+  max-height: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 0.15rem dashed #d0d0d0;
+  text-align: center;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.upload-zone p {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.8rem;
+  color: #555555;
+  margin-bottom: 0.2rem;
+}
+
+.upload-zone:hover {
+  border-color: #88c2d2;
+  background: #f0fafa;
+}
+
+.upload-zone-filled {
+  border-style: solid;
+  border-color: #88c2d2;
+  background: #f0fafa;
 }
 
 @media (max-width: 768px) {
