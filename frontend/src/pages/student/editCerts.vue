@@ -139,7 +139,7 @@
 
     <!--footer-->
     <div class="d-flex justify-content-center gap-3 pt-3">
-      <button class="btn btn-filter" @click="cancel">Cancel</button>
+      <button class="btn btn-filter" @click="handleCancel">Cancel</button>
       <button class="btn btn-ql" @click="saveChanges">Save Changes</button>
     </div>
   </div>
@@ -149,6 +149,20 @@
   </div>
   <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
     {{ popUp.message }}
+  </div>
+
+    <!--Cancel confirm -->
+  <div v-if="showCancelConfirm" class="view-popup" @click.self="showCancelConfirm = false">
+    <div class="cancel-box text-center p-4">
+
+      <h5 class="fw-bold mb-2 field-label cancel-title">Cancel editing profile?</h5>
+      <p class="field-desc mb-4">All profile changes will be lost.</p>
+
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showCancelConfirm = false">Continue editing</button>
+        <button class="btn btn-add rounded-pill px-4" @click="cancel">Exit editing</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -169,6 +183,8 @@
   const movedAchCertId = ref(null);
   const movedAttCertId = ref(null);
   const errors = ref({});
+  const showCancelConfirm = ref(false)
+  const originalProfile = ref(null)
 
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
@@ -183,6 +199,8 @@
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
       profile.value = response.data.profile || response.data;
+      // Store original profile as a string to check for changes
+      originalProfile.value = JSON.stringify(profile.value)
       loading.value = false;
     } catch (error) {
       showPopUp("Error while fetching profile:", "error");
@@ -376,13 +394,25 @@
     }
   };
 
+  // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
+  const handleCancel = () => {
+    // Convert objects so strings and compare for any changes
+    const hasChanged = JSON.stringify(profile.value) !== originalProfile.value
+    if (hasChanged) {
+      showCancelConfirm.value = true
+    } else {
+      cancel()
+    }
+  }
+
+  // Redirect back to profile page without saving changes
   const cancel = () => {
-      router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
+    router.push({ name: 'profile', params: { id: route.params.id } });
   };
 
-onMounted(() => {
-  loadProfile();
-})
+  onMounted(() => {
+    loadProfile();
+  })
 </script>
 
 <style scoped>
@@ -584,6 +614,54 @@ onMounted(() => {
     background: #fff5f5;
   }
 
+  .cancel-box {
+    background: #ffffff;
+    border-radius: 1.25rem;
+    max-width: 22.5rem;
+    width: 100%;
+    box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+  }
+
+  .field-desc {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #444444;
+  }
+
+  .view-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(0.375rem);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+  }
+
+  .cancel-box .btn-filter,
+  .cancel-box .btn-add {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .cancel-box .btn-add {
+    background: #555555;
+    color: #ffffff;
+  }
+
+  .cancel-box .btn-add:hover {
+    background: #333333;
+    color: #ffffff;
+  }
+
+  .cancel-title {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1.1rem;
+    color: #222222;
+  }
     
   @media (min-width: 820px) {
       .container-lg {
