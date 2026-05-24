@@ -90,7 +90,9 @@
 
         <!-- editable title in box-->
         <div class="border-bottom p-3">
-          <input v-model.trim="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"/>
+          <label v-if="errors.title" class="field-label error-message">*Title cannot be empty</label>
+          <input v-model.trim="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"
+           :class="{ 'field-error': errors.title }" @input="delete errors.title" />
 
           <!-- competency name and desc-->
           <div class="row g-4">
@@ -124,8 +126,10 @@
           </div>
 
           <!-- date range-->
+          <label v-if="errors.startDate" class="field-label error-message">*Invalid start date</label>
           <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
-            <input v-model="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"
+              :class="{ 'field-error': errors.startDate }" @input="delete errors.startDate"/>
             <span class="body-txt">–</span>
             <input v-model="ef.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
           </div>
@@ -136,8 +140,12 @@
 
           <!-- experience & tasks -->
           <div>
-            <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
+            <div class="d-flex justify-content-between align-items-center">  
+              <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
+              <label v-if="errors.tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
+            </div>
             <textarea v-model.trim="ef.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
+              :class="{ 'field-error': errors.tasks }" @input="delete errors.tasks"  
               placeholder="Describe the experience and tasks you undertook"></textarea>
           </div>
 
@@ -173,8 +181,11 @@
               </div>
 
               <!-- evidence input -->
-              <div>
-                <label class="form-label field-label mb-3">Evidence input</label>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center"> 
+                  <label class="form-label field-label mb-3">Evidence input</label>
+                  <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
+                </div> 
 
                 <!-- nothing selected -->
                 <input v-if="!ev.type" class="form-control field-input rounded-3"
@@ -182,7 +193,9 @@
 
                 <!-- link -->
                 <input v-else-if="ev.type === 'url'" v-model="ev.value" type="url"
-                  class="form-control field-input rounded-3" placeholder="https://example.com"/>
+                  class="form-control field-input rounded-3" 
+                  :class="{ 'field-error': errors[`evidenceURL_${idx}`] }" @input="delete errors[`evidenceURL_${idx}`]"
+                  placeholder="https://example.com"/>
 
                 <!-- file upload -->
                 <div v-else>
@@ -219,7 +232,7 @@
           <span class="date-txt"><u>Scroll to see full reflection</u></span>
           <div class="d-flex gap-2">
             <button class="btn btn-filter" @click="saveAsDraft">Save as draft</button>
-            <button class="btn btn-filter" @click="editing = false">Cancel</button>
+            <button class="btn btn-filter" @click="editing = false, errors = {}">Cancel</button>
             <button class="btn btn-add" @click="saveEdit">Done</button>
           </div>
         </div>
@@ -261,6 +274,7 @@
     categories: Array
   })
 
+  const errors = ref({});
   const emit = defineEmits(['close', 'refresh'])
   const route = useRoute()
 
@@ -357,6 +371,9 @@
 
   async function saveEntry(statusId) {
     try {
+      // Reset errors
+      errors.value = {} 
+
       // Removes empty evidence
       const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
 
@@ -364,25 +381,29 @@
       if (Number(statusId) === 2) {
         // Check for valid title
         if (!ef.value.experience_title) {
-          showPopUp("Cannot publish entry with a blank title.", "error");
-          return;
+          errors.value.title = true
+        }
+
+        if (!ef.value.start_date) {
+          errors.value.startDate = true
         }
 
         // Check for experiences field
         if (!ef.value.experience_tasks) {
-          showPopUp("Experience and tasks cannot be blank", "error");
-          return;
+          errors.value.tasks = true
         }
 
         // Check for valid links
-        for (const ev of evidenceToSave) {
-          if (ev.type === 'url') {
-            if (!isValidUrl(ev.value)) {
-              showPopUp("Evidence URL is invalid. Please enter in a valid URL.", "error");
-              return;
-            }
+        for (let i = 0; i < evidenceToSave.length; i++) {
+          if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
+            errors.value[`evidenceURL_${i}`] = true
           }
         }
+      }
+
+      if (Object.keys(errors.value).length) {
+        showPopUp("Could not submit entry. Please fix highlighted fields.", "error");
+        return;
       }
 
       await api.put(`/competency-entries/${ef.value.id}`, {
@@ -741,5 +762,15 @@
 .popUp-msg.error {
   background: #db7979;
   color: #fff;
+}
+
+.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
 }
 </style>

@@ -67,7 +67,7 @@
         <!-- exp and tasks textbox-->
         <div>
           <div class="d-flex justify-content-between align-items-center">  
-            <label class="form-label field-label">Experience & tasks: (Max 500 characters)</label>
+            <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
             <label v-if="errors.tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
           </div>
           <textarea v-model="f.tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
@@ -275,6 +275,9 @@
 // submit form
 async function submit(statusId) {
   try {
+    // Reset errors
+    errors.value = {} 
+
     // Removes empty evidence
     const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
 
@@ -519,7 +522,6 @@ async function submit(statusId) {
   background: #db7979;
   color: #fff;
 }
-
 
 .field-input.form-control.field-error {
   border-color: #db7979;
