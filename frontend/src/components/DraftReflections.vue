@@ -82,7 +82,7 @@
     </div>
   </div>
 
-      <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+<div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
   <div class="delete-box text-center p-4">
     <h5 class="fw-bold mb-2 field-label">Delete this draft?</h5>
     <p class="field-desc mb-4">This action cannot be undone.</p>

@@ -6,13 +6,14 @@
     <!--edit pfp-->
     <section class="edit-card mb-4">
       <h3 class="card-title mb-4">Profile Image</h3>
+      <!-- Error message -->
+
       <div class="d-flex align-items-center gap-4">
         <img :src="profile.profile_image_url || '/src/assets/default.jpg'"
           class="profile-pic" style="flex-shrink: 0; max-width: 150px; border-radius: 50%;"/>
-
         <!-- Profile image upload field -->
-        <div class="flex-grow-1">
-          <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': imageFileName }">
+        <div class="upload-zone-wrap">
+          <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': imageFileName, 'upload-zone-error': errors.imageType || errors.imageSize }">
             <input type="file" accept="image/png, image/jpg, image/jpeg" class="position-absolute w-100 h-100 opacity-0" 
               @change="imageUpload"/>
 
@@ -24,7 +25,14 @@
               <span>{{ imageFileName }}</span>
             </div>
           </div>
+          <label v-if="errors.imageType" class="field-label error-message">*Invalid image type</label>
+          <label v-else-if="errors.imageSize" class="field-label error-message">*Image is too large. Must be less than 2MB.</label>
         </div>
+          <div class="col-12 col-sm-2 d-flex align-items-end">
+            <button v-if="profile.profile_image_url" class="remove-btn" @click="removeImage" title="Remove link">
+                <img src="@/assets/delete.png" class="del-icon" alt="remove" />
+            </button>
+          </div>
       </div>
     </section>
 
@@ -296,8 +304,13 @@
 
       router.push({ name: 'profile', params: { id: route.params.id } });
     } catch (error) {
-      console.error("Save failed:", error);
-      showPopUp("There was an error saving your changes.", "error");
+      // Check error response codes for images
+      if (error.response?.status === 413) {
+        errors.value.imageSize = true
+      } else if (error.response?.status === 422) {
+        errors.value.imageType = true
+      }
+      showPopUp("There was an error saving your changes.", "error")
     }
   };
 
@@ -307,9 +320,20 @@
     if (file) {
       imageFileName.value = file.name
       imageFile.value = file
+
       // Creates a temporary blob url to the file in memory for the temporary display
       profile.value.profile_image_url = URL.createObjectURL(file)
+
+      // Clear image errors if a new file is uploaded
+      delete errors.value.imageType
+      delete errors.value.imageSize
     }
+  }
+
+  const removeImage = () => {
+    profile.value.profile_image_url = null
+    imageFileName.value = ''
+    imageFile.value = null
   }
 
   // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
@@ -575,6 +599,17 @@
   border-style: solid;
   border-color: #88c2d2;
   background: #f0fafa;
+}
+
+.upload-zone-error {
+  border-style: solid;
+  border-color: #db7979;
+  background: #fff5f5;
+}
+
+.upload-zone-wrap {
+  flex-grow: 1;
+  max-width: 20rem;
 }
 
 @media (max-width: 768px) {
