@@ -148,8 +148,8 @@
           <div v-if="filteredCompts(c).length" class="row g-3">
             <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
-                <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
-                <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5>
+                <h5 class="compt-id mb-2">Competency {{ compt.displayId }}</h5>
+                <h5 class="compt-label mb-2" :data-tooltip="compt.indicator_name">{{ compt.indicator_name }}</h5>
                 <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                   <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
                     {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
@@ -603,6 +603,44 @@ function onAddReflec() {
   font-size: clamp(0.85rem, 2.5vw, 1.1rem);
   font-weight: 100;
   color: #878787;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.compt-id {
+  font-family: 'Martian Mono', monospace;
+  font-size: 0.7rem;
+  color: #aaaaaa;
+  font-weight: 400;
+  margin-bottom: 0.2rem;
+}
+
+.compt-label::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #727272;
+  color: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.75rem;
+  white-space: normal;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.compt-label:hover::after {
+  opacity: 1;
 }
 
 .txt {
