@@ -199,6 +199,13 @@ function isValidUrl(url) {
 
 const saveChanges = async () => {
   try {
+    // Check to see if any changes have been made. Ignore rest of the logic if no change
+    const hasChanged = JSON.stringify(profile.value) === originalProfile.value
+    if (hasChanged) {
+      cancel();
+      return;
+    }
+
     // Reset errors
     errors.value = {}
 
@@ -253,6 +260,7 @@ const saveChanges = async () => {
     // Clear the delete tracking for next time
     linksToDelete.value = [];
 
+    // Add a post to student actions for an updated profile
     await api.post(`/student-actions/new`, {action: "Updated profile", student_profile_id: route.params.id});
 
     router.push({ name: 'profile', params: { id: route.params.id } });
@@ -265,11 +273,11 @@ const saveChanges = async () => {
 // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
 const handleCancel = () => {
   // Convert objects so strings and compare for any changes
-  const hasChanged = JSON.stringify(profile.value) !== originalProfile.value
+  const hasChanged = JSON.stringify(profile.value) === originalProfile.value
   if (hasChanged) {
-    showCancelConfirm.value = true
-  } else {
     cancel()
+  } else {
+    showCancelConfirm.value = true
   }
 }
 

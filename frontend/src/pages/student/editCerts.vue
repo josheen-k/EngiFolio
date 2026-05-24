@@ -318,6 +318,13 @@
 
   const saveChanges = async () => {
     try {
+      // Check to see if any changes have been made. Ignore rest of the logic if no change
+      const hasChanged = JSON.stringify(profile.value) === originalProfile.value
+      if (hasChanged) {
+        cancel();
+        return;
+      }
+
       errors.value = {}
 
       // Loop through each cert and check for errors and assign order, entries deconstructs the array into index and entry pairs
@@ -386,6 +393,9 @@
       // Clear tracking arrays
       achievementCertsToDelete.value = [];
       attainmentCertsToDelete.value = [];
+
+    // Add a post to student actions for updated certificates
+      await api.post(`/student-actions/new`, {action: "Updated certificates", student_profile_id: route.params.id});
       
       // Redirect back to the view page
       router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
