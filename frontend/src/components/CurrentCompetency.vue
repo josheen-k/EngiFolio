@@ -194,7 +194,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
@@ -228,6 +228,19 @@ watch(
   { immediate: true }
 )
 
+onMounted(() => {
+  if (route.query.filterReflec) {
+    filterReflec.value = route.query.filterReflec
+  }
+  if (route.query.filterLevel) {
+    const val = route.query.filterLevel
+    filterLevel.value = Array.isArray(val) ? val : [val]
+  }
+
+  if (route.query.openAdd==='true') {
+    openAdd()
+  }
+})
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null);
