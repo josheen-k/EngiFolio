@@ -165,8 +165,6 @@
       </div>
 
     </section>
-
-  <Footer />
   </div>
 </template>
 
@@ -176,7 +174,6 @@ import { useRoute } from "vue-router";
 import api from "@/services/api";
 
 import Navbar from "@/components/Navbar.vue";
-import Footer from "@/components/Footer.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
 
 
