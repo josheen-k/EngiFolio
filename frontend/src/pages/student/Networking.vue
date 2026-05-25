@@ -143,6 +143,18 @@
       <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
         {{ popUp.message }}
       </div>
+       <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
+        <div class="confirm-widget">
+          <p class="confirm-title">{{confirmDialog.title }}</p>
+          <p class="confirm-message">{{confirmDialog.message }}</p>
+          <div class="confirm-actions">
+            <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">{{ confirmDialog.cancelLabel }}</button>
+            <button class="small-button" :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'" @click="resolveConfirmDialog(true)">
+              {{ confirmDialog.confirmLabel }}
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 </template>

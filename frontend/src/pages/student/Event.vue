@@ -432,7 +432,24 @@
         </div>
       </div>
     </div>
-
+    <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
+      <div class="confirm-widget">
+        <p class="confirm-title">{{ confirmDialog.title }}</p>
+        <p class="confirm-message">{{ confirmDialog.message }}</p>
+        <div class="confirm-actions">
+          <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">
+            {{ confirmDialog.cancelLabel }}
+          </button>
+          <button
+            class="small-button"
+            :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
+            @click="resolveConfirmDialog(true)"
+          >
+            {{ confirmDialog.confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
     <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
       {{ popUp.message }}
     </div>
@@ -1973,32 +1990,6 @@ function goToToday() {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
-}
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(9, 17, 28, 0.48);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 1100;
-}
-
-.confirm-widget {
-  width: min(28rem, 100%);
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #d6e0ea;
-  border-radius: 1.15rem;
-  box-shadow: 0 1rem 2.5rem rgba(18, 30, 45, 0.18);
-  padding: 1.25rem;
-}
-
-.confirm-title {
-  margin: 0 0 0.45rem;
-  color: #13202c;
-  font-size: 1.05rem;
-  font-weight: 700;
 }
 
 .comment-evidence-grid{
