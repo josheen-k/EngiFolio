@@ -24,7 +24,16 @@
         <form @submit.prevent="savePlan">
           <label>
             Plan Year:
-            <input v-model.number="planForm.plan_year" type="number" min="1" required />
+            <select v-model.number="planForm.plan_year" class="plan-year-select" required>
+              <option disabled :value="''">Select calendar year</option>
+              <option
+                v-for="opt in planYearSelectOptions"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
+            </select>
           </label>
 
           <label>
@@ -111,7 +120,7 @@
             </thead>
             <tbody>
               <tr v-for="plan in sortedPlans" :key="plan.plan_id">
-                <td class="year-cell">Year {{ plan.plan_year }}</td>
+                <td class="year-cell">{{ formatPlanYearLabel(plan.plan_year) }}</td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'professional_interests')">Not added yet.</template>
                   <div
@@ -254,7 +263,7 @@
         <div class="mobile-plan-list">
           <article v-for="plan in sortedPlans" :key="`mobile-${plan.plan_id}`" class="mobile-plan-card">
             <div class="mobile-plan-head">
-              <h2 class="mobile-plan-title">Year {{ plan.plan_year }}</h2>
+              <h2 class="mobile-plan-title">{{ formatPlanYearLabel(plan.plan_year) }}</h2>
               <span class="mobile-status-badge">{{ getPlanGoals(plan).length }} SMART goals</span>
             </div>
 
@@ -437,7 +446,52 @@ const showPlanForm = ref(false)
 const editingPlanId = ref(null)
 const savingPlan = ref(false)
 const planFormError = ref('')
+// Goal IDs selected in the create/edit form (synced to plan via PUT .../smart-goals).
 const selectedGoalIds = ref([])
+
+// plan_year is stored as a calendar year (e.g. 2026). Multiple plans per year are allowed.
+const CALENDAR_YEAR_MIN = 2020
+
+// Suggested years for the Plan Year dropdown (merged with years from existing plans below).
+const buildCalendarYearRange = () => {
+  const currentYear = new Date().getFullYear()
+  const start = Math.min(currentYear - 1, 2026)
+  const end = currentYear + 4
+  const years = []
+  for (let year = start; year <= end; year += 1) {
+    years.push(year)
+  }
+  return years
+}
+
+// Safe display for API/form values that may be number or string.
+const formatPlanYearLabel = (year) => {
+  const y = Number(year)
+  return Number.isFinite(y) ? String(y) : '—'
+}
+
+// Dropdown options: { value, label } sorted ascending; includes legacy years from saved plans.
+const planYearSelectOptions = computed(() => {
+  const years = new Set(buildCalendarYearRange())
+  plans.value.forEach((plan) => {
+    const year = Number(plan.plan_year)
+    if (Number.isFinite(year) && year >= CALENDAR_YEAR_MIN) {
+      years.add(year)
+    }
+  })
+
+  return [...years]
+    .sort((a, b) => a - b)
+    .map((year) => ({ value: year, label: String(year) }))
+})
+
+// Pre-select current calendar year when opening the create form (fallback: first option).
+const defaultPlanYearForCreate = () => {
+  const currentYear = new Date().getFullYear()
+  const options = planYearSelectOptions.value
+  const match = options.find((opt) => opt.value === currentYear)
+  return match?.value ?? options[0]?.value ?? currentYear
+}
 
 const emptyPlanForm = () => ({
   plan_year: '',
@@ -462,6 +516,7 @@ const sortedPlans = computed(() => {
   })
 })
 
+// employers_of_interest is one text field; users separate entries with commas or new lines.
 const splitList = (value) => {
   if (!value) {
     return []
@@ -473,6 +528,7 @@ const splitList = (value) => {
     .filter(Boolean)
 }
 
+// Read a plan text field; empty/null becomes '' so the template can show "Not added yet."
 const getPlanFieldRaw = (plan, field) => {
   const v = plan[field]
   if (v == null || v === '') {
@@ -481,14 +537,11 @@ const getPlanFieldRaw = (plan, field) => {
   return String(v).trim()
 }
 
-const getPlanField = (plan, field) => {
-  const raw = getPlanFieldRaw(plan, field)
-  return raw || 'Not added yet.'
-}
-
+// Employers column: list for bullets, joined string for preview/modal.
 const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
 const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
 
+// "View more" modal for long table/card text.
 const showTextModal = ref(false)
 const textModalTitle = ref('')
 const textModalContent = ref('')
@@ -496,6 +549,7 @@ const TEXT_PREVIEW_LIMIT = 90
 
 const normalizeDisplayText = (value) => String(value ?? '').trim()
 const hasLongText = (value) => normalizeDisplayText(value).length > TEXT_PREVIEW_LIMIT
+// Truncate with "..." when over TEXT_PREVIEW_LIMIT; used before openTextModal for full text.
 const getTextPreview = (value) => {
   const text = normalizeDisplayText(value)
   if (text.length <= TEXT_PREVIEW_LIMIT) {
@@ -503,6 +557,8 @@ const getTextPreview = (value) => {
   }
   return `${text.slice(0, TEXT_PREVIEW_LIMIT).trimEnd()}...`
 }
+
+// Show full field text when user clicks "View more".
 const openTextModal = (title, content) => {
   textModalTitle.value = title
   textModalContent.value = normalizeDisplayText(content)
@@ -514,8 +570,11 @@ const closeTextModal = () => {
   textModalContent.value = ''
 }
 
+// API may return snake_case or camelCase relation names.
 const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
 const getGoalStatus = (goal) => goal.status?.status || 'No status'
+
+// Top toggle highlight (this page is always CAREER_PLAN; SMART_GOALS uses GoalsPage).
 const currTab = computed(() =>
   route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
 )
@@ -529,6 +588,8 @@ const goToCareerPlan = () => {
     router.push(`/student/career-development/${route.params.id}`)
   }
 }
+
+// Multi-select SMART goals in the plan form (click card to toggle).
 const isGoalSelected = (goalId) => selectedGoalIds.value.includes(goalId)
 const toggleGoalSelection = (goalId) => {
   selectedGoalIds.value = isGoalSelected(goalId)
@@ -546,9 +607,11 @@ const resetPlanForm = () => {
 
 const openCreatePlanForm = () => {
   resetPlanForm()
+  planForm.value.plan_year = defaultPlanYearForCreate() // e.g. 2026 for a second plan in the same year
   showPlanForm.value = true
 }
 
+// Pre-fill form and linked goal IDs from the plan being edited.
 const openEditPlanForm = (plan) => {
   editingPlanId.value = plan.plan_id
   planForm.value = {
@@ -570,16 +633,24 @@ const cancelPlanForm = () => {
   resetPlanForm()
 }
 
-const normalizePlanPayload = () => ({
-  profile_id: Number(route.params.id),
-  plan_year: Number(planForm.value.plan_year),
-  professional_interests: planForm.value.professional_interests || null,
-  employers_of_interest: planForm.value.employers_of_interest || null,
-  personal_values: planForm.value.personal_values || null,
-  development_focus: planForm.value.development_focus || null,
-  extracurriculars: planForm.value.extracurriculars || null,
-  networking_plan: planForm.value.networking_plan || null
-})
+const normalizePlanPayload = () => {
+  const planYear = Number(planForm.value.plan_year)
+  // Client-side guard before POST/PUT; backend validates integer plan_year as well.
+  if (!Number.isInteger(planYear) || planYear < CALENDAR_YEAR_MIN) {
+    throw new Error('Please select a calendar year (e.g. 2026).')
+  }
+
+  return {
+    profile_id: Number(route.params.id),
+    plan_year: planYear,
+    professional_interests: planForm.value.professional_interests || null,
+    employers_of_interest: planForm.value.employers_of_interest || null,
+    personal_values: planForm.value.personal_values || null,
+    development_focus: planForm.value.development_focus || null,
+    extracurriculars: planForm.value.extracurriculars || null,
+    networking_plan: planForm.value.networking_plan || null
+  }
+}
 
 // API loading functions fetch plans and all goals that can be linked to a plan.
 const fetchCareerPlans = async () => {
@@ -617,7 +688,14 @@ const savePlan = async () => {
     savingPlan.value = true
     planFormError.value = ''
 
-    const payload = normalizePlanPayload()
+    let payload
+    try {
+      payload = normalizePlanPayload()
+    } catch (validationError) {
+      planFormError.value = validationError.message
+      return
+    }
+
     const response = editingPlanId.value
       ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
       : await api.post('/career-plans', payload)
@@ -639,16 +717,15 @@ const savePlan = async () => {
       error.response?.data?.error ||
       Object.values(error.response?.data?.errors || {}).flat()[0]
 
-    planFormError.value = serverMessage?.includes('Duplicate entry')
-      ? 'Another plan already used that year before the database constraint was updated. Please refresh and try again.'
-      : serverMessage || 'Failed to save career development plan.'
+    planFormError.value = serverMessage || 'Failed to save career development plan.'
   } finally {
     savingPlan.value = false
   }
 }
 
+// Remove plan row; linked goals stay in DB but lose this plan association.
 const deletePlan = async (plan) => {
-  const confirmed = window.confirm(`Delete Year ${plan.plan_year} career plan? This cannot be undone.`)
+  const confirmed = window.confirm(`Delete ${formatPlanYearLabel(plan.plan_year)} career plan? This cannot be undone.`)
   if (!confirmed) {
     return
   }
@@ -663,8 +740,8 @@ const deletePlan = async (plan) => {
 }
 
 onMounted(() => {
-  fetchCareerPlans()
-  fetchSmartGoals()
+  fetchCareerPlans() // list + nested goals for table/cards
+  fetchSmartGoals() // full goal list for link picker in create/edit form
 })
 </script>
 

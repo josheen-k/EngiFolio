@@ -432,7 +432,6 @@
         </div>
       </div>
     </div>
-
     <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
       <div class="confirm-widget">
         <p class="confirm-title">{{ confirmDialog.title }}</p>
@@ -451,15 +450,8 @@
         </div>
       </div>
     </div>
-    <div v-if="showPitchDialog" class="confirm-overlay" @click.self="closePitchDialog">
-      <div class="confirm-widget">
-        <p class="confirm-title">{{ pitchDialog.title }}</p>
-        <p class="confirm-message">{{ pitchDialog.message }}</p>
-
-        <div class="confirm-actions">
-          <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}</button>
-        </div>
-      </div>
+    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+      {{ popUp.message }}
     </div>
   </main>
 </template>
@@ -513,12 +505,6 @@ const yearScrollContainer = ref(null)
 
 const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
-const showPitchDialog = ref(false);
-const pitchDialog = ref({
-  title: "",
-  message: "",
-  buttonLabel: "OK",
-});
 
 const contacts = ref([])
 let confirmResolver = null
@@ -698,31 +684,27 @@ const saveElevatorPitch = async() => {
   const trimmedPitch = elevatorPitch.value.trim();
 
   if(!trimmedPitch) {
-    openPitchDialog('Elevator Pitch', "It's empty. Please enter something first.");
+    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
     return;
   }
   savingPitch.value = true
   try {
     await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
 
-    openPitchDialog("Saved", "Your elevator pitch has been saved.");
+    showPopUp("Your elevator pitch has been saved.", "success");
   } finally {
     savingPitch.value = false
   }
 }
 
-const openPitchDialog = (title,message) => {
-  pitchDialog.value = {
-    title,
-    message,
-    buttonLabel: "OK",
-  }
-  showPitchDialog.value = true
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
 }
 
-const closePitchDialog = () => {
-  showPitchDialog.value = false
-}
 
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
@@ -2009,32 +1991,6 @@ function goToToday() {
   justify-content: flex-end;
   margin-top: 10px;
 }
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(9, 17, 28, 0.48);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 1100;
-}
-
-.confirm-widget {
-  width: min(28rem, 100%);
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #d6e0ea;
-  border-radius: 1.15rem;
-  box-shadow: 0 1rem 2.5rem rgba(18, 30, 45, 0.18);
-  padding: 1.25rem;
-}
-
-.confirm-title {
-  margin: 0 0 0.45rem;
-  color: #13202c;
-  font-size: 1.05rem;
-  font-weight: 700;
-}
 
 .comment-evidence-grid{
   display: grid;
@@ -2123,5 +2079,36 @@ function goToToday() {
 }
 
 
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
 
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.field-input.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
+}
 </style>
