@@ -23,6 +23,7 @@ class NetworkingEvent extends Model
         'details',
     ];
 
+    //get the student profile that owns this networking event
     public function profile()
     {
         return $this->belongsTo(StudentProfile::class,'profile_id', 'profile_id');

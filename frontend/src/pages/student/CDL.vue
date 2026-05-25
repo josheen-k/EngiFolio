@@ -15,7 +15,7 @@
 </script>
 <style>
 .cdl-page {
-      font-family: 'Martel', sans-serif;
+    font-family: 'Maven Pro', sans-serif;
     min-height: 100vh;
     background: #ffffff;
     display: flex;
