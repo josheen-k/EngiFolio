@@ -91,7 +91,7 @@
         <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="reflec in processedReflec" :key="reflec.entry_id">
           <div class="card compt-card p-3 h-70 reflec-card"
             @click="openReflec(reflec, reflec.entry_id)">
-            <p class="compt-label mb-2">{{ reflec.experience_title }}</p>
+            <p class="compt-label mb-2" :data-tooltip='reflec.experience_title'>{{ reflec.experience_title }}</p>
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="reflecs rounded-pill">{{ reflec.associated_year === 0 ? 'PRIOR' : 'YEAR ' + reflec.associated_year }}</span>
               <span class="txt-lvl">{{ reflec.entry_level?.competency_level }}</span>
@@ -148,8 +148,8 @@
           <div v-if="filteredCompts(c).length" class="row g-3">
             <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="compt in filteredCompts(c)" :key="compt.id">
               <div class="card compt-card p-3" @click="openDetail(compt, c.label)">
-                <h5 class="compt-label mb-2">Competency {{ compt.displayId }}</h5>
-                <h5 class="compt-label mb-2">{{ compt.indicator_name }}</h5>
+                <h5 class="compt-id mb-2">Competency {{ compt.displayId }}</h5>
+                <h5 class="compt-label mb-2" :data-tooltip="compt.indicator_name">{{ compt.indicator_name }}</h5>
                 <div class="d-flex align-items-center justify-content-start mb-2 gap-2">
                   <span class="rounded-pill px-3 py-1" :class="publishedOnly(compt).length ? 'reflecs-blue' : 'reflecs-red'">
                     {{ publishedOnly(compt).length }} reflection{{ publishedOnly(compt).length !== 1 ? 's' : '' }}
@@ -172,6 +172,7 @@
     :compt="viewReflec.compt" 
     :index="viewReflec.index"
     :levelOptions="levelOptions"
+    :categories="categories"
     @close="closeReflec" 
     @refresh="onSaveReflec"
   />
@@ -186,10 +187,14 @@
     @add="onAddReflec"
     @refresh="onSaveReflec"
   />
+
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ViewReflection from '@/components/ViewReflection.vue'
 import AddReflection from '@/components/AddReflection.vue'
@@ -223,6 +228,19 @@ watch(
   { immediate: true }
 )
 
+onMounted(() => {
+  if (route.query.filterReflec) {
+    filterReflec.value = route.query.filterReflec
+  }
+  if (route.query.filterLevel) {
+    const val = route.query.filterLevel
+    filterLevel.value = Array.isArray(val) ? val : [val]
+  }
+
+  if (route.query.openAdd==='true') {
+    openAdd()
+  }
+})
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null);
@@ -258,7 +276,6 @@ watch(() => props.categories, () => {
   }
 }, { deep: true })
 
-
 const reflecOption = [
   { value: 'all', label: 'All competencies' },
   { value: 'has-reflections', label: 'Has at least one reflection' },
@@ -268,6 +285,13 @@ const reflecOption = [
 const hasActiveFilter = computed(function () {
   return filterReflec.value !== 'all' || filterLevel.value.length > 0
 })
+
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
 
 function toggleDd() {
   ddOpen.value = !ddOpen.value
@@ -426,9 +450,14 @@ function closeReflec() {
   viewReflec.value.show = false
 }
 
-function onSaveReflec() {
+function onSaveReflec(statusId, entryName) {
   viewReflec.value.show = false 
   emit('refresh')
+  if (Number(statusId) === 2) {
+    showPopUp(`${entryName} has been published.`, "success")
+  } else {
+    showPopUp(`${entryName} has been saved to drafts.`, "success")
+  }
 }
 
 // add reflection popup 
@@ -603,6 +632,44 @@ function onAddReflec() {
   font-size: clamp(0.85rem, 2.5vw, 1.1rem);
   font-weight: 100;
   color: #878787;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.compt-id {
+  font-family: 'Martian Mono', monospace;
+  font-size: 0.7rem;
+  color: #aaaaaa;
+  font-weight: 400;
+  margin-bottom: 0.2rem;
+}
+
+.compt-label::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #727272;
+  color: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.75rem;
+  white-space: normal;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.compt-label:hover::after {
+  opacity: 1;
 }
 
 .txt {
@@ -692,6 +759,29 @@ function onAddReflec() {
 
 .btn-filter-sm {
   font-size: 0.8rem !important;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (min-width: 768px) {

@@ -8,7 +8,7 @@
       </div>
       <span>EngiFolio acknowledges the Kaurna people as the Traditional Owners of the Country<br>
         where the city of Adelaide is situated today, and pays its respects to Elders past and present.</span>
-      <span class="me-4 footer-right"><u>Privacy Policy</u></span>
+      <span class="me-4 footer-right" @click="privacyPolicy()"><u>Privacy Policy</u></span>
     </div>
   </footer>
 
@@ -19,6 +19,12 @@
 
 export default {
   name: 'Footer'
+  ,
+  methods: {
+    privacyPolicy() {
+      this.$router.push('/privacy-policy');
+    }
+  }
 };
 </script>
 

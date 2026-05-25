@@ -89,7 +89,6 @@ const loadData = async () => {
     }));
 
     levelOptions.value = [
-      { value: null, label: 'Not Started' },
       ...levelRes.data.map(l => ({
         value: l.entry_level_id,
         label: l.competency_level

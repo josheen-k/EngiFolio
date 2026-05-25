@@ -18,7 +18,7 @@
 					<td>{{ $contact->progress_notes }}</td>
 					<td>
 						@foreach($contact->contactMethods as $method)
-							<div>{{ $method->method_type }}: {{ $method->method_value }}</div>
+							<div>{{ $method->method_value }}</div>
 						@endforeach
 					</td>
 					<td>{{ $contact->date_met }}</td>

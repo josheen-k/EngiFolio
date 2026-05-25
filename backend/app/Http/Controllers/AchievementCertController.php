@@ -26,6 +26,7 @@ class AchievementCertController extends Controller
             'body'        => 'nullable|string',
             'file_path'   => 'nullable|string|max:255',
             'issued_date' => 'nullable|date',
+            'sort_order'  => 'required|integer'
         ]);
 
         $cert = AchievementCert::create($validated);
@@ -46,6 +47,7 @@ class AchievementCertController extends Controller
             'body'        => 'nullable|string',
             'file_path'   => 'nullable|string|max:255',
             'issued_date' => 'nullable|date',
+            'sort_order'  => 'required|integer'
         ]);
 
         $cert->update($validated);

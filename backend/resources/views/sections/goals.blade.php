@@ -1,18 +1,5 @@
 <div class="section">
-	<h2>Career Development & SMART Goals</h2>
-
-	{{-- Loop for each career plan year --}}
-	@foreach($profile->careerPlans as $plan)
-		<div>
-			<h3>
-				Plan Year: {{ $plan->plan_year }}
-			</h3>
-			
-			<p><strong>Professional Interests:</strong> {{ $plan->professional_interests }}</p>
-
-			@if($plan->smartGoals->isEmpty())
-				<p><em>No SMART goals recorded for this year.</em></p>
-			@else
+	<h2>SMART Goals</h2>
 				<table>
 					<thead>
 						<tr>
@@ -23,7 +10,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach($plan->smartGoals as $goal)
+						@foreach($profile->smartGoals as $goal)
 							<tr>
 								<td>
 									<strong>{{ $goal->goal_description }}</strong>
@@ -55,7 +42,5 @@
 						@endforeach
 					</tbody>
 				</table>
-			@endif
 		</div>
-	@endforeach
 </div>

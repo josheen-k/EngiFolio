@@ -55,6 +55,7 @@ Route::delete('/users/{profile}/industry-contacts/{industryContact}', [IndustryC
 Route::post('/link', [StudentLinkController::class, 'store']);
 Route::put('/link/{id}', [StudentLinkController::class, 'update']);
 Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
+Route::post('/profile/{id}/image', [StudentProfileController::class, 'uploadImage']);
 
 // Smart Goal routes
 Route::get('/smart-goals', [SmartGoalController::class, 'index']);

@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id('entry_id');
             $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
             $table->foreignId('indicator_id')->constrained('competency_indicators', 'indicator_id');
-            $table->string('experience_title', 255);
+            $table->string('experience_title', 50);
             $table->integer('associated_year');
-            $table->text('experience_tasks');
-            $table->text('key_learnings')->nullable();
-            $table->text('future_applications')->nullable();
+            $table->text('experience_tasks', 500);
+            $table->text('key_learnings', 500)->nullable();
+            $table->text('future_applications', 500)->nullable();
             $table->foreignId('entry_level_id')->constrained('competency_entry_levels', 'entry_level_id');
             $table->foreignId('entry_status_id')->constrained('competency_entry_statuses', 'entry_status_id');
             $table->date('start_date');

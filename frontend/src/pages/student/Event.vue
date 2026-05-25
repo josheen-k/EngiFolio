@@ -673,10 +673,18 @@ const fetchContacts = async () => {
   contacts.value = response.data
 }
 
-onMounted(() => {
-  fetchEvents()
+onMounted(async () => {
+  await fetchEvents()
   fetchContacts()
   fetchElevatorPitch()
+
+  if (route.query.eventId) {
+    const event = events.value.find(e=> e.event_id === Number(route.query.eventId))
+    if (event) {
+      selectedDate.value = normalizeEventDate(event.event_datetime)
+      openEventDetails(selectedDate.value)
+    }
+  }
 })
 
 const fetchElevatorPitch = async() => {

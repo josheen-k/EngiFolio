@@ -29,8 +29,8 @@ class AdminController extends Controller
         $data = $this->buildUsersOverview($request);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
-            'users' => $data['users'],
             'stats' => $data['stats'],
+            'roleSections' => $this->groupUsersByRoleForPdf($data['users']),
         ]);
 
         return $pdf->download('user_management_export.pdf');
@@ -120,6 +120,24 @@ class AdminController extends Controller
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
             ],
             'users' => $users,
+        ];
+    }
+
+    /**
+     * Split overview rows into Student / Staff / Admin lists for the PDF export layout.
+     */
+    private function groupUsersByRoleForPdf($users): array
+    {
+        $pick = static function (string $role) use ($users) {
+            return $users
+                ->filter(static fn (array $user): bool => strcasecmp((string) ($user['role'] ?? ''), $role) === 0)
+                ->values();
+        };
+
+        return [
+            ['title' => 'Students', 'users' => $pick('Student')],
+            ['title' => 'Staffs', 'users' => $pick('Staff')],
+            ['title' => 'Admins', 'users' => $pick('Admin')],
         ];
     }
 

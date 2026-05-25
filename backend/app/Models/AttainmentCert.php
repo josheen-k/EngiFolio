@@ -18,6 +18,7 @@ class AttainmentCert extends Model
         'file_path',
         'issued_date',
         'expiry_date',
+        'sort_order'
     ];
 
     public function profile()

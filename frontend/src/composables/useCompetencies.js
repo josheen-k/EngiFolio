@@ -29,23 +29,6 @@ export function getLvl(compt) {
   return highestEntry.entry_level?.competency_level || 'Not Started';
 }
 
-// get empty reflection for form
-export function blankForm(comptId) {
-  return {
-    indicator_id: comptId || '',
-    entry_level_id: null,
-    experience_title: '',
-    start_date: '',
-    end_date: '',
-    associated_year: 1,
-    experience_tasks: '',
-    key_learnings: '',
-    future_applications: '',
-    entry_status_id: 1,
-    evidenceEntries: []
-  }
-}
-
 // Makes the date a readable format
 export const formatDate = (dateString) => {
   const date = new Date(dateString);

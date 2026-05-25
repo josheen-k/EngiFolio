@@ -53,3 +53,7 @@ To populate the database with set sample data, run this command from the backend
 ## Install For PDF Export
 To install requirements for PDF Exports run this command in the backend folder
 `composer require barryvdh/laravel-dompdf`
+
+## Link storage URL
+Run in backend: `php artisan storage:link` to create a link from public/storage to storage/apps/public
+Add `APP_URL=http://localhost:8000` to `EngiFolio/backend/.env`

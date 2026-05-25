@@ -6,6 +6,8 @@ use App\Models\StudentProfile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\User;
+// For storing the profile picture
+use Illuminate\Support\Facades\Storage;
 
 class StudentProfileController extends Controller
 {
@@ -31,7 +33,6 @@ class StudentProfileController extends Controller
             'degree_title'     => 'nullable|string|max:40',
             'specialisation'     => 'nullable|string|max:60',
             'personal_intro'   => 'nullable|string',
-            'profile_image_url' => 'nullable|string|max:255',
         ]);
 
         $profile = StudentProfile::create($validated);
@@ -47,8 +48,8 @@ class StudentProfileController extends Controller
         $studentProfile = StudentProfile::with([
             'links', 
             'user', 
-            'achievementCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}, 
-            'attainmentCerts' => function ($query) {$query->orderBy('issued_date', 'desc');}
+            'achievementCerts' => function ($query) {$query->orderBy('sort_order', 'asc');}, 
+            'attainmentCerts' => function ($query) {$query->orderBy('sort_order', 'asc');}
         ])->findOrFail($id);
 
     return response()->json($studentProfile);
@@ -70,7 +71,6 @@ class StudentProfileController extends Controller
             'degree_title'     => 'nullable|string|max:40',
             'specialisation'     => 'nullable|string|max:60',
             'personal_intro'   => 'nullable|string',
-            'profile_image_url' => 'nullable|string|max:255',
             'user.first_name'   => 'required|string|max:50',
             'user.last_name'    => 'required|string|max:50',
         ]);
@@ -114,9 +114,9 @@ class StudentProfileController extends Controller
             'industryContacts',
             'industryContacts.contactMethods',
             'careerPlans',
-            'careerPlans.smartGoals',
-            'careerPlans.smartGoals.actionSteps',
-            'careerPlans.smartGoals.status',
+            'smartGoals',
+            'smartGoals.actionSteps',
+            'smartGoals.status',
             'achievementCerts',
             'attainmentCerts', 
         ])->findOrFail($id);
@@ -131,5 +131,33 @@ class StudentProfileController extends Controller
         ]);
         
         return $pdf->download("portfolio.pdf");
+    }
+
+    public function uploadImage(Request $request, $id) {
+        // Only accept the 3 file formats
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,jpg,png|max:2048'
+        ]);
+
+        $profile = StudentProfile::findOrFail($id);
+
+        // Deletes existing profile, find in storage folder with a file that starts with the url 
+        if ($profile->profile_image_url) {
+            // Breaks the url into its parts
+            $parsed = parse_url($profile->profile_image_url);
+            // Remove /storage/ as backend already knows this
+            $storagePath = str_replace('/storage/', '', $parsed['path']);
+            Storage::disk('public')->delete($storagePath);
+        }
+
+        // Gets the image from the request and saves it on the public disk in the profile-images file
+        $path = $request->file('image')->store('profile-images', 'public');
+
+        // Concatenate the full url using the pathway stored in .env
+        $fullUrl = config('app.url') . '/storage/' . $path;
+
+        $profile->profile_image_url = $fullUrl;
+        $profile->save();
+        return response()->json(['image_url' => '/storage/' . $path]);
     }
 }
