@@ -448,8 +448,10 @@ const savingPlan = ref(false)
 const planFormError = ref('')
 const selectedGoalIds = ref([])
 
+// plan_year is stored as a calendar year (e.g. 2026). Multiple plans per year are allowed.
 const CALENDAR_YEAR_MIN = 2020
 
+// Suggested years for the Plan Year dropdown (merged with years from existing plans below).
 const buildCalendarYearRange = () => {
   const currentYear = new Date().getFullYear()
   const start = Math.min(currentYear - 1, 2026)
@@ -461,11 +463,13 @@ const buildCalendarYearRange = () => {
   return years
 }
 
+// Safe display for API/form values that may be number or string.
 const formatPlanYearLabel = (year) => {
   const y = Number(year)
   return Number.isFinite(y) ? String(y) : '—'
 }
 
+// Dropdown options: { value, label } sorted ascending; includes legacy years from saved plans.
 const planYearSelectOptions = computed(() => {
   const years = new Set(buildCalendarYearRange())
   plans.value.forEach((plan) => {
@@ -480,6 +484,7 @@ const planYearSelectOptions = computed(() => {
     .map((year) => ({ value: year, label: String(year) }))
 })
 
+// Pre-select current calendar year when opening the create form (fallback: first option).
 const defaultPlanYearForCreate = () => {
   const currentYear = new Date().getFullYear()
   const options = planYearSelectOptions.value
@@ -510,6 +515,7 @@ const sortedPlans = computed(() => {
   })
 })
 
+// employers_of_interest is one text field; users separate entries with commas or new lines.
 const splitList = (value) => {
   if (!value) {
     return []
@@ -594,7 +600,7 @@ const resetPlanForm = () => {
 
 const openCreatePlanForm = () => {
   resetPlanForm()
-  planForm.value.plan_year = defaultPlanYearForCreate()
+  planForm.value.plan_year = defaultPlanYearForCreate() // e.g. 2026 for a second plan in the same year
   showPlanForm.value = true
 }
 
@@ -621,6 +627,7 @@ const cancelPlanForm = () => {
 
 const normalizePlanPayload = () => {
   const planYear = Number(planForm.value.plan_year)
+  // Client-side guard before POST/PUT; backend validates integer plan_year as well.
   if (!Number.isInteger(planYear) || planYear < CALENDAR_YEAR_MIN) {
     throw new Error('Please select a calendar year (e.g. 2026).')
   }
