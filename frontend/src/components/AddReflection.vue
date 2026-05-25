@@ -150,7 +150,7 @@
             </button>
           </div>
 
-          <button v-if="f.evidenceEntries.length < 3" class="btn btn-filter rounded-pill px-3 py-1 mt-1"
+          <button v-if="f.evidenceEntries.length < 3" class="btn btn-add-ev rounded-pill px-3 py-1 mt-1"
           @click="addEvidence()">+ Add evidence</button>
         </div>
       </div>
@@ -498,15 +498,23 @@ async function submit(statusId) {
   color: #888888;
 }
 
-.btn-filter {
+.btn-filter, .btn-add-ev {
   font-family: 'Montserrat Alternates', sans-serif;
   border-radius: 1.5rem;
-  font-size: 1rem;
   background: #e6e6e6;
   color: #222222;
 }
 
-.btn-filter:hover {
+.btn-filter {
+  font-size: 1rem;
+}
+
+.btn-add-ev {
+  font-size: 0.8rem;
+  font-weight: lighter;
+}
+
+.btn-filter:hover, .btn-add-ev:hover {
   background: #666666;
   color: #ffffff;
 }
