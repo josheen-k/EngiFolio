@@ -162,6 +162,47 @@ export function useExportData(userId) {
       }
     };
 
+    const addCareerPlans = async () => {
+      try {
+        const response = await api.get(`/career-plans/${userId}`);
+        const plans = response.data;
+
+          const formattedPlans = ['"----- Career Development Plans -----"'];
+          const planHeader = [
+              '"Year"',
+              '"Professional Interests"',
+              '"Employers of Interest"',
+              '"Networking Plan"',
+              '"Personal Values"',
+              '"Extracurriculars"',
+              '"Development Focus"',
+          ].join(",");
+
+          formattedPlans.push(planHeader);
+
+          if (plans && plans.length > 0) {
+              plans.forEach(plan => {
+                  const row = [
+                      `"${plan.plan_year}"`,
+                      `"${plan.professional_interests || ''}"`,
+                      `"${plan.employers_of_interest || ''}"`,
+                      `"${plan.networking_plan || ''}"`,
+                      `"${plan.personal_values || ''}"`,
+                      `"${plan.extracurriculars || ''}"`,
+                      `"${plan.development_focus || ''}"`,
+                  ].join(",");
+                  formattedPlans.push(row);
+              });
+          }
+
+          formattedPlans.push('\n\n');
+          return formattedPlans.join('\n');
+      } catch (error) {
+          console.error("Error while fetching career plans:", error);
+          return '';
+      }
+  };
+
     // Fetches the goals and adds the contents to the file
     const addGoals = async () => { 
     try {
@@ -216,5 +257,5 @@ export function useExportData(userId) {
     } 
   };
 
-  return { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addGoals }
+  return { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addCareerPlans, addGoals }
 }

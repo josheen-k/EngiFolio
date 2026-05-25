@@ -8,7 +8,7 @@
     const route = useRoute();
 
     // Deconstructs the functions so that they can be called individually
-    const { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addGoals } = useExportData(route.params.id)
+    const { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addCareerPlans, addGoals } = useExportData(route.params.id)
 
     const profileSelected = ref(false);
     const certificationsSelected = ref(false);
@@ -107,6 +107,8 @@
           }
           
           if (goalsSelected.value) {
+            const careerPlansData = await addCareerPlans();
+            exportCSV.push(careerPlansData);
             const goalsData = await addGoals();
             exportCSV.push(goalsData);
           }

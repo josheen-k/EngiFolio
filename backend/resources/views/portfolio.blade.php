@@ -29,9 +29,10 @@
 		@include('sections.networking', ['profile' => $profile])
 	@endif
 
-	{{-- Check if goals is selected and contains goals --}}
-	@if(!empty($selections['goals']) && $profile->careerPlans->isNotEmpty())
-		@include('sections.goals', ['profile' => $profile])
+	{{-- Check if goals and plans is selected and contains goals --}}
+	@if(!empty($selections['goals']) && $profile->smartGoals->isNotEmpty())
+		@include('sections.career-plans', ['profile' => $profile])
+    	@include('sections.goals', ['profile' => $profile])
 	@endif
 	</body>
 </html>
