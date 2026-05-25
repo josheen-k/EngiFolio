@@ -166,7 +166,7 @@
 
     </section>
 
-
+  <Footer />
   </div>
 </template>
 
@@ -176,12 +176,15 @@ import { useRoute } from "vue-router";
 import api from "@/services/api";
 
 import Navbar from "@/components/Navbar.vue";
+import Footer from "@/components/Footer.vue";
 import ButtonsStyle from "@/components/ButtonsStyle.vue";
+
 
 const route = useRoute();
 const profileId = computed(() =>(route.params.id || 1));
 const contacts = ref([]);
 const search = ref("");
+const filterBy = ref("all");
 const sortBy = ref("");
 
 const showForm = ref(false);
@@ -192,7 +195,7 @@ const openMenuId = ref(null);
 const elevatorPitch = ref("");
 const savingPitch =ref(false);
 const showPitchDialog = ref(false);
-const showConfirmDialog = ref(false); 
+const showConfirmDialog = ref(false);
 
 const confirmDialog = ref({
   title: "",
@@ -201,7 +204,7 @@ const confirmDialog = ref({
   cancelLabel: "Cancel",
   variant: "default",
 });
-let confirmResolver = null; 
+let confirmResolver = null;
 
 const pitchDialog = ref({
   title: "",
@@ -215,6 +218,7 @@ const form = ref({
   company: "",
   link_url: "",
   date_met: "",
+  linkedin_url: "",
 });
 
 /* FETCH */
@@ -346,6 +350,7 @@ const openForm = () => {
     company: "",
     link_url: "",
     date_met: "",
+    linkedin_url: "",
   };
   showForm.value = true;
 };
@@ -479,6 +484,7 @@ const deleteContact = async (id) => {
   padding: 8px;
   border-radius: 10px;
   border: 1px solid #ddd;
+  font-size: 0.85rem;
 }
 
 .sort {

@@ -11,6 +11,7 @@ class CompetencyEntry extends Model
 
     protected $table = 'competency_entries';
     protected $primaryKey = 'entry_id';
+
     protected $fillable = [
         'profile_id',
         'indicator_id',
@@ -27,8 +28,21 @@ class CompetencyEntry extends Model
 
     public function profile()
     {
-        return $this->belongsTo(User::class, 'profile_id', 'profile_id');
+        return $this->belongsTo(StudentProfile::class, 'profile_id', 'profile_id');
     }
+
+    public function indicator()
+    {
+        return $this->belongsTo(CompetencyIndicator::class, 'indicator_id', 'indicator_id');
+    }
+    public function entryLevel() // this function links competency entry to comepetency entry level through entry level id
+{
+    return $this->belongsTo(
+        CompetencyEntryLevel::class, // competency entries-emerging, developing, and proficient
+        'entry_level_id',
+        'entry_level_id'
+    );
+}
 
     public function competencyFeedback()
     {
@@ -38,19 +52,5 @@ class CompetencyEntry extends Model
     public function competencyEvidence()
     {
         return $this->hasMany(CompetencyEvidence::class, 'entry_id', 'entry_id');
-    }
-    public function indicator()
-    {
-        return $this->belongsTo(CompetencyIndicator::class, 'indicator_id', 'indicator_id');
-    }
-
-    public function entryLevel()
-    {
-        return $this->belongsTo(CompetencyEntryLevel::class, 'entry_level_id', 'entry_level_id');
-    }
-
-    public function entryStatus()
-    {
-        return $this->belongsTo(CompetencyEntryStatus::class, 'entry_status_id', 'entry_status_id');
     }
 }

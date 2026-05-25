@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompetencyEntry;
+use App\Models\StudentProfile;
 use Illuminate\Http\Request;
 
 class CompetencyEntryController extends Controller
@@ -12,7 +13,7 @@ class CompetencyEntryController extends Controller
      */
     public function index($profileId)
     {
-        $entries = CompetencyEntry::with('indicator', 'entryLevel', 'competencyFeedback.staff', 'CompetencyEvidence')->where('profile_id', $profileId)->get();
+        $entries = CompetencyEntry::with('indicator', 'entryLevel', 'competencyFeedback.staff', 'competencyEvidence')->where('profile_id', $profileId)->get();
 
         if ($entries->isEmpty()) {
             return response()->json(['message' => 'No comptencies for this user found'], 404);
@@ -41,7 +42,7 @@ class CompetencyEntryController extends Controller
         ]);
 
         $entry = CompetencyEntry::create($validated);
-        
+
         return response()->json($entry, 201);
     }
 

@@ -261,23 +261,18 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('career_development_plan_smart_goal')->insert([
-            // Alex: goals 1–2 on plan 1; goal 3 on plan 2
             ['plan_id' => 1, 'goal_id' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 1, 'goal_id' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 2, 'goal_id' => 3, 'created_at' => now(), 'updated_at' => now()],
-            // Kate: goals 4–5 on plan 3; goal 6 on plan 4
             ['plan_id' => 3, 'goal_id' => 4, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 3, 'goal_id' => 5, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 4, 'goal_id' => 6, 'created_at' => now(), 'updated_at' => now()],
-            // Priya: goals 7–8 on plan 5; goal 9 on plan 6
             ['plan_id' => 5, 'goal_id' => 7, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 5, 'goal_id' => 8, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 6, 'goal_id' => 9, 'created_at' => now(), 'updated_at' => now()],
-            // Samuel: goals 10–11 on plan 7; goal 12 on plan 8
             ['plan_id' => 7, 'goal_id' => 10, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 7, 'goal_id' => 11, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 8, 'goal_id' => 12, 'created_at' => now(), 'updated_at' => now()],
-            // Isabella: goals 13–14 on plan 9; goal 15 on plan 10
             ['plan_id' => 9, 'goal_id' => 13, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 9, 'goal_id' => 14, 'created_at' => now(), 'updated_at' => now()],
             ['plan_id' => 10, 'goal_id' => 15, 'created_at' => now(), 'updated_at' => now()],
@@ -288,29 +283,15 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('industry_contacts')->insert([
-            ['contact_id' => 3, 'profile_id' => 1, 'contact_name' => 'Elena Rodriguez', 'company' => 'Arup Adelaide', 'progress_notes' => 'Met at university lecture. Discussed graduate opportunities at Arup. She suggested connecting on LinkedIn and reaching out mid-year when applications open.', 'date_met' => '2026-03-12', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 4, 'profile_id' => 1, 'contact_name' => 'Kenji Sato', 'company' => 'Mitsubishi Heavy Industries', 'progress_notes' => 'Introduced at engineering careers expo. Expressed interest in structural engineering roles. Followed up via email, awaiting response.', 'date_met' => '2026-04-05', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 5, 'profile_id' => 1, 'contact_name' => 'Sarah Jenkins', 'company' => 'Santos Ltd', 'progress_notes' => 'Met at a networking dinner hosted by the engineering faculty. Discussed pipeline infrastructure projects. She recommended attending the Santos graduate information session in June.', 'date_met' => '2026-02-18', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 6, 'profile_id' => 1, 'contact_name' => 'Marcus Aurelius', 'company' => 'Roman Concrete Solutions', 'progress_notes' => 'Connected at a materials engineering seminar. Discussed innovative concrete applications in civil infrastructure. Exchanged business cards, planning to follow up about a site visit.', 'date_met' => '2026-01-10', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 7, 'profile_id' => 1, 'contact_name' => 'Amara Okafor', 'company' => 'Google Cloud', 'progress_notes' => 'Met at a tech and engineering crossover event. Discussed how cloud infrastructure intersects with engineering workflows. She offered to connect me with the Google engineering graduate team.', 'date_met' => '2026-05-20', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 8, 'profile_id' => 1, 'contact_name' => 'Lachlan Murdoch', 'company' => 'BAE Systems Australia', 'progress_notes' => 'Introduced through a mutual contact at a defence industry briefing. Discussed graduate roles in systems engineering. Following up next month with a formal expression of interest.', 'date_met' => '2026-03-25', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 9, 'profile_id' => 1, 'contact_name' => 'Siobhan Roy', 'company' => 'Waystar Civil Engineering', 'progress_notes' => 'Met at a university alumni panel. She spoke about project management in large civil works. Had a follow-up coffee meeting, discussed internship availability for semester two.', 'date_met' => '2026-04-15', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 10, 'profile_id' => 1, 'contact_name' => 'Chen Wei', 'company' => 'Tesla Motors', 'progress_notes' => 'Connected at an EV and sustainable transport forum. Discussed battery systems and manufacturing engineering. She shared details of Tesla\'s graduate engineering program opening later this year.', 'date_met' => '2026-05-02', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 11, 'profile_id' => 1, 'contact_name' => 'Alistair Cook', 'company' => 'Cook Renewable Energy', 'progress_notes' => 'Met at a renewable energy industry meetup. Discussed solar and wind project development in South Australia. He offered a tour of their current wind farm project site.', 'date_met' => '2026-02-28', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 12, 'profile_id' => 1, 'contact_name' => 'Dana Scully', 'company' => 'FBI Forensic Engineering', 'progress_notes' => 'Met at a forensic engineering guest lecture. Discussed failure analysis and investigation methodology. Expressed interest in the intersection of engineering and legal applications.', 'date_met' => '2026-01-30', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Elena Rodriguez', 'company' => 'Arup Adelaide', 'date_met' => '2026-03-12', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 2, 'profile_id' => 1, 'contact_name' => 'Kenji Sato', 'company' => 'Mitsubishi Heavy Industries', 'date_met' => '2026-04-05', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'profile_id' => 2, 'contact_name' => 'Sarah Jenkins', 'company' => 'Santos Ltd', 'date_met' => '2026-02-18', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('industry_contact_methods')->insert([
-            ['contact_id' => 3, 'method_type' => 'Email', 'method_value' => 'elena.rodriguez@arup.com.au', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 4, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/ksato-mhi', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 5, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5000', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 6, 'method_type' => 'Email', 'method_value' => 'm.aurelius@romanconcrete.it', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 7, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/aokafor-cloud', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 8, 'method_type' => 'Email', 'method_value' => 'lachlan.murdoch@baesystems.com', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 9, 'method_type' => 'Phone', 'method_value' => '+61 400 123 456', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 10, 'method_type' => 'Email', 'method_value' => 'w.chen@tesla.com', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 11, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/alistair-cook-energy', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 12, 'method_type' => 'Email', 'method_value' => 'd.scully@fbi.gov', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 1, 'method_type' => 'Email', 'method_value' => 'elena.rodriguez@arup.com.au', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 2, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/ksato-mhi', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5000', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('competency_groups')->insert([
@@ -332,14 +313,13 @@ class DatabaseSeeder extends Seeder
             ['group_id' => 2, 'display_id' => '2.3', 'indicator_name' => 'Synthesis & Design Processes', 'description' => 'Application of systematic engineering synthesis and design processes.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
             ['group_id' => 2, 'display_id' => '2.4', 'indicator_name' => 'Conduct & Management', 'description' => 'Application of systematic approaches to the conduct and management of engineering projects.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
 
-            ['group_id' => 3, 'display_id' => '3.1', 'indicator_name' => 'Ethics & Accountability', 'description' => 'Ethical conduct and professional accountability.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.2', 'indicator_name' => 'Professional Communication', 'description' => 'Effective oral and written communication in professional and lay domains.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.3', 'indicator_name' => 'Innovation & Proactivity', 'description' => 'Creative, innovative and pro-active demeanour.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.4', 'indicator_name' => 'Information Management', 'description' => 'Professional use and management of information.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.5', 'indicator_name' => 'Self-Management & Conduct', 'description' => 'Orderly management of self, and professional conduct.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['group_id' => 3, 'display_id' => '3.6', 'indicator_name' => 'Teamwork & Leadership', 'description' => 'Effective team membership and team leadership.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
-        
-            // A discontinued indicator that has a discontinued date
+            ['group_id' => 3, 'display_id' => '3.1', 'indicator_name' => '', 'description' => 'Ethical conduct and professional accountability.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.2', 'indicator_name' => '', 'description' => 'Effective oral and written communication in professional and lay domains.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.3', 'indicator_name' => '', 'description' => 'Creative, innovative and pro-active demeanour.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.4', 'indicator_name' => '', 'description' => 'Professional use and management of information.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.5', 'indicator_name' => '', 'description' => 'Orderly management of self, and professional conduct.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['group_id' => 3, 'display_id' => '3.6', 'indicator_name' => '', 'description' => 'Effective team membership and team leadership.', 'discontinued_date' => null, 'created_at' => now(), 'updated_at' => now()],
+
             ['group_id' => 3, 'display_id' => '3.0', 'indicator_name' => 'Test', 'description' => 'Test', 'discontinued_date' => now(), 'created_at' => now(), 'updated_at' => now()],
         ]);
 
@@ -452,148 +432,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('competency_entries')->insert([
-            [
-                'entry_id' => 1, 
-                'profile_id' => 1, 
-                'indicator_id' => 1, 
-                'experience_title' => 'Bridge Project', 
-                'associated_year' => 1, 
-                'experience_tasks' => 'CAD work', 
-                'key_learnings' => 'Mastered 3D modeling constraints and learned the importance of load distribution in structural design.', 
-                'future_applications' => 'Applying parametric modeling techniques to more complex architectural structures in Year 2.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 2, 
-                'profile_id' => 1, 
-                'indicator_id' => 1, 
-                'experience_title' => 'Electrical Project', 
-                'associated_year' => 2, 
-                'experience_tasks' => 'Wiring', 
-                'key_learnings' => 'Understanding circuit continuity and the safety protocols required for high-voltage breadboarding.', 
-                'future_applications' => 'Scaling these wiring principles to PCB design and automated hardware testing.', 
-                'entry_level_id' => 1, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 3, 'profile_id' => 1, 'indicator_id' => 2, 
-                'experience_title' => 'Python Automation Script', 'associated_year' => 1, 
-                'experience_tasks' => 'Writing scripts to parse CSV data', 
-                'key_learnings' => 'Learned how to use pandas for data manipulation and the value of DRY (Don\'t Repeat Yourself) code.', 
-                'future_applications' => 'Automating large-scale data analysis for future research projects.', 
-                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-04-10', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 4, 'profile_id' => 1, 'indicator_id' => 4, 
-                'experience_title' => 'Robotics Club Lead', 'associated_year' => 2, 
-                'experience_tasks' => 'Coordinating team meetings and parts procurement', 
-                'key_learnings' => 'Developed leadership skills and learned to manage conflicting technical opinions within a team.', 
-                'future_applications' => 'Managing multi-disciplinary engineering teams in a corporate setting.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-02-15', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 5, 'profile_id' => 1, 'indicator_id' => 3, 
-                'experience_title' => 'Sustainability Audit', 'associated_year' => 2, 
-                'experience_tasks' => 'Calculating carbon footprint for campus building', 
-                'key_learnings' => 'Understood life-cycle assessment (LCA) methodologies and material waste management.', 
-                'future_applications' => 'Integrating sustainable material selection into civil engineering designs.', 
-                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-05-20', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 6, 'profile_id' => 1, 'indicator_id' => 1, 
-                'experience_title' => 'Fluid Mechanics Lab', 'associated_year' => 2, 
-                'experience_tasks' => 'Measuring pipe friction and flow rates', 
-                'key_learnings' => 'Observed the practical differences between laminar and turbulent flow in real-world piping.', 
-                'future_applications' => 'Designing efficient hydraulic systems for irrigation or urban water supply.', 
-                'entry_level_id' => 1, 'entry_status_id' => 2, 'start_date' => '2026-08-12', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 7, 'profile_id' => 1, 'indicator_id' => 5, 
-                'experience_title' => 'Industry Networking Night', 'associated_year' => 1, 
-                'experience_tasks' => 'Engaging with professional engineers from Arup', 
-                'key_learnings' => 'Gained insight into the current demand for BIM specialists in the Australian market.', 
-                'future_applications' => 'Tailoring my elective choices toward digital construction management.', 
-                'entry_level_id' => 1, 'entry_status_id' => 2, 'start_date' => '2026-09-05', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 8, 'profile_id' => 1, 'indicator_id' => 2, 
-                'experience_title' => 'Control Systems Workshop', 'associated_year' => 3, 
-                'experience_tasks' => 'Tuning PID controllers for a motor', 
-                'key_learnings' => 'Understood the impact of proportional, integral, and derivative gains on system stability.', 
-                'future_applications' => 'Optimising feedback loops in autonomous vehicle navigation.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-25', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 9, 'profile_id' => 1, 'indicator_id' => 6, 
-                'experience_title' => 'Ethics Case Study', 'associated_year' => 1, 
-                'experience_tasks' => 'Analysing the Challenger disaster', 
-                'key_learnings' => 'Identified the dangers of normalisation of deviance and the role of engineering whistleblowers.', 
-                'future_applications' => 'Upholding rigorous safety standards despite project timeline pressures.', 
-                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-04-02', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 10, 'profile_id' => 1, 'indicator_id' => 1, 
-                'experience_title' => 'Material Strength Testing', 'associated_year' => 2, 
-                'experience_tasks' => 'Tensile testing of aluminum alloys', 
-                'key_learnings' => 'Linked stress-strain curve theory to physical fracture points in metals.', 
-                'future_applications' => 'Performing failure analysis in aerospace or automotive components.', 
-                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-10-18', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 11, 'profile_id' => 1, 'indicator_id' => 4, 
-                'experience_title' => 'Hackathon Participant', 'associated_year' => 2, 
-                'experience_tasks' => 'Rapid prototyping of a smart-city app', 
-                'key_learnings' => 'Learned to prioritise Minimum Viable Product features under strict time constraints.', 
-                'future_applications' => 'Iterating quickly in fast-paced software development cycles.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-11-01', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 12, 'profile_id' => 1, 'indicator_id' => 3, 
-                'experience_title' => 'Site Visit: Port Adelaide', 'associated_year' => 1, 
-                'experience_tasks' => 'Observing maritime civil works', 
-                'key_learnings' => 'Observed the effects of saltwater corrosion on reinforced concrete structures.', 
-                'future_applications' => 'Designing durable infrastructure for coastal environments.', 
-                'entry_level_id' => 4, 'entry_status_id' => 2, 'start_date' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 13, 'profile_id' => 1, 'indicator_id' => 7, 
-                'experience_title' => 'Technical Report: Solar Array', 'associated_year' => 2, 
-                'experience_tasks' => 'Compiling performance data into a formal 20-page report', 
-                'key_learnings' => 'Mastered the use of LaTeX for professional formatting and learned to present complex data through clear, annotated charts.', 
-                'future_applications' => 'Producing high-quality documentation for stakeholders and regulatory bodies in professional practice.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-06-12', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 14, 'profile_id' => 1, 'indicator_id' => 8, 
-                'experience_title' => 'Calculus in Structural Analysis', 'associated_year' => 1, 
-                'experience_tasks' => 'Applying double integrals to calculate moments of inertia', 
-                'key_learnings' => 'Bridged the gap between abstract multivariable calculus and its physical necessity in predicting beam deflection.', 
-                'future_applications' => 'Executing rigorous mathematical verification for structural integrity in civil projects.', 
-                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-04-20', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 15, 'profile_id' => 1, 'indicator_id' => 9, 
-                'experience_title' => 'Project Risk Assessment', 'associated_year' => 3, 
-                'experience_tasks' => 'Creating a Risk Register for a construction site simulation', 
-                'key_learnings' => 'Developed a safety-first mindset by identifying high-probability hazards and designing mitigation strategies.', 
-                'future_applications' => 'Ensuring OHS compliance and minimising liability during real-world site management.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-08-05', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 16, 'profile_id' => 1, 'indicator_id' => 10, 
-                'experience_title' => 'Final Year Symposium Pitch', 'associated_year' => 4, 
-                'experience_tasks' => 'Presenting a 5-minute technical pitch to industry judges', 
-                'key_learnings' => 'Learned to translate highly technical jargon into a value-driven narrative for non-specialist audiences.', 
-                'future_applications' => 'Securing project funding and pitching innovative engineering solutions to clients.', 
-                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-10-15', 'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'entry_id' => 17, 'profile_id' => 1, 'indicator_id' => 11, 
-                'experience_title' => 'Software Version Control Workshop', 'associated_year' => 2, 
-                'experience_tasks' => 'Managing collaborative code using Git and GitHub', 
-                'key_learnings' => 'Understood branching strategies and the critical role of peer review in maintaining codebase integrity.', 
-                'future_applications' => 'Collaborating effectively within large-scale, distributed software engineering teams.', 
-                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-03-22', 'created_at' => now(), 'updated_at' => now()
-            ],
+            ['entry_id' => 1, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Bridge Project', 'associated_year' => 1, 'experience_tasks' => 'CAD work', 'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 2, 'profile_id' => 1, 'indicator_id' => 1, 'experience_title' => 'Electrical Project', 'associated_year' => 2, 'experience_tasks' => 'Wiring', 'entry_level_id' => 1, 'entry_status_id' => 2, 'start_date' => '2026-03-01', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('cdl_modules')->insert([
@@ -619,14 +459,14 @@ class DatabaseSeeder extends Seeder
 
         DB::table('achievement_certs')->insert([
             [
-                'profile_id' => 1, 
-                'title' => 'Dean\'s Merit List 2025', 
-                'body' => 'Recognised for outstanding academic achievement in the Faculty of Engineering, Computer and Mathematical Sciences.', 
-                'file_path' => '/uploads/certs/deans_list_alex.pdf', 
-                'issued_date' => '2025-12-10', 
-                'sort_order' => '1',
-                'created_at' => now(), 
-                'updated_at' => now()
+                'profile_id' => 1,
+                'title' => 'Dean\'s Merit List 2025',
+                'body' => 'Recognized for outstanding academic achievement in the Faculty of Engineering, Computer and Mathematical Sciences.',
+                'file_path' => '/uploads/certs/deans_list_alex.pdf',
+                'issued_date' => '2025-12-10',
+                'sort_order' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -634,7 +474,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Awarded by Engineers Australia for the best undergraduate project on solar-thermal storage systems.',
                 'file_path' => '/uploads/certs/innovation_prize.pdf',
                 'issued_date' => '2026-03-15',
-                'sort_order' => '2',
+                'sort_order' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -644,7 +484,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Awarded a merit-based scholarship for maintaining a GPA above 6.5 throughout the academic year.',
                 'file_path' => '/uploads/certs/scholarship_2024.pdf',
                 'issued_date' => '2024-02-01',
-                'sort_order' => '3',
+                'sort_order' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -654,7 +494,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Recognised for leading a team to deliver a scalable web application using modern development practices.',
                 'file_path' => '/uploads/certs/team_project_award.pdf',
                 'issued_date' => '2025-06-05',
-                'sort_order' => '4',
+                'sort_order' => 4,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -664,7 +504,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Acknowledged for contributing over 100 hours to STEM outreach programs for high school students.',
                 'file_path' => '/uploads/certs/volunteer_award.pdf',
                 'issued_date' => '2023-11-18',
-                'sort_order' => '5',
+                'sort_order' => 5,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -674,7 +514,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Structural Engineering Industry Excellence Scholarship for high-performing female students.',
                 'file_path' => '/uploads/certs/scholarship_kate.pdf',
                 'issued_date' => '2026-02-01',
-                'sort_order' => '1',
+                'sort_order' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -688,7 +528,7 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/attain/white_card_alex.pdf',
                 'issued_date' => '2025-05-20',
                 'expiry_date' => null,
-                'sort_order' => '1',
+                'sort_order' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -699,7 +539,7 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/attain/first_aid_alex.pdf',
                 'issued_date' => '2026-01-10',
                 'expiry_date' => '2029-01-10',
-                'sort_order' => '2',
+                'sort_order' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -710,23 +550,15 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/attain/heights_kate.pdf',
                 'issued_date' => '2026-04-15',
                 'expiry_date' => '2028-04-15',
-                'sort_order' => '3',
+                'sort_order' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
         DB::table('competency_feedback')->insert([
-            ['entry_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Strong use of the pandas library. For your next iteration, try to modularise your functions to improve code reusability.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 4, 'staff_id' => 5, 'feedback_content' => 'Great leadership initiative. It would be beneficial to see a short reflection on how you resolved specific technical disagreements within the team.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 5, 'staff_id' => 4, 'feedback_content' => 'The LCA calculations are accurate. However, you should cross-reference the Australian Carbon Credit Units (ACCUs) standards in your future applications.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 6, 'staff_id' => 6, 'feedback_content' => 'Your analysis of laminar vs. turbulent flow is correct. Ensure the lab logbook scans are attached to show the raw data collection process.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 7, 'staff_id' => 5, 'feedback_content' => 'Excellent networking initiative. I recommend following up with the contacts you made on LinkedIn to maintain those professional ties.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 8, 'staff_id' => 6, 'feedback_content' => 'Good understanding of PID tuning. Next time, provide a screenshot of the oscillation curves to demonstrate how you reached stability.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 9, 'staff_id' => 4, 'feedback_content' => 'A very thoughtful analysis of the Challenger incident. You correctly identified the communication breakdown as a core technical failure.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 10, 'staff_id' => 6, 'feedback_content' => 'The stress-strain curve plots are well-rendered. Please clarify which specific aluminum alloy grade was used in the testing notes.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 11, 'staff_id' => 5, 'feedback_content' => 'Fantastic work on the MVP. Your ability to work under pressure is evident, but make sure to document the tech stack used in more detail.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 12, 'staff_id' => 4, 'feedback_content' => 'Insightful observations on coastal corrosion. This entry would be even stronger with photos from the site visit as visual evidence.', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 1, 'staff_id' => 4, 'feedback_content' => 'Strong CAD documentation. Add more detail on load assumptions in your next submission.', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Good wiring layout notes. Include safety compliance references where applicable.', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('networking_events')->insert([

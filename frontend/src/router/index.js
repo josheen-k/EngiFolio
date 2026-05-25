@@ -14,6 +14,11 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
+import CompetencyReview from '@/pages/staff/competencyReview.vue'
+import CompetencyEntry from '@/pages/student/competencyEntry.vue'
+import StaffDashboard from '@/pages/staff/staffDashboard.vue'
+import StaffStudents from '@/pages/staff/staffStudents.vue'
+
 import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 import CDL from '@/pages/student/CDL.vue'
@@ -71,33 +76,69 @@ const routes = [
     component: Event
   },
   {
+    path: '/student/networking/contacts/:id',
+    name: 'networking-contacts',
+    component: Networking
+  },
+  {
     path: '/student/export/:id',
     name: 'export',
     component: Export
   },
   {
-    path: '/login',
-    name: 'login',
-    component: Login
+    path: '/student/competency-entry/:id',
+    name: 'competencyEntry',
+    component: CompetencyEntry
+  },
+  {
+    path: '/student/CDL/:id',
+    name: 'CDL',
+    component: CDL
   },
   {
     path: '/goals/:id',
     name: 'GoalsPage',
     component: GoalsPage
   },
+  {
+    path: '/certification-settings/:id',
+    name: 'certificationSettings',
+    component: CertificationSettings
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login
+  },
 
+  // Staff
+  {
+    path: '/staff/dashboard',
+    name: 'staffDashboard',
+    component: StaffDashboard
+  },
+  {
+    path: '/staff/students',
+    name: 'staffStudents',
+    component: StaffStudents
+  },
+  {
+    path: '/staff/competency-review',
+    name: 'staffCompetencyReview',
+    component: CompetencyReview
+  },
   {
     path: '/staff/goal-feedback',
     name: 'goalFeedback',
     component: GoalFeedback
   },
 
+  // Admin
   {
     path: '/admin/:id',
     name: 'admin',
     component: AdminPage,
     beforeEnter: (to) => {
-      // Admin role_id is 1, so only /admin/1 can access the admin page.
       return String(to.params.id) === '1' ? true : { name: 'Homepage' }
     }
   },
@@ -137,4 +178,4 @@ const router = createRouter({
   },
 })
 
-export default router;
+export default router

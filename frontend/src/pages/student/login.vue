@@ -39,6 +39,7 @@
           <div class="d-flex justify-content-center gap-2 mb-2">
             <router-link to="/student/dashboard/1" class="btn btn-outline-secondary btn-sm rounded-pill">Student 1</router-link>
             <router-link to="/student/dashboard/2" class="btn btn-outline-secondary btn-sm rounded-pill">Student 2</router-link>
+            <router-link to="/staff/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill">Staff 1</router-link>
           </div>
 					<div class="d-flex justify-content-center gap-2">
             <router-link to="/" class="btn btn-outline-secondary btn-sm rounded-pill">Teacher</router-link>
@@ -104,24 +105,21 @@
 		padding: 0;
 	}
 
-	.navLogo {
-		width: 6.25rem;
-		height: 3.75rem;
-		margin: 0 1.5rem;
-		background: linear-gradient(45deg, #d9bebe, #6b6be4);
-		-webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
-		-webkit-mask-size: contain;
-		mask: url('@/assets/engiFolio.png') no-repeat center;
-		mask-size: contain;
+.navLogo {
+  width: 6.25rem;
+  height: 3.75rem;
+  margin: 0 1.5rem;
+  background: linear-gradient(45deg, #d9bebe, #6b6be4);
+  -webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
+  -webkit-mask-size: contain;
+  mask: url('@/assets/engiFolio.png') no-repeat center;
+  mask-size: contain;
 }
 
-	.nav-bar {
-		display: flex;
-		list-style-type: none;
-		margin: 0;
-		padding: 0;
-		align-items: center;
-	}
+.nav-bar {
+  display: flex;
+  align-items: center;
+}
 
 	.nav-item {
 		display: flex;

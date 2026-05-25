@@ -96,6 +96,7 @@ class IndustryContactController extends Controller
             'company' => 'nullable|string|max:100',
             'link_url' => 'nullable|url|max:255',
             'date_met' => 'nullable|date',
+            'linkedin_url' => 'nullable|string|max:500',
         ]);
 
         $industryContact->update([
@@ -138,7 +139,9 @@ class IndustryContactController extends Controller
     public function destroy($profile, IndustryContact $industryContact)
     {
         Log::info('Deleting contact with ID: ' . $industryContact->contact_id);
+
         $industryContact->delete();
+
         return response()->json(['message' => 'Deleted']);
     }
 }

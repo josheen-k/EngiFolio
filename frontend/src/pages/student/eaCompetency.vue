@@ -1,5 +1,5 @@
 <template>
-  <Navbar/>
+  <Navbar />
 
   <div class="page-wrap p-3">
     <aside class="sidebar-wrap">
@@ -13,7 +13,7 @@
 
     <main class="mt-5 main-area">
       <!-- Used to pass data to the other components. Only pass initialIndicatorId to current -->
-      <component :is="currComponent" :categories="categories" :levelOptions="levelOptions" 
+      <component :is="currComponent" :categories="categories" :levelOptions="levelOptions"
       v-bind="currTab === 'current' ? { initialIndicatorId: route.query.indicator } : {}"
       @refresh="loadData"
 />
@@ -53,12 +53,12 @@ const currComponent = computed(() => {
 
 // Used to add parameter for tab
 function switchTab(tab) {
-  router.replace({ 
-    query: { 
-      ...route.query, 
+  router.replace({
+    query: {
+      ...route.query,
       tab: tab,
       indicator: undefined
-    } 
+    }
   });
 }
 
@@ -66,8 +66,8 @@ const loadData = async () => {
   try {
     const [compRes, levelRes] = await Promise.all([
       api.get(`/competency-groups-student/${route.params.id}`),
-      api.get(`/competency-levels`)
-    ]);
+      api.get('/competency-levels'),
+    ])
 
     categories.value = compRes.data.map(group => ({
       key: group.display_id,
@@ -95,7 +95,7 @@ const loadData = async () => {
       }))
     ];
   } catch (error) {
-    console.error("Error when loading competencies and levels", error);
+    console.error('Error when loading competencies and levels', error)
   }
 };
 
@@ -134,7 +134,7 @@ onMounted(async () => {
   width: 100%;
 }
 
-.sidebar{
+.sidebar {
   font-family: 'Maven Pro', sans-serif;
   font-size: 0.9rem;
   border-radius: 1.5rem;

@@ -32,4 +32,3 @@ defineEmits(['edit', 'delete'])
   transform: scale(1.1);
 }
 </style>
-

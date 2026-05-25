@@ -22,7 +22,7 @@
 	const fetchProfileData = async () => {
 		try {
 			const response = await api.get(`/profile/${route.params.id}`);
-			
+
 			if (response.data && response.data.profile_image_url) {
 				const newProfilePic = response.data.profile_image_url;
 
@@ -89,9 +89,9 @@
 					<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
 					</li>
-						<li class="nav-item"> 
+						<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/CDL/${$route.params.id}`" @click="closeMenu">CDL</router-link>
-					</li> 
+					</li>
 				</ul>
 			</div>
 
