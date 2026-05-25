@@ -140,30 +140,9 @@
 
         </div>
       </div>
-
-      <div v-if="showPitchDialog" class="confirm-overlay" @click.self="closePitchDialog">
-        <div class="confirm-widget">
-          <p class="confirm-title">{{ pitchDialog.title }}</p>
-          <p class="confirm-message">{{ pitchDialog.message }}</p>
-          <div class="confirm-actions">
-            <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}</button>
-          </div>
-        </div>
+      <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+        {{ popUp.message }}
       </div>
-
-      <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
-        <div class="confirm-widget">
-          <p class="confirm-title">{{confirmDialog.title }}</p>
-          <p class="confirm-message">{{confirmDialog.message }}</p>
-          <div class="confirm-actions">
-            <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">{{ confirmDialog.cancelLabel }}</button>
-            <button class="small-button" :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'" @click="resolveConfirmDialog(true)">
-              {{ confirmDialog.confirmLabel }}
-            </button>
-          </div>
-        </div>
-      </div>
-
     </section>
   </div>
 </template>
@@ -191,7 +170,6 @@ const openMenuId = ref(null);
 
 const elevatorPitch = ref("");
 const savingPitch =ref(false);
-const showPitchDialog = ref(false);
 const showConfirmDialog = ref(false);
 
 const confirmDialog = ref({
@@ -203,12 +181,6 @@ const confirmDialog = ref({
 });
 let confirmResolver = null;
 
-const pitchDialog = ref({
-  title: "",
-  message: "",
-  buttonLabel: "OK",
-});
-
 const form = ref({
   contact_id: null,
   contact_name: "",
@@ -217,6 +189,14 @@ const form = ref({
   date_met: "",
   linkedin_url: "",
 });
+
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
 
 /* FETCH */
 const fetchContacts = async () => {
@@ -233,7 +213,7 @@ const saveElevatorPitch = async () => {
   const trimmedPitch = elevatorPitch.value.trim();
 
   if (!trimmedPitch) {
-    openPitchDialog("Elevator Pitch", "It's empty. Please enter something first.");
+    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
     return;
   }
 
@@ -244,7 +224,7 @@ const saveElevatorPitch = async () => {
       pitch_text: trimmedPitch,
     });
 
-    openPitchDialog("Saved", "Your elevator pitch has been saved.");
+    showPopUp("Your elevator pitch has been saved.", "success");
   } finally {
     savingPitch.value = false;
   }
@@ -290,19 +270,6 @@ const getAvatar = (name) => {
 const formatUrl = (url) => {
   if(!url) return "";
   return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-};
-
-const openPitchDialog = (title, message) => {
-  pitchDialog.value = {
-    title,
-    message,
-    buttonLabel: "OK",
-  };
-  showPitchDialog.value = true;
-};
-
-const closePitchDialog = () => {
-  showPitchDialog.value = false;
 };
 
 const openConfirmDialog = (options) => {
@@ -370,7 +337,7 @@ const saveContact = async () => {
 
       payload.link_url = trimmedLink;
     } catch {
-      openPitchDialog("Invalid Link", "This is not a valid link. Please enter a full link, for example: https://linkedin.com/in/your-name");
+      showPopUp("Invalid link. Please enter a valid URL.", "error");
       return;
     }
   }
@@ -401,16 +368,16 @@ const saveContact = async () => {
     const linkErrors = error.response?.data?.errors?.link_url;
 
     if (linkErrors?.length) {
-      openPitchDialog("Invalid Link", "This is not a valid link. Please enter a full link, for example https://linkedin.com/in/your-name");
+      showPopUp("Invalid link. Please enter a full link.", "error");
       return;
     }
 
     console.error("Save contact failed:", error);
 
     if(error.response) {
-      openPitchDialog("Save Failed", "Something went wrong while saving this contact.");
+      showPopUp("Error while saving this contact.", "error");
     } else {
-      openPitchDialog("Save Failed", "Please check your connection and try again.");
+      showPopUp("Save Failed. Please check your connection and try again.", "error");
     }
   }
 };
@@ -725,6 +692,39 @@ const deleteContact = async (id) => {
   color: #a63f3f;
   border-radius: 999px;
   cursor: pointer;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.field-input.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
 }
 </style>
 
