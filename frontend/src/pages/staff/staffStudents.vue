@@ -176,10 +176,19 @@
                 <td>{{ entry.start_date }}</td>
 
                 <td @click.stop>
-                  <button class="btn btn-add" @click="openFeedback(entry)">
-                    Give Feedback
-                  </button>
-                </td>
+  <div class="feedback-cell">
+    <span
+      class="feedback-status"
+      :class="hasFeedback(entry) ? 'reviewed' : 'pending'"
+    >
+      {{ hasFeedback(entry) ? 'Feedback given' : 'Pending feedback' }}
+    </span>
+
+    <button class="btn btn-add" @click="openFeedback(entry)">
+      {{ hasFeedback(entry) ? 'View / Add' : 'Give Feedback' }}
+    </button>
+  </div>
+</td>
               </tr>
             </tbody>
           </table>
@@ -327,7 +336,6 @@
 import { ref, computed, onMounted } from 'vue'
 
 import StaffNavbar from '@/components/StaffNavbar.vue'
-import Footer from '@/components/Footer.vue'
 import api from '@/services/api'
 
 const staffUserId = 4
@@ -338,10 +346,10 @@ const entries = ref([])
 const selectedStudent = ref(null)
 const selectedProfileId = ref(null)
 
+// Filtering and sorting
 const search = ref('')
 const selectedDegree = ref('')
 const selectedSpecialisation = ref('')
-const selectedIndicator = ref('')
 const sortBy = ref('name')
 
 const loading = ref(false)
@@ -355,6 +363,7 @@ const feedbackLoading = ref(false)
 const feedbackError = ref('')
 const feedbackSuccess = ref('')
 
+// Fetch assigned students and load their competency entries
 const fetchStudents = async () => {
   try {
     loading.value = true
@@ -421,29 +430,7 @@ const specialisationOptions = computed(() => {
   ]
 })
 
-const indicatorOptions = computed(() => {
-  const indicators = []
-
-  students.value.forEach(student => {
-    student.entries?.forEach(entry => {
-      if (entry.indicator) {
-        indicators.push({
-          id: entry.indicator.indicator_id,
-          label:
-            `${entry.indicator.display_id} - ` +
-            `${entry.indicator.indicator_name || entry.indicator.description}`
-        })
-      }
-    })
-  })
-
-  return [
-    ...new Map(
-      indicators.map(indicator => [indicator.id, indicator])
-    ).values()
-  ]
-})
-
+// Handles search, filtering, and sorting logic for students table
 const filteredStudents = computed(() => {
   const term = search.value.toLowerCase()
 
@@ -580,6 +567,9 @@ const closeFeedback = () => {
   feedbackText.value = ''
   feedbackError.value = ''
   feedbackSuccess.value = ''
+}
+const hasFeedback = (entry) => {
+  return entry.competency_feedback?.length > 0
 }
 
 const submitFeedback = async () => {
@@ -937,5 +927,30 @@ onMounted(fetchStudents)
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+
+  .feedback-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-status {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-block;
+  width: fit-content;
+}
+
+.feedback-status.reviewed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.feedback-status.pending {
+  background: #ffe2e2;
+  color: #b42318;
+}
 }
 </style>
