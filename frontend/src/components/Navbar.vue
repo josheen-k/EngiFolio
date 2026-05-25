@@ -1,11 +1,15 @@
 <script setup>
-	import { ref, onMounted } from 'vue';
+	import { ref, onMounted, computed } from 'vue';
 	import { onClickOutside } from '@vueuse/core';
 	import { useRoute } from 'vue-router';
 	import api from "@/services/api";
 	import defaultAvatar from '@/assets/placeholder-av.webp';
 
 	const route = useRoute();
+	// Goals nav opens Career Development Plan; highlight when on that route or on SMART Goals (GoalsPage).
+	const isGoalsSectionActive = computed(
+		() => route.name === 'careerDevelopment' || route.name === 'GoalsPage',
+	);
 	const isOpen = ref(false);
 	const dropdown = ref(null);
 	const isMenuOpen = ref(false);
@@ -76,7 +80,11 @@
 						<router-link active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`" @click="closeMenu">Competencies</router-link>
 					</li>
 					<li class="nav-item">
-						<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">Goals</router-link>
+						<router-link
+							:class="{ 'active-link': isGoalsSectionActive }"
+							:to="`/student/career-development/${$route.params.id}`"
+							@click="closeMenu"
+						>Goals</router-link>
 					</li>
 					<li class="nav-item">
 						<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
@@ -104,11 +112,13 @@
 		<div v-if="isMenuOpen" class="mobile-menu-panel">
 			<router-link active-class="active-link" :to="`/student/dashboard/${$route.params.id}`" @click="closeMenu">Dashboard</router-link>
 			<router-link active-class="active-link" :to="`/student/eaCompetency/${$route.params.id}`" @click="closeMenu">Competencies</router-link>
-			<router-link active-class="active-link" :to="`/goals/${$route.params.id}`" @click="closeMenu">Goals</router-link>
+			<router-link
+				:class="{ 'active-link': isGoalsSectionActive }"
+				:to="`/student/career-development/${$route.params.id}`"
+				@click="closeMenu"
+			>Goals</router-link>
 			<router-link active-class="active-link" :to="`/student/networking/${$route.params.id}`" @click="closeMenu">Networking</router-link>
 		</div>
-
-		<router-view />
 	</div>
 </template>
 

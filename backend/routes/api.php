@@ -57,6 +57,7 @@ Route::delete('/users/{user}', [UserController::class, 'destroy']);
 /* ================= STUDENT PROFILE ================= */
 // Admin user management routes
 Route::get('/admin/users-overview', [AdminController::class, 'usersOverview']);
+Route::get('/admin/users-overview/export-pdf', [AdminController::class, 'exportUsersOverviewPdf']);
 Route::post('/admin/users', [AdminController::class, 'createUser']);
 Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
 
@@ -78,6 +79,7 @@ Route::delete('/users/{profile}/industry-contacts/{industryContact}', [IndustryC
 Route::post('/link', [StudentLinkController::class, 'store']);
 Route::put('/link/{id}', [StudentLinkController::class, 'update']);
 Route::delete('/link/{id}', [StudentLinkController::class, 'destroy']);
+Route::post('/profile/{id}/image', [StudentProfileController::class, 'uploadImage']);
 
 Route::get('/smart-goals', [SmartGoalController::class, 'index']);
 Route::post('/smart-goals', [SmartGoalController::class, 'store']);

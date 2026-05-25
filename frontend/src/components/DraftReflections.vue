@@ -63,7 +63,7 @@
     <div v-if="processedDrafts.length" class="row g-3">
       <div class="col-6 col-sm-4 col-md-3" v-for="(item, i) in processedDrafts" :key="i">
         <div class="draft-card h-100" @click="openReflec(item)">
-          <p class="draft-title">{{ item.reflec.experience_title }}</p>
+          <p class="draft-title" :data-tooltip='item.reflec.experience_title'>{{ item.reflec.experience_title }}</p>
           <div class="d-flex align-items-center gap-2">
             <span class="compt-pill">Competency {{ item.comptId }}</span>
             <!-- Simplified Delete -->
@@ -82,7 +82,7 @@
     </div>
   </div>
 
-      <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+<div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
   <div class="delete-box text-center p-4">
     <h5 class="fw-bold mb-2 field-label">Delete this draft?</h5>
     <p class="field-desc mb-4">This action cannot be undone.</p>
@@ -91,6 +91,9 @@
       <button class="btn btn-add rounded-pill px-4" @click="confirmDelete">Delete</button>
     </div>
   </div>
+</div>
+<div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+  {{ popUp.message }}
 </div>
 
   <ViewReflection 
@@ -101,7 +104,7 @@
     :index="viewReflec.index"
     :levelOptions="levelOptions"
     @close="viewReflec.show = false" 
-    @refresh="$emit('refresh')"
+    @refresh="onSaveReflec"
   />
 </template>
 
@@ -121,6 +124,23 @@ const props = defineProps({
 
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
+
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
+function onSaveReflec(statusId, entryName) {
+  viewReflec.value.show = false
+  emit('refresh')
+  if (Number(statusId) === 2) {
+    showPopUp(`${entryName} has been published.`, "success")
+  } else {
+    showPopUp(`${entryName} has been saved to drafts.`, "success")
+  }
+}
 
 const sortRef = ref(null)
 const sortDdOpen = ref(false)
@@ -248,7 +268,6 @@ const confirmDelete = async () => {
     emit('refresh') 
 
   } catch (error) {
-    console.error(error)
     alert("Error when deleting the draft: ", error)
   }
 }
@@ -347,6 +366,36 @@ const confirmDelete = async () => {
   color: #444444;
   text-decoration: underline;
   margin-bottom: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.draft-title::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #727272;
+  color: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.75rem;
+  white-space: normal;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.draft-title:hover::after {
+  opacity: 1;
 }
 
 .compt-pill {
@@ -419,6 +468,62 @@ const confirmDelete = async () => {
 
 .btn-filter-sm {
   font-size: 0.8rem !important;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.field-label {
+  font-family: 'Martel', sans-serif;
+  font-size: 1rem;
+  color: #222222;
+}
+
+.field-desc {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #444444;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (min-width: 768px) {

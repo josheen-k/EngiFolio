@@ -14,13 +14,15 @@ import Export from '@/pages/student/export.vue'
 import Login from '@/pages/student/login.vue'
 import GoalsPage from '@/pages/student/GoalsPage.vue'
 import CertificationSettings from '@/pages/student/editCerts.vue'
-import AdminPage from '@/pages/admin/admin.vue'
-import GoalFeedback from '@/pages/staff/goalFeedback.vue'
-import CDL from '@/pages/student/CDL.vue'
 import CompetencyReview from '@/pages/staff/competencyReview.vue'
 import CompetencyEntry from '@/pages/student/competencyEntry.vue'
 import StaffDashboard from '@/pages/staff/staffDashboard.vue'
 import StaffStudents from '@/pages/staff/staffStudents.vue'
+
+import AdminPage from '@/pages/admin/admin.vue'
+import GoalFeedback from '@/pages/staff/goalFeedback.vue'
+import CDL from '@/pages/student/CDL.vue'
+import PrivacyPolicy from '@/pages/public/PrivacyPolicy.vue'
 
 const routes = [
   {
@@ -139,12 +141,41 @@ const routes = [
     beforeEnter: (to) => {
       return String(to.params.id) === '1' ? true : { name: 'Homepage' }
     }
-  }
+  },
+
+  {
+    path: '/student/networking/contacts/:id',
+    name: 'networking-contacts',
+    component: Networking
+  },
+
+  {
+    path: '/certification-settings/:id',
+    name: 'certificationSettings',
+    component: CertificationSettings
+  },
+  {
+    path: '/student/CDL/:id',
+    name: 'CDL',
+    component: CDL
+  },
+
+  {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicy',
+    component: PrivacyPolicy
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0, left: 0 }
+  },
 })
 
 export default router

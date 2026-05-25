@@ -3,9 +3,9 @@
 
   <main class="container-xl py-5 px-4" v-if="profile">
     <div class="row g-4 mb-4">
-      <h2 class="sec-title text-center" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
-      <h2 class="sec-title text-center" v-else-if="profile.user.first_name">Welcome, {{ profile.user.first_name }}</h2>
-      <h2 class="sec-title text-center" v-else>Welcome, {{ profile.user.last_name }}</h2>
+      <h2 class="sec-title text-center px-2" v-if="profile.preferred_name">Welcome, {{ profile.preferred_name }}</h2>
+      <h2 class="sec-title text-center px-2" v-else-if="profile.user.first_name">Welcome, {{ profile.user.first_name }}</h2>
+      <h2 class="sec-title text-center px-2" v-else>Welcome, {{ profile.user.last_name }}</h2>
       <div class="col-12 col-md-6">
         <h2 class="sec-title text-center">Your Stats</h2>
 
@@ -17,7 +17,7 @@
                 <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
                 
                 <div class="d-flex align-items-center justify-content-between">
-                  <span class="circle circle-light">
+                  <span class="circle circle-light" @click="goToReflections" style="cursor:pointer">
                     <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
                   </span>
                   <span class="stat-data">{{ stats.totalReflections }}</span>
@@ -33,7 +33,7 @@
                 <p class="stat-title mb-2">Mastered<br/>Competencies</p>
                 
                 <div class="d-flex align-items-center justify-content-between">
-                  <span class="circle circle-dark">
+                  <span class="circle circle-dark" @click="goToMastered" style="cursor:pointer">
                     <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
                   </span>
                   <span class="stat-data">{{ stats.comptMastered }}</span>
@@ -49,7 +49,7 @@
                 <p class="stat-title mb-2">SMART Goals<br/>Completed</p>
                 
                 <div class="d-flex align-items-center justify-content-between">
-                  <span class="circle circle-dark">
+                  <span class="circle circle-dark" @click="goToGoals" style="cursor:pointer">
                     <img class="arrow-img" src="@/assets/arrow-up.png" alt="arrow-img">
                   </span>
                   <span class="stat-data">{{ stats.goalsDone }}</span>
@@ -118,15 +118,15 @@
       <div class="col-12 col-lg-6">
         <h2 class="sec-title text-center">Upcoming Events</h2>
         <div class="week-card">
-
-          <!--days-->
-          <div class="week-grid">
-            <div class="day-col" v-for="day in weekDays" :key="day.label">
-              <p class="day-label">{{ day.label }}</p>
-              <div class="day-events">
-                <div class="event" v-for="ev in day.events" :key="ev.id" :title="ev.name">
-                  <span class="ev-name">{{ ev.name }}</span>
-                  <span class="ev-time">{{ ev.time }}</span>
+          <div class="week-scroll">
+            <div class="week-grid">
+              <div class="day-col" v-for="day in weekDays" :key="day.label">
+                <p class="day-label">{{ day.label }}</p>
+                <div class="day-events">
+                  <div class="event" v-for="ev in day.events" :key="ev.id" :title="ev.name" @click="goToEvent(ev.id)">
+                    <span class="ev-name">{{ ev.name }}</span>
+                    <span class="ev-time">{{ ev.time }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@
     <div class="row g-5">
       <div class="col-12 col-lg-8">
         <h2 class="sec-title text-center">Need More Focus On</h2>
-        <div class="table-style">
+        <div class="table-responsive table-style">
           <table class="table table-bordered focus-table">
             <thead>
               <tr>
@@ -150,11 +150,13 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="item in focusItems.slice(0,7)" :key="item.indicator_id">
-                <tr v-if="!item.highest_entry || item.highest_entry.competency_level_weighting < 2">
-                  <td><a href="#" class="table-link">{{ item.display_id }}</a></td>
+              <template v-for="item in filteredFocusItems" :key="item.indicator_id">
+                <tr>
+                  <td><router-link :to="`/student/eaCompetency/${$route.params.id}?indicator=${item.indicator_id}`" class="table-link">
+                      {{ item.display_id }}
+                  </router-link></td>
                   <td>{{ item.description }}</td>
-                  <td class="text-center">{{ item.entries_count || 0 }}</td>            
+                  <td class="text-center">{{ item.entries_count || 0 }}</td>
                   <td class="text-center">
                     <div v-if="item.highest_entry">{{ item.highest_entry.competency_level }}</div>
                     <div v-else class="text-muted">Not started</div>
@@ -169,7 +171,7 @@
         <h2 class="sec-title text-center">Quick Links</h2>
 
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
-          <button class="btn btn-ql rounded-pill">Add a new reflection</button>
+          <button class="btn btn-ql rounded-pill" @click="goToAddReflec">Add a new reflection</button>
           <router-link :to="`/settings/profile/${$route.params.id}`" class="btn btn-ql rounded-pill">Edit profile</router-link>
           <router-link :to="`/student/networking/${$route.params.id}`" class="btn btn-ql rounded-pill">Add a new networking event</router-link>
           <router-link :to="`/student/export/${$route.params.id}`" class="btn btn-ql rounded-pill">Export profile</router-link>
@@ -201,10 +203,12 @@
 <script setup>
     import { ref, computed, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
+    import { useRouter } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
 
     const route = useRoute();
+    const router = useRouter()
     const profile = ref(null);
     const userCompetencies = ref([]);
     const competencyIndicators = ref([]);
@@ -238,6 +242,37 @@
       ]
     })
 
+    function goToReflections() {
+      router.push({
+        path: `/student/eaCompetency/${route.params.id}`,
+        query: { filterReflec: 'has-reflections' }
+      })
+    }
+
+    function goToMastered() {
+      router.push({
+        path: `/student/eaCompetency/${route.params.id}`,
+        query: { filterLevel: 'Confident' }
+      })
+    }
+    
+    function goToGoals() {
+      router.push(`/goals/${route.params.id}`)
+    }
+
+    function goToAddReflec() {
+      router.push({
+        path: `/student/eaCompetency/${route.params.id}`,
+        query: { openAdd: 'true' }
+      })
+    }
+
+    function goToEvent(eventId) {
+      router.push({
+        path: `/student/networking/${route.params.id}`,
+        query: { eventId }
+      })
+}
     // For formatting the date used by recent activity
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -307,7 +342,7 @@
           .map(function (ev) {
             const d = new Date(ev.event_datetime)
             return {
-              id: ev.id,
+              id: ev.event_id,
               name: ev.event_name,
               time: d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
             }
@@ -317,10 +352,16 @@
       })
     })
 
+    // Get only the first 7 entries and all entries that have highest confident
+    const filteredFocusItems = computed(() => 
+      focusItems.value.filter(item => !item.highest_entry || item.highest_entry.competency_level_weighting < 4).slice(0, 7)
+    )
+
+    // Load individual backend calls
     const loadProfileData = async () => {
       try {
         const response = await api.get(`/profile/${route.params.id}`);
-        profile.value = response.data.profile || response.data;
+        profile.value = response.data;
       } catch (error) {
         console.error("Error while fetching profile info:", error);
       }
@@ -338,13 +379,13 @@
     const loadCompetencyIndicators = async () => {
       try {
         const response = await api.get(`/competency-indicators`);
-        
-        competencyIndicators.value = response.data.filter(compt => !compt.discontinuedDate)
+        competencyIndicators.value = response.data.filter(compt => !compt.discontinued_date);
       } catch (error) {
         console.error("Error while fetching competencies:", error);
       }
 		};
 
+    // Gets highest level competency for each category
     const loadCompetencyIndicatorsWithCount = async () => {
       try {
         const response = await api.get(`/student-competency-indicators/${route.params.id}`);
@@ -442,18 +483,23 @@
     const loadData = async () => {
       loading.value = true;
       try {
-        await loadProfileData();
-        await loadUserCompetencyData();
-        await loadCompetencyIndicators();
-        await loadUserGoals();
-        await loadUserActions();
-        await loadCompetencyIndicatorsWithCount();
-        await updateChart();
-        await loadNetworkingEvents()
+        // Run all backend calls at the same time
+        await Promise.all([
+          loadProfileData(),
+          loadUserCompetencyData(),
+          loadCompetencyIndicators(),
+          loadUserGoals(),
+          loadUserActions(),
+          loadCompetencyIndicatorsWithCount(),
+          loadNetworkingEvents()
+        ])
 
-        // Calculate the total weight based of the weight of each competency
+        // Depends on data fetched above so runs afterwards
+        await updateChart()
+
+        // Calculate the total weight based of the weight of each competency. reduce goes through and accumulates a single value
         const totalWeight = focusItems.value.reduce((acc, item) => {
-            const weight = Number(item.highest_entry?.competency_level_weighting) || 0;
+            const weight = item.highest_entry?.competency_level_weighting || 0;
             return acc + weight;
         }, 0);
         
@@ -502,17 +548,18 @@
 <style scoped>
 .sec-title {
   font-family: 'Martel', serif;
-  font-size: 2rem;
+  font-size: clamp(1.3rem, 4vw, 2rem);
   color: #2b2b2bc5;
   font-weight: lighter;
-  margin-bottom: 2rem;
-  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .stat-card {
   border-radius: 1.5rem;
-  border-color: #000000;
-  height: 12rem;
+  border: 1px solid #bababa;
+  height: auto;
+  min-height: 12rem;
   padding: 0.5rem;
 }
 
@@ -526,24 +573,31 @@
 
 .stat-title {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1.5rem;
+  font-size: clamp(0.75rem, 2.5vw, 1.5rem);
   color: #878787;
 }
 
 .stat-data {
   font-family: 'Martian Mono', monospace;
-  font-size: 1.8rem;
+  font-size: clamp(1.1rem, 3vw, 1.8rem);
   font-weight: 300;
   color: #606060;
 }
 
 .circle {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: clamp(1.8rem, 4vw, 2.5rem);
+  height: clamp(1.8rem, 4vw, 2.5rem);
   border-radius: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.circle:hover {
+  transform: translateY(-5px) rotate(30deg);
+  box-shadow: 0 3px 8px #c9c9c9;
+  border: 1px solid #c7c7c7;
 }
 
 .circle-light {
@@ -555,8 +609,8 @@
 }
 
 .arrow-img {
-  width: 2rem;
-  height: 2rem;
+  width: clamp(1.2rem, 3vw, 2rem);
+  height: clamp(1.2rem, 3vw, 2rem);
   object-fit: contain;
 }
 
@@ -564,8 +618,7 @@
   background: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 1.5rem;
-  padding: 1.5rem 1.75rem;
-  min-height: 20rem;
+  padding: 1rem 1.25rem;
 }
 
 .goal-grp {
@@ -581,9 +634,9 @@
 }
 
 .goal-heading {
-  font-family: 'Martian Mono', monospace;
-  font-size: 1rem;
-  font-weight: 400;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 500;
   color: #222222;
   margin-bottom: 0;
   flex: 1;
@@ -625,7 +678,7 @@
 
 .ac-name {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   color: #333333;
 }
 
@@ -638,15 +691,20 @@
   background: #ffffff;
   border: 1px solid #d0d0d0;
   border-radius: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  min-height: 15rem;
+  padding: 1rem 1.25rem;
+}
+
+.week-scroll {
+  overflow-x: auto;
+  margin-bottom: 0.5rem;
 }
 
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(2.5rem, 1fr));
   gap: 0.25rem;
   margin-bottom: 0.75rem;
+  min-width: 20rem;
 }
 
 .day-col {
@@ -657,17 +715,20 @@
 
 .day-label {
   font-family: 'Martian Mono', monospace;
-  font-size: 0.7rem;
+  font-size: clamp(0.55rem, 1.5vw, 0.7rem);
   color: #888888;
   text-align: center;
   margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .day-events {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-height: 15rem;
+  min-height: 8rem;
   background: #f8f8f8;
   border-radius: 0.5rem;
   padding: 0.25rem;
@@ -679,12 +740,12 @@
   padding: 0.25rem 0.35rem;
   display: flex;
   flex-direction: column;
-  cursor: default;
+  cursor: pointer;
 }
 
 .ev-name {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 0.65rem;
+  font-size: clamp(0.55rem, 1.5vw, 0.65rem);
   color: #333333;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -707,14 +768,14 @@
 
 .focus-table {
   font-family: 'Maven Pro', sans-serif;
-  font-size: 0.95rem;
+  font-size: clamp(0.75rem, 2vw, 0.95rem);
 }
 
 .focus-table thead th {
   font-family: 'Martian Mono', monospace;
   color: #222222;
   font-weight: 200;
-  font-size: 1.2rem;
+  font-size: clamp(0.85rem, 2vw, 1.2rem);
   background-color: #f1f1f1;
   border-color: #d0d0d0;
 }
@@ -733,7 +794,7 @@
 
 .btn-ql {
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
   color: #ffffff;
   background: #555555;
   padding: 0.5rem 1rem;
@@ -757,5 +818,30 @@
 
 .loading {
   min-height: calc(100vh);
+}
+
+@media (max-width: 576px) {
+  .stat-card {
+    min-height: 8rem;
+  }
+
+  .todo-card, .week-card {
+    padding: 0.75rem 1rem;
+  }
+
+  .day-events {
+    min-height: 6rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .todo-card, .week-card {
+    padding: 1.5rem 1.75rem;
+    min-height: 20rem;
+  }
+
+  .day-events {
+    min-height: 15rem;
+  }
 }
 </style>

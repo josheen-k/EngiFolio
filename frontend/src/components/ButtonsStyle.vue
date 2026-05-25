@@ -9,7 +9,7 @@
 
     <img
       class="icon-btn"
-      src="@/assets/delete.png"
+      src="@/assets/del.png"
       title="Delete"
       @click="$emit('delete')"
     />

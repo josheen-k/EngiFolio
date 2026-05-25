@@ -3,9 +3,9 @@
     <Navbar />
     <div class="toggle">
       <div class="toggle-line">
-        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
         <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
-        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-right' : 'pill-left'"></div>
+        <button class="toggle-btn" :class="{ active: currTab === 'SMART_GOALS' }" @click="goToGoals">SMART Goals</button>
+        <div class="toggle-pill" :class="currTab === 'CAREER_PLAN' ? 'pill-left' : 'pill-right'"></div>
       </div>
     </div>
     <main class="container-xl py-4 px-4 px-md-5 goals-main">
@@ -408,7 +408,8 @@ const showNewGoalForm = ref(false)
 const showEditGoalForm = ref(false)
 const showStepModal = ref(false)
 const editingGoal = ref(null)
-const planId = ref(null)
+// Optional default career plan: new goals are also attached there when set (same goal can link to multiple plans later).
+const defaultPlanIdForNewGoals = ref(null)
 const stepModalGoal = ref(null)
 const showTextModal = ref(false)
 const textModalTitle = ref('')
@@ -418,7 +419,9 @@ const stepDrafts = ref([])
 const route = useRoute()
 const router = useRouter()
 const profileId = computed(() => Number(route.params.id))
-const currTab = computed(() => route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS')
+const currTab = computed(() =>
+  route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
+)
 const TEXT_PREVIEW_LIMIT = 90
 // Tracks the currently dragged goal to drive reorder and visual states.
 const draggedGoalId = ref(null)
@@ -435,7 +438,6 @@ const progressStatusOptions = [
   { value: 3, label: 'Completed' },
 ]
 const newGoalData = reactive({
-  plan_id: null,
   goal_description: '',
   progress_notes: '',
   learnings: '',
@@ -445,7 +447,6 @@ const newGoalData = reactive({
   goal_status_id: 1,
 })
 const editGoalData = reactive({
-  plan_id: null,
   goal_description: '',
   progress_notes: '',
   learnings: '',
@@ -692,7 +693,7 @@ const persistGoalOrder = async (previousGoals) => {
   }
 }
 
-const loadPlanId = async () => {
+const loadDefaultPlanForNewGoals = async () => {
   try {
     const response = await api.get('/career-plans', {
       params: {
@@ -700,22 +701,19 @@ const loadPlanId = async () => {
       }
     })
     if (response.data && response.data.length > 0) {
-      // Use the first available career plan as the parent plan for new goals.
-      planId.value = response.data[0].plan_id
-      newGoalData.plan_id = response.data[0].plan_id
+      defaultPlanIdForNewGoals.value = response.data[0].plan_id
     } else {
-      console.warn('No career development plan found')
-      alert('Please create a Career Development Plan first')
+      defaultPlanIdForNewGoals.value = null
     }
   } catch (error) {
-    console.error('Error loading plan ID:', error)
-    alert('Failed to load Career Development Plan')
+    console.error('Error loading career plans:', error)
+    defaultPlanIdForNewGoals.value = null
   }
 }
 
 // Initialize required data as soon as the page is mounted.
 onMounted(() => {
-  loadPlanId()
+  loadDefaultPlanForNewGoals()
   loadGoals()
 })
 
@@ -725,22 +723,20 @@ const newGoal = () => {
 
 // Create a new goal, then reset the form and refresh list state.
 const createGoal = async () => {
-  if (!newGoalData.plan_id) {
-    alert('Please create a Career Development Plan first')
-    return
-  }
-
   try {
     // Normalize form values (e.g., empty optional fields) before sending to API.
     const payload = normalizeGoalPayload(newGoalData)
-    await api.post('/smart-goals', {
+    const body = {
       ...payload,
       profile_id: profileId.value
-    })
+    }
+    if (defaultPlanIdForNewGoals.value) {
+      body.plan_id = defaultPlanIdForNewGoals.value
+    }
+    await api.post('/smart-goals', body)
     showNewGoalForm.value = false
     // Reset form
     Object.assign(newGoalData, {
-      plan_id: planId.value,
       goal_description: '',
       progress_notes: '',
       learnings: '',
@@ -776,7 +772,6 @@ const cancelNewGoal = () => {
   showNewGoalForm.value = false
   // Reset form
   Object.assign(newGoalData, {
-    plan_id: planId.value,
     goal_description: '',
     progress_notes: '',
     learnings: '',
@@ -792,7 +787,6 @@ const cancelEditGoal = () => {
   editingGoal.value = null
   // Reset form
   Object.assign(editGoalData, {
-    plan_id: null,
     goal_description: '',
     progress_notes: '',
     learnings: '',
@@ -926,7 +920,6 @@ const updateGoalStatus = async (goal) => {
 const editGoal = (goal) => {
   editingGoal.value = goal
   Object.assign(editGoalData, {
-    plan_id: goal.plan_id,
     goal_description: goal.goal_description || '',
     progress_notes: goal.progress_notes || '',
     learnings: goal.learnings || '',

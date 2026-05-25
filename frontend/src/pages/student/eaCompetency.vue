@@ -4,66 +4,63 @@
   <div class="page-wrap p-3">
     <aside class="sidebar-wrap">
       <div class="d-flex flex-row flex-md-column gap-2 gap-md-4 pt-0 pt-md-5">
-        <div
-          v-for="t in tabs"
-          :key="t"
-          class="d-flex align-items-center gap-2 gap-md-3 px-2 px-md-3 py-2 sidebar"
-          :class="{ 'sidebar-on': currTab === t }"
-          @click="currTab = t"
-        >
-          <span
-            class="dot rounded-circle d-none d-md-inline-block"
-            :class="currTab === t ? 'dot-on' : ''"
-          ></span>
-          {{ t }}
+        <div class="d-flex align-items-center gap-2 gap-md-3 px-2 px-md-3 py-2 sidebar"
+        :class="{'sidebar-on': currTab===t}" v-for="t in tabs" :key="t"  @click="switchTab(t)">
+          <span class="dot rounded-circle d-none d-md-inline-block" :class="currTab===t ? 'dot-on' : ''"></span>{{ t.toUpperCase() }}
         </div>
       </div>
     </aside>
 
     <main class="mt-5 main-area">
-      <component
-        :is="currComponent"
-        :categories="categories"
-        :levelOptions="levelOptions"
-        @refresh="handleRefresh"
-      />
+      <!-- Used to pass data to the other components. Only pass initialIndicatorId to current -->
+      <component :is="currComponent" :categories="categories" :levelOptions="levelOptions"
+      v-bind="currTab === 'current' ? { initialIndicatorId: route.query.indicator } : {}"
+      @refresh="loadData"
+/>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-
-import Navbar from '@/components/Navbar.vue'
-import CurrentCompetency from '@/components/CurrentCompetency.vue'
-import DraftReflections from '@/components/DraftReflections.vue'
-import FeedbackReflections from '@/components/FeedbackReflections.vue'
-import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue'
-import api from '@/services/api'
-
+import { ref, computed, onMounted, watch } from 'vue' // Added watch here
+import { useRoute, useRouter } from 'vue-router'
+import Navbar from '@/components/Navbar.vue';
+import CurrentCompetency from '@/components/CurrentCompetency.vue';
+import DraftReflections from '@/components/DraftReflections.vue';
+import FeedbackReflections from '@/components/FeedbackReflections.vue';
+import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
+import api from "@/services/api";
 const route = useRoute()
+const router = useRouter()
 
+// --- State ---
 const categories = ref([])
-const levelOptions = ref([]) // Not started, emerging, developing, proficient
+const levelOptions = ref([])
 
-const currTab = ref('CURRENT')
-const tabs = ['CURRENT', 'DRAFTS', 'FEEDBACK', 'DISCONTINUED']
+const currTab = computed(() => route.query.tab || 'current');
+
+const tabs = ['current', 'drafts', 'feedback', 'discontinued']
 
 const currComponent = computed(() => {
   switch (currTab.value) {
-    case 'CURRENT':
-      return CurrentCompetency
-    case 'DRAFTS':
-      return DraftReflections
-    case 'FEEDBACK':
-      return FeedbackReflections
-    case 'DISCONTINUED':
-      return DiscontinuedCompetency
-    default:
-      return CurrentCompetency
+    case 'current': return CurrentCompetency
+    case 'drafts': return DraftReflections
+    case 'feedback': return FeedbackReflections
+    case 'discontinued': return DiscontinuedCompetency
+    default: return CurrentCompetency
   }
 })
+
+// Used to add parameter for tab
+function switchTab(tab) {
+  router.replace({
+    query: {
+      ...route.query,
+      tab: tab,
+      indicator: undefined
+    }
+  });
+}
 
 const loadData = async () => {
   try {
@@ -86,28 +83,43 @@ const loadData = async () => {
         reflec: ind.entries.map(entry => ({
           ...entry,
           feedback: entry.competency_feedback || [],
-          evidence: entry.competency_evidence || [],
-        })),
-      })),
-    }))
+          evidence: entry.competency_evidence || []
+        }))
+      }))
+    }));
 
     levelOptions.value = [
-      { value: null, label: 'Not Started' },
-      ...levelRes.data.map(level => ({
-        value: level.entry_level_id,
-        label: level.competency_level,
-      })),
-    ]
+      ...levelRes.data.map(l => ({
+        value: l.entry_level_id,
+        label: l.competency_level
+      }))
+    ];
   } catch (error) {
     console.error('Error when loading competencies and levels', error)
   }
-}
+};
 
-const handleRefresh = () => {
-  loadData()
-}
+const handleIndicatorParam = () => {
+  const indicatorId = route.query.indicator;
+  if (indicatorId && currTab.value !== 'current' && categories.value.length) {
+    for (const cat of categories.value) {
+      const match = cat.compt.find(c => Number(c.id) === Number(indicatorId));
+      if (match) {
+        router.replace({ query: { ...route.query, tab: 'CURRENT' } });
+        break;
+      }
+    }
+  }
+};
 
-onMounted(loadData)
+watch(() => route.query.indicator, () => {
+  handleIndicatorParam();
+});
+
+onMounted(async () => {
+  await loadData()
+  handleIndicatorParam()
+})
 </script>
 
 <style scoped>

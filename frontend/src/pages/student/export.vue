@@ -1,10 +1,14 @@
 <script setup>
-    import { ref, onMounted, watch } from 'vue';
+    import { ref, watch } from 'vue';
     import { useRoute } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
+    import { useExportData } from '@/composables/useExportData'
 
     const route = useRoute();
+
+    // Deconstructs the functions so that they can be called individually
+    const { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addCareerPlans, addGoals } = useExportData(route.params.id)
 
     const profileSelected = ref(false);
     const certificationsSelected = ref(false);
@@ -13,332 +17,58 @@
     const goalsSelected = ref(false);
     const allDataSelected = ref(false);
 
-    // Data values
-    const profile = ref(null);
-    const userCompetencies = ref(null);
-    const contacts = ref(null);
-    const plan = ref(null);
-
-    // Keeps track of whether values are selected or not
     watch(allDataSelected, (newValue) => {
-        profileSelected.value = newValue;
-        certificationsSelected.value = newValue;
-        competenciesSelected.value = newValue;
-        networkingContactsSelected.value = newValue;
-        goalsSelected.value = newValue;
-    });
+      profileSelected.value = newValue
+      certificationsSelected.value = newValue
+      competenciesSelected.value = newValue
+      networkingContactsSelected.value = newValue
+      goalsSelected.value = newValue
+    })
 
+    // Set up a pop up notification instead of having an alert
+    const popUp = ref({ show: false, message: '', type: '' })
+
+    const showPopUp = (message, type) => {
+      popUp.value = { show: true, message, type }
+      setTimeout(() => popUp.value.show = false, 3000)
+    }
 
     const exportToPdf = async () => {
       // Check that at lease one category is selected
-      if (!profileSelected.value && !certificationsSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
-        alert("You must select at least one category to export");
-        return;
-      }
-
-      try {
-        const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
-          selections: {
-            profile: profileSelected.value,
-            certifications: certificationsSelected.value,
-            competencies: competenciesSelected.value,
-            networking: networkingContactsSelected.value,
-            goals: goalsSelected.value
-          }
-        }, { 
-          responseType: 'blob',
-          headers: { 'Accept': 'application/pdf' } 
-        });
-
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `portfolio_export_${route.params.id}.pdf`);
-        
-        document.body.appendChild(link);
-        link.click();
-      
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        
-        alert("PDF Downloaded successfully");
-      } catch (error) {
-        console.error(error);
-        alert("Error generating the PDF.");
-      }
-
-      // Reset values after
-      profileSelected.value = false;
-      certificationsSelected.value = false;
-      competenciesSelected.value = false;
-      networkingContactsSelected.value = false;
-      goalsSelected.value = false;
-      allDataSelected.value = false;
-    };
-
-    // Fetches the profile and adds the contents to the file
-    const addProfile = async () => { 
-      try {
-        const response = await api.get(`/profile/${route.params.id}`);
-        profile.value = response.data;
-      } catch (error) {
-        console.error("Error while fetching profile:", error);
-      } finally {
-
-        const firstName = profile.value.user?.first_name || '';
-        const lastName = profile.value.user?.last_name || '';
-
-        const formattedProfile = [
-          '"----- Profile -----"',
-          `"Name:","${firstName}","${lastName}"`,
-          `"Preferred name:","${profile.value.preferred_name || firstName}"`,
-          `"Degree:","${profile.value.degree_title}"`,
-          `"Specialisation:","${profile.value.specialisation}"`,
-          `"Personal Intro:","${profile.value.personal_intro}"`
-        ]
-
-        // Add all links for this profile
-        if (profile.value.links && profile.value.links.length > 0) {
-          profile.value.links.forEach(link => {
-            formattedProfile.push(`"${link.link_label}:","${link.link_url}"`);
-          });
-        }
-
-        formattedProfile.push('\n\n');
-        return formattedProfile.join('\n');
-      }
-    };
-
-    const addCertifications = async () => {
-      try {
-        const response = await api.get(`/profile/${route.params.id}`);
-        const profileData = response.data;
-
-        const formattedCerts = ['"----- Certificates -----"']
-
-        if (profileData.achievement_certs.length > 0) {
-          formattedCerts.push('"-- Achievement Certificates --"')
-          formattedCerts.push('"Title","Details","Issued Date"')
-          profileData.achievement_certs.forEach(cert => {
-            formattedCerts.push(`"${cert.title}","${cert.body || ''}","${cert.issued_date || ''}"`)
-          })
-        }
-
-        if (profileData.attainment_certs.length > 0) {
-          formattedCerts.push('"-- Attainment Certificates --"')
-          formattedCerts.push('"Title","Details","Issued Date","Expiry Date"')
-          profileData.attainment_certs.forEach(cert => {
-            formattedCerts.push(`"${cert.title}","${cert.body || ''}","${cert.issued_date || ''}","${cert.expiry_date || ''}"`)
-          })
-        }
-
-        formattedCerts.push('\n\n');
-        return formattedCerts.join('\n');
-      } catch (error) {
-        console.error("Error while fetching certifications:", error);
-        return '';
-      }
-    };
-
-    // Fetches the competencies and adds the contents to the file
-    const addCompetencies = async () => { 
-      try {
-        const response = await api.get(`/competency-entries/${route.params.id}`);
-        userCompetencies.value = response.data;
-
-        const formattedComp = ['"----- Competencies -----"']
-        
-        const compHeader = [
-          '"Competency Code"',
-          '"EA Competency"',
-          '"Competency Description"',
-          '"Competency Link"',
-          '"Experience Title"',
-          '"Associated Year"',
-          '"Experience Tasks"',
-          '"Key Learnings"',
-          '"Future Applications"',
-          '"Level"',
-          '"Status"',
-          '"Start Date"',
-          '"End Date"'
-        ].join(",");
-
-        formattedComp.push(compHeader);
-          if (userCompetencies.value?.length > 0) {
-            userCompetencies.value.forEach(comp => {
-              const row = [
-                `"${comp.indicator.display_id}"`,
-                `"${comp.indicator.indicator_description}"`,
-                `"${comp.indicator.description}"`,
-                `"${comp.indicator.indicator_link || ''}"`,
-                `"${comp.experience_title}"`,
-                `"${comp.associated_year}"`,
-                `"${comp.experience_tasks}"`,
-                `"${comp.key_learnings || ''}"`,
-                `"${comp.future_applications || ''}"`,
-                `"${comp.entry_level.competency_level || ''}"`,
-                `"${comp.entry_status.entry_status || ''}"`,
-                `"${comp.start_date}"`,
-                `"${comp.end_date || ''}"`
-              ].join(",");
-              formattedComp.push(row);
-            });
-          }
-
-
-        formattedComp.push('\n\n');
-        return formattedComp.join('\n');
-        
-      } catch (error) {
-        console.error("Error while fetching user competencies:", error);
-      }
-    };
-
-    // Fetches the networking contacts and adds the contents to the file
-    const addNetworkingContacts = async () => { 
-      try {
-        const response = await api.get(`/users/${route.params.id}/industry-contacts`);
-        contacts.value = response.data;
-      } catch (error) {
-        console.error("Error while fetching user contacts:", error);
-      } finally {
-        const formattedNet = ['"----- Networking Contacts -----"']
-        
-        const netHeader = [
-          `"Name"`,
-          `"Company"`,
-          `"Progress Notes"`,
-          `"Date Met"`,
-        ].join(",");
-
-        formattedNet.push(netHeader);
-
-        if (contacts.value && contacts.value.length > 0) {
-          contacts.value.forEach(contact => {
-            const row = [
-              `"${contact.contact_name}"`,
-              `"${contact.company || ''}"`,
-              `"${contact.progress_notes || ''}"`,
-              `"${contact.date_met || ''}"`,
-            ].join(",");
-            formattedNet.push(row);
+      if (profileSelected.value || certificationsSelected.value || competenciesSelected.value || networkingContactsSelected.value || goalsSelected.value) {
+        try {
+          const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
+            selections: {
+              profile: profileSelected.value,
+              certifications: certificationsSelected.value,
+              competencies: competenciesSelected.value,
+              networking: networkingContactsSelected.value,
+              goals: goalsSelected.value
+            }
+          }, { 
+            responseType: 'blob',
+            headers: { 'Accept': 'application/pdf' } 
           });
 
-        }
-
-        formattedNet.push('\n\n');
-        return formattedNet.join('\n');
-      }    
-    };
-
-    // Fetches the goals and adds the contents to the file
-    const addGoals = async () => { 
-      try {
-        const response = await api.get(`/career-plans/${route.params.id}`);
-        const data = response.data;
-        plan.value = Array.isArray(data) ? data[0] : data;
-
-        const formattedGoals = ['"----- Goals -----"']
+          // Creates the file-like object and a temporary URL
+          const blob = new Blob([response.data], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          // Creates an a tag in memory for downloading and link to url
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `portfolio_export_${route.params.id}.pdf`);
+          // Adds the page to the link, clicks the link then removes the link
+          document.body.appendChild(link);
+          link.click();
         
-        const goalsHeader = [
-          `"Goal Description"`,
-          `"Timeline"`,
-          `"Progress Notes"`,
-          `"Learnings"`,
-          `"Start Date"`,
-          `"End Date"`,
-          `"Completion Date"`,
-          `"Completion Notes"`,
-          `"Steps"`,
-        ].join(",");
-
-        formattedGoals.push(goalsHeader);
-
-        if (plan.value.smart_goals && plan.value.smart_goals.length > 0) {
-          plan.value.smart_goals.forEach(goal => {
-            const row = [
-              `"${goal.goal_description}"`,
-              `"${goal.timeline || ''}"`,
-              `"${goal.progress_notes || ''}"`,
-              `"${goal.learnings || ''}"`,
-              `"${goal.start_date || ''}"`,
-              `"${goal.end_date || ''}"`,
-              `"${goal.completion_date || ''}"`,
-              `"${goal.completion_notes || ''}"`,
-              `"${goal.status.status || ''}"`,
-            ].join(",");
-
-            formattedGoals.push(row);
-
-            if (goal.action_steps && goal.action_steps.length > 0) {
-              goal.action_steps.forEach(step => {
-              formattedGoals.push(`"","","","","","","","","${step.step_order}. ${step.step_description}"`);
-          });
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          showPopUp("Downloading PDF...", "success");
+        } catch (error) {
+          console.error(error);
+          showPopUp("Error generating the PDF.", "error");
         }
-          });
-
-        }
-
-        formattedGoals.push('\n\n');
-        return formattedGoals.join('\n');
-      } catch (error) {
-        console.error("Error while fetching user goals:", error);
-      } 
-    };
-
-
-    const exportData = async () => {
-        if (!profileSelected.value && !certificationsSelected.value && !competenciesSelected.value && !networkingContactsSelected.value && !goalsSelected.value) {
-            alert("You must select at least one category to export");
-            return;
-        }
-
-        // Add only selected fields
-        const exportCSV = [];
-        if (profileSelected.value) {
-          const profileData = await addProfile();
-          exportCSV.push(profileData);
-        };
-
-        if (certificationsSelected.value) {
-          exportCSV.push(await addCertifications());
-        }
-
-        if (competenciesSelected.value) {
-          const competencyData = await addCompetencies();
-          exportCSV.push(competencyData);
-        }
-
-        if (networkingContactsSelected.value) {
-          const networkingData = await addNetworkingContacts();
-          exportCSV.push(networkingData);
-        }
-        
-        if (goalsSelected.value) {
-          const goalsData = await addGoals();
-          exportCSV.push(goalsData);
-        }
-
-        const exportContent = exportCSV.map(title => `${title}`).join("\n");
-
-        
-        const blob = new Blob(["\ufeff", exportContent], { type: 'text/csv;charset=utf-8;' });
-        
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", "engifolio_export.csv");
-        link.style.visibility = 'hidden';
-        
-        // Create download link, click it then remove download link
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        alert("Downloading exported data");
 
         // Reset values after
         profileSelected.value = false;
@@ -347,17 +77,74 @@
         networkingContactsSelected.value = false;
         goalsSelected.value = false;
         allDataSelected.value = false;
+      } else {
+        showPopUp("You must select at least one category to export", "error");
+        return;
+      }    
     };
 
-  // Reset all ticked boxes on reload
-  onMounted(() => {
-      profileSelected.value = false;
-      certificationsSelected.value = false;
-      competenciesSelected.value = false;
-      networkingContactsSelected.value = false;
-      goalsSelected.value = false;
-      allDataSelected.value = false;
-  });
+    const exportData = async () => {
+        if (profileSelected.value || certificationsSelected.value || competenciesSelected.value || networkingContactsSelected.value || goalsSelected.value) {
+          // Add only selected fields
+          const exportCSV = [];
+          if (profileSelected.value) {
+            const profileData = await addProfile();
+            exportCSV.push(profileData);
+          };
+
+          if (certificationsSelected.value) {
+            exportCSV.push(await addCertifications());
+          }
+
+          if (competenciesSelected.value) {
+            const competencyData = await addCompetencies();
+            exportCSV.push(competencyData);
+          }
+
+          if (networkingContactsSelected.value) {
+            const networkingData = await addNetworkingContacts();
+            exportCSV.push(networkingData);
+          }
+          
+          if (goalsSelected.value) {
+            const careerPlansData = await addCareerPlans();
+            exportCSV.push(careerPlansData);
+            const goalsData = await addGoals();
+            exportCSV.push(goalsData);
+          }
+
+          const exportContent = exportCSV.map(title => `${title}`).join("\n");
+
+          // Creates the file-like object and a temporary URL
+          const blob = new Blob(["\ufeff", exportContent], { type: 'text/csv;charset=utf-8;' });
+          
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          
+          link.setAttribute("href", url);
+          link.setAttribute("download", "engifolio_export.csv");
+          link.style.visibility = 'hidden';
+          
+          // Create download link, click it then remove download link
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          showPopUp("Downloading CSV...", "success");
+
+          // Reset values after
+          profileSelected.value = false;
+          certificationsSelected.value = false;
+          competenciesSelected.value = false;
+          networkingContactsSelected.value = false;
+          goalsSelected.value = false;
+          allDataSelected.value = false;
+
+        } else {
+          showPopUp("You must select at least one category to export", "error");
+        return;
+      }    
+    };
 </script>
 
 <template>
@@ -441,6 +228,9 @@
           <button class="btn btn-pdf rounded-pill px-5" @click="exportToPdf">Export PDF Document</button>
         </div>
       </div>
+    </div>
+    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+      {{ popUp.message }}
     </div>
   </main>
 </template>
@@ -533,5 +323,28 @@
 
   .export-page {
     min-height: calc(100vh - 150px);
+  }
+
+  .popUp-msg {
+    position: fixed;
+    top: 5rem;   
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: max-content;
+    padding: 0.75rem 2rem;
+    border-radius: 2rem; 
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 1.15rem;
+  }
+
+  .popUp-msg.success {
+    background: #5d5d5d;
+    color: #fff;
+  }
+
+  .popUp-msg.error {
+    background: #db7979;
+    color: #fff;
   }
 </style>

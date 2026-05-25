@@ -4,26 +4,53 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentProfile;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    /**
+     * JSON for admin User Management table and summary stats
+     */
     public function usersOverview(Request $request)
     {
-        // Allow lightweight server-side search for the admin page table.
+        $data = $this->buildUsersOverview($request);
+
+        return response()->json($data);
+    }
+
+    /**
+     * PDF download; uses the same rows/stats as usersOverview
+     */
+    public function exportUsersOverviewPdf(Request $request)
+    {
+        $data = $this->buildUsersOverview($request);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
+            'stats' => $data['stats'],
+            'roleSections' => $this->groupUsersByRoleForPdf($data['users']),
+        ]);
+
+        return $pdf->download('user_management_export.pdf');
+    }
+
+    /**
+     * Build user rows and totals for the admin table, CSV (frontend), and PDF.
+     * Returns ['stats' => [...], 'users' => Collection of row arrays].
+     */
+    private function buildUsersOverview(Request $request): array
+    {
         $validated = $request->validate([
             'q' => 'nullable|string|max:100',
         ]);
 
-        // Build one aggregated dataset so frontend can render table + stats in a single call.
+        // One row per user; goal counts via profile (smart_goals.profile_id after pivot migration).
         $query = User::query()
             ->leftJoin('roles as r', 'r.role_id', '=', 'users.role_id')
             ->leftJoin('student_profiles as sp', 'sp.user_id', '=', 'users.user_id')
-            ->leftJoin('career_development_plans as cdp', 'cdp.profile_id', '=', 'sp.profile_id')
-            ->leftJoin('smart_goals as sg', 'sg.plan_id', '=', 'cdp.plan_id')
+            ->leftJoin('smart_goals as sg', 'sg.profile_id', '=', 'sp.profile_id')
             ->select([
                 'users.user_id',
                 'users.username',
@@ -48,7 +75,7 @@ class AdminController extends Controller
                 'r.role_name',
             ]);
 
-        if (!empty($validated['q'])) {
+        if (! empty($validated['q'])) {
             $search = trim($validated['q']);
             // Search by common admin fields: name, email, or username.
             $query->where(function ($q) use ($search) {
@@ -69,33 +96,49 @@ class AdminController extends Controller
                 $name = $row->username;
             }
 
-            // Prefer goal activity timestamp; fallback to user row update time.
+            // Prefer latest goal activity; fall back to the user account updated_at.
             $lastUpdated = $row->goals_updated_at ?? $row->user_updated_at;
-            $prefix = strtolower((string) $row->role_name) === 'admin' ? 'ADM' : 'STU';
 
             return [
                 'user_id' => (int) $row->user_id,
                 'profile_id' => $row->profile_id ? (int) $row->profile_id : null,
-                'id' => sprintf('%s-%04d', $prefix, (int) $row->user_id),
                 'username' => $row->username,
                 'name' => $name,
                 'email' => $row->email,
                 'role' => $row->role_name ?? 'Unknown',
                 'goals' => $goalsCount,
                 'completedGoals' => $completedGoalsCount,
-                // Query builder aggregate values come back as strings, so parse before formatting.
+                // parse(): normalise DB datetime/string to Carbon before format(); admin table shows date only.
                 'updatedAt' => $lastUpdated ? Carbon::parse($lastUpdated)->format('Y-m-d') : null,
             ];
         })->values();
 
-        return response()->json([
+        return [
             'stats' => [
                 'totalUsers' => $users->count(),
                 'totalGoals' => (int) $users->sum('goals'),
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
             ],
             'users' => $users,
-        ]);
+        ];
+    }
+
+    /**
+     * Split overview rows into Student / Staff / Admin lists for the PDF export layout.
+     */
+    private function groupUsersByRoleForPdf($users): array
+    {
+        $pick = static function (string $role) use ($users) {
+            return $users
+                ->filter(static fn (array $user): bool => strcasecmp((string) ($user['role'] ?? ''), $role) === 0)
+                ->values();
+        };
+
+        return [
+            ['title' => 'Students', 'users' => $pick('Student')],
+            ['title' => 'Staffs', 'users' => $pick('Staff')],
+            ['title' => 'Admins', 'users' => $pick('Admin')],
+        ];
     }
 
     public function createUser(Request $request)
@@ -122,8 +165,8 @@ class AdminController extends Controller
             'account_status_id' => 1,
         ]);
 
+        // role_id 3 = Student; profile required for admin view/career-plan links.
         if ((int) $validated['role_id'] === 3) {
-            // Student accounts need a profile so admin View/Edit can open student pages.
             StudentProfile::create([
                 'user_id' => $user->user_id,
                 'preferred_name' => $validated['first_name'] ?? null,
@@ -138,7 +181,6 @@ class AdminController extends Controller
 
     public function deleteUser(User $user)
     {
-        // Route model binding resolves {user} by user_id (see User model getRouteKeyName()).
         $user->delete();
 
         return response()->json([
