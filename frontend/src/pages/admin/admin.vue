@@ -97,7 +97,7 @@
                 <th>Goals</th>
                 <th>Completed</th>
                 <th>Last Updated</th>
-                <th>Actions</th>
+                <th class="actions-col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -647,6 +647,12 @@ const deleteUser = async (user) => {
   font-size: 0.92rem;
 }
 
+.actions-col,
+.actions-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .actions-cell {
   vertical-align: middle !important;
 }
@@ -656,7 +662,7 @@ const deleteUser = async (user) => {
   flex-direction: row;
   gap: 0.55rem;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .action-icon-btn {

@@ -470,6 +470,39 @@ const confirmDelete = async () => {
   font-size: 0.8rem !important;
 }
 
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.field-label {
+  font-family: 'Martel', sans-serif;
+  font-size: 1rem;
+  color: #222222;
+}
+
+.field-desc {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #444444;
+}
+
 .popUp-msg {
   position: fixed;
   top: 5rem;   
