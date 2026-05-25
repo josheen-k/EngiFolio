@@ -24,7 +24,16 @@
         <form @submit.prevent="savePlan">
           <label>
             Plan Year:
-            <input v-model.number="planForm.plan_year" type="number" min="1" required />
+            <select v-model.number="planForm.plan_year" class="plan-year-select" required>
+              <option disabled :value="''">Select calendar year</option>
+              <option
+                v-for="opt in planYearSelectOptions"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
+            </select>
           </label>
 
           <label>
@@ -111,7 +120,7 @@
             </thead>
             <tbody>
               <tr v-for="plan in sortedPlans" :key="plan.plan_id">
-                <td class="year-cell">Year {{ plan.plan_year }}</td>
+                <td class="year-cell">{{ formatPlanYearLabel(plan.plan_year) }}</td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'professional_interests')">Not added yet.</template>
                   <div
@@ -254,7 +263,7 @@
         <div class="mobile-plan-list">
           <article v-for="plan in sortedPlans" :key="`mobile-${plan.plan_id}`" class="mobile-plan-card">
             <div class="mobile-plan-head">
-              <h2 class="mobile-plan-title">Year {{ plan.plan_year }}</h2>
+              <h2 class="mobile-plan-title">{{ formatPlanYearLabel(plan.plan_year) }}</h2>
               <span class="mobile-status-badge">{{ getPlanGoals(plan).length }} SMART goals</span>
             </div>
 
@@ -439,6 +448,45 @@ const savingPlan = ref(false)
 const planFormError = ref('')
 const selectedGoalIds = ref([])
 
+const CALENDAR_YEAR_MIN = 2020
+
+const buildCalendarYearRange = () => {
+  const currentYear = new Date().getFullYear()
+  const start = Math.min(currentYear - 1, 2026)
+  const end = currentYear + 4
+  const years = []
+  for (let year = start; year <= end; year += 1) {
+    years.push(year)
+  }
+  return years
+}
+
+const formatPlanYearLabel = (year) => {
+  const y = Number(year)
+  return Number.isFinite(y) ? String(y) : '—'
+}
+
+const planYearSelectOptions = computed(() => {
+  const years = new Set(buildCalendarYearRange())
+  plans.value.forEach((plan) => {
+    const year = Number(plan.plan_year)
+    if (Number.isFinite(year) && year >= CALENDAR_YEAR_MIN) {
+      years.add(year)
+    }
+  })
+
+  return [...years]
+    .sort((a, b) => a - b)
+    .map((year) => ({ value: year, label: String(year) }))
+})
+
+const defaultPlanYearForCreate = () => {
+  const currentYear = new Date().getFullYear()
+  const options = planYearSelectOptions.value
+  const match = options.find((opt) => opt.value === currentYear)
+  return match?.value ?? options[0]?.value ?? currentYear
+}
+
 const emptyPlanForm = () => ({
   plan_year: '',
   professional_interests: '',
@@ -546,6 +594,7 @@ const resetPlanForm = () => {
 
 const openCreatePlanForm = () => {
   resetPlanForm()
+  planForm.value.plan_year = defaultPlanYearForCreate()
   showPlanForm.value = true
 }
 
@@ -570,16 +619,23 @@ const cancelPlanForm = () => {
   resetPlanForm()
 }
 
-const normalizePlanPayload = () => ({
-  profile_id: Number(route.params.id),
-  plan_year: Number(planForm.value.plan_year),
-  professional_interests: planForm.value.professional_interests || null,
-  employers_of_interest: planForm.value.employers_of_interest || null,
-  personal_values: planForm.value.personal_values || null,
-  development_focus: planForm.value.development_focus || null,
-  extracurriculars: planForm.value.extracurriculars || null,
-  networking_plan: planForm.value.networking_plan || null
-})
+const normalizePlanPayload = () => {
+  const planYear = Number(planForm.value.plan_year)
+  if (!Number.isInteger(planYear) || planYear < CALENDAR_YEAR_MIN) {
+    throw new Error('Please select a calendar year (e.g. 2026).')
+  }
+
+  return {
+    profile_id: Number(route.params.id),
+    plan_year: planYear,
+    professional_interests: planForm.value.professional_interests || null,
+    employers_of_interest: planForm.value.employers_of_interest || null,
+    personal_values: planForm.value.personal_values || null,
+    development_focus: planForm.value.development_focus || null,
+    extracurriculars: planForm.value.extracurriculars || null,
+    networking_plan: planForm.value.networking_plan || null
+  }
+}
 
 // API loading functions fetch plans and all goals that can be linked to a plan.
 const fetchCareerPlans = async () => {
@@ -617,7 +673,14 @@ const savePlan = async () => {
     savingPlan.value = true
     planFormError.value = ''
 
-    const payload = normalizePlanPayload()
+    let payload
+    try {
+      payload = normalizePlanPayload()
+    } catch (validationError) {
+      planFormError.value = validationError.message
+      return
+    }
+
     const response = editingPlanId.value
       ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
       : await api.post('/career-plans', payload)
@@ -639,16 +702,14 @@ const savePlan = async () => {
       error.response?.data?.error ||
       Object.values(error.response?.data?.errors || {}).flat()[0]
 
-    planFormError.value = serverMessage?.includes('Duplicate entry')
-      ? 'Another plan already used that year before the database constraint was updated. Please refresh and try again.'
-      : serverMessage || 'Failed to save career development plan.'
+    planFormError.value = serverMessage || 'Failed to save career development plan.'
   } finally {
     savingPlan.value = false
   }
 }
 
 const deletePlan = async (plan) => {
-  const confirmed = window.confirm(`Delete Year ${plan.plan_year} career plan? This cannot be undone.`)
+  const confirmed = window.confirm(`Delete ${formatPlanYearLabel(plan.plan_year)} career plan? This cannot be undone.`)
   if (!confirmed) {
     return
   }
