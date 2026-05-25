@@ -11,7 +11,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // All tables that focus on options for other tables
-        // All tables that focus on options for other tables
         DB::table('roles')->insert([
             ['role_id' => 1, 'role_name' => 'Admin'],
             ['role_id' => 2, 'role_name' => 'Staff'],
@@ -110,8 +109,7 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(), 'updated_at' => now(),
             ],
             [
-                'plan_id' => 2, 'profile_id' => 1, 'plan_year' => 2025, 'professional_interests' => 'Wind power', 'created_at' => now(), 'updated_at' => now()],
-            ['plan_id' => 3, 'profile_id' => 1, 'plan_year' => 2027,
+                'plan_id' => 2, 'profile_id' => 1, 'plan_year' => 2027,
                 'professional_interests' => 'Renewable energy leadership',
                 'employers_of_interest' => 'Neoen, Iberdrola, SA Power Networks',
                 'personal_values' => 'Leadership, integrity, continuous learning',
@@ -207,30 +205,93 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('smart_goals')->insert([
-            ['goal_id' => 1, 'plan_id' => 1, 'goal_description' => 'Complete Statics Course', 'goal_status_id' => 2, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 2, 'plan_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
+            // Alex (profile 1)
+            ['goal_id' => 1, 'profile_id' => 1, 'goal_description' => 'Complete Statics Course', 'goal_status_id' => 2, 'learnings' => 'Consistent problem sets improved my free-body diagram skills.', 'completion_notes' => null, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 2, 'profile_id' => 1, 'goal_description' => 'Join renewable energy student chapter', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-03-01', 'end_date' => '2026-09-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'profile_id' => 1, 'goal_description' => 'Present at engineering showcase', 'goal_status_id' => 3, 'learnings' => 'Practising the pitch helped me explain technical work to non-engineers.', 'completion_notes' => 'Presented solar thermal prototype and received positive staff feedback.', 'start_date' => '2026-01-15', 'end_date' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()],
+            // Kate (profile 2)
+            ['goal_id' => 4, 'profile_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 5, 'profile_id' => 2, 'goal_description' => 'Complete steel design module', 'goal_status_id' => 2, 'learnings' => 'Connection design examples clarified AS code application.', 'completion_notes' => null, 'start_date' => '2026-02-15', 'end_date' => '2026-07-01', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 6, 'profile_id' => 2, 'goal_description' => 'Join structural engineering society', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-04-01', 'end_date' => '2026-12-01', 'created_at' => now(), 'updated_at' => now()],
+            // Priya (profile 3)
+            ['goal_id' => 7, 'profile_id' => 3, 'goal_description' => 'Master CAD fundamentals', 'goal_status_id' => 2, 'learnings' => 'Daily modelling practice reduced drawing revision time.', 'completion_notes' => null, 'start_date' => '2026-02-01', 'end_date' => '2026-06-15', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 8, 'profile_id' => 3, 'goal_description' => 'Complete sustainability elective', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-03-10', 'end_date' => '2026-10-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 9, 'profile_id' => 3, 'goal_description' => 'Network with energy sector professionals', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-05-01', 'end_date' => '2026-11-30', 'created_at' => now(), 'updated_at' => now()],
+            // Samuel (profile 4)
+            ['goal_id' => 10, 'profile_id' => 4, 'goal_description' => 'Contribute to an open-source project', 'goal_status_id' => 2, 'learnings' => 'Code reviews taught me how to write clearer pull requests.', 'completion_notes' => null, 'start_date' => '2026-01-20', 'end_date' => '2026-08-31', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 11, 'profile_id' => 4, 'goal_description' => 'Complete algorithms course', 'goal_status_id' => 2, 'learnings' => 'Graph algorithms practice improved my interview problem solving.', 'completion_notes' => null, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 12, 'profile_id' => 4, 'goal_description' => 'Prepare for software engineering internship', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-04-01', 'end_date' => '2026-09-01', 'created_at' => now(), 'updated_at' => now()],
+            // Isabella (profile 5)
+            ['goal_id' => 13, 'profile_id' => 5, 'goal_description' => 'Complete structural analysis lab', 'goal_status_id' => 2, 'learnings' => 'Lab reports helped me link theory to measured beam behaviour.', 'completion_notes' => null, 'start_date' => '2026-02-10', 'end_date' => '2026-07-15', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 14, 'profile_id' => 5, 'goal_description' => 'Attend civil engineering site visit', 'goal_status_id' => 3, 'learnings' => 'Seeing formwork and reinforcement placement made lecture content tangible.', 'completion_notes' => 'Completed site visit and submitted reflection to tutor.', 'start_date' => '2026-03-01', 'end_date' => '2026-04-30', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 15, 'profile_id' => 5, 'goal_description' => 'Develop portfolio of design sketches', 'goal_status_id' => 1, 'learnings' => null, 'completion_notes' => null, 'start_date' => '2026-05-01', 'end_date' => '2026-12-15', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('goal_action_steps')->insert([
+            ['step_id' => 1, 'goal_id' => 1, 'step_order' => 1, 'step_description' => 'Review weekly statics tutorial problems', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 2, 'goal_id' => 1, 'step_order' => 2, 'step_description' => 'Complete past exam questions before mid-semester break', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 3, 'goal_id' => 2, 'step_order' => 1, 'step_description' => 'Attend first chapter meeting and sign up for mailing list', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 4, 'goal_id' => 2, 'step_order' => 2, 'step_description' => 'Volunteer at one renewable energy outreach event', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 5, 'goal_id' => 3, 'step_order' => 1, 'step_description' => 'Prepare poster and demo script', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 6, 'goal_id' => 3, 'step_order' => 2, 'step_description' => 'Rehearse presentation with project group', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 7, 'goal_id' => 4, 'step_order' => 1, 'step_description' => 'Update resume and LinkedIn profile', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 8, 'goal_id' => 4, 'step_order' => 2, 'step_description' => 'Apply to three structural engineering internships', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 9, 'goal_id' => 5, 'step_order' => 1, 'step_description' => 'Complete connection design assignments on time', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 10, 'goal_id' => 5, 'step_order' => 2, 'step_description' => 'Book tutor consult for steel design quiz prep', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 11, 'goal_id' => 6, 'step_order' => 1, 'step_description' => 'Register for society membership', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 12, 'goal_id' => 6, 'step_order' => 2, 'step_description' => 'Attend two industry speaker events', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 13, 'goal_id' => 7, 'step_order' => 1, 'step_description' => 'Finish CAD tutorial modules 1–4', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 14, 'goal_id' => 7, 'step_order' => 2, 'step_description' => 'Model one assignment part independently', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 15, 'goal_id' => 8, 'step_order' => 1, 'step_description' => 'Enrol in sustainability elective', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 16, 'goal_id' => 8, 'step_order' => 2, 'step_description' => 'Draft first assessment outline', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 17, 'goal_id' => 9, 'step_order' => 1, 'step_description' => 'Identify five target energy companies', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 18, 'goal_id' => 9, 'step_order' => 2, 'step_description' => 'Request two informational interviews', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 19, 'goal_id' => 10, 'step_order' => 1, 'step_description' => 'Pick a beginner-friendly open-source issue', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 20, 'goal_id' => 10, 'step_order' => 2, 'step_description' => 'Submit pull request and respond to review comments', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 21, 'goal_id' => 11, 'step_order' => 1, 'step_description' => 'Complete weekly algorithm problem sets', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 22, 'goal_id' => 11, 'step_order' => 2, 'step_description' => 'Practice timed coding exercises fortnightly', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 23, 'goal_id' => 12, 'step_order' => 1, 'step_description' => 'Build one portfolio project for internship applications', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 24, 'goal_id' => 12, 'step_order' => 2, 'step_description' => 'Complete mock technical interview with peer', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 25, 'goal_id' => 13, 'step_order' => 1, 'step_description' => 'Submit all lab reports before deadline', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 26, 'goal_id' => 13, 'step_order' => 2, 'step_description' => 'Compare measured and theoretical deflection results', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 27, 'goal_id' => 14, 'step_order' => 1, 'step_description' => 'Register for site visit and complete safety induction', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 28, 'goal_id' => 14, 'step_order' => 2, 'step_description' => 'Write site visit reflection within one week', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 29, 'goal_id' => 15, 'step_order' => 1, 'step_description' => 'Sketch one structural detail per week', 'created_at' => now(), 'updated_at' => now()],
+            ['step_id' => 30, 'goal_id' => 15, 'step_order' => 2, 'step_description' => 'Scan and organise sketches into portfolio folder', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('career_development_plan_smart_goal')->insert([
+            ['plan_id' => 1, 'goal_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 1, 'goal_id' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 2, 'goal_id' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 3, 'goal_id' => 4, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 3, 'goal_id' => 5, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 4, 'goal_id' => 6, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 5, 'goal_id' => 7, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 5, 'goal_id' => 8, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 6, 'goal_id' => 9, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 7, 'goal_id' => 10, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 7, 'goal_id' => 11, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 8, 'goal_id' => 12, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 9, 'goal_id' => 13, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 9, 'goal_id' => 14, 'created_at' => now(), 'updated_at' => now()],
+            ['plan_id' => 10, 'goal_id' => 15, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('goal_feedback')->insert([
-            ['goal_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 4, 'staff_id' => 4, 'feedback_content' => 'Add action steps', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('industry_contacts')->insert([
-            ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Robert Ford', 'company' => 'Westworld Robotics', 'date_met' => '2026-05-15', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 2, 'profile_id' => 2, 'contact_name' => 'Sarah Connor', 'company' => 'Cyberdyne Systems', 'date_met' => '2026-01-20', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 1, 'profile_id' => 1, 'contact_name' => 'Elena Rodriguez', 'company' => 'Arup Adelaide', 'date_met' => '2026-03-12', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 2, 'profile_id' => 1, 'contact_name' => 'Kenji Sato', 'company' => 'Mitsubishi Heavy Industries', 'date_met' => '2026-04-05', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'profile_id' => 2, 'contact_name' => 'Sarah Jenkins', 'company' => 'Santos Ltd', 'date_met' => '2026-02-18', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('industry_contact_methods')->insert([
-            ['contact_id' => 3, 'method_type' => 'Email', 'method_value' => 'elena.rodriguez@arup.com.au', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 4, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/ksato-mhi', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 5, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5000', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 6, 'method_type' => 'Email', 'method_value' => 'm.aurelius@romanconcrete.it', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 7, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/aokafor-cloud', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 8, 'method_type' => 'Email', 'method_value' => 'lachlan.murdoch@baesystems.com', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 9, 'method_type' => 'Phone', 'method_value' => '+61 400 123 456', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 10, 'method_type' => 'Email', 'method_value' => 'w.chen@tesla.com', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 11, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/alistair-cook-energy', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 12, 'method_type' => 'Email', 'method_value' => 'd.scully@fbi.gov', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 1, 'method_type' => 'Email', 'method_value' => 'elena.rodriguez@arup.com.au', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 2, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/ksato-mhi', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5000', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('competency_groups')->insert([
@@ -403,8 +464,9 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Recognized for outstanding academic achievement in the Faculty of Engineering, Computer and Mathematical Sciences.',
                 'file_path' => '/uploads/certs/deans_list_alex.pdf',
                 'issued_date' => '2025-12-10',
+                'sort_order' => 1,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -412,8 +474,9 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Awarded by Engineers Australia for the best undergraduate project on solar-thermal storage systems.',
                 'file_path' => '/uploads/certs/innovation_prize.pdf',
                 'issued_date' => '2026-03-15',
+                'sort_order' => 2,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -421,7 +484,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Awarded a merit-based scholarship for maintaining a GPA above 6.5 throughout the academic year.',
                 'file_path' => '/uploads/certs/scholarship_2024.pdf',
                 'issued_date' => '2024-02-01',
-                'sort_order' => '3',
+                'sort_order' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -431,7 +494,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Recognised for leading a team to deliver a scalable web application using modern development practices.',
                 'file_path' => '/uploads/certs/team_project_award.pdf',
                 'issued_date' => '2025-06-05',
-                'sort_order' => '4',
+                'sort_order' => 4,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -441,7 +504,7 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Acknowledged for contributing over 100 hours to STEM outreach programs for high school students.',
                 'file_path' => '/uploads/certs/volunteer_award.pdf',
                 'issued_date' => '2023-11-18',
-                'sort_order' => '5',
+                'sort_order' => 5,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -451,8 +514,9 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Structural Engineering Industry Excellence Scholarship for high-performing female students.',
                 'file_path' => '/uploads/certs/scholarship_kate.pdf',
                 'issued_date' => '2026-02-01',
+                'sort_order' => 1,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -464,8 +528,9 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/attain/white_card_alex.pdf',
                 'issued_date' => '2025-05-20',
                 'expiry_date' => null,
+                'sort_order' => 1,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 1,
@@ -474,8 +539,9 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/attain/first_aid_alex.pdf',
                 'issued_date' => '2026-01-10',
                 'expiry_date' => '2029-01-10',
+                'sort_order' => 2,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'profile_id' => 2,
@@ -484,22 +550,15 @@ class DatabaseSeeder extends Seeder
                 'file_path' => '/uploads/attain/heights_kate.pdf',
                 'issued_date' => '2026-04-15',
                 'expiry_date' => '2028-04-15',
+                'sort_order' => 1,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
         DB::table('competency_feedback')->insert([
-            ['entry_id' => 3, 'staff_id' => 4, 'feedback_content' => 'Strong use of the pandas library. For your next iteration, try to modularise your functions to improve code reusability.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 4, 'staff_id' => 5, 'feedback_content' => 'Great leadership initiative. It would be beneficial to see a short reflection on how you resolved specific technical disagreements within the team.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 5, 'staff_id' => 4, 'feedback_content' => 'The LCA calculations are accurate. However, you should cross-reference the Australian Carbon Credit Units (ACCUs) standards in your future applications.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 6, 'staff_id' => 6, 'feedback_content' => 'Your analysis of laminar vs. turbulent flow is correct. Ensure the lab logbook scans are attached to show the raw data collection process.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 7, 'staff_id' => 5, 'feedback_content' => 'Excellent networking initiative. I recommend following up with the contacts you made on LinkedIn to maintain those professional ties.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 8, 'staff_id' => 6, 'feedback_content' => 'Good understanding of PID tuning. Next time, provide a screenshot of the oscillation curves to demonstrate how you reached stability.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 9, 'staff_id' => 4, 'feedback_content' => 'A very thoughtful analysis of the Challenger incident. You correctly identified the communication breakdown as a core technical failure.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 10, 'staff_id' => 6, 'feedback_content' => 'The stress-strain curve plots are well-rendered. Please clarify which specific aluminum alloy grade was used in the testing notes.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 11, 'staff_id' => 5, 'feedback_content' => 'Fantastic work on the MVP. Your ability to work under pressure is evident, but make sure to document the tech stack used in more detail.', 'created_at' => now(), 'updated_at' => now()],
-            ['entry_id' => 12, 'staff_id' => 4, 'feedback_content' => 'Insightful observations on coastal corrosion. This entry would be even stronger with photos from the site visit as visual evidence.', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 1, 'staff_id' => 4, 'feedback_content' => 'Strong CAD documentation. Add more detail on load assumptions in your next submission.', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 2, 'staff_id' => 4, 'feedback_content' => 'Good wiring layout notes. Include safety compliance references where applicable.', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('networking_events')->insert([
