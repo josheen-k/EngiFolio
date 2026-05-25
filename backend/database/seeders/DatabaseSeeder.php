@@ -101,8 +101,41 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('smart_goals')->insert([
-            ['goal_id' => 1, 'profile_id' => 1, 'goal_description' => 'Complete Statics Course', 'goal_status_id' => 2, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'created_at' => now(), 'updated_at' => now()],
-            ['goal_id' => 2, 'profile_id' => 2, 'goal_description' => 'Secure a summer internship', 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 1, 'profile_id' => 1, 'goal_description' => 'Complete Statics Course', 'timeline' => 'Finish before end of semester 1', 'progress_notes' => 'Attending all lectures and completing weekly problem sets', 'learnings' => null, 'goal_status_id' => 2, 'start_date' => '2026-02-01', 'end_date' => '2026-06-30', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 2, 'profile_id' => 2, 'goal_description' => 'Secure a summer internship', 'timeline' => 'Apply before end of semester 1', 'progress_notes' => 'Shortlisted 3 firms, resume drafted and reviewed by career services', 'learnings' => null, 'goal_status_id' => 1, 'start_date' => '2026-05-01', 'end_date' => '2026-08-01', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'profile_id' => 1, 'goal_description' => 'Complete an internship application to at least 5 engineering firms', 'timeline' => 'Submit all applications before semester 2 begins', 'progress_notes' => 'Researched target companies and tailored resume for each', 'learnings' => null, 'goal_status_id' => 2, 'start_date' => '2026-03-01', 'end_date' => '2026-06-30', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 4, 'profile_id' => 1, 'goal_description' => 'Improve Python programming skills by completing an online data analysis course', 'timeline' => 'Finish within 8 weeks', 'progress_notes' => 'Completed 3 of 6 modules', 'learnings' => null, 'goal_status_id' => 2, 'start_date' => '2026-02-10', 'end_date' => '2026-04-10', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 5, 'profile_id' => 1, 'goal_description' => 'Attend at least 4 industry networking events this semester', 'timeline' => 'Spread across semester 1', 'progress_notes' => 'Attended 2 events so far, have 2 more booked', 'learnings' => 'Industry contacts value a well-prepared elevator pitch', 'goal_status_id' => 2, 'start_date' => '2026-02-01', 'end_date' => '2026-06-01', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 6, 'profile_id' => 1, 'goal_description' => 'Achieve a distinction or higher in Fluid Mechanics', 'timeline' => 'End of semester 1 exam period', 'progress_notes' => 'Scoring well on assignments, need to focus on pipe flow calculations', 'learnings' => null, 'goal_status_id' => 2, 'start_date' => '2026-02-24', 'end_date' => '2026-06-20', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 7, 'profile_id' => 1, 'goal_description' => 'Build and publish a personal engineering portfolio website', 'timeline' => 'Launch before mid-year break', 'progress_notes' => 'Purchased domain and set up basic layout', 'learnings' => null, 'goal_status_id' => 1, 'start_date' => '2026-04-01', 'end_date' => '2026-06-30', 'completion_date' => null, 'completion_notes' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 8, 'profile_id' => 1, 'goal_description' => 'Complete Engineers Australia student membership application', 'timeline' => 'Within 4 weeks', 'progress_notes' => null, 'learnings' => null, 'goal_status_id' => 3, 'start_date' => '2026-01-15', 'end_date' => '2026-02-15', 'completion_date' => '2026-02-12', 'completion_notes' => 'Application approved, received membership confirmation email', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('goal_action_steps')->insert([
+            ['goal_id' => 1, 'step_description' => 'Review lecture notes from weeks 1–4', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 1, 'step_description' => 'Complete all tutorial problem sets', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 1, 'step_description' => 'Attend weekly drop-in study sessions', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'step_description' => 'Update resume with latest projects and competency entries', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'step_description' => 'Research and shortlist 10 target engineering firms', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'step_description' => 'Write a tailored cover letter for each application', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 3, 'step_description' => 'Submit a minimum of 5 applications before June 30', 'step_order' => 4, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 4, 'step_description' => 'Enrol in a reputable data analysis course on Coursera or edX', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 4, 'step_description' => 'Complete one module per week', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 4, 'step_description' => 'Apply learnings to a personal data project using real engineering datasets', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 5, 'step_description' => 'Identify and register for upcoming Engineers Australia events', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 5, 'step_description' => 'Prepare a 60-second elevator pitch before each event', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 5, 'step_description' => 'Follow up with at least 2 new contacts on LinkedIn after each event', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 6, 'step_description' => 'Complete all weekly problem sets before the due date', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 6, 'step_description' => 'Attend the lecturer\'s consultation hours fortnightly', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 6, 'step_description' => 'Form a study group with 2–3 classmates for exam revision', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 6, 'step_description' => 'Complete at least 3 past exam papers under timed conditions', 'step_order' => 4, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 7, 'step_description' => 'Choose a tech stack and set up hosting', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 7, 'step_description' => 'Design a wireframe for the site layout', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 7, 'step_description' => 'Write content for each section including projects and skills', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 7, 'step_description' => 'Share the site with a mentor for feedback before publishing', 'step_order' => 4, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 8, 'step_description' => 'Gather required documents including student ID and enrolment proof', 'step_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 8, 'step_description' => 'Complete the online membership application form', 'step_order' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['goal_id' => 8, 'step_description' => 'Pay the student membership fee', 'step_order' => 3, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('goal_feedback')->insert([
