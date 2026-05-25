@@ -535,11 +535,6 @@ const getPlanFieldRaw = (plan, field) => {
   return String(v).trim()
 }
 
-const getPlanField = (plan, field) => {
-  const raw = getPlanFieldRaw(plan, field)
-  return raw || 'Not added yet.'
-}
-
 const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
 const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
 
