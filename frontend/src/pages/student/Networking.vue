@@ -4,26 +4,43 @@
 
     <section class="container-lg py-5">
       <div class="pitch-box">
-        <label class="pitch-label"> Elevator pitch</label>
-        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
+        <label class="pitch-label">Elevator pitch</label>
+
+        <textarea
+          v-model="elevatorPitch"
+          class="pitch-textarea"
+          placeholder="Write your elevator pitch here..."
+        ></textarea>
 
         <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
+          <button
+            class="action-button small-button"
+            @click="saveElevatorPitch"
+            :disabled="savingPitch"
+          >
+            {{ savingPitch ? 'Saving...' : 'Save' }}
+          </button>
         </div>
       </div>
-      <!-- HEADER -->
+
       <div class="header">
         <div class="title-wrap">
-          <!-- <img
-            src="https://cdn-icons-png.flaticon.com/512/174/174857.png"
-            class="linkedin-icon"
-            alt="LinkedIn"
-          /> -->
           <h2 class="page-title">Industry Contacts</h2>
 
           <div class="networking-switch">
-            <RouterLink :to="`/student/networking/${route.params.id ||1}`" class="switch-pill"> Events Calender </RouterLink>
-            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill active"> Industry Contacts</RouterLink>
+            <RouterLink
+              :to="`/student/networking/${route.params.id || 1}`"
+              class="switch-pill"
+            >
+              Events Calendar
+            </RouterLink>
+
+            <RouterLink
+              :to="`/student/networking/contacts/${route.params.id || 1}`"
+              class="switch-pill active"
+            >
+              Industry Contacts
+            </RouterLink>
           </div>
         </div>
 
@@ -32,7 +49,6 @@
         </button>
       </div>
 
-      <!-- SEARCH + SORT -->
       <div class="controls">
         <input
           v-model="search"
@@ -49,7 +65,6 @@
         </select>
       </div>
 
-      <!-- CARDS -->
       <div class="card-grid">
         <div
           v-for="c in sortedContacts"
@@ -57,8 +72,6 @@
           class="contact-card"
           @click="openDetails(c)"
         >
-
-          <!-- MENU -->
           <div class="menu-wrapper" @click.stop>
             <button class="menu-btn" @click="toggleMenu(c.contact_id)">
               ⋯
@@ -72,7 +85,6 @@
             </div>
           </div>
 
-          <!-- CARD -->
           <div class="card-top">
             <div class="avatar">
               <img :src="getAvatar(c.contact_name)" />
@@ -80,372 +92,462 @@
 
             <div class="info">
               <h3 class="contact-name">{{ c.contact_name }}</h3>
-
-              <p class="meta">📅 {{ c.date_met }}</p>
-
+              <p class="meta">📅 {{ c.date_met || 'No date added' }}</p>
             </div>
           </div>
-
         </div>
       </div>
 
       <!-- DETAILS MODAL -->
-      <div v-if="selectedContact" class="modal-overlay" @click.self="selectedContact = null">
+      <div
+        v-if="selectedContact"
+        class="modal-overlay"
+        @click.self="selectedContact = null"
+      >
         <div class="modal-box">
-
           <h3>{{ selectedContact.contact_name }}</h3>
 
-          <p><b>Company:</b> {{ selectedContact.company }}</p>
-          <p><b>Date Met:</b> {{ selectedContact.date_met }}</p>
+          <p><b>Company:</b> {{ selectedContact.company || 'Not specified' }}</p>
+          <p><b>Date Met:</b> {{ selectedContact.date_met || 'Not specified' }}</p>
 
-          <p v-if="selectedContact.link_url">
-            <b>Link:</b>
-            <a :href="formatUrl(selectedContact.link_url)" target="_blank" rel="noopener noreferrer">Open Link</a>
+          <p>
+  <b>LinkedIn:</b>
+
+  <a
+    v-if="selectedContact.link_url"
+    :href="formatUrl(selectedContact.link_url)"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    View LinkedIn
+  </a>
+
+  <span v-else>
+    Not added
+  </span>
+</p>
+
+          <p class="notes-title"><b>Progress Notes</b></p>
+
+          <p class="notes-body">
+            {{
+              selectedContact.progress_notes ||
+              'No progress notes added yet.'
+            }}
           </p>
-
 
           <div class="btn-row">
             <ButtonsStyle
               @edit="editContact(selectedContact)"
               @delete="deleteContact(selectedContact.contact_id)"
             />
+
             <button class="btn btn-light" @click="selectedContact = null">
               Close
             </button>
           </div>
-
         </div>
       </div>
 
-      <!-- FORM -->
+      <!-- FORM MODAL -->
       <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
         <div class="modal-box">
-
-          <h3>{{ editMode ? "Edit Contact" : "Create Contact" }}</h3>
+          <h3>{{ editMode ? 'Edit Contact' : 'Create Contact' }}</h3>
 
           <input v-model="form.contact_name" placeholder="Name" />
           <input v-model="form.company" placeholder="Company" />
-          <input v-model="form.link_url" type="url" placeholder="Link" />
+
+          <textarea
+            v-model="form.progress_notes"
+            placeholder="Progress notes"
+          ></textarea>
+
+          <input
+            v-model="form.link_url"
+            type="url"
+            placeholder="LinkedIn URL"
+          />
+
           <input type="date" v-model="form.date_met" />
 
           <div class="btn-row">
             <button class="btn btn-dark" @click="saveContact">
-              {{ editMode ? "Update" : "Create" }}
+              {{ editMode ? 'Update' : 'Create' }}
             </button>
 
             <button class="btn btn-light" @click="closeForm">
               Cancel
             </button>
           </div>
-
         </div>
       </div>
 
-      <div v-if="showPitchDialog" class="confirm-overlay" @click.self="closePitchDialog">
+      <div
+        v-if="showPitchDialog"
+        class="confirm-overlay"
+        @click.self="closePitchDialog"
+      >
         <div class="confirm-widget">
           <p class="confirm-title">{{ pitchDialog.title }}</p>
           <p class="confirm-message">{{ pitchDialog.message }}</p>
-          <div class="confirm-actions">
-            <button class="action-button small-button" @click="closePitchDialog">{{ pitchDialog.buttonLabel }}</button>
-          </div>
-        </div>
-      </div>
 
-      <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)">
-        <div class="confirm-widget">
-          <p class="confirm-title">{{confirmDialog.title }}</p>
-          <p class="confirm-message">{{confirmDialog.message }}</p>
           <div class="confirm-actions">
-            <button class="ghost-button small-button" @click="resolveConfirmDialog(false)">{{ confirmDialog.cancelLabel }}</button>
-            <button class="small-button" :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'" @click="resolveConfirmDialog(true)">
-              {{ confirmDialog.confirmLabel }}
+            <button
+              class="action-button small-button"
+              @click="closePitchDialog"
+            >
+              {{ pitchDialog.buttonLabel }}
             </button>
           </div>
         </div>
       </div>
 
+      <div
+        v-if="showConfirmDialog"
+        class="confirm-overlay"
+        @click.self="resolveConfirmDialog(false)"
+      >
+        <div class="confirm-widget">
+          <p class="confirm-title">{{ confirmDialog.title }}</p>
+          <p class="confirm-message">{{ confirmDialog.message }}</p>
+
+          <div class="confirm-actions">
+            <button
+              class="ghost-button small-button"
+              @click="resolveConfirmDialog(false)"
+            >
+              {{ confirmDialog.cancelLabel }}
+            </button>
+
+            <button
+              class="small-button"
+              :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
+              @click="resolveConfirmDialog(true)"
+            >
+              {{ confirmDialog.confirmLabel }}
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
 
-  <Footer />
+    <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import api from "@/services/api";
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import api from '@/services/api'
 
-import Navbar from "@/components/Navbar.vue";
-import Footer from "@/components/Footer.vue";
-import ButtonsStyle from "@/components/ButtonsStyle.vue";
+import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
+import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
+const route = useRoute()
+const profileId = computed(() => route.params.id || 1)
 
-const route = useRoute();
-const profileId = computed(() =>(route.params.id || 1));
-const contacts = ref([]);
-const search = ref("");
-const filterBy = ref("all");
-const sortBy = ref("");
+const contacts = ref([])
+const search = ref('')
+const sortBy = ref('')
 
-const showForm = ref(false);
-const editMode = ref(false);
-const selectedContact = ref(null);
-const openMenuId = ref(null);
+const showForm = ref(false)
+const editMode = ref(false)
+const selectedContact = ref(null)
+const openMenuId = ref(null)
 
-const elevatorPitch = ref("");
-const savingPitch =ref(false);
-const showPitchDialog = ref(false);
-const showConfirmDialog = ref(false);
+const elevatorPitch = ref('')
+const savingPitch = ref(false)
+const showPitchDialog = ref(false)
+const showConfirmDialog = ref(false)
 
 const confirmDialog = ref({
-  title: "",
-  message: "",
-  confirmLabel: "Confirm",
-  cancelLabel: "Cancel",
-  variant: "default",
-});
-let confirmResolver = null;
+  title: '',
+  message: '',
+  confirmLabel: 'Confirm',
+  cancelLabel: 'Cancel',
+  variant: 'default',
+})
+
+let confirmResolver = null
 
 const pitchDialog = ref({
-  title: "",
-  message: "",
-  buttonLabel: "OK",
-});
+  title: '',
+  message: '',
+  buttonLabel: 'OK',
+})
 
 const form = ref({
   contact_id: null,
-  contact_name: "",
-  company: "",
-  link_url: "",
-  date_met: "",
-  linkedin_url: "",
-});
+  contact_name: '',
+  company: '',
+  progress_notes: '',
+  link_url: '',
+  date_met: '',
+})
 
-/* FETCH */
 const fetchContacts = async () => {
-  const res = await api.get(`/users/${profileId.value}/industry-contacts`);
-  contacts.value = res.data;
-};
+  const res = await api.get(`/users/${profileId.value}/industry-contacts`)
+  contacts.value = res.data
+}
 
 const fetchElevatorPitch = async () => {
-  const res = await api.get(`/profile/${route.params.id}/elevator-pitch`);
-  elevatorPitch.value = res.data.pitch_text || "";
+  const res = await api.get(`/profile/${route.params.id}/elevator-pitch`)
+  elevatorPitch.value = res.data.pitch_text || ''
 }
 
 const saveElevatorPitch = async () => {
-  const trimmedPitch = elevatorPitch.value.trim();
+  const trimmedPitch = elevatorPitch.value.trim()
 
   if (!trimmedPitch) {
-    openPitchDialog("Elevator Pitch", "It's empty. Please enter something first.");
-    return;
+    openPitchDialog(
+      'Elevator Pitch',
+      "It's empty. Please enter something first."
+    )
+    return
   }
 
-  savingPitch.value = true;
+  savingPitch.value = true
 
-  try{
-    await api.put(`/profile/${route.params.id}/elevator-pitch`,{
+  try {
+    await api.put(`/profile/${route.params.id}/elevator-pitch`, {
       pitch_text: trimmedPitch,
-    });
+    })
 
-    openPitchDialog("Saved", "Your elevator pitch has been saved.");
+    openPitchDialog('Saved', 'Your elevator pitch has been saved.')
   } finally {
-    savingPitch.value = false;
+    savingPitch.value = false
   }
-};
+}
 
 onMounted(() => {
-  fetchContacts();
-  fetchElevatorPitch();
-});
+  fetchContacts()
+  fetchElevatorPitch()
+})
 
-/* FILTER */
 const filteredContacts = computed(() => {
   return contacts.value.filter(c =>
-    c.contact_name?.toLowerCase().includes(search.value.toLowerCase())
-  );
-});
+    c.contact_name?.toLowerCase().includes(search.value.toLowerCase()) ||
+    c.company?.toLowerCase().includes(search.value.toLowerCase()) ||
+    c.progress_notes?.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
 
-/* SORT */
 const sortedContacts = computed(() => {
-  let list = [...filteredContacts.value];
+  let list = [...filteredContacts.value]
 
   switch (sortBy.value) {
-    case "name_asc":
-      return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name));
-    case "name_desc":
-      return list.sort((a, b) => b.contact_name.localeCompare(a.contact_name));
-    case "date_desc":
-      return list.sort((a, b) => new Date(b.date_met) - new Date(a.date_met));
-    case "date_asc":
-      return list.sort((a, b) => new Date(a.date_met) - new Date(b.date_met));
+    case 'name_asc':
+      return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name))
+    case 'name_desc':
+      return list.sort((a, b) => b.contact_name.localeCompare(a.contact_name))
+    case 'date_desc':
+      return list.sort((a, b) => new Date(b.date_met) - new Date(a.date_met))
+    case 'date_asc':
+      return list.sort((a, b) => new Date(a.date_met) - new Date(b.date_met))
     default:
-      return list;
+      return list
   }
-});
-
-/* HELPERS */
-
+})
 
 const getAvatar = (name) => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`;
-};
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`
+}
 
 const formatUrl = (url) => {
-  if(!url) return "";
-  return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-};
+  if (!url) return ''
+
+  return url.startsWith('http://') || url.startsWith('https://')
+    ? url
+    : `https://${url}`
+}
 
 const openPitchDialog = (title, message) => {
   pitchDialog.value = {
     title,
     message,
-    buttonLabel: "OK",
-  };
-  showPitchDialog.value = true;
-};
+    buttonLabel: 'OK',
+  }
+
+  showPitchDialog.value = true
+}
 
 const closePitchDialog = () => {
-  showPitchDialog.value = false;
-};
+  showPitchDialog.value = false
+}
 
 const openConfirmDialog = (options) => {
   confirmDialog.value = {
-    title: "",
-    message: "",
-    confirmLabel: "Confirm",
-    cancelLabel: "Cancel",
-    variant: "default",
+    title: '',
+    message: '',
+    confirmLabel: 'Confirm',
+    cancelLabel: 'Cancel',
+    variant: 'default',
     ...options,
-  };
+  }
 
-  showConfirmDialog.value = true;
+  showConfirmDialog.value = true
 
   return new Promise((resolve) => {
-    confirmResolver = resolve;
-  });
-};
+    confirmResolver = resolve
+  })
+}
 
 const resolveConfirmDialog = (result) => {
-  showConfirmDialog.value = false;
+  showConfirmDialog.value = false
 
-  if(confirmResolver) {
-    confirmResolver(result);
-    confirmResolver = null;
+  if (confirmResolver) {
+    confirmResolver(result)
+    confirmResolver = null
   }
-};
-/* ACTIONS */
+}
+
 const toggleMenu = (id) => {
-  openMenuId.value = openMenuId.value === id ? null : id;
-};
+  openMenuId.value = openMenuId.value === id ? null : id
+}
 
 const openDetails = (c) => {
-  selectedContact.value = c;
-};
+  selectedContact.value = c
+}
 
 const openForm = () => {
-  editMode.value = false;
+  editMode.value = false
+
   form.value = {
     contact_id: null,
-    contact_name: "",
-    company: "",
-    link_url: "",
-    date_met: "",
-    linkedin_url: "",
-  };
-  showForm.value = true;
-};
+    contact_name: '',
+    company: '',
+    progress_notes: '',
+    link_url: '',
+    date_met: '',
+  }
+
+  showForm.value = true
+}
 
 const closeForm = () => {
-  showForm.value = false;
-};
+  showForm.value = false
+}
 
 const saveContact = async () => {
-  const payload = { ...form.value };
-  const trimmedLink = (payload.link_url || "").trim();
+  const payload = { ...form.value }
+  const trimmedLinkedIn = (payload.link_url || '').trim()
 
-  if(trimmedLink) {
+  if (trimmedLinkedIn) {
     try {
-      const parsedUrl = new URL(trimmedLink);
+      let normalizedUrl = trimmedLinkedIn
 
-      if((parsedUrl.protocol !== "http:" && parsedUrl.protocol !=="https:") || !parsedUrl.hostname.includes(".")){
-        throw new Error("Invalid link");
-      }
+if (
+  !normalizedUrl.startsWith('http://') &&
+  !normalizedUrl.startsWith('https://')
+) {
+  normalizedUrl = `https://${normalizedUrl}`
+}
 
-      payload.link_url = trimmedLink;
+const parsedUrl = new URL(normalizedUrl)
+
+if (!parsedUrl.hostname.includes('.')) {
+  throw new Error('Invalid LinkedIn URL')
+}
+
+payload.link_url = normalizedUrl
     } catch {
-      openPitchDialog("Invalid Link", "This is not a valid link. Please enter a full link, for example: https://linkedin.com/in/your-name");
-      return;
+      openPitchDialog(
+        'Invalid LinkedIn URL',
+        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
+      )
+      return
     }
   }
 
-  if(editMode.value) {
+  if (editMode.value) {
     const shouldUpdate = await openConfirmDialog({
-      title: "Confirm update",
-      message: "Save these changes to this contact?",
-      confirmLabel: "Update",
-      cancelLabel: "Undo",
-    });
+      title: 'Confirm update',
+      message: 'Save these changes to this contact?',
+      confirmLabel: 'Update',
+      cancelLabel: 'Undo',
+    })
 
-    if(!shouldUpdate) {
-      return;
+    if (!shouldUpdate) {
+      return
     }
   }
 
   try {
-    if(editMode.value) {
-      await api.put(`/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,payload);
+    if (editMode.value) {
+      await api.put(
+        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
+        payload
+      )
     } else {
-      await api.post(`/users/${profileId.value}/industry-contacts`,payload);
+      await api.post(`/users/${profileId.value}/industry-contacts`, payload)
     }
 
-    closeForm();
-    await fetchContacts();
+    closeForm()
+    await fetchContacts()
   } catch (error) {
-    const linkErrors = error.response?.data?.errors?.link_url;
+    const linkErrors = error.response?.data?.errors?.link_url
 
     if (linkErrors?.length) {
-      openPitchDialog("Invalid Link", "This is not a valid link. Please enter a full link, for example https://linkedin.com/in/your-name");
-      return;
+      openPitchDialog(
+        'Invalid LinkedIn URL',
+        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
+      )
+      return
     }
 
-    console.error("Save contact failed:", error);
+    console.error('Save contact failed:', error)
 
-    if(error.response) {
-      openPitchDialog("Save Failed", "Something went wrong while saving this contact.");
+    if (error.response) {
+      openPitchDialog(
+        'Save Failed',
+        'Something went wrong while saving this contact.'
+      )
     } else {
-      openPitchDialog("Save Failed", "Please check your connection and try again.");
+      openPitchDialog(
+        'Save Failed',
+        'Please check your connection and try again.'
+      )
     }
   }
-};
-
+}
 
 const editContact = (c) => {
-  selectedContact.value = null;
-  openMenuId.value = null;
+  selectedContact.value = null
+  openMenuId.value = null
+  editMode.value = true
 
-  editMode.value = true;
-  form.value = { ...c };
-  showForm.value = true;
-};
+  form.value = {
+    contact_id: c.contact_id,
+    contact_name: c.contact_name || '',
+    company: c.company || '',
+    progress_notes: c.progress_notes || '',
+    link_url: c.link_url || '',
+    date_met: c.date_met || '',
+  }
+
+  showForm.value = true
+}
 
 const deleteContact = async (id) => {
   const shouldDelete = await openConfirmDialog({
-    title: "Confirm delete",
-    message: "Delete this contact?",
-    confirmLabel: "Delete",
-    cancelLabel: "Keep",
-    variant: "danger",
-  });
+    title: 'Confirm delete',
+    message: 'Delete this contact?',
+    confirmLabel: 'Delete',
+    cancelLabel: 'Keep',
+    variant: 'danger',
+  })
 
-  if(!shouldDelete){
-    return;
+  if (!shouldDelete) {
+    return
   }
 
-  await api.delete(`/users/${profileId.value}/industry-contacts/${id}`);
-  selectedContact.value = null;
-  openMenuId.value = null;
-  fetchContacts();
-};
+  await api.delete(`/users/${profileId.value}/industry-contacts/${id}`)
+
+  selectedContact.value = null
+  openMenuId.value = null
+  fetchContacts()
+}
 </script>
 
 <style scoped>
@@ -455,7 +557,6 @@ const deleteContact = async (id) => {
   min-height: 100vh;
 }
 
-/* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
@@ -468,11 +569,6 @@ const deleteContact = async (id) => {
   gap: 8px;
 }
 
-.linkedin-icon {
-  width: 24px;
-}
-
-/* CONTROLS */
 .controls {
   display: flex;
   gap: 10px;
@@ -494,14 +590,12 @@ const deleteContact = async (id) => {
   font-size: 0.85rem;
 }
 
-/* GRID */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 14px;
 }
 
-/* CARD */
 .contact-card {
   background: white;
   border-radius: 12px;
@@ -511,7 +605,6 @@ const deleteContact = async (id) => {
   box-shadow: 0 3px 12px rgba(0,0,0,0.05);
 }
 
-/* MENU */
 .menu-wrapper {
   position: absolute;
   top: 8px;
@@ -525,7 +618,6 @@ const deleteContact = async (id) => {
   cursor: pointer;
 }
 
-/* DROPDOWN */
 .dropdown {
   position: absolute;
   right: 0;
@@ -535,7 +627,6 @@ const deleteContact = async (id) => {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* CARD CONTENT */
 .card-top {
   display: flex;
   gap: 10px;
@@ -558,13 +649,6 @@ const deleteContact = async (id) => {
   color: #777;
 }
 
-.linkedin-link {
-  font-size: 0.7rem;
-  color: #0a66c2;
-  text-decoration: none;
-}
-
-/* MODAL */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -593,6 +677,22 @@ const deleteContact = async (id) => {
 .btn-row {
   display: flex;
   gap: 10px;
+}
+
+.notes-title {
+  margin-top: 14px;
+  margin-bottom: 6px;
+  color: #24364b;
+}
+
+.notes-body {
+  background: #f8fafc;
+  border: 1px solid #dbe4ee;
+  border-radius: 10px;
+  padding: 12px;
+  line-height: 1.6;
+  color: #44576b;
+  white-space: pre-wrap;
 }
 
 .networking-switch {
@@ -625,7 +725,6 @@ const deleteContact = async (id) => {
   margin-bottom: 20px;
   width: 100%;
   box-sizing: border-box;
-
 }
 
 .pitch-label {
@@ -635,7 +734,7 @@ const deleteContact = async (id) => {
   color: #24364b;
 }
 
-.pitch-textarea{
+.pitch-textarea {
   width: 100%;
   min-height: 120px;
   border: 1px solid #cfd8e3;
@@ -646,7 +745,7 @@ const deleteContact = async (id) => {
   line-height: 1.5;
 }
 
-.pitch-actions{
+.pitch-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
@@ -701,7 +800,7 @@ const deleteContact = async (id) => {
   font-weight: 700;
 }
 
-.confirm-message{
+.confirm-message {
   margin: 0;
   color: #4e6577;
   line-height: 1.5;
@@ -730,4 +829,3 @@ const deleteContact = async (id) => {
   cursor: pointer;
 }
 </style>
-

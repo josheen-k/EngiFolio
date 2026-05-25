@@ -15,13 +15,6 @@
       <div class="controls">
         <input v-model="search" class="search" placeholder="Search students" />
 
-        <select v-model="selectedDegree" class="search">
-          <option value="">All degrees</option>
-          <option v-for="degree in degreeOptions" :key="degree" :value="degree">
-            {{ degree }}
-          </option>
-        </select>
-
         <select v-model="selectedSpecialisation" class="search">
           <option value="">All specialisations</option>
           <option
@@ -33,22 +26,10 @@
           </option>
         </select>
 
-        <!-- <select v-model="selectedIndicator" class="search">
-          <option value="">All indicators</option>
-          <option
-            v-for="indicator in indicatorOptions"
-            :key="indicator.id"
-            :value="indicator.id"
-          >
-            {{ indicator.label }}
-          </option>
-        </select> -->
 
         <select v-model="sortBy" class="search">
           <option value="name">Sort by name</option>
           <option value="entries">Sort by entries submitted</option>
-          <option value="degree">Sort by degree</option>
-          <option value="specialisation">Sort by specialisation</option>
         </select>
       </div>
 
@@ -339,7 +320,6 @@
       </div>
     </main>
 
-    <Footer />
   </div>
 </template>
 

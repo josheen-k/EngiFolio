@@ -4,6 +4,25 @@
 
     <main class="container py-5">
 
+      <!-- Hero -->
+      <section class="dash">
+
+        <p class="eyebrow">
+          Staff Dashboard
+        </p>
+
+        <h1>
+          Welcome Back
+        </h1>
+
+        <p class="subtitle">
+          Review student competency progress, monitor engagement,
+          and provide meaningful feedback across assigned students.
+        </p>
+
+      </section>
+
+      <!-- Dashboard cards -->
       <section class="dashboard-grid">
 
         <router-link
@@ -22,17 +41,21 @@
 
       </section>
 
-      <!-- Recently submitted entries -->
+      <!-- Recent entries -->
       <section class="activity-section">
 
         <div class="activity-card">
 
           <div class="activity-header">
-            <h3>Recent Competency Entries</h3>
+
+            <h3>
+              Recent Competency Entries
+            </h3>
 
             <span class="activity-badge">
               {{ unreadCount }} unread
             </span>
+
           </div>
 
           <div
@@ -55,6 +78,7 @@
             ></div>
 
             <div>
+
               <strong>
                 {{ entry.experience_title }}
               </strong>
@@ -69,6 +93,7 @@
                   entry.indicator?.description
                 }}
               </p>
+
             </div>
 
           </div>
@@ -93,7 +118,6 @@ import StaffNavbar from '@/components/StaffNavbar.vue'
 
 const router = useRouter()
 
-// Temporary hardcoded staff id
 const staffUserId = 4
 
 const students = ref([])
@@ -104,16 +128,15 @@ const readEntries = ref(
 )
 
 const fetchDashboardData = async () => {
+
   try {
 
-    // fetch assigned students
     const studentRes = await api.get(
       `/staff/my-students?staff_id=${staffUserId}`
     )
 
     students.value = studentRes.data
 
-    // fetch competency entries for each student
     const entryRequests = students.value.map(student =>
       api.get(`/competency-entries/${student.profile_id}`)
     )
@@ -153,7 +176,7 @@ const recentEntries = computed(() => {
       (a, b) =>
         new Date(b.created_at) - new Date(a.created_at)
     )
-    .slice(0, 5) // just show the first 5 entries after sorting
+    .slice(0, 5)
 })
 
 const unreadCount = computed(() => {
@@ -164,10 +187,8 @@ const unreadCount = computed(() => {
   ).length
 })
 
-// notification click
 const openEntry = (entry) => {
 
-  // mark as read
   if (!readEntries.value.includes(entry.entry_id)) {
 
     readEntries.value.push(entry.entry_id)
@@ -178,7 +199,6 @@ const openEntry = (entry) => {
     )
   }
 
-  // redirect to assigned students page
   router.push('/staff/students')
 }
 
@@ -191,6 +211,7 @@ onMounted(fetchDashboardData)
   background: #f8f8fb;
 }
 
+/* Hero */
 
 .dash {
   background:
@@ -223,6 +244,7 @@ onMounted(fetchDashboardData)
 }
 
 .subtitle {
+  font-family: 'Maven Pro', sans-serif;
   color: #e5e3ff;
   max-width: 620px;
   margin: 0;
@@ -235,7 +257,7 @@ onMounted(fetchDashboardData)
 .dashboard-grid {
   display: grid;
   grid-template-columns:
-  repeat(auto-fill, minmax(280px, 1fr));  /*repeat the same pattern multiple times, with as many columns */
+    repeat(auto-fill, minmax(280px, 1fr));
   gap: 22px;
   margin-bottom: 34px;
 }
@@ -272,16 +294,20 @@ onMounted(fetchDashboardData)
 }
 
 .dashboard-card h3 {
+  font-family: 'Martel', serif;
   font-size: 1.3rem;
   margin-bottom: 10px;
+  color: #222222;
 }
 
 .dashboard-card p {
+  font-family: 'Maven Pro', sans-serif;
   color: #666;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
 }
 
+/* Activity */
 
 .activity-section {
   margin-top: 12px;
@@ -303,6 +329,7 @@ onMounted(fetchDashboardData)
 }
 
 .activity-header h3 {
+  font-family: 'Martel', serif;
   margin: 0;
 }
 
@@ -313,6 +340,7 @@ onMounted(fetchDashboardData)
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
+  font-family: 'Maven Pro', sans-serif;
 }
 
 .activity-item {
@@ -335,10 +363,16 @@ onMounted(fetchDashboardData)
   flex-shrink: 0;
 }
 
-.activity-item p {
-  margin: 4px 0 0;
+.activity-item strong {
+  font-family: 'Montserrat Alternates', sans-serif;
+  color: #222222;
+}
 
+.activity-item p {
+  font-family: 'Maven Pro', sans-serif;
+  margin: 4px 0 0;
   color: #666;
+  line-height: 1.5;
 }
 
 .clickable {
@@ -352,6 +386,7 @@ onMounted(fetchDashboardData)
 }
 
 .empty {
+  font-family: 'Maven Pro', sans-serif;
   color: #777;
 }
 </style>

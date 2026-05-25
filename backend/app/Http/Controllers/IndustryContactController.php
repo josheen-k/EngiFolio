@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 class IndustryContactController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index($profile)
     {
         $contacts = IndustryContact::with('contactMethods')
@@ -25,6 +22,7 @@ class IndustryContactController extends Controller
                     'profile_id' => $contact->profile_id,
                     'contact_name' => $contact->contact_name,
                     'company' => $contact->company,
+                    'progress_notes' => $contact->progress_notes,
                     'date_met' => $contact->date_met,
                     'link_url' => $link?->method_value,
                 ];
@@ -33,42 +31,35 @@ class IndustryContactController extends Controller
         return response()->json($contacts);
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request, $profile)
     {
-            $validated = $request->validate([
-                'contact_name' => 'required|string|max:100',
-                'company' => 'nullable|string|max:100',
-                'link_url' => 'nullable|url|max:255',
-                'date_met' => 'nullable|date',
+        $validated = $request->validate([
+            'contact_name' => 'required|string|max:100',
+            'company' => 'nullable|string|max:100',
+            'progress_notes' => 'nullable|string',
+            'link_url' => 'nullable|url|max:255',
+            'date_met' => 'nullable|date',
+        ]);
+
+        $contact = IndustryContact::create([
+            'profile_id' => $profile,
+            'contact_name' => $validated['contact_name'],
+            'company' => $validated['company'] ?? null,
+            'progress_notes' => $validated['progress_notes'] ?? null,
+            'date_met' => $validated['date_met'] ?? null,
+        ]);
+
+        if (!empty($validated['link_url'])) {
+            IndustryContactMethod::create([
+                'contact_id' => $contact->contact_id,
+                'method_type' => 'link',
+                'method_value' => $validated['link_url'],
             ]);
+        }
 
-            $contact = IndustryContact::create([
-                'profile_id' => $profile,
-                'contact_name' => $validated['contact_name'],
-                'company' => $validated['company'] ?? null,
-                'date_met' => $validated['date_met'] ?? null,
-            ]);
-
-            if(!empty($validated['link_url'])) {
-                IndustryContactMethod::create([
-                    'contact_id' => $contact->contact_id,
-                    'method_type' => 'link',
-                    'method_value' => $validated['link_url'],
-                ]);
-            }
-
-            return response()->json($contact, 201);
-
+        return response()->json($contact, 201);
     }
 
-
-    /**
-     * Display the specified resource.
-     */
     public function show($profile, IndustryContact $industryContact)
     {
         $industryContact->load('contactMethods');
@@ -80,35 +71,36 @@ class IndustryContactController extends Controller
             'profile_id' => $industryContact->profile_id,
             'contact_name' => $industryContact->contact_name,
             'company' => $industryContact->company,
+            'progress_notes' => $industryContact->progress_notes,
             'date_met' => $industryContact->date_met,
             'link_url' => $link?->method_value,
         ]);
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $profile, IndustryContact $industryContact)
     {
         $validated = $request->validate([
             'contact_name' => 'required|string|max:100',
             'company' => 'nullable|string|max:100',
+            'progress_notes' => 'nullable|string',
             'link_url' => 'nullable|url|max:255',
             'date_met' => 'nullable|date',
-            'linkedin_url' => 'nullable|string|max:500',
         ]);
 
         $industryContact->update([
             'contact_name' => $validated['contact_name'],
             'company' => $validated['company'] ?? null,
+            'progress_notes' => $validated['progress_notes'] ?? null,
             'date_met' => $validated['date_met'] ?? null,
         ]);
 
-        $linkMethod =$industryContact->contactMethods()->where('method_type', 'link')->first();
+        $linkMethod = $industryContact
+            ->contactMethods()
+            ->where('method_type', 'link')
+            ->first();
 
-        if(!empty($validated['link_url'])){
-            if($linkMethod) {
+        if (!empty($validated['link_url'])) {
+            if ($linkMethod) {
                 $linkMethod->update([
                     'method_value' => $validated['link_url'],
                 ]);
@@ -119,7 +111,7 @@ class IndustryContactController extends Controller
                     'method_value' => $validated['link_url'],
                 ]);
             }
-        } elseif ($linkMethod){
+        } elseif ($linkMethod) {
             $linkMethod->delete();
         }
 
@@ -128,14 +120,12 @@ class IndustryContactController extends Controller
             'profile_id' => $industryContact->profile_id,
             'contact_name' => $industryContact->contact_name,
             'company' => $industryContact->company,
+            'progress_notes' => $industryContact->progress_notes,
             'date_met' => $industryContact->date_met,
             'link_url' => $validated['link_url'] ?? null,
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($profile, IndustryContact $industryContact)
     {
         Log::info('Deleting contact with ID: ' . $industryContact->contact_id);
