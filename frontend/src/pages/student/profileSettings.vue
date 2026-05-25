@@ -161,7 +161,6 @@
   const imageFileName = ref('')
   const imageFile = ref(null)
 
-
   // Set up a pop up notification instead of having an alert
   const popUp = ref({ show: false, message: '', type: '' })
 
