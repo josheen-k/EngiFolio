@@ -446,6 +446,7 @@ const showPlanForm = ref(false)
 const editingPlanId = ref(null)
 const savingPlan = ref(false)
 const planFormError = ref('')
+// Goal IDs selected in the create/edit form (synced to plan via PUT .../smart-goals).
 const selectedGoalIds = ref([])
 
 // plan_year is stored as a calendar year (e.g. 2026). Multiple plans per year are allowed.
@@ -527,6 +528,7 @@ const splitList = (value) => {
     .filter(Boolean)
 }
 
+// Read a plan text field; empty/null becomes '' so the template can show "Not added yet."
 const getPlanFieldRaw = (plan, field) => {
   const v = plan[field]
   if (v == null || v === '') {
@@ -535,9 +537,11 @@ const getPlanFieldRaw = (plan, field) => {
   return String(v).trim()
 }
 
+// Employers column: list for bullets, joined string for preview/modal.
 const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
 const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
 
+// "View more" modal for long table/card text.
 const showTextModal = ref(false)
 const textModalTitle = ref('')
 const textModalContent = ref('')
@@ -545,6 +549,7 @@ const TEXT_PREVIEW_LIMIT = 90
 
 const normalizeDisplayText = (value) => String(value ?? '').trim()
 const hasLongText = (value) => normalizeDisplayText(value).length > TEXT_PREVIEW_LIMIT
+// Truncate with "..." when over TEXT_PREVIEW_LIMIT; used before openTextModal for full text.
 const getTextPreview = (value) => {
   const text = normalizeDisplayText(value)
   if (text.length <= TEXT_PREVIEW_LIMIT) {
@@ -552,6 +557,8 @@ const getTextPreview = (value) => {
   }
   return `${text.slice(0, TEXT_PREVIEW_LIMIT).trimEnd()}...`
 }
+
+// Show full field text when user clicks "View more".
 const openTextModal = (title, content) => {
   textModalTitle.value = title
   textModalContent.value = normalizeDisplayText(content)
@@ -563,8 +570,11 @@ const closeTextModal = () => {
   textModalContent.value = ''
 }
 
+// API may return snake_case or camelCase relation names.
 const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
 const getGoalStatus = (goal) => goal.status?.status || 'No status'
+
+// Top toggle highlight (this page is always CAREER_PLAN; SMART_GOALS uses GoalsPage).
 const currTab = computed(() =>
   route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
 )
@@ -578,6 +588,8 @@ const goToCareerPlan = () => {
     router.push(`/student/career-development/${route.params.id}`)
   }
 }
+
+// Multi-select SMART goals in the plan form (click card to toggle).
 const isGoalSelected = (goalId) => selectedGoalIds.value.includes(goalId)
 const toggleGoalSelection = (goalId) => {
   selectedGoalIds.value = isGoalSelected(goalId)
@@ -599,6 +611,7 @@ const openCreatePlanForm = () => {
   showPlanForm.value = true
 }
 
+// Pre-fill form and linked goal IDs from the plan being edited.
 const openEditPlanForm = (plan) => {
   editingPlanId.value = plan.plan_id
   planForm.value = {
@@ -710,6 +723,7 @@ const savePlan = async () => {
   }
 }
 
+// Remove plan row; linked goals stay in DB but lose this plan association.
 const deletePlan = async (plan) => {
   const confirmed = window.confirm(`Delete ${formatPlanYearLabel(plan.plan_year)} career plan? This cannot be undone.`)
   if (!confirmed) {
@@ -726,8 +740,8 @@ const deletePlan = async (plan) => {
 }
 
 onMounted(() => {
-  fetchCareerPlans()
-  fetchSmartGoals()
+  fetchCareerPlans() // list + nested goals for table/cards
+  fetchSmartGoals() // full goal list for link picker in create/edit form
 })
 </script>
 
