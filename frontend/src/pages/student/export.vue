@@ -345,6 +345,4 @@
     background: #db7979;
     color: #fff;
   }
-
-  
 </style>

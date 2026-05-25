@@ -114,9 +114,9 @@ class StudentProfileController extends Controller
             'industryContacts',
             'industryContacts.contactMethods',
             'careerPlans',
-            'careerPlans.smartGoals',
-            'careerPlans.smartGoals.actionSteps',
-            'careerPlans.smartGoals.status',
+            'smartGoals',
+            'smartGoals.actionSteps',
+            'smartGoals.status',
             'achievementCerts',
             'attainmentCerts', 
         ])->findOrFail($id);

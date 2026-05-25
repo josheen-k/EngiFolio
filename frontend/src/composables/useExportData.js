@@ -164,58 +164,57 @@ export function useExportData(userId) {
 
     // Fetches the goals and adds the contents to the file
     const addGoals = async () => { 
-      try {
-        const response = await api.get(`/career-plans/${userId}`);
-        const data = response.data;
-        plan.value = Array.isArray(data) ? data[0] : data;
+    try {
+      const response = await api.get(`/user/smart-goals/${userId}`);
+      const goals = response.data;
 
-        const formattedGoals = ['"----- Goals -----"']
-        
-        const goalsHeader = [
-          `"Goal Description"`,
-          `"Timeline"`,
-          `"Progress Notes"`,
-          `"Learnings"`,
-          `"Start Date"`,
-          `"End Date"`,
-          `"Completion Date"`,
-          `"Completion Notes"`,
-          `"Steps"`,
-        ].join(",");
+      const formattedGoals = ['"----- Goals -----"']
+      
+      const goalsHeader = [
+        `"Goal Description"`,
+        `"Timeline"`,
+        `"Progress Notes"`,
+        `"Learnings"`,
+        `"Start Date"`,
+        `"End Date"`,
+        `"Completion Date"`,
+        `"Completion Notes"`,
+        `"Status"`,
+      ].join(",");
 
-        formattedGoals.push(goalsHeader);
+      formattedGoals.push(goalsHeader);
 
-        if (plan.value.smart_goals && plan.value.smart_goals.length > 0) {
-          plan.value.smart_goals.forEach(goal => {
-            const row = [
-              `"${goal.goal_description}"`,
-              `"${goal.timeline || ''}"`,
-              `"${goal.progress_notes || ''}"`,
-              `"${goal.learnings || ''}"`,
-              `"${goal.start_date || ''}"`,
-              `"${goal.end_date || ''}"`,
-              `"${goal.completion_date || ''}"`,
-              `"${goal.completion_notes || ''}"`,
-              `"${goal.status.status || ''}"`,
-            ].join(",");
+      if (goals && goals.length > 0) {
+        goals.forEach(goal => {
+          const row = [
+            `"${goal.goal_description}"`,
+            `"${goal.timeline || ''}"`,
+            `"${goal.progress_notes || ''}"`,
+            `"${goal.learnings || ''}"`,
+            `"${goal.start_date || ''}"`,
+            `"${goal.end_date || ''}"`,
+            `"${goal.completion_date || ''}"`,
+            `"${goal.completion_notes || ''}"`,
+            `"${goal.status?.status || ''}"`,
+          ].join(",");
 
-            formattedGoals.push(row);
+          formattedGoals.push(row);
 
-            if (goal.action_steps && goal.action_steps.length > 0) {
-              goal.action_steps.forEach(step => {
+          if (goal.action_steps && goal.action_steps.length > 0) {
+            goal.action_steps.forEach(step => {
               formattedGoals.push(`"","","","","","","","","${step.step_order}. ${step.step_description}"`);
-          });
-        }
-          });
+            });
+          }
+        });
+      }
 
-        }
+      formattedGoals.push('\n\n');
+      return formattedGoals.join('\n');
+    } catch (error) {
+      console.error("Error while fetching user goals:", error);
+      return '';
+    } 
+  };
 
-        formattedGoals.push('\n\n');
-        return formattedGoals.join('\n');
-      } catch (error) {
-        console.error("Error while fetching user goals:", error);
-      } 
-    };
-
-    return { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addGoals }
+  return { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addGoals }
 }
