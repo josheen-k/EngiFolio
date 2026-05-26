@@ -1,6 +1,6 @@
 <template>
   <div class="admin-page">
-    <Navbar />
+    <AdminNavbar />
 
     <main class="container-xl py-4 px-4 px-md-5 admin-main">
       <section class="page-header mb-4">
@@ -182,11 +182,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '@/components/Navbar.vue'
 import api from '@/services/api'
 import profileIcon from '@/assets/default.jpg'
 import goalsIcon from '@/assets/edit.png'
 import deleteIcon from '@/assets/delete.png'
+import AdminNavbar from '@/components/AdminNavbar.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
