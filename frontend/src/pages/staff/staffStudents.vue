@@ -406,6 +406,7 @@ const fetchStudents = async () => {
   }
 }
 
+// Entries count for colour coding
 const getEntryCount = (student) => {
   return student.entries?.length || 0
 }
@@ -452,31 +453,18 @@ const filteredStudents = computed(() => {
       !selectedSpecialisation.value ||
       student.specialisation === selectedSpecialisation.value
 
-    const matchesIndicator =
-      !selectedIndicator.value ||
-      student.entries?.some(entry =>
-        String(entry.indicator_id) === String(selectedIndicator.value)
-      )
 
     return (
       matchesSearch &&
       matchesDegree &&
-      matchesSpecialisation &&
-      matchesIndicator
+      matchesSpecialisation
     )
   })
+
 
   result = [...result].sort((a, b) => {
     if (sortBy.value === 'entries') {
       return getEntryCount(b) - getEntryCount(a)
-    }
-
-    if (sortBy.value === 'degree') {
-      return (a.degree_title || '').localeCompare(b.degree_title || '')
-    }
-
-    if (sortBy.value === 'specialisation') {
-      return (a.specialisation || '').localeCompare(b.specialisation || '')
     }
 
     return `${a.first_name} ${a.last_name}`.localeCompare(
@@ -529,6 +517,8 @@ const fetchEntries = async () => {
   }
 }
 
+
+// filtered entries after sorting
 const filteredEntries = computed(() => {
   return entries.value
 })
@@ -568,6 +558,8 @@ const closeFeedback = () => {
   feedbackError.value = ''
   feedbackSuccess.value = ''
 }
+
+// for feedback status, pending or has been provided
 const hasFeedback = (entry) => {
   return entry.competency_feedback?.length > 0
 }

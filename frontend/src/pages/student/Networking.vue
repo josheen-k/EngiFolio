@@ -59,7 +59,6 @@
         <select v-model="sortBy" class="sort">
           <option disabled value="">Sort</option>
           <option value="name_asc">A-Z</option>
-          <option value="name_desc">Z-A</option>
           <option value="date_desc">Newest</option>
           <option value="date_asc">Oldest</option>
         </select>
@@ -231,7 +230,6 @@
       </div>
     </section>
 
-    <Footer />
   </div>
 </template>
 
@@ -339,8 +337,6 @@ const sortedContacts = computed(() => {
   switch (sortBy.value) {
     case 'name_asc':
       return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name))
-    case 'name_desc':
-      return list.sort((a, b) => b.contact_name.localeCompare(a.contact_name))
     case 'date_desc':
       return list.sort((a, b) => new Date(b.date_met) - new Date(a.date_met))
     case 'date_asc':
