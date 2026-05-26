@@ -16,6 +16,7 @@ class IndustryContact extends Model
         'profile_id',
         'contact_name',
         'company',
+        'progress_notes',
         'date_met',
         'linkedin_url',
     ];
