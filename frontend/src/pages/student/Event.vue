@@ -450,15 +450,15 @@
         </div>
       </div>
     </div>
-    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
-      {{ popUp.message }}
-    </div>
   </main>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
-import axios from 'axios'
+import api from "@/services/api";
 import Navbar from '@/components/Navbar.vue'
 import { useRoute } from 'vue-router'
 
@@ -480,7 +480,7 @@ const monthOptions = [
   'November',
   'December',
 ]
-const apiBaseUrl = 'http://127.0.0.1:8000/api'
+
 const YEAR_VIEW_START = 1900
 const YEAR_VIEW_END = 2100
 
@@ -628,6 +628,14 @@ function clearCommentEditor(eventId) {
   commentEditSnapshots.value[eventId] = null
 }
 
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
 function openConfirmDialog(options) {
   confirmDialog.value = {
     ...createConfirmDialog(),
@@ -650,12 +658,12 @@ function resolveConfirmDialog(result) {
 }
 
 const fetchEvents = async () => {
-  const response = await axios.get(`${apiBaseUrl}/networking-events`)
+  const response = await api.get(`/networking-events`)
   events.value = response.data
 }
 
 const fetchContacts = async () => {
-  const response = await axios.get(`${apiBaseUrl}/users/${route.params.id}/industry-contacts`)
+  const response = await api.get(`/users/${route.params.id}/industry-contacts`)
   contacts.value = response.data
 }
 
@@ -674,9 +682,7 @@ onMounted(async () => {
 })
 
 const fetchElevatorPitch = async() => {
-  const response = await axios.get(
-    `${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`
-  )
+  const response = await api.get(`/profile/${route.params.id}/elevator-pitch`)
   elevatorPitch.value = response.data.pitch_text || ''
 }
 
@@ -689,20 +695,12 @@ const saveElevatorPitch = async() => {
   }
   savingPitch.value = true
   try {
-    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
+    await api.put(`/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
 
     showPopUp("Your elevator pitch has been saved.", "success");
   } finally {
     savingPitch.value = false
   }
-}
-
-// Set up a pop up notification instead of having an alert
-const popUp = ref({ show: false, message: '', type: '' })
-
-const showPopUp = (message, type) => {
-  popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, 3000)
 }
 
 
@@ -922,9 +920,21 @@ async function addEvent() {
   }
 
   if (isUpdate) {
-    await axios.put(`${apiBaseUrl}/networking-events/${editingEventId.value}`, payload)
+    try {
+      await api.put(`/networking-events/${editingEventId.value}`, payload)
+      showPopUp("Event successfully updated.", "success");
+    } catch {
+      showPopUp("Error saving event.", "error");
+      return
+    }
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events`, payload)
+    try {
+      await api.post(`/networking-events`, payload)
+      showPopUp("Event successfully added.", "success");
+    } catch {
+      showPopUp("Error adding event.", "error");
+      return
+    }
   }
 
   const savedDate = newEvent.value.date
@@ -966,7 +976,7 @@ async function deleteEvent(id) {
     return
   }
 
-  await axios.delete(`${apiBaseUrl}/networking-events/${id}`)
+  await api.delete(`/networking-events/${id}`)
   await fetchEvents()
 
   if (selectedDate.value && !selectedDateEvents.value.length) {
@@ -1001,11 +1011,11 @@ async function submitQuestion(eventId) {
       return
     }
 
-    await axios.put(`${apiBaseUrl}/questions/${editingId}`, {
+    await api.put(`/questions/${editingId}`, {
       question: questionText,
     })
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events/${eventId}/questions`, {
+    await api.post(`/networking-events/${eventId}/questions`, {
       question: questionText,
     })
   }
@@ -1027,7 +1037,7 @@ async function deleteQuestion(eventId, questionId) {
     return
   }
 
-  await axios.delete(`${apiBaseUrl}/questions/${questionId}`)
+  await api.delete(`/questions/${questionId}`)
   await fetchEvents()
 
   if (editingQuestionIds.value[eventId] === questionId) {
@@ -1099,13 +1109,13 @@ async function submitComment(eventId) {
   }
 
   if(editingId){
-    await axios.post(`${apiBaseUrl}/comments/${editingId}?_method=PUT`, formData, {
+    await api.post(`/comments/${editingId}?_method=PUT`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events/${eventId}/comments`, formData, {
+    await api.post(`/networking-events/${eventId}/comments`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -1128,7 +1138,7 @@ async function deleteComment(eventId, commentId) {
     return
   }
 
-  await axios.delete(`${apiBaseUrl}/comments/${commentId}`)
+  await api.delete(`/comments/${commentId}`)
   await fetchEvents()
 
   if (editingCommentIds.value[eventId] === commentId) {
@@ -2081,6 +2091,7 @@ function goToToday() {
 
 .popUp-msg {
   position: fixed;
+  z-index: 9999;
   top: 5rem;   
   left: 0;
   right: 0;

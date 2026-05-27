@@ -5,7 +5,6 @@ import StudentDashboard from '@/pages/student/Dashboard.vue'
 import StudentProfile from '@/pages/student/profile.vue'
 import ProfileSettings from '@/pages/student/profileSettings.vue'
 import EACompetency from '@/pages/student/eaCompetency.vue'
-import CareerPlanning from '@/pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
 import IndustryContacts from '@/pages/student/IndustryContacts.vue'
 import Networking from '@/pages/student/Networking.vue'
@@ -49,11 +48,6 @@ const routes = [
     path: '/student/career-development/:id',
     name: 'careerDevelopment',
     component: CareerDevelopment
-  },
-  {
-    path: '/student/career-planning/:id',
-    name: 'careerPlanning',
-    component: CareerPlanning
   },
   {
     path: '/student/eaCompetency/:id',
