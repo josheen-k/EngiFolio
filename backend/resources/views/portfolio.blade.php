@@ -14,23 +14,23 @@
 	@endif
 
 	{{-- Show achievement certificates if selected --}}
-	@if(!empty($selections['certifications']) && $profile->achievementCerts->isNotEmpty())
+	@if(!empty($selections['certifications']))	
 		@include('sections.achievement-certs', ['profile' => $profile])
-		@include('sections.attainment-certs', ['profile' => $profile])
+		@include('sections.attainment-certs', ['profile' => $profile])			
 	@endif
 
-	{{-- Check if competencies option is selected and if there are competencies to add --}}
-	@if(!empty($selections['competencies']) && $profile->competencyEntries->isNotEmpty())
+	{{-- Check if competencies option is selected --}}
+	@if(!empty($selections['competencies']))
 		@include('sections.competencies', ['profile' => $profile])
 	@endif
 
-	{{-- Check if networking is selected and contains industry contacts --}}
-	@if(!empty($selections['networking']) && $profile->industryContacts->isNotEmpty())
+	{{-- Check if networking is selected --}}
+	@if(!empty($selections['networking']))
 		@include('sections.networking', ['profile' => $profile])
 	@endif
 
 	{{-- Check if goals and plans is selected and contains goals --}}
-	@if(!empty($selections['goals']) && $profile->smartGoals->isNotEmpty())
+	@if(!empty($selections['goals']))
 		@include('sections.career-plans', ['profile' => $profile])
     	@include('sections.goals', ['profile' => $profile])
 	@endif

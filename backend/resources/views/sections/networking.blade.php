@@ -1,5 +1,6 @@
 <div class="section">
 	<h2>Industry Contacts & Networking</h2>
+	@if ($profile->industryContacts->isNotEmpty())
 	<table>
 			<thead>
 				<tr>
@@ -26,4 +27,7 @@
 			@endforeach
 		</tbody>
 	</table>
+	@else
+		<p>No contacts to show.</p>
+	@endif
 </div>

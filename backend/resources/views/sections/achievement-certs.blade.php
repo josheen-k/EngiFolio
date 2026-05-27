@@ -1,5 +1,6 @@
 <div class="section">
 	<h2>Achievement Certificates</h2>
+	@if ($profile->achievementCerts->isNotEmpty())
 	<table>
 		<thead>
 			<tr>
@@ -18,4 +19,7 @@
 			@endforeach
 		</tbody>
 	</table>
+	@else
+		<p>No achievement certifications to show.</p>
+	@endif
 </div>

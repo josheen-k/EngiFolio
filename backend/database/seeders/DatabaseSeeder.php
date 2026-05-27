@@ -302,6 +302,8 @@ class DatabaseSeeder extends Seeder
 
         DB::table('industry_contact_methods')->insert([
             ['contact_id' => 3, 'method_type' => 'Email', 'method_value' => 'elena.rodriguez@arup.com.au', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5012', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/elena-rodriguez', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 4, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/ksato-mhi', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 5, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5000', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 6, 'method_type' => 'Email', 'method_value' => 'm.aurelius@romanconcrete.it', 'created_at' => now(), 'updated_at' => now()],
