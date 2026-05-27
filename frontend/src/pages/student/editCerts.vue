@@ -154,10 +154,8 @@
     <!--Cancel confirm -->
   <div v-if="showCancelConfirm" class="view-popup" @click.self="showCancelConfirm = false">
     <div class="cancel-box text-center p-4">
-
       <h5 class="fw-bold mb-2 field-label cancel-title">Cancel editing profile?</h5>
       <p class="field-desc mb-4">All profile changes will be lost.</p>
-
       <div class="d-flex gap-2 justify-content-center">
         <button class="btn btn-filter" @click="showCancelConfirm = false">Continue editing</button>
         <button class="btn btn-add rounded-pill px-4" @click="cancel">Exit editing</button>
@@ -296,6 +294,9 @@
 		}
 
 		profile.value.achievement_certs.splice(index, 1);
+
+    // Remove errors on delete
+    errors.value = {}
 	};
 
 	const removeAttCert = (index) => {
@@ -304,6 +305,9 @@
 			attainmentCertsToDelete.value.push(cert.attainment_cert_id);
 		}
 		profile.value.attainment_certs.splice(index, 1);
+
+    // Remove errors on delete
+    errors.value = {}
 	};
 
   // Attempt to make a URL object to test if link is correct

@@ -110,21 +110,21 @@
           <p><b>Date Met:</b> {{ selectedContact.date_met || 'Not specified' }}</p>
 
           <p>
-  <b>LinkedIn:</b>
+          <b>LinkedIn:</b>
 
-  <a
-    v-if="selectedContact.link_url"
-    :href="formatUrl(selectedContact.link_url)"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    View LinkedIn
-  </a>
+          <a
+            v-if="selectedContact.link_url"
+            :href="formatUrl(selectedContact.link_url)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View LinkedIn
+          </a>
 
-  <span v-else>
-    Not added
-  </span>
-</p>
+          <span v-else>
+            Not added
+          </span>
+        </p>
 
           <p class="notes-title"><b>Progress Notes</b></p>
 
@@ -180,27 +180,9 @@
           </div>
         </div>
       </div>
-
-      <div
-        v-if="showPitchDialog"
-        class="confirm-overlay"
-        @click.self="closePitchDialog"
-      >
-        <div class="confirm-widget">
-          <p class="confirm-title">{{ pitchDialog.title }}</p>
-          <p class="confirm-message">{{ pitchDialog.message }}</p>
-
-          <div class="confirm-actions">
-            <button
-              class="action-button small-button"
-              @click="closePitchDialog"
-            >
-              {{ pitchDialog.buttonLabel }}
-            </button>
-          </div>
-        </div>
+      <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+        {{ popUp.message }}
       </div>
-
       <div
         v-if="showConfirmDialog"
         class="confirm-overlay"
@@ -229,7 +211,6 @@
         </div>
       </div>
     </section>
-
   </div>
 </template>
 
@@ -256,8 +237,9 @@ const openMenuId = ref(null)
 
 const elevatorPitch = ref('')
 const savingPitch = ref(false)
-const showPitchDialog = ref(false)
 const showConfirmDialog = ref(false)
+
+const errors = ref({});
 
 const confirmDialog = ref({
   title: '',
@@ -269,12 +251,6 @@ const confirmDialog = ref({
 
 let confirmResolver = null
 
-const pitchDialog = ref({
-  title: '',
-  message: '',
-  buttonLabel: 'OK',
-})
-
 const form = ref({
   contact_id: null,
   contact_name: '',
@@ -283,6 +259,15 @@ const form = ref({
   link_url: '',
   date_met: '',
 })
+
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
 
 const fetchContacts = async () => {
   const res = await api.get(`/users/${profileId.value}/industry-contacts`)
@@ -298,10 +283,7 @@ const saveElevatorPitch = async () => {
   const trimmedPitch = elevatorPitch.value.trim()
 
   if (!trimmedPitch) {
-    openPitchDialog(
-      'Elevator Pitch',
-      "It's empty. Please enter something first."
-    )
+    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
     return
   }
 
@@ -312,7 +294,7 @@ const saveElevatorPitch = async () => {
       pitch_text: trimmedPitch,
     })
 
-    openPitchDialog('Saved', 'Your elevator pitch has been saved.')
+    showPopUp("Your elevator pitch has been saved.", "success");
   } finally {
     savingPitch.value = false
   }
@@ -356,20 +338,6 @@ const formatUrl = (url) => {
   return url.startsWith('http://') || url.startsWith('https://')
     ? url
     : `https://${url}`
-}
-
-const openPitchDialog = (title, message) => {
-  pitchDialog.value = {
-    title,
-    message,
-    buttonLabel: 'OK',
-  }
-
-  showPitchDialog.value = true
-}
-
-const closePitchDialog = () => {
-  showPitchDialog.value = false
 }
 
 const openConfirmDialog = (options) => {
@@ -426,6 +394,11 @@ const closeForm = () => {
 }
 
 const saveContact = async () => {
+  if (!form.value.contact_name.trim()) {
+    showPopUp('Contact name is required.', 'error')
+    return
+  }
+
   const payload = { ...form.value }
   const trimmedLinkedIn = (payload.link_url || '').trim()
 
@@ -433,25 +406,19 @@ const saveContact = async () => {
     try {
       let normalizedUrl = trimmedLinkedIn
 
-if (
-  !normalizedUrl.startsWith('http://') &&
-  !normalizedUrl.startsWith('https://')
-) {
-  normalizedUrl = `https://${normalizedUrl}`
-}
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = `https://${normalizedUrl}`
+      }
 
-const parsedUrl = new URL(normalizedUrl)
+      const parsedUrl = new URL(normalizedUrl)
 
-if (!parsedUrl.hostname.includes('.')) {
-  throw new Error('Invalid LinkedIn URL')
-}
+      if (!parsedUrl.hostname.includes('.')) {
+        throw new Error('Invalid LinkedIn URL')
+      }
 
-payload.link_url = normalizedUrl
+      payload.link_url = normalizedUrl
     } catch {
-      openPitchDialog(
-        'Invalid LinkedIn URL',
-        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
-      )
+      showPopUp('Invalid LinkedIn URL, Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name', 'error')
       return
     }
   }
@@ -471,10 +438,7 @@ payload.link_url = normalizedUrl
 
   try {
     if (editMode.value) {
-      await api.put(
-        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
-        payload
-      )
+      await api.put(`/users/${profileId.value}/industry-contacts/${form.value.contact_id}`, payload)
     } else {
       await api.post(`/users/${profileId.value}/industry-contacts`, payload)
     }
@@ -485,25 +449,16 @@ payload.link_url = normalizedUrl
     const linkErrors = error.response?.data?.errors?.link_url
 
     if (linkErrors?.length) {
-      openPitchDialog(
-        'Invalid LinkedIn URL',
-        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
-      )
+      showPopUp('Invalid LinkedIn URL, Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name', 'error')
       return
     }
 
     console.error('Save contact failed:', error)
 
     if (error.response) {
-      openPitchDialog(
-        'Save Failed',
-        'Something went wrong while saving this contact.'
-      )
+      showPopUp('Save Failed. Something went wrong while saving this contact.', 'error')
     } else {
-      openPitchDialog(
-        'Save Failed',
-        'Please check your connection and try again.'
-      )
+      showPopUp('Save Failed Please check your connection and try again.', 'error')
     }
   }
 }
@@ -824,4 +779,28 @@ const deleteContact = async (id) => {
   border-radius: 999px;
   cursor: pointer;
 }
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
 </style>

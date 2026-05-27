@@ -50,8 +50,6 @@
             {{ creatingUser ? 'Creating...' : 'Create User' }}
           </button>
         </form>
-        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
-        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
       </section>
 
       <section class="panel-card mb-4">
@@ -149,7 +147,7 @@
                       aria-label="Delete user"
                       title="Delete"
                       :disabled="deletingUserId === user.user_id"
-                      @click="deleteUser(user)"
+                      @click="showDeleteConfirm = true, userToDelete = user; "
                     >
                       <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                     </button>
@@ -176,6 +174,21 @@
       -->
     </main>
   </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
+
+  <!--Delete confirm -->
+  <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+    <div class="delete-box text-center p-4">
+      <h5 class="fw-bold mb-2 field-label delete-title">Delete user {{ userToDelete?.username || userToDelete?.email }}? This cannot be undone.</h5>
+
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
+        <button class="btn btn-add rounded-pill px-4" @click="deleteUser(userToDelete); showDeleteConfirm = false">Delete</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 
@@ -195,8 +208,8 @@ const loading = ref(false)
 const loadError = ref('')
 const creatingUser = ref(false)
 const deletingUserId = ref(null)
-const actionError = ref('')
-const actionSuccess = ref('')
+const userToDelete = ref(null)
+const showDeleteConfirm = ref(false)
 
 const newUser = ref({
   // Role mapping in this project: 1 = Admin, 2 = Staff, 3 = Student.
@@ -224,6 +237,14 @@ const filteredUsers = computed(() => {
 const totalUsers = computed(() => stats.value.totalUsers)
 const totalGoals = computed(() => stats.value.totalGoals)
 const totalCompletedGoals = computed(() => stats.value.totalCompletedGoals)
+
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
 
 const fetchUsersOverview = async () => {
   try {
@@ -296,16 +317,14 @@ const resetCreateForm = () => {
 const createUser = async () => {
   try {
     creatingUser.value = true
-    actionError.value = ''
-    actionSuccess.value = ''
     // Backend expects role_id, names, email, and plaintext password for hashing server-side.
     await api.post('/admin/users', newUser.value)
-    actionSuccess.value = 'User created successfully.'
+    showPopUp("User created successfully.", "success")
     resetCreateForm()
     await fetchUsersOverview()
   } catch (error) {
     console.error('Failed to create user:', error)
-    actionError.value = error.response?.data?.message || 'Failed to create user'
+    showPopUp("Failed to create user", "error")
   } finally {
     creatingUser.value = false
   }
@@ -332,7 +351,7 @@ const escapeCsvCell = (value) => {
 
 const exportUsersCsv = () => {
   if (users.value.length === 0) {
-    alert('No users to export.')
+    showPopUp('No users to export.', 'error')
     return
   }
 
@@ -390,12 +409,12 @@ const exportUsersCsv = () => {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 
-  alert('Downloading exported data')
+  showPopUp('Downloading exported data', 'success')
 }
 
 const exportUsersPdf = async () => {
   if (users.value.length === 0) {
-    alert('No users to export.')
+    showPopUp('No users to export.', 'error')
     return
   }
 
@@ -422,30 +441,22 @@ const exportUsersPdf = async () => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    alert('PDF downloaded successfully')
+    showPopUp('PDF downloaded successfully', 'success')
   } catch (error) {
     console.error('Failed to export user management PDF:', error)
-    alert('Error generating the PDF.')
+    showPopUp('Error generating the PDF.', 'error')
   }
 }
 
 const deleteUser = async (user) => {
-  // Simple confirmation guard for a destructive operation.
-  const confirmed = window.confirm(`Delete user ${user.username || user.email}? This cannot be undone.`)
-  if (!confirmed) {
-    return
-  }
-
   try {
     deletingUserId.value = user.user_id
-    actionError.value = ''
-    actionSuccess.value = ''
     await api.delete(`/admin/users/${user.user_id}`)
-    actionSuccess.value = 'User deleted successfully.'
+    showPopUp("User deleted successfully.", "success")
     await fetchUsersOverview()
   } catch (error) {
     console.error('Failed to delete user:', error)
-    actionError.value = error.response?.data?.message || 'Failed to delete user'
+    showPopUp("Failed to delete user", "error")
   } finally {
     deletingUserId.value = null
   }
@@ -772,6 +783,73 @@ const deleteUser = async (user) => {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
 }
+
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.delete-box .btn-filter,
+.delete-box .btn-add {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.delete-box .btn-add {
+  background: #555555;
+  color: #ffffff;
+}
+
+.delete-box .btn-add:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.delete-title {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1.1rem;
+  color: #222222;
+}
+
 
 @media (max-width: 992px) {
   .page-title {
