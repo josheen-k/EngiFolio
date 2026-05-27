@@ -1039,5 +1039,43 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now()
             ],
         ]);
+
+        DB::table('networking_event_questions')->insert([
+            ['event_id' => 1, 'question_order' => 1, 'question_text' => 'What has been the biggest shift in sustainable infrastructure practice you have seen in the last five years?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 1, 'question_order' => 2, 'question_text' => 'How do you approach balancing budget constraints with sustainable design outcomes?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 2, 'question_order' => 1, 'question_text' => 'What does your graduate program look like and what skills are you prioritising this year?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 2, 'question_order' => 2, 'question_text' => 'What differentiates a strong graduate application from an average one?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 2, 'question_order' => 3, 'question_text' => 'Are there opportunities for mechanical engineering graduates in your energy division?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 3, 'question_order' => 1, 'question_text' => 'What are the current limitations of machine learning in predictive maintenance applications?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 3, 'question_order' => 2, 'question_text' => 'How do you validate a predictive model before deploying it on critical infrastructure?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 5, 'question_order' => 1, 'question_text' => 'What software stack does Arup typically use for digital twin development?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 5, 'question_order' => 2, 'question_text' => 'How do you handle data accuracy and sensor drift in long-running digital twin models?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 6, 'question_order' => 1, 'question_text' => 'What are the main engineering challenges in scaling hydrogen production in South Australia?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 6, 'question_order' => 2, 'question_text' => 'How does the Spencer Gulf project compare to international hydrogen hubs in terms of timeline?', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('competency_evidences')->insert([
+            ['entry_id' => 1, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/bridge_project_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 1, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/bridge_cad_model.png', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 2, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/wiring_diagram.png', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 3, 'evidence_type' => 'url', 'evidence_value' => 'https://github.com/alex-smith/csv-automation', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 3, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/python_script_output.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 4, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/robotics_team_photo.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 4, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/robotics_meeting_minutes.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 5, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/carbon_audit_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 7, 'evidence_type' => 'url', 'evidence_value' => 'https://linkedin.com/in/alex-smith', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 8, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/pid_lab_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 8, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/pid_oscillation_plot.png', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 9, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/challenger_case_study.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 12, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/port_adelaide_site.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 13, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/solar_array_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 13, 'evidence_type' => 'url', 'evidence_value' => 'https://alex-eng.com/solar-report', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 15, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/risk_register.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 17, 'evidence_type' => 'url', 'evidence_value' => 'https://github.com/alex-smith/git-workshop', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 20, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/steel_bridge_fem.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 23, 'evidence_type' => 'url', 'evidence_value' => 'https://github.com/samuel-chen/aws-deploy', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 25, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/recycled_concrete_research.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 25, 'evidence_type' => 'url', 'evidence_value' => 'https://doi.org/10.1016/j.conbuildmat.2024.01.001', 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 }

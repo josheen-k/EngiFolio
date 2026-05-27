@@ -1,9 +1,5 @@
 // https://dbdiagram.io/home
 
-// =====================================================
-// ENGINEERING PORTFOLIO WEB APPLICATION
-// =====================================================
-
 // -----------------------------------------------------
 // CHANGE LOG
 // -----------------------------------------------------
@@ -173,7 +169,7 @@ Table career_development_plans {
 // Stores SMART goals under a specific career plan
 Table smart_goals {
   goal_id bigint [pk, increment]
-  plan_id bigint [not null, ref: > career_development_plans.plan_id, note: 'On delete: cascade']
+  profile_id bigint [not null, ref: > student_profiles.profile_id, note: 'On delete: cascade']
   goal_description text [not null]
   timeline text
   progress_notes text
@@ -185,6 +181,17 @@ Table smart_goals {
   goal_status_id bigint [ref: > goal_statuses.goal_status_id, note: 'On delete: restrict']
   created_at datetime [not null]
   updated_at datetime [not null]
+}
+
+Table career_development_plan_smart_goal {
+  plan_id bigint [not null, ref: > career_development_plans.plan_id, note: 'On delete: cascade']
+  goal_id bigint [not null, ref: > smart_goals.goal_id, note: 'On delete: cascade']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    (plan_id, goal_id) [unique]
+  }
 }
 
 // Store the possible selections for goal_statuus
@@ -342,7 +349,7 @@ Table competency_entry_statuses {
 Table competency_evidence {
   evidence_id bigint [pk, increment]
   entry_id bigint [not null, ref: > competency_entries.entry_id, note: 'On delete: cascade']
-  evidence_type_id varchar(15) [not null]
+  evidence_type varchar(15) [not null]
   evidence_value varchar(500) [not null, note: 'Stores evidence path']
   created_at datetime [not null]
   updated_at datetime [not null]
@@ -406,7 +413,6 @@ Table cdl_modules {
 // =====================================================
 // SYSTEM AUDIT
 // =====================================================
-
 // Logs important admin actions for accountability
 Table system_audit_logs {
   log_id bigint [pk, increment]
