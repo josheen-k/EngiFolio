@@ -7,7 +7,6 @@ export function useExportData(userId) {
     const profile = ref(null)
     const userCompetencies = ref(null)
     const contacts = ref(null)
-    const plan = ref(null)
 
 
     // Fetches the profile and adds the contents to the file
@@ -83,9 +82,6 @@ export function useExportData(userId) {
         
         const compHeader = [
           '"Competency Code"',
-          '"EA Competency"',
-          '"Competency Description"',
-          '"Competency Link"',
           '"Experience Title"',
           '"Associated Year"',
           '"Experience Tasks"',
@@ -100,16 +96,14 @@ export function useExportData(userId) {
           if (userCompetencies.value?.length > 0) {
             userCompetencies.value.forEach(comp => {
               const row = [
-                `"${comp.indicator.display_id}"`,
-                `"${comp.indicator.description}"`,
-                `"${comp.indicator.indicator_link || ''}"`,
-                `"${comp.experience_title}"`,
-                `"${comp.associated_year}"`,
-                `"${comp.experience_tasks}"`,
+                `"${comp.indicator?.display_id || ''}"`,
+                `"${comp.experience_title || ''}"`,
+                `"${comp.associated_year || ''}"`,
+                `"${comp.experience_tasks || ''}"`,
                 `"${comp.key_learnings || ''}"`,
                 `"${comp.future_applications || ''}"`,
-                `"${comp.entry_level.competency_level || ''}"`,
-                `"${comp.start_date}"`,
+                `"${comp.entry_level?.competency_level || ''}"`,
+                `"${comp.start_date || ''}"`,
                 `"${comp.end_date || ''}"`
               ].join(",");
               formattedComp.push(row);
@@ -122,6 +116,7 @@ export function useExportData(userId) {
         
       } catch (error) {
         console.error("Error while fetching user competencies:", error);
+        return '';
       }
     };
 
@@ -145,7 +140,7 @@ export function useExportData(userId) {
         if (contacts.value && contacts.value.length > 0) {
           contacts.value.forEach(contact => {
             const row = [
-              `"${contact.contact_name}"`,
+              `"${contact.contact_name || ''}"`,
               `"${contact.company || ''}"`,
               `"${contact.progress_notes || ''}"`,
               `"${contact.date_met || ''}"`,
@@ -159,6 +154,7 @@ export function useExportData(userId) {
         return formattedNet.join('\n');
       } catch (error) {
         console.error("Error while fetching user contacts:", error);
+        return '';
       }
     };
 
