@@ -103,6 +103,7 @@
     :compt="viewReflec.compt" 
     :index="viewReflec.index"
     :levelOptions="levelOptions"
+    :categories="categories"
     @close="viewReflec.show = false" 
     @refresh="onSaveReflec"
   />

@@ -390,7 +390,7 @@
       errors.value = {} 
 
       // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
-      const noChange = JSON.stringify(ef.value) === originalEf.value
+      const noChange = (JSON.stringify(ef.value) === originalEf.value && ef.entry_status_id === statusId)
         if (noChange) {
           emit('close');
           return;
