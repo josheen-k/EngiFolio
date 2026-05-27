@@ -213,7 +213,9 @@
   const allCompts = computed(() => {
     // Get the indicator id and description for the selected competency
     return props.categories.flatMap(category => {
-      return category.compt.map(indicator => ({
+      return category.compt
+      .filter(indicator => !indicator.discontinuedDate)
+      .map(indicator => ({
         id: indicator.id, 
         displayId: indicator.displayId,
         desc: indicator.desc || '' 

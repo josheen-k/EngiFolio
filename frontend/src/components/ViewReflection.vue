@@ -11,7 +11,7 @@
           <h2 class="text-center view-title mb-0">{{ reflec?.experience_title }}</h2>
           <div class="d-flex gap-2">
             <img class="plus-btn" src="@/assets/del.png" @click="showDeleteConfirm = true" title="Delete">
-            <img class="plus-btn" src="@/assets/edit.png" @click="enterEdit" title="Edit">
+            <img v-if="!compt?.discontinuedDate" class="plus-btn" src="@/assets/edit.png" @click="enterEdit" title="Edit">
           </div>
         </div>
 

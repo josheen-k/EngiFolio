@@ -119,6 +119,7 @@ function openDetail(compt, catLabel) {
     category: catLabel,
     reflec: compt.reflec,
     description: compt.desc,
+    discontinuedDate: compt.discontinuedDate,
   }
 }
 
