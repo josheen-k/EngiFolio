@@ -896,6 +896,11 @@ function handleYearViewScroll() {
 }
 
 async function addEvent() {
+  if (!newEvent.value.name) {
+    showPopUp('Event name cannot be empty.', 'error')
+    return;
+  }
+  
   const isUpdate = Boolean(editingEventId.value)
 
   if (isUpdate) {
@@ -912,6 +917,8 @@ async function addEvent() {
       }
       return
     }
+
+
   }
 
   const payload ={
@@ -922,7 +929,7 @@ async function addEvent() {
   if (isUpdate) {
     try {
       await api.put(`/networking-events/${editingEventId.value}`, payload)
-      showPopUp("Event successfully updated.", "success");
+      showPopUp(`Event ${newEvent.value.name} successfully updated.`, "success");
     } catch {
       showPopUp("Error saving event.", "error");
       return
@@ -930,7 +937,7 @@ async function addEvent() {
   } else {
     try {
       await api.post(`/networking-events`, payload)
-      showPopUp("Event successfully added.", "success");
+      showPopUp(`Event ${newEvent.value.name} successfully added.`, "success");
     } catch {
       showPopUp("Error adding event.", "error");
       return
@@ -964,23 +971,29 @@ function editEvent(event) {
 }
 
 async function deleteEvent(id) {
-  const shouldDelete = await openConfirmDialog({
-    title: 'Confirm delete',
-    message: 'Delete this event? This action cannot be undone.',
-    confirmLabel: 'Delete',
-    cancelLabel: 'Keep',
-    variant: 'danger',
-  })
+  try {
+    const shouldDelete = await openConfirmDialog({
+      title: 'Confirm delete',
+      message: 'Delete this event? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Keep',
+      variant: 'danger',
+    })
 
-  if (!shouldDelete) {
-    return
-  }
+    if (!shouldDelete) {
+      return
+    }
 
-  await api.delete(`/networking-events/${id}`)
-  await fetchEvents()
+    await api.delete(`/networking-events/${id}`)
 
-  if (selectedDate.value && !selectedDateEvents.value.length) {
-    closeEventDetails()
+    showPopUp(`Event deleted successfully.`, "success");
+    await fetchEvents()
+
+    if (selectedDate.value && !selectedDateEvents.value.length) {
+      closeEventDetails()
+    }
+  } catch {
+    showPopUp(`Error deleting event.`, "error");
   }
 }
 

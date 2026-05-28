@@ -784,7 +784,6 @@ const deleteUser = async (user) => {
   gap: 0.6rem;
 }
 
-
 .popUp-msg {
   position: fixed;
   top: 5rem;   

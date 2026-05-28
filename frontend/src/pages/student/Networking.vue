@@ -44,7 +44,7 @@
           </div>
         </div>
 
-        <button class="btn btn-dark btn-main" @click="openForm">
+        <button class="action-button" @click="openForm">
           + Add Contact
         </button>
       </div>
@@ -220,7 +220,6 @@ import { useRoute } from 'vue-router'
 import api from '@/services/api'
 
 import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
 import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 const route = useRoute()
@@ -295,7 +294,11 @@ const saveElevatorPitch = async () => {
     })
 
     showPopUp("Your elevator pitch has been saved.", "success");
-  } finally {
+  } catch {
+    showPopUp("Error saving elevator pitch", "error");
+  }  
+  
+  finally {
     savingPitch.value = false
   }
 }
@@ -439,8 +442,10 @@ const saveContact = async () => {
   try {
     if (editMode.value) {
       await api.put(`/users/${profileId.value}/industry-contacts/${form.value.contact_id}`, payload)
+      showPopUp('Contact successfully updated.', 'success')
     } else {
       await api.post(`/users/${profileId.value}/industry-contacts`, payload)
+      showPopUp('New contact successfully added.', 'success')
     }
 
     closeForm()
@@ -481,23 +486,29 @@ const editContact = (c) => {
 }
 
 const deleteContact = async (id) => {
-  const shouldDelete = await openConfirmDialog({
-    title: 'Confirm delete',
-    message: 'Delete this contact?',
-    confirmLabel: 'Delete',
-    cancelLabel: 'Keep',
-    variant: 'danger',
-  })
+  try {
+      const shouldDelete = await openConfirmDialog({
+        title: 'Confirm delete',
+        message: 'Delete this contact?',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Keep',
+        variant: 'danger',
+      })
 
-  if (!shouldDelete) {
-    return
+      if (!shouldDelete) {
+        return
+      }
+
+      await api.delete(`/users/${profileId.value}/industry-contacts/${id}`)
+      showPopUp('Contact successfully deleted.', 'error')
+
+      selectedContact.value = null
+      openMenuId.value = null
+      fetchContacts()
+
+  } catch {
+    showPopUp('Error. Cannot delete contact.', 'error')
   }
-
-  await api.delete(`/users/${profileId.value}/industry-contacts/${id}`)
-
-  selectedContact.value = null
-  openMenuId.value = null
-  fetchContacts()
 }
 </script>
 
@@ -803,4 +814,20 @@ const deleteContact = async (id) => {
   color: #fff;
 }
 
+
+.action-button {
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: #13202c;
+  color: #ffffff;
+  padding: 0.85rem 1.4rem;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+}
 </style>

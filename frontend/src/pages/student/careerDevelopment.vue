@@ -248,7 +248,7 @@
                       class="action-icon-btn"
                       aria-label="Delete career plan"
                       title="Delete"
-                      @click="deletePlan(plan)"
+                      @click="showDeleteConfirm = true, planToDelete = plan"
                     >
                       <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                     </button>
@@ -404,7 +404,7 @@
 
             <div class="mobile-actions">
               <button class="btn page-btn-outline w-100" @click="openEditPlanForm(plan)">Edit</button>
-              <button class="btn page-btn-danger w-100" @click="deletePlan(plan)">Delete</button>
+              <button class="btn page-btn-danger w-100" @click="showDeleteConfirm = true, planToDelete = plan">Delete</button>
             </div>
           </article>
         </div>
@@ -422,6 +422,21 @@
         </div>
       </div>
     </main>
+  </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
+
+  <!--Delete confirm -->
+  <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+    <div class="delete-box text-center p-4">
+      <h5 class="fw-bold mb-2 field-label delete-title">Delete career development plan {{ planToDelete.plan_year }}? This cannot be undone.</h5>
+
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
+        <button class="btn btn-add rounded-pill px-4" @click="deletePlan(planToDelete); showDeleteConfirm = false">Delete</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -445,6 +460,8 @@ const errorMessage = ref('')
 const showPlanForm = ref(false)
 const editingPlanId = ref(null)
 const savingPlan = ref(false)
+const showDeleteConfirm = ref(false)
+const planToDelete = ref(null)
 const planFormError = ref('')
 // Goal IDs selected in the create/edit form (synced to plan via PUT .../smart-goals).
 const selectedGoalIds = ref([])
@@ -462,6 +479,14 @@ const buildCalendarYearRange = () => {
     years.push(year)
   }
   return years
+}
+
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
 }
 
 // Safe display for API/form values that may be number or string.
@@ -700,12 +725,20 @@ const savePlan = async () => {
       ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
       : await api.post('/career-plans', payload)
 
+      
     const savedPlan = response.data
 
     await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
       profile_id: Number(route.params.id),
       goal_ids: selectedGoalIds.value
     })
+
+    if (editingPlanId.value) {
+      showPopUp('Plan successfully updated.', 'success')
+    } else {
+      showPopUp('New plan successfully added.', 'success')
+    }
+
 
     showPlanForm.value = false
     resetPlanForm()
@@ -725,17 +758,15 @@ const savePlan = async () => {
 
 // Remove plan row; linked goals stay in DB but lose this plan association.
 const deletePlan = async (plan) => {
-  const confirmed = window.confirm(`Delete ${formatPlanYearLabel(plan.plan_year)} career plan? This cannot be undone.`)
-  if (!confirmed) {
-    return
-  }
+  
 
   try {
     await api.delete(`/career-plans/${plan.plan_id}`)
     await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
+    showPopUp('Plan successfully deleted.', 'success')
   } catch (error) {
     console.error('Failed to delete career development plan:', error)
-    alert(error.response?.data?.message || 'Failed to delete career development plan.')
+    showPopUp('Failed to delete career development plan.', 'error')
   }
 }
 
@@ -1361,6 +1392,73 @@ onMounted(() => {
   grid-template-columns: 1fr 1fr;
   gap: 0.55rem;
   margin-top: 0.6rem;
+}
+
+
+.popUp-msg {
+  z-index: 9999;
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.delete-box .btn-filter,
+.delete-box .btn-add {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.delete-box .btn-add {
+  background: #555555;
+  color: #ffffff;
+}
+
+.delete-box .btn-add:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.delete-title {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1.1rem;
+  color: #222222;
 }
 
 @media (max-width: 992px) {
