@@ -556,9 +556,8 @@
       }
     };
 
-    onMounted(() => {
-      	loadData();
-    })
+    // Load all data required for the dashboard
+    loadData();
 
     watch(() => route.params.id, () => {
       loadData();

@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed } from 'vue'
   import { useRoute } from 'vue-router' 
   import Navbar from '@/components/Navbar.vue';
   import ProfileView from '@/components/ProfileView.vue';
@@ -24,24 +24,22 @@
 
   const route = useRoute() 
 
-  // different tabs in side pannel
-  const currTab = ref('PROFILE');
+  // Different tabs in side panel
+  // Use the value of tab in the query or default to profile
+  const currTab = ref(route.query.tab || 'PROFILE');
 
-  // render components based on current tab
+  // Render components based on current tab
+  // Load profileView in case of no cases met
   const currComponent = computed(()=> {
     switch (currTab.value) {
       case 'PROFILE':
         return ProfileView
       case 'CERTIFICATIONS':
         return ProfileCertifications
+      default:
+          return ProfileView
     }
   });
-
-  onMounted(() => {
-    if (route.query.tab === 'CERTIFICATIONS') {
-      currTab.value = 'CERTIFICATIONS'
-    }
-  })
 </script>
 
 <style scoped>

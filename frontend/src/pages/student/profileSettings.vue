@@ -145,35 +145,47 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
 
+  // Variables for getting and changing URL information
   const router = useRouter();
   const route = useRoute();
-  const profile = ref(null);
-  const loading = ref(true);
-  const linksToDelete = ref([]);
-  const errors = ref({});
-  const showCancelConfirm = ref(false)
+
+  // Store original profile information, changed profile information
   const originalProfile = ref(null)
+  const profile = ref(null);
+  const linksToDelete = ref([]);
+
+  // Check if profile has loaded and store any errors that may occur
+  const loading = ref(true);
+  const errors = ref({});
+
+  // For hiding or showing cancel prompt when leaving the page
+  const showCancelConfirm = ref(false)
+  
+  // Store information related to the uploaded profile image
   const imageFileName = ref('')
   const imageFile = ref(null)
 
-  // Set up a pop up notification instead of having an alert
+  // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
 
+  // Used to display the popup message and the type being either success or error
   const showPopUp = (message, type) => {
     popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
 
+  // Retrieve profile data from the backend
   const loadProfile = async () => {
-    // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
-      profile.value = response.data.profile || response.data;
+      profile.value = response.data;
       // Store original profile as a string to check for changes
       originalProfile.value = JSON.stringify(profile.value)
       loading.value = false;
@@ -182,9 +194,9 @@
     }
   };
 
-  // Adds an empty link to the frontend profile data when add link is clicked
-  // Restricted to 8 links
+  // Add an empty link to the frontend profile data when add link is clicked
   const addLink = () => {
+    // Restricted to only 8 links at a time so user does not add too many
     if (profile.value.links.length - linksToDelete.value.length < 8) {
       profile.value.links.push({
         link_label: '',
@@ -196,6 +208,7 @@
     }
   };
 
+  // Delete a link from the 
   const removeLink = (index) => {
     const link = profile.value.links[index];
     if (link.link_id) {
@@ -351,9 +364,8 @@
     router.push({ name: 'profile', params: { id: route.params.id } });
   };
 
-  onMounted(() => {
-    loadProfile();
-  })
+  // Run the load profile to get the profile data
+  loadProfile();
 </script>
 
 <style scoped>
