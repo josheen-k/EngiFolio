@@ -14,7 +14,12 @@
 
             <div class="card stat-card card-dark">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
+                <div class="d-flex justify-content-between align-items-start">
+                  <p class="stat-title mb-2">Total Reflection<br/>Entries Logged</p>
+                  <span class="info-btn" :data-tooltip="`Count of published reflection entries logged across all competencies.`">
+                    <img src="@/assets/question-mark.png" class="info-img"/>
+                  </span>
+                </div>
                 
                 <div class="d-flex align-items-center justify-content-between">
                   <span class="circle circle-light" @click="goToReflections" style="cursor:pointer">
@@ -30,7 +35,12 @@
 
             <div class="card stat-card card-light">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">Mastered<br/>Competencies</p>
+                <div class="d-flex justify-content-between align-items-start">
+                  <p class="stat-title mb-2">Mastered<br/>Competencies</p>
+                  <span class="info-btn" :data-tooltip="`Count of competencies where you've reflected the highest attainment level (Confident) out of total competencies`">
+                    <img src="@/assets/question-mark.png" class="info-img"/>
+                  </span>
+                </div>
                 
                 <div class="d-flex align-items-center justify-content-between">
                   <span class="circle circle-dark" @click="goToMastered" style="cursor:pointer">
@@ -46,7 +56,12 @@
 
             <div class="card stat-card card-light">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">SMART Goals<br/>Completed</p>
+                <div class="d-flex justify-content-between align-items-start">
+                  <p class="stat-title mb-2">SMART Goals<br/>Completed</p>
+                  <span class="info-btn" :data-tooltip="`Count of goals you've marked as completed out of your total goals.`">
+                    <img src="@/assets/question-mark.png" class="info-img"/>
+                  </span>
+                </div>
                 
                 <div class="d-flex align-items-center justify-content-between">
                   <span class="circle circle-dark" @click="goToGoals" style="cursor:pointer">
@@ -62,7 +77,12 @@
 
             <div class="card stat-card card-dark">
               <div class="card-body d-flex flex-column justify-content-between p-3">
-                <p class="stat-title mb-2">Current Average<br/>Level</p>
+                <div class="d-flex justify-content-between align-items-start">
+                  <p class="stat-title mb-2">Current Average<br/>Level</p>
+                  <span class="info-btn" :data-tooltip="`Your overall level based on your best entry per competency. Unstarted competencies count as zero and lower your average.`">
+                    <img src="@/assets/question-mark.png" class="info-img"/>
+                  </span>
+                </div>
                 
                 <div class="d-flex justify-content-center">
                   <span class="stat-data">{{ stats.avgLevel }}</span>
@@ -612,6 +632,48 @@
   width: clamp(1.2rem, 3vw, 2rem);
   height: clamp(1.2rem, 3vw, 2rem);
   object-fit: contain;
+}
+
+.info-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-img {
+  width: 1.3rem;
+  height: 1.3rem;
+  object-fit: contain;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.info-img:hover {
+  opacity: 1;
+}
+
+.info-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  background: #727272;
+  color: #ffffff;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.75rem;
+  white-space: normal;
+  width: clamp(8rem, 40vw, 15rem);
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.info-btn:hover::after {
+  opacity: 1;
 }
 
 .todo-card {
