@@ -97,7 +97,7 @@
         </div>
       </div>
 
-      <!-- DETAILS MODAL -->
+      <!-- Details modal -->
       <div
         v-if="selectedContact"
         class="modal-overlay"
@@ -109,22 +109,27 @@
           <p><b>Company:</b> {{ selectedContact.company || 'Not specified' }}</p>
           <p><b>Date Met:</b> {{ selectedContact.date_met || 'Not specified' }}</p>
 
-          <p>
-  <b>LinkedIn:</b>
+          <div v-if="selectedContact.contact_methods?.length">
+            <div
+              v-for="(method, index) in selectedContact.contact_methods" :key="index" class="contact-method" >
+              <b>{{ method.type }}:</b>
 
-  <a
-    v-if="selectedContact.link_url"
-    :href="formatUrl(selectedContact.link_url)"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    View LinkedIn
-  </a>
+              <template v-if="method.type === 'LinkedIn'">
+                <a :href="formatUrl(method.value)" target="_blank" rel="noopener noreferrer" >  <!-- rel used when directed to a new page, no referrer for added security -->
+                  View Profile
+                </a>
+              </template>
 
-  <span v-else>
-    Not added
-  </span>
-</p>
+              <template v-else>
+                {{ method.value }}
+              </template>
+            </div>
+          </div>
+
+          <div v-else>
+            <p class="notes-title"><b>Contact Methods</b></p>
+            <p>No contact methods added.</p>
+          </div>
 
           <p class="notes-title"><b>Progress Notes</b></p>
 
@@ -148,7 +153,7 @@
         </div>
       </div>
 
-      <!-- FORM MODAL -->
+      <!-- Form modal -->
       <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
         <div class="modal-box">
           <h3>{{ editMode ? 'Edit Contact' : 'Create Contact' }}</h3>
@@ -161,11 +166,32 @@
             placeholder="Progress notes"
           ></textarea>
 
-          <input
-            v-model="form.link_url"
-            type="url"
-            placeholder="LinkedIn URL"
-          />
+          <div class="method-group">
+  <label class="method-label">LinkedIn</label>
+
+  <input
+    v-model="form.contact_methods[0].value"
+    placeholder="LinkedIn profile"
+  />
+</div>
+
+<div class="method-group">
+  <label class="method-label">Email</label>
+
+  <input
+    v-model="form.contact_methods[1].value"
+    placeholder="Email address"
+  />
+</div>
+
+<div class="method-group">
+  <label class="method-label">Phone</label>
+
+  <input
+    v-model="form.contact_methods[2].value"
+    placeholder="Phone number"
+  />
+</div>
 
           <input type="date" v-model="form.date_met" />
 
@@ -201,26 +227,18 @@
         </div>
       </div>
 
-      <div
-        v-if="showConfirmDialog"
-        class="confirm-overlay"
-        @click.self="resolveConfirmDialog(false)"
-      >
+      <div v-if="showConfirmDialog" class="confirm-overlay" @click.self="resolveConfirmDialog(false)" >
+
         <div class="confirm-widget">
           <p class="confirm-title">{{ confirmDialog.title }}</p>
           <p class="confirm-message">{{ confirmDialog.message }}</p>
 
           <div class="confirm-actions">
-            <button
-              class="ghost-button small-button"
-              @click="resolveConfirmDialog(false)"
-            >
+            <button class="ghost-button small-button" @click="resolveConfirmDialog(false)" >
               {{ confirmDialog.cancelLabel }}
             </button>
 
-            <button
-              class="small-button"
-              :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
+            <button class="small-button" :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
               @click="resolveConfirmDialog(true)"
             >
               {{ confirmDialog.confirmLabel }}
@@ -229,7 +247,6 @@
         </div>
       </div>
     </section>
-
   </div>
 </template>
 
@@ -239,7 +256,6 @@ import { useRoute } from 'vue-router'
 import api from '@/services/api'
 
 import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
 import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 const route = useRoute()
@@ -275,13 +291,19 @@ const pitchDialog = ref({
   buttonLabel: 'OK',
 })
 
+const defaultContactMethods = () => [
+  { type: 'LinkedIn', value: '' },
+  { type: 'Email', value: '' },
+  { type: 'Phone', value: '' },
+]
+
 const form = ref({
   contact_id: null,
   contact_name: '',
   company: '',
   progress_notes: '',
-  link_url: '',
   date_met: '',
+  contact_methods: defaultContactMethods(),
 })
 
 const fetchContacts = async () => {
@@ -327,7 +349,10 @@ const filteredContacts = computed(() => {
   return contacts.value.filter(c =>
     c.contact_name?.toLowerCase().includes(search.value.toLowerCase()) ||
     c.company?.toLowerCase().includes(search.value.toLowerCase()) ||
-    c.progress_notes?.toLowerCase().includes(search.value.toLowerCase())
+    c.progress_notes?.toLowerCase().includes(search.value.toLowerCase()) ||
+    c.contact_methods?.some(method =>
+      method.value?.toLowerCase().includes(search.value.toLowerCase())
+    )
   )
 })
 
@@ -414,8 +439,8 @@ const openForm = () => {
     contact_name: '',
     company: '',
     progress_notes: '',
-    link_url: '',
     date_met: '',
+    contact_methods: defaultContactMethods(),
   }
 
   showForm.value = true
@@ -426,27 +451,38 @@ const closeForm = () => {
 }
 
 const saveContact = async () => {
-  const payload = { ...form.value }
-  const trimmedLinkedIn = (payload.link_url || '').trim()
+  const payload = {
+    ...form.value,
+    contact_methods: form.value.contact_methods
+      .filter(method => method.value.trim() !== '')
+      .map(method => ({
+        type: method.type,
+        value: method.value.trim(),
+      })),
+  }
 
-  if (trimmedLinkedIn) {
+  const linkedInMethod = payload.contact_methods.find(
+    method => method.type === 'LinkedIn'
+  )
+
+  if (linkedInMethod?.value) {
     try {
-      let normalizedUrl = trimmedLinkedIn
+      let normalizedUrl = linkedInMethod.value
 
-if (
-  !normalizedUrl.startsWith('http://') &&
-  !normalizedUrl.startsWith('https://')
-) {
-  normalizedUrl = `https://${normalizedUrl}`
-}
+      if (
+        !normalizedUrl.startsWith('http://') &&
+        !normalizedUrl.startsWith('https://')
+      ) {
+        normalizedUrl = `https://${normalizedUrl}`
+      }
 
-const parsedUrl = new URL(normalizedUrl)
+      const parsedUrl = new URL(normalizedUrl)
 
-if (!parsedUrl.hostname.includes('.')) {
-  throw new Error('Invalid LinkedIn URL')
-}
+      if (!parsedUrl.hostname.includes('.')) {
+        throw new Error('Invalid LinkedIn URL')
+      }
 
-payload.link_url = normalizedUrl
+      linkedInMethod.value = normalizedUrl
     } catch {
       openPitchDialog(
         'Invalid LinkedIn URL',
@@ -482,16 +518,6 @@ payload.link_url = normalizedUrl
     closeForm()
     await fetchContacts()
   } catch (error) {
-    const linkErrors = error.response?.data?.errors?.link_url
-
-    if (linkErrors?.length) {
-      openPitchDialog(
-        'Invalid LinkedIn URL',
-        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
-      )
-      return
-    }
-
     console.error('Save contact failed:', error)
 
     if (error.response) {
@@ -513,13 +539,31 @@ const editContact = (c) => {
   openMenuId.value = null
   editMode.value = true
 
+  const existingMethods = c.contact_methods || []
+
   form.value = {
     contact_id: c.contact_id,
     contact_name: c.contact_name || '',
     company: c.company || '',
     progress_notes: c.progress_notes || '',
-    link_url: c.link_url || '',
     date_met: c.date_met || '',
+    contact_methods: [
+      {
+        type: 'LinkedIn',
+        value:
+          existingMethods.find(method => method.type === 'LinkedIn')?.value || '',
+      },
+      {
+        type: 'Email',
+        value:
+          existingMethods.find(method => method.type === 'Email')?.value || '',
+      },
+      {
+        type: 'Phone',
+        value:
+          existingMethods.find(method => method.type === 'Phone')?.value || '',
+      },
+    ],
   }
 
   showForm.value = true
@@ -662,12 +706,40 @@ const deleteContact = async (id) => {
 }
 
 .modal-box input,
-.modal-box textarea {
+.modal-box textarea,
+.modal-box select {
   width: 100%;
   margin-bottom: 10px;
   padding: 8px;
   border-radius: 10px;
   border: 1px solid #ddd;
+}
+
+.method-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.method-group input,
+.method-group select {
+  margin-bottom: 0;
+}
+
+.method-select {
+  max-width: 130px;
+}
+.method-label {
+  min-width: 90px;
+  font-weight: 600;
+  color: #24364b;
+  display: flex;
+  align-items: center;
+}
+
+.contact-method {
+  margin-bottom: 8px;
+  color: #44576b;
 }
 
 .btn-row {

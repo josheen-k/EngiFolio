@@ -306,10 +306,11 @@ onMounted(fetchDashboardData)
 
 .stat-card strong {
   display: block;
-  font-family: 'Martel', serif;
+  font-family: 'Martian Mono', monospace;
   font-size: 2rem;
   margin-top: 8px;
   color: #222;
+  font-weight: 200;
 }
 
 .stat-card.warning strong {
@@ -340,8 +341,8 @@ onMounted(fetchDashboardData)
   text-decoration: none;
   color: inherit;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transform 0.2s ease,
+  box-shadow 0.2s ease;
 }
 
 .dashboard-card:hover {
