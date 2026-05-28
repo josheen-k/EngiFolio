@@ -25,22 +25,25 @@ class NetworkingEvent extends Model
 
     //get the student profile that owns this networking event
     public function profile()
-    {
+    {   
         return $this->belongsTo(StudentProfile::class,'profile_id', 'profile_id');
     }
 
+    //get all questions that belong to this networking event
     public function questions()
     {
         return $this->hasMany(NetworkingEventQuestion::class, 'event_id', 'event_id');
     }
 
+    //get all comments that belong to this networking event
     public function comments()
     {
         return $this->hasMany(NetworkingEventComment::class, 'event_id', 'event_id');
     }
     
+    //get all industry contacts linked to this networking event
     public function contacts()
-    {
+    {   
         return $this->belongsToMany(
             IndustryContact::class,
             'networking_event_contacts',
