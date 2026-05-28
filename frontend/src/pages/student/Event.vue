@@ -201,17 +201,38 @@
               placeholder="What is this event about, and what do you want to remember?"
             ></textarea>
           </label>
+
           <div class="field field-full">
             <span>Related Contacts</span>
-            <div v-if="contacts.length" class="contact-picker">
-              <label v-for="contact in contacts" :key="contact.contact_id" class="contact-option">
-                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids">
-                <span>{{ contact.contact_name }}</span>
-              </label>
+
+            <div v-if="contacts.length" class="contact-picker-panel">
+              <div class="contact-picker-toolbar">
+              <input v-model="contactSearch" class="contact-search" type="text" placeholder="Search contact or company..."/>
+
+              <select v-model="contactSort" class="contact-sort">
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+                <option value="company-asc">Company A-Z</option>
+                <option value="company-desc">Company Z-A</option>
+              </select>
             </div>
-            <p v-else>No contacts available</p>
+
+            <div class="contact-picker-scroll">
+              <label v-for="contact in filteredContactsForPicker" :key="contact.contact_id" class="contact-option">
+                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids"/>
+                <span class="contact-option-text">
+                  <strong>{{ contact.contact_name }}</strong>
+                  <small v-if="contact.company">{{ contact.company }}</small>
+                </span>
+              </label>
+
+              <p v-if="!filteredContactsForPicker.length" class="contact-empty"> No matching contacts found.</p>
+            </div>
           </div>
+          
+          <p v-else>No contacts available</p>
         </div>
+      </div>
 
         <div class="modal-actions">
           <button class="ghost-button" @click="closeForm">Cancel</button>
@@ -507,6 +528,9 @@ const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
 
 const contacts = ref([])
+const contactSearch = ref('')
+const contactSort = ref('name-asc')
+
 let confirmResolver = null
 let syncingYearScroll = false
 let yearScrollFrameId = null
@@ -773,6 +797,37 @@ const selectedDateEvents = computed(() => {
 })
 
 const selectedDateLabel = computed(() => formatFullDate(selectedDate.value))
+
+const filteredContactsForPicker = computed(() => {
+  const keyword = contactSearch.value.trim().toLowerCase()
+
+  let result = contacts.value.filter((contact) => {
+    const name = (contact.contact_name || '').toLowerCase()
+    const company = (contact.company || '').toLowerCase()
+
+    return !keyword || name.includes(keyword) || company.includes(keyword)
+  })
+
+  result = [...result].sort((a,b) => {
+    const nameA = (a.contact_name || '').toLowerCase()
+    const nameB = (b.contact_name || '').toLowerCase()
+    const companyA = (a.company || '').toLowerCase()
+    const companyB = (b.company || '').toLowerCase()
+
+    switch (contactSort.value) {
+      case 'name-desc':
+        return nameB.localeCompare(nameA)
+      case 'company-asc':
+        return companyA.localeCompare(companyB)
+      case 'company-desc':
+        return companyB.localeCompare(companyA)
+      case 'name-asc':
+      default:
+        return nameA.localeCompare(nameB)
+    }
+  })
+  return result
+})
 
 function openCreateForm(date = '') {
   editingEventId.value = null
@@ -2110,5 +2165,72 @@ function goToToday() {
 
 .error-message {
   color:  #db7979;
+}
+
+.contact-picker-panel {
+  border: 1px solid #d9e3ec;
+  border-radius: 1rem;
+  background: #f9fbfd;
+  padding: 1rem;
+}
+
+.contact-picker-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.contact-search,
+.contact-sort {
+  width: 100%;
+  border: 1px solid #ccd8e2;
+  border-radius: 0.9rem;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  background: #ffffff;
+  color: #13202c;
+}
+
+.contact-picker-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.65rem;
+  padding-right: 0.25rem;
+}
+
+.contact-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e1e9f0;
+  border-radius: 0.9rem;
+  background: #ffffff;
+}
+
+.contact-option input {
+  margin-top: 0.2rem;
+}
+.contact-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  color: #243746;
+}
+
+.contact-option-text strong {
+  font-weight: 600;
+}
+
+.contact-option-text small {
+  color: #6b8293;
+}
+
+@media (max-width: 640px) {
+  .contact-picker-toolbar {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
