@@ -3,13 +3,12 @@
     import { useRoute } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
-    import { useExportData } from '@/composables/useExportData'
+    import { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addCareerPlans, addGoals } from '@/composables/useExportData'
 
+    // Route used for route parameters to get id
     const route = useRoute();
 
-    // Deconstructs the functions so that they can be called individually
-    const { addProfile, addCertifications, addCompetencies, addNetworkingContacts, addCareerPlans, addGoals } = useExportData(route.params.id)
-
+    // Track the selections that the user has made
     const profileSelected = ref(false);
     const certificationsSelected = ref(false);
     const competenciesSelected = ref(false);
@@ -17,6 +16,7 @@
     const goalsSelected = ref(false);
     const allDataSelected = ref(false);
 
+    // Watches for if all data has changed and sets all selections to that value
     watch(allDataSelected, (newValue) => {
       profileSelected.value = newValue
       certificationsSelected.value = newValue
@@ -25,18 +25,24 @@
       goalsSelected.value = newValue
     })
 
-    // Set up a pop up notification instead of having an alert
+    // Object to store data about the popup message
     const popUp = ref({ show: false, message: '', type: '' })
+    // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+    const popUpTime = 3000
 
+    // Used to display the popup message and the type being either success or error
     const showPopUp = (message, type) => {
       popUp.value = { show: true, message, type }
-      setTimeout(() => popUp.value.show = false, 3000)
+      setTimeout(() => popUp.value.show = false, popUpTime)
     }
 
+    // Sends the selections to the backend to create the pdf file and downloads the file
     const exportToPdf = async () => {
       // Check that at lease one category is selected
       if (profileSelected.value || certificationsSelected.value || competenciesSelected.value || networkingContactsSelected.value || goalsSelected.value) {
         try {
+          // Send the selected categories to the backend so it can prepare the pdf, continue executing other code while waiting
+          // Response type and headers prepare the frontend to accept a pdf file download instead of JSON
           const response = await api.post(`/profile/${route.params.id}/export-pdf`, {
             selections: {
               profile: profileSelected.value,
@@ -49,20 +55,21 @@
             responseType: 'blob',
             headers: { 'Accept': 'application/pdf' } 
           });
-
+ 
           // Creates the file-like object and a temporary URL
           const blob = new Blob([response.data], { type: 'application/pdf' });
-          const url = window.URL.createObjectURL(blob);
-          // Creates an a tag in memory for downloading and link to url
+          const url = URL.createObjectURL(blob);
+
+          // Creates an a tag in memory for downloading and link to url and add download attribute with file name
           const link = document.createElement('a');
-          link.href = url;
+          link.setAttribute("href", url);
           link.setAttribute('download', `portfolio_export_${route.params.id}.pdf`);
-          // Adds the page to the link, clicks the link then removes the link
+
+          // Create download link, click it to trigger the download it then remove download link and free memory
           document.body.appendChild(link);
           link.click();
-        
           document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
+          URL.revokeObjectURL(url);
           
           showPopUp("Downloading PDF...", "success");
         } catch (error) {
@@ -70,7 +77,7 @@
           showPopUp("Error generating the PDF.", "error");
         }
 
-        // Reset values after
+        // Reset values after downloading
         profileSelected.value = false;
         certificationsSelected.value = false;
         competenciesSelected.value = false;
@@ -83,67 +90,72 @@
       }    
     };
 
-    const exportData = async () => {
+    const exportToCSV = async () => {
+
         if (profileSelected.value || certificationsSelected.value || competenciesSelected.value || networkingContactsSelected.value || goalsSelected.value) {
-          // Add only selected fields
-          const exportCSV = [];
-          if (profileSelected.value) {
-            const profileData = await addProfile();
-            exportCSV.push(profileData);
-          };
+          try {
+            
+            // Use promises so all backend calls can be run in parallel
+            const promises = [];
 
-          if (certificationsSelected.value) {
-            exportCSV.push(await addCertifications());
-          }
-
-          if (competenciesSelected.value) {
-            const competencyData = await addCompetencies();
-            exportCSV.push(competencyData);
-          }
-
-          if (networkingContactsSelected.value) {
-            const networkingData = await addNetworkingContacts();
-            exportCSV.push(networkingData);
-          }
+            if (profileSelected.value) {
+              promises.push(addProfile(route.params.id))
+            }
+            if (certificationsSelected.value) {
+              promises.push(addCertifications(route.params.id))
+            }
+            if (competenciesSelected.value) {
+              promises.push(addCompetencies(route.params.id))
+            }
+            if (networkingContactsSelected.value) {
+              promises.push(addNetworkingContacts(route.params.id))
+            }
+            if (goalsSelected.value) {
+                promises.push(addCareerPlans(route.params.id));
+                promises.push(addGoals(route.params.id));
+            }
+            
+            // Wait for all promises to finish before continuing
+            const exportCSV = await Promise.all(promises);
           
-          if (goalsSelected.value) {
-            const careerPlansData = await addCareerPlans();
-            exportCSV.push(careerPlansData);
-            const goalsData = await addGoals();
-            exportCSV.push(goalsData);
+            // Separate the different categories with a new line
+            const exportContent = exportCSV.join("\n");
+
+            // Creates the Binary Large Object to hold the raw data and store the exportContent and other data
+            // \ufeff is a Byte Order Mark to tell applications that the file is an excel file with UTF-8 encoding
+            // Type is used so the browser can recognise that the data represents a csv file
+            const blob = new Blob(["\ufeff", exportContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            // Creates an a tag in memory for downloading and link to url and add download attribute with file name
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `engifolio_export_${route.params.id}.csv`);
+            
+            // Create download link, click it to trigger the download it then remove download link and free memory
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showPopUp("Downloading CSV...", "success");
+
+            // Reset values after
+            profileSelected.value = false;
+            certificationsSelected.value = false;
+            competenciesSelected.value = false;
+            networkingContactsSelected.value = false;
+            goalsSelected.value = false;
+            allDataSelected.value = false;
+          
+          } catch (error) {
+            console.error(error);
+            showPopUp("Error generating the CSV.", "error");
           }
-
-          const exportContent = exportCSV.map(title => `${title}`).join("\n");
-
-          // Creates the file-like object and a temporary URL
-          const blob = new Blob(["\ufeff", exportContent], { type: 'text/csv;charset=utf-8;' });
-          
-          const link = document.createElement("a");
-          const url = URL.createObjectURL(blob);
-          
-          link.setAttribute("href", url);
-          link.setAttribute("download", "engifolio_export.csv");
-          link.style.visibility = 'hidden';
-          
-          // Create download link, click it then remove download link
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          showPopUp("Downloading CSV...", "success");
-
-          // Reset values after
-          profileSelected.value = false;
-          certificationsSelected.value = false;
-          competenciesSelected.value = false;
-          networkingContactsSelected.value = false;
-          goalsSelected.value = false;
-          allDataSelected.value = false;
-
         } else {
-          showPopUp("You must select at least one category to export", "error");
+        showPopUp("You must select at least one category to export", "error");
         return;
-      }    
+      }  
     };
 </script>
 
@@ -224,7 +236,7 @@
         </div>
 
         <div class="d-flex flex-wrap gap-3 justify-content-center">
-          <button class="btn btn-csv rounded-pill px-5" @click="exportData">Export CSV</button>
+          <button class="btn btn-csv rounded-pill px-5" @click="exportToCSV">Export CSV</button>
           <button class="btn btn-pdf rounded-pill px-5" @click="exportToPdf">Export PDF Document</button>
         </div>
       </div>

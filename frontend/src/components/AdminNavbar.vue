@@ -1,17 +1,14 @@
 <template>
   <div class="app-container">
     <nav class="nav-wrapper">
-        <div>
-            <!-- <router-link to="/"> -->
-                <div class="navLogo"></div>
-            <!-- </router-link> -->
-        </div>
-
-        <div class="nav-bar">
-            <div class="nav-item">
-                <router-link to="/" class="btn-back-custom">Sign Out</router-link>
-            </div>
-        </div>
+      <div>
+        <div class="navLogo"></div>
+      </div>
+      <div class="nav-bar">
+          <div class="nav-item">
+            <router-link to="/" class="btn-back-custom">Sign Out</router-link>
+          </div>
+      </div>
     </nav>
   </div>
 </template>

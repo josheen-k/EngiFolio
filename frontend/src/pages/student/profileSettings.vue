@@ -28,11 +28,6 @@
           <label v-if="errors.imageType" class="field-label error-message">*Invalid image type</label>
           <label v-else-if="errors.imageSize" class="field-label error-message">*Image is too large. Must be less than 2MB.</label>
         </div>
-          <div class="col-12 col-sm-2 d-flex align-items-end">
-            <button v-if="profile.profile_image_url" class="remove-btn" @click="removeImage" title="Remove link">
-                <img src="@/assets/delete.png" class="del-icon" alt="remove" />
-            </button>
-          </div>
       </div>
     </section>
 
@@ -154,7 +149,7 @@
   const router = useRouter();
   const route = useRoute();
 
-  // Store original profile information, changed profile information
+  // Store original profile information, changed profile information and links get deleted when the profile is saved
   const originalProfile = ref(null)
   const profile = ref(null);
   const linksToDelete = ref([]);
@@ -186,7 +181,7 @@
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
       profile.value = response.data;
-      // Store original profile as a string to check for changes
+      // Store original profile as a standard text format to check for changes
       originalProfile.value = JSON.stringify(profile.value)
       loading.value = false;
     } catch (error) {
@@ -208,18 +203,20 @@
     }
   };
 
-  // Delete a link from the 
+  // Deletes link by adding it to an array of links to be deleted once the profile is saved
   const removeLink = (index) => {
     const link = profile.value.links[index];
     if (link.link_id) {
       linksToDelete.value.push(link.link_id);
     }  
+    // Remove link from index for currently rendering profile
     profile.value.links.splice(index, 1);
   };
 
   // Attempt to make a URL object to test if link is correct
-  function isValidUrl(url) {
+  const isValidUrl = (url) => {
     try {
+      // URL constructor throws an error if the url format is invalid
       new URL(url)
       return true
     } catch {
@@ -227,6 +224,7 @@
     }
   }
 
+  // Runs once the user selects to save their changes. Updates the profile and the links
   const saveChanges = async () => {
     try {
       // Check to see if any changes have been made. Ignore rest of the logic if no change
@@ -239,12 +237,12 @@
       // Reset errors
       errors.value = {}
 
-      // Check if last name is empty and add to errors if so
+      // Add errors to error object if last name is empty
       if (!profile.value.user.last_name.trim()) {
         errors.value.lastName = true
       }
 
-      // Remove all links without a label or a url
+      // Remove all links without a label or a url 
       profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
 
       // Loop through each link, add entry to errors for the links located at position i
@@ -326,7 +324,8 @@
     }
   };
 
-  function imageUpload(e) {
+  // Temporarily add a new image to profile picture and display it. Get information ready in case of profile save
+  const imageUpload = (e) => {
     // The event object passed, target is the input and the file[0] represents the image
     const file = e.target.files[0]
     if (file) {
@@ -342,13 +341,7 @@
     }
   }
 
-  const removeImage = () => {
-    profile.value.profile_image_url = null
-    imageFileName.value = ''
-    imageFile.value = null
-  }
-
-  // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
+  // Check if profile has been changed, if so load cancel confirmation so user does not unknowingly cancel with unsaved data
   const handleCancel = () => {
     // Convert objects so strings and compare for any changes, also check if there is a new image file
     const noChange = JSON.stringify(profile.value) === originalProfile.value && !imageFile.value;
@@ -359,7 +352,7 @@
     }
   }
 
-  // Redirect back to profile page without saving changes
+  // Redirect back to profile page
   const cancel = () => {
     router.push({ name: 'profile', params: { id: route.params.id } });
   };

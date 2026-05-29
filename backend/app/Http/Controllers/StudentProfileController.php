@@ -160,4 +160,19 @@ class StudentProfileController extends Controller
         $profile->save();
         return response()->json(['image_url' => '/storage/' . $path]);
     }
+
+    // Returns only the profile image url from the student profile table
+    public function getProfileImage($id) {
+        $profile = StudentProfile::findOrFail($id);
+        return response()->json(['profile_image_url' => $profile->profile_image_url]);
+    }
+
+    // Return only the achievement and attainment certs relating to a profile
+    public function getCertifications($id) {
+    $profile = StudentProfile::with(['achievementCerts', 'attainmentCerts'])->findOrFail($id);
+    return response()->json([
+        'achievement_certs' => $profile->achievementCerts,
+        'attainment_certs' => $profile->attainmentCerts,
+    ]);
+}
 }

@@ -221,14 +221,16 @@
 </template>
 
 <script setup>
-    import { ref, computed, onMounted, watch } from 'vue';
+    import { ref, computed, watch } from 'vue';
     import { useRoute } from 'vue-router'
     import { useRouter } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
 
+    // Variables for getting and changing URL information
     const route = useRoute();
     const router = useRouter()
+
     const profile = ref(null);
     const userCompetencies = ref([]);
     const competencyIndicators = ref([]);
