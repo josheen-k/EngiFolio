@@ -170,15 +170,15 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="item in filteredFocusItems" :key="item.indicator_id">
+              <template v-for="comp in filteredHighestLevelComps" :key="comp.indicator_id">
                 <tr>
-                  <td><router-link :to="`/student/eaCompetency/${$route.params.id}?indicator=${item.indicator_id}`" class="table-link">
-                      {{ item.display_id }}
+                  <td><router-link :to="`/student/eaCompetency/${$route.params.id}?indicator=${comp.indicator_id}`" class="table-link">
+                      {{ comp.display_id }}
                   </router-link></td>
-                  <td>{{ item.description }}</td>
-                  <td class="text-center">{{ item.entries_count || 0 }}</td>
+                  <td>{{ comp.description }}</td>
+                  <td class="text-center">{{ comp.entries_count || 0 }}</td>
                   <td class="text-center">
-                    <div v-if="item.highest_entry">{{ item.highest_entry.competency_level }}</div>
+                    <div v-if="comp.highest_entry">{{ comp.highest_entry.competency_level }}</div>
                     <div v-else class="text-muted">Not started</div>
                   </td>
                 </tr>
@@ -221,9 +221,8 @@
 </template>
 
 <script setup>
-    import { ref, computed, watch } from 'vue';
-    import { useRoute } from 'vue-router'
-    import { useRouter } from 'vue-router'
+    import { ref, computed } from 'vue';
+    import { useRoute, useRouter } from 'vue-router'
     import Navbar from '@/components/Navbar.vue'
     import api from "@/services/api";
 
@@ -231,23 +230,23 @@
     const route = useRoute();
     const router = useRouter()
 
+    // Store profile information and loading status
     const profile = ref(null);
     const userCompetencies = ref([]);
     const competencyIndicators = ref([]);
     const userGoals = ref([]);
     const loading = ref(true);
+
+    // Store stat information and series information for the pie chart
     const stats = ref({
         totalReflections: 0,
         comptMastered: "0/0",
         goalsDone: "0/0",
         avgLevel: "---"
     });
+    // Stores the data that is displayed in the chart
     const series = ref([0, 0, 0, 0, 0]);
-
-    const focusItems = ref([]);
-    const compLevels = ref([]);
-    const recentAct = ref([]);
-
+    // Stores data relating to the visuals of the chart
     const chartOptions = ref({
       labels: [],
       legend: {
@@ -264,6 +263,12 @@
       ]
     })
 
+    // Store highest entry for each competency, competency levels for chart and recent activity
+    const HighestLevelComps = ref([]);
+    const compLevels = ref([]);
+    const recentAct = ref([]);
+
+    // Dashboard links
     function goToReflections() {
       router.push({
         path: `/student/eaCompetency/${route.params.id}`,
@@ -295,18 +300,18 @@
         query: { eventId }
       })
 }
-    // For formatting the date used by recent activity
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        
-        return date.toLocaleDateString('en-AU') + ', ' + 
-              date.toLocaleTimeString('en-AU', { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                hour12: true 
-              }).toLowerCase();
-      };
+    // Format the certificate dates into a better visual representation
+    const formatDate = (rawDate) => {
+        if (rawDate) {
+				// Takes a raw text string and passes it to the date constructor 
+				const d = new Date(rawDate)
+				// Formats the date data into British order (DD MM YYYY)
+				// Day and year are represented by a number and the month is a short abbreviation (E.g., 1 Jan 2026) 
+				return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      } else {
+        return ''
+      }   
+    }
 
     // priority filtering will be added whe backend supports that
     const priorityGoals = ref([])
@@ -374,30 +379,24 @@
       })
     })
 
-    // Get only the first 7 entries and all entries that have highest confident
-    const filteredFocusItems = computed(() => 
-      focusItems.value.filter(item => !item.highest_entry || item.highest_entry.competency_level_weighting < 4).slice(0, 7)
+    // Filter out all entries that are not confident
+    const filteredHighestLevelComps = computed(() => 
+      HighestLevelComps.value.filter(comp => !comp.highest_entry || comp.highest_entry.competency_level_weighting < 4).slice(0, 7)
     )
 
-    // Load individual backend calls
+    // Load student profile with student competencies and student recent actions
     const loadProfileData = async () => {
       try {
-        const response = await api.get(`/profile/${route.params.id}`);
+        const response = await api.get(`/profile/${route.params.id}/dashboard`);
         profile.value = response.data;
+        userCompetencies.value = response.data.competency_entries;
+        recentAct.value = response.data.actions
       } catch (error) {
         console.error("Error while fetching profile info:", error);
       }
 		};
 
-    const loadUserCompetencyData = async () => {
-      try {
-        const response = await api.get(`/competency-entries/${route.params.id}`);
-        userCompetencies.value = response.data;
-      } catch (error) {
-        console.error("Error while fetching user competencies:", error);
-      }
-		};
-
+    // Fetches all the possible competency indicators, used for stats calculation
     const loadCompetencyIndicators = async () => {
       try {
         const response = await api.get(`/competency-indicators`);
@@ -407,16 +406,18 @@
       }
 		};
 
-    // Gets highest level competency for each category
+    // Fetches the highest level competency entry for each indicator and returns it with its level
+    // Used to calculate stats and pie chart
     const loadCompetencyIndicatorsWithCount = async () => {
       try {
         const response = await api.get(`/student-competency-indicators/${route.params.id}`);
-        focusItems.value = response.data;
+        HighestLevelComps.value = response.data;
       } catch (error) {
         console.error("Error while fetching competencies:", error);
       }
 		};
 
+    // Fetch the user's goals from the backend
     const loadUserGoals = async () => {
       try {
         const response = await api.get('/smart-goals', {
@@ -446,6 +447,7 @@
       }
     };
 
+    // Fetch the user's networking events from the backend
     const loadNetworkingEvents = async () => {
       try { 
         const response = await api.get('/networking-events')
@@ -456,33 +458,26 @@
       }
     };
 
-    const loadUserActions = async () => {
-      try {
-        const response = await api.get(`/student-actions/recent/${route.params.id}`);
-        recentAct.value = response.data;
-      } catch (error) {
-        console.error("Error fetching recent actions:", error);
-      }
-    };
-
     // Update the chart with values
     const updateChart = async () => {
       try {
+          // Retrieve the different competency levels that a user can be
           const response = await api.get(`/competency-levels`);
           const levels = response.data;
 
-          // Add the number of not started competencies to the count
+          // Add the number of not started competencies to an array that holds the counts of each competency level
           const counts = [
-            focusItems.value.filter(item => !item.highest_entry).length
+            HighestLevelComps.value.filter(comp => !comp.highest_entry).length
           ];
 
           // Get labels for chart using the competency levels that can be selected
+          // Use map to loop through the response and extract each competency level
           compLevels.value = [
             'Not started', 
-            ...response.data.map(item => item.competency_level)
+            ...response.data.map(label => label.competency_level)
           ];
 
-          // Add labels to chart
+          // Add labels to chart while using the spread operator to keep all other chartOptions the same
           chartOptions.value = {
             ...chartOptions.value,
             labels: compLevels.value
@@ -490,11 +485,12 @@
 
           // Go through each level and find out how many of the competencies are at this level
           levels.forEach(level => {
-            const count = focusItems.value.filter(item => item.highest_entry?.competency_level === level.competency_level).length;   
+            const count = HighestLevelComps.value.filter(comp => comp.highest_entry?.competency_level === level.competency_level).length;   
 
             counts.push(count);
           });
 
+          // Update the series that
           series.value = counts;
 
       } catch (error) {
@@ -503,34 +499,37 @@
     };
 
     const loadData = async () => {
-      loading.value = true;
       try {
-        // Run all backend calls at the same time
+        // Run all backend calls in parallel using promises
         await Promise.all([
           loadProfileData(),
-          loadUserCompetencyData(),
           loadCompetencyIndicators(),
           loadUserGoals(),
-          loadUserActions(),
           loadCompetencyIndicatorsWithCount(),
           loadNetworkingEvents()
         ])
 
-        // Depends on data fetched above so runs afterwards
+        // Needs to be run after above information as it relies on competency data
         await updateChart()
 
         // Calculate the total weight based of the weight of each competency. reduce goes through and accumulates a single value
-        const totalWeight = focusItems.value.reduce((acc, item) => {
-            const weight = item.highest_entry?.competency_level_weighting || 0;
+        const totalWeight = HighestLevelComps.value.reduce((acc, comp) => {
+            const weight = comp.highest_entry?.competency_level_weighting || 0;
             return acc + weight;
         }, 0);
         
-
+        // Set average score to zero in case it cannot be calculated
+        let avgScore = 0;
         // Calculate average by dividing weight by amount of competencies
-        const avgScore = competencyIndicators.value.length > 0 ? Math.round(totalWeight / competencyIndicators.value.length) : 0;
+        if (competencyIndicators.value?.length > 0 ) {
+          // Rounds up and down depending on value
+          avgScore = Math.round(totalWeight / competencyIndicators.value.length)
+        }
 
-        // Get average level from competency levels using the weight
+        
+        // Set average level to not started in case it cannot be calculated
         let displayLevel = "Not Started";
+        // Get average level from competency levels that has a weight score equal to the rounded average score
         if (avgScore > 0) {
           try {
             const levelResponse = await api.get(`/competency-levels-by-weight/${avgScore}`);
@@ -540,30 +539,27 @@
           }
         }
 
-        // Filter all competencies above a level 3 and count
-        const masteredCount = focusItems.value.filter(item => item.highest_entry?.competency_level_weighting > 3).length;
+        // Filter all competencies above a level 3 and count to find the number of competencies that the student has achieved a confident level
+        const masteredCount = HighestLevelComps.value.filter(comp => comp.highest_entry?.competency_level_weighting > 3).length;
 
         // Stats that are to be displayed to the dashboard
         stats.value = {
           totalReflections: userCompetencies.value.length,
           comptMastered: `${masteredCount}/${competencyIndicators.value.length}`,
-          goalsDone: `${userGoals.value.filter(g => g.status?.goal_status_id === 3).length}/${userGoals.value.length}`,
+          // Goal status of 3 is a goal that is completed
+          goalsDone: `${userGoals.value.filter(goal => goal.status?.goal_status_id === 3).length}/${userGoals.value.length}`,
           avgLevel: displayLevel
         }
 
+        // Change so that the loading component is not shown
+        loading.value = false;
       } catch (error) {
         console.error("Error while fetching info:", error);
-      } finally {
-          loading.value = false;
       }
     };
 
     // Load all data required for the dashboard
     loadData();
-
-    watch(() => route.params.id, () => {
-      loadData();
-    });
 </script>
 
 <style scoped>

@@ -73,7 +73,7 @@ class StudentProfile extends Model
 
     public function actions()
     {
-        return $this->hasMany(StudentAction::class, 'profile_id', 'profile_id');
+        return $this->hasMany(StudentAction::class, 'student_profile_id', 'profile_id');
     }
 
     public function smartGoals()

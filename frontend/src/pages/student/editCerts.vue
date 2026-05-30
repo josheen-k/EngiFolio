@@ -165,43 +165,59 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
 
+  // Variables for getting and changing URL information
   const router = useRouter();
   const route = useRoute();
+
+  // Store profile data and loading status
   const profile = ref(null);
   const loading = ref(true);
+
+  // Keep track of the certs that need to be deleted when the user deletes the profile
   const achievementCertsToDelete = ref([]);
   const attainmentCertsToDelete = ref([]);
+
+  // Keep track of what certs have been expanded. Only one cert from each category can be expanded at once
   const expandedAchCerts = ref();
   const expandedAttCerts = ref();
+
+  // Keep track of moved certificates
   const movedAchCertId = ref(null);
   const movedAttCertId = ref(null);
+
+  // Track all errors from user input
   const errors = ref({});
+
+  // Show cancel prompt if user tries to cancel with profile changes and keep track of original profile to check for changes
   const showCancelConfirm = ref(false)
   const originalProfile = ref(null)
 
-  // Set up a pop up notification instead of having an alert
+  // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
 
+  // Used to display the popup message and the type being either success or error
   const showPopUp = (message, type) => {
     popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
 
+  // Load the student profile data from backend
   const loadProfile = async () => {
-    // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
-      profile.value = response.data.profile || response.data;
+      profile.value = response.data;
       // Store original profile as a string to check for changes
       originalProfile.value = JSON.stringify(profile.value)
       loading.value = false;
     } catch (error) {
-      showPopUp("Error while fetching profile:", "error");
+      console.error("Error while fetching profile:", error);
     }
   };
 
@@ -424,9 +440,7 @@
     router.push({ name: 'profile', params: { id: route.params.id } });
   };
 
-  onMounted(() => {
-    loadProfile();
-  })
+  loadProfile();
 </script>
 
 <style scoped>

@@ -63,7 +63,7 @@ Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
 
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
-Route::get('/profileDash/{id}', [StudentProfileController::class, 'getDashboardInfo']);
+Route::get('/profile/{id}/dashboard', [StudentProfileController::class, 'getDashboardInfo']);
 Route::get('/profile/{id}/image', [StudentProfileController::class, 'getProfileImage']);
 Route::get('/profile/{id}/certifications', [StudentProfileController::class, 'getCertifications']);
 Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);

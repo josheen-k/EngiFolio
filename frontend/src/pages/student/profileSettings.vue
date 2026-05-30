@@ -145,7 +145,7 @@
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
 
-  // Variables for getting and changing URL information
+   
   const router = useRouter();
   const route = useRoute();
 
@@ -246,6 +246,7 @@
       profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
 
       // Loop through each link, add entry to errors for the links located at position i
+      // Need to keep track of index i
       for (let i = 0; i < profile.value.links.length; i++) {
         const link = profile.value.links[i]
         if (!link.link_label) {
@@ -256,8 +257,8 @@
         } 
       }
 
-      // Check if error object contains any key value pairs by converting it into an array of keys
-      if (Object.keys(errors.value).length) {
+      // Covert object into JSON and check if it is empty
+      if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not save profile. Please fix highlighted fields.", "error");
         return;
       }
@@ -282,7 +283,7 @@
         localStorage.setItem(`profile_img_${route.params.id}`, savedUrl);
       }
 
-      // Saves the main profile
+      // Update the student profile with changes
       await api.put(`/profile/${route.params.id}`, profile.value);
       
       // Deletes the required links

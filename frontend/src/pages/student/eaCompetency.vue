@@ -30,17 +30,20 @@ import DraftReflections from '@/components/DraftReflections.vue';
 import FeedbackReflections from '@/components/FeedbackReflections.vue';
 import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 import api from "@/services/api";
+
+// Variables for getting and changing URL information
 const route = useRoute()
 const router = useRouter()
 
-// --- State ---
+// Holds information about the student competencies and the level options that the student has
 const categories = ref([])
 const levelOptions = ref([])
 
+// Read the ?tab= parameter to render the tab buttons
 const currTab = computed(() => route.query.tab || 'current');
-
 const tabs = ['current', 'drafts', 'feedback', 'discontinued']
 
+// Map current tab to the component
 const currComponent = computed(() => {
   switch (currTab.value) {
     case 'current': return CurrentCompetency
@@ -62,6 +65,7 @@ function switchTab(tab) {
   });
 }
 
+// Load the data required for the components
 const loadData = async () => {
   try {
     const [compRes, levelRes] = await Promise.all([

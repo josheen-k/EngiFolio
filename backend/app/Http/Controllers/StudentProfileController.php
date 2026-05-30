@@ -94,10 +94,15 @@ class StudentProfileController extends Controller
         return response()->json(['message' => 'Profile successfully deleted']);
     }
 
+    // Called by the dashboard to get relevant profile data for the dashboard display
     public function getDashboardInfo($id)
     {
         // Fails if no profile is found
-        $studentProfile = StudentProfile::with('links', 'user', 'action')->findOrFail($id);
+        $studentProfile = StudentProfile::with([
+            'user',
+            'actions',
+            'competencyEntries.entryLevel',
+        ])->findOrFail($id);
 
         return response()->json($studentProfile);
     }

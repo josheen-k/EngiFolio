@@ -154,10 +154,10 @@ const cardClass = (i, activeIndex) => {
 }
 
 // Format the certificate dates into a better visual representation
-const formatDate = (str) => {
-    if (str) {
+const formatDate = (rawDate) => {
+    if (rawDate) {
         // Takes a raw text string and passes it to the date constructor 
-        const d = new Date(str)
+        const d = new Date(rawDate)
         // Formats the date data into British order (DD MM YYYY)
         // Day and year are represented by a number and the month is a short abbreviation (E.g., 1 Jan 2026) 
         return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
