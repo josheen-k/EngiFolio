@@ -11,17 +11,17 @@
             <p class="filter-heading">Sort by</p>
               <div class="d-flex flex-column gap-1 mb-3">
                 <label class="filter-option" v-for="opt in sortByOptions" :key="opt.value">
-                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"  @click="sortOrder = 'desc'"/>{{ opt.label }}
+                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"  @click="sortOrder = 'asc'"/>{{ opt.label }}
                 </label>
               </div>
             <p class="filter-heading">Order</p>
             <div class="d-flex flex-column gap-1">
                 <label class="filter-option">
-                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>
+                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>
                   {{ sortBy === 'date' ? 'Newest to Oldest' : 'A to Z' }}
                 </label>
                 <label class="filter-option">
-                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>
+                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>
                   {{ sortBy === 'date' ? 'Oldest to Newest' : 'Z to A' }}
                 </label>
               </div>
@@ -87,7 +87,7 @@
     <h5 class="fw-bold mb-2 field-label">Delete this draft?</h5>
     <p class="field-desc mb-4">This action cannot be undone.</p>
     <div class="d-flex gap-2 justify-content-center">
-      <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
+      <button class="btn btn-filter" @click="showDeleteConfirm = false, draftEntryToDelete = null">Cancel</button>
       <button class="btn btn-add rounded-pill px-4" @click="confirmDelete">Delete</button>
     </div>
   </div>
@@ -138,21 +138,27 @@ const showPopUp = (message, type) => {
   setTimeout(() => popUp.value.show = false, popUpTime)
 }
 
+// Handle refresh from view competency
 function onSaveReflec(statusId, entryName) {
   viewReflec.value.show = false
+  // Pass refresh to eaCompetencies page
   emit('refresh')
-  if (Number(statusId) === 2) {
-    showPopUp(`${entryName} has been published.`, "success")
-  } else {
+  // Convert status id to number so can compare to 2
+  // Determines whether the entry was saved as a draft or published
+  if (Number(statusId) === 1) {
     showPopUp(`${entryName} has been saved to drafts.`, "success")
+  } else {
+    showPopUp(`${entryName} has been published.`, "success")
   }
 }
 
+// Sort refs
 const sortRef = ref(null)
 const sortDdOpen = ref(false)
 const sortBy = ref('date')
-const sortOrder = ref('desc')
+const sortOrder = ref('asc')
 
+// Filter refs
 const reflecFilterRef = ref(null)
 const reflecFilterDdOpen = ref(false)
 const reflecFilterYear = ref([])
@@ -160,41 +166,55 @@ const reflecFilterLevel = ref([])
 
 // Used to display the delete pop up
 const showDeleteConfirm = ref(false)
-const itemToDelete = ref(null)
+const draftEntryToDelete = ref(null)
 
+// Empty view reflection that is filled when the user selects a reflection
+const viewReflec = ref({
+  show: false,
+  reflec: null,
+  compt: null,
+  index: null
+})
+
+// Returns if a filter is selected or not
 const hasActiveReflecFilter = computed(function () {
   return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
 })
 
+// Set sorts back to default values
 function clearSort() {
   sortBy.value = 'date'
-  sortOrder.value = 'desc'
+  sortOrder.value = 'asc'
   sortDdOpen.value = false
 }
 
+// Close menu when user clicks outside of the menu
 onClickOutside(sortRef, function () {
   sortDdOpen.value = false
 })
 
+// Set filters back to default values
 function clearReflecFilter() {
   reflecFilterYear.value = []
   reflecFilterLevel.value = []
   reflecFilterDdOpen.value = false
 }
 
+// Close menu when user clicks outside of the menu
 onClickOutside(reflecFilterRef, function () {
   reflecFilterDdOpen.value = false
 })
 
 const processedDrafts = computed(function () {
   let list = []
+  // For all categories, competencies and reflections, add the competency to the list
   for (const cat of props.categories) {
     for (const compt of cat.compt) {
-      for (const r of compt.reflec) {
-        if (r.entry_status_id === 1) {
+      for (const refl of compt.reflec) {
+        if (refl.entry_status_id === 1) {
           list.push({
             comptId: compt.displayId,
-            reflec: r,
+            reflec: refl,
             compt: compt
           })
         }
@@ -215,38 +235,40 @@ const processedDrafts = computed(function () {
     });
   }
 
-  // sort
+  // Sort by looping through the list by comparing two items at a time
+  // A negative number means a comes first, positive means b comes first and 0 means stay the same
   list = list.sort((a, b) => {
+    // Sorting by name
     if (sortBy.value === 'name') {
+      // Sort by alphabetical order
       if (sortOrder.value === 'asc') {
-        return (b.reflec.experience_title || '').localeCompare(a.reflec.experience_title || '')      
+        // Compares a to b and returns negative if a comes before b alphabetically
+        return (a.reflec.experience_title || '').localeCompare(b.reflec.experience_title || '')    
       } else {
-        return (a.reflec.experience_title || '').localeCompare(b.reflec.experience_title || '')
+        // Compares a to b and returns negative if b comes before a alphabetically
+        return (b.reflec.experience_title || '').localeCompare(a.reflec.experience_title || '')  
       }
     }
 
-    // Convert date into a number
-    const da = new Date(a.reflec.updated_at);
-    const db = new Date(b.reflec.updated_at);
+    // Convert date into a number and sort by date
+    const dateA = new Date(a.reflec.updated_at);
+    const dateB = new Date(b.reflec.updated_at);
 
+    // Sort newest to oldest
     if (sortOrder.value === 'asc') {
-      return da-db
+      // Positive number means b is before a
+      return dateB - dateA
     } else {
-      return db-da
+      // Positive number means a is before b
+      return dateA - dateB
     }
   })
   return list
 })
 
-const viewReflec = ref({
-  show: false,
-  reflec: null,
-  compt: null,
-  index: null
-})
-
+// Runs when the user selects a reflection to open
 function openReflec(item) {
-  // Finds the original entry
+  // Finds the original entry in the array as filtering may change where it is
   const originalIndex = item.compt.reflec.findIndex(r => r.entry_id === item.reflec.entry_id);
 
   viewReflec.value = {
@@ -257,24 +279,27 @@ function openReflec(item) {
   }
 }
 
-// Show popup for delete
-function doDelete(item) {
-  itemToDelete.value = item
+// Show popup for delete, set the entry to be deleted
+function doDelete(draftEntry ) {
+  draftEntryToDelete.value = draftEntry 
   showDeleteConfirm.value = true
 }
 
+// Delete the selected draft after getting confirmation
 const confirmDelete = async () => { 
-  const id = itemToDelete.value.reflec.entry_id
+  const id = draftEntryToDelete.value.reflec.entry_id
   
   try {
+    // Call backend to delete the competency entry
     await api.delete(`/competency-entries/${id}`)
     // Reset values
     showDeleteConfirm.value = false
-    itemToDelete.value = null
+    draftEntryToDelete.value = null
     emit('refresh') 
+    showPopUp(`Draft has been deleted.`, "success")
 
   } catch (error) {
-    alert("Error when deleting the draft: ", error)
+    showPopUp("Error when deleting the draft.", "error")
   }
 }
 </script>
