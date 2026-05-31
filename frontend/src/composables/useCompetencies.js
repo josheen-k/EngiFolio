@@ -1,25 +1,22 @@
-// return only saved/posted reflections 
-export function publishedReflec(compt) {
-  if (!compt || (!compt.reflec && !compt.entries)) return []
-  const list = compt.entries || compt.reflec || []
-  
-  return list.filter(r => {
-    if (Object.prototype.hasOwnProperty.call(r, 'entry_status_id')) {
-      return r.entry_status_id >= 2
-    }
-    return r.isDraft === false
-  })
+// Return only saved/posted reflections 
+export const publishedReflec = (compt) => {
+  if (!compt || !compt.reflec) return []
+  const list = compt.reflec || []
+  // Filter out the entries are not in draft status (status of 1)
+  return list.filter(r => r.entry_status_id >= 2)
 }
 
 // get highest lvl from reflections
-export function getLvl(compt) {
-  const entries = compt.entries || compt.reflec || [];
+export const getLvl = (compt) => {
+  const entries = compt.reflec || [];
 
+  // Filter out all reflections that are marked as draft
   const published = entries.filter(e => e.entry_status_id !== 1);
 
+  // If none exist then highest is not started
   if (published.length === 0) return 'Not Started';
 
-  // Find highest entry for each competency
+  // Find highest entry for each competency, loop though and compare each weighting while returning the entry with the highest competency level
   const highestEntry = published.reduce((prev, current) => {
     const currentWeight = current.entry_level?.competency_level_weighting || 0;
     const prevWeight = prev.entry_level?.competency_level_weighting || 0;
@@ -29,17 +26,19 @@ export function getLvl(compt) {
   return highestEntry.entry_level?.competency_level || 'Not Started';
 }
 
-// Makes the date a readable format
+// Translate the raw date string into a readable australian format
 export const formatDate = (dateString) => {
+  // Takes a raw text string and passes it to the date constructor 
   const date = new Date(dateString);
-  
+  // Converts date to au string, numeric removes leading zeros while 2-digit allows leading zeros for minutes
   return date.toLocaleDateString('en-AU') + ', ' + 
     date.toLocaleTimeString('en-AU', { 
       hour: 'numeric', 
       minute: '2-digit', 
-    }).toLowerCase();
+    });
 };
 
+// The options that the user can select for the year of the entry
 export const yearOptions = [
   { value: 0, label: 'Prior to degree' },
   { value: 1, label: 'Year 1' },
@@ -48,14 +47,15 @@ export const yearOptions = [
   { value: 4, label: 'Year 4' }
 ]
 
+// Options that the user can sort by 
 export const sortByOptions = [
   { value: 'date', label: 'Date' },
   { value: 'name', label: 'Title (A–Z)' }
 ]
 
 // Used by ViewReflection and AddReflection
-// evidence helpers
-export function evLabel(type) {
+// Evidence helpers
+export const evLabel = (type) => {
   switch (type) {
     case 'url':
       return 'URL'
@@ -70,7 +70,8 @@ export function evLabel(type) {
   }
 }
 
-export function fileAccept(type) {
+// States what file types are accepted depending on evidence type selected
+export const fileAccept = (type) => {
   switch (type) {
     case 'image':
       return 'image/*'
@@ -83,7 +84,8 @@ export function fileAccept(type) {
   }
 }
 
-export function uploadHint(type) {
+// Gives the user a prompt about file types depending on evidence type selected
+export const uploadHint = (type) => {
   switch (type) {
     case 'image':
       return 'PNG, JPG, JPEG, GIF'

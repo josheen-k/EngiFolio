@@ -68,8 +68,11 @@ function switchTab(tab) {
 // Load the data required for the components
 const loadData = async () => {
   try {
+    // Parallel calls to retrieve required competency data
     const [compRes, levelRes] = await Promise.all([
+      // Load competency groups with all competency indicators and competency entries for the logged in student
       api.get(`/competency-groups-student/${route.params.id}`),
+      // Get competency levels that can be assigned by a student
       api.get('/competency-levels'),
     ])
 
@@ -92,20 +95,24 @@ const loadData = async () => {
       }))
     }));
 
-    levelOptions.value = [
-      ...levelRes.data.map(l => ({
+    // Populate the level options table with the level ids and labels
+    levelOptions.value =
+      levelRes.data.map(l => ({
         value: l.entry_level_id,
         label: l.competency_level
-      }))
-    ];
+      }));
   } catch (error) {
     console.error('Error when loading competencies and levels', error)
   }
 };
 
+// Directs the user to a certain competency indicator if the indicator query is present
+// For when the user selects a competency indicator from the dashboard
 const handleIndicatorParam = () => {
+  // Get the indicator id from the url
   const indicatorId = route.query.indicator;
-  if (indicatorId && currTab.value !== 'current' && categories.value.length) {
+
+  if (indicatorId && currTab.value !== 'current') {
     for (const cat of categories.value) {
       const match = cat.compt.find(c => Number(c.id) === Number(indicatorId));
       if (match) {

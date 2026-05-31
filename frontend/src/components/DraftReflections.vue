@@ -117,7 +117,8 @@ import { formatDate, yearOptions, sortByOptions } from '@/composables/useCompete
 import { onClickOutside } from '@vueuse/core'
 import api from "@/services/api"
 
-// Allows for the eaCompetency page to pass the vales along
+// Catches components passed down though the eaCompetencies template
+// Categories contains competency data and student entry data
 const props = defineProps({
   categories: { type: Array, required: true },
   levelOptions: { type: Array, required: true }
@@ -126,11 +127,15 @@ const props = defineProps({
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
 
+// Object to store data about the popup message
 const popUp = ref({ show: false, message: '', type: '' })
+// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+const popUpTime = 3000
 
+// Used to display the popup message and the type being either success or error
 const showPopUp = (message, type) => {
   popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, 3000)
+  setTimeout(() => popUp.value.show = false, popUpTime)
 }
 
 function onSaveReflec(statusId, entryName) {

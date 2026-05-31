@@ -257,7 +257,7 @@
         } 
       }
 
-      // Covert object into JSON and check if it is empty
+      // Covert object into JSON and check if it is empty to see if there are any errors
       if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not save profile. Please fix highlighted fields.", "error");
         return;
@@ -279,33 +279,33 @@
         const savedUrl = res.data.image_url;
         profile.value.profile_image_url = savedUrl;
 
-        // Local storage used by the dashboard for persistent profile images
+        // Update the local storage used by the dashboard with new url
         localStorage.setItem(`profile_img_${route.params.id}`, savedUrl);
       }
 
       // Update the student profile with changes
       await api.put(`/profile/${route.params.id}`, profile.value);
       
-      // Deletes the required links
+      // Create an array of calls for the links to be deleted
       const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
 
       // Handle Updates and Creations
-      const upsertPromises = profile.value.links.map(link => {
+      const updatesPromises = profile.value.links.map(link => {
         // Ignore empty rows
         if (!link.link_url.trim()) {
           return null;
         }
 
-        // Create or update the link
+        // If link exists then use put to update, else use post to create a new link and filter out empty rows
         if (link.link_id) {
           return api.put(`/link/${link.link_id}`, link);
         } else {
           return api.post(`/link`, link);
         }
-      }).filter(p => p !== null);
+      }).filter(links => links !== null);
 
-      // Execute all API calls
-      await Promise.all([...deletePromises, ...upsertPromises]);
+      // Combine the arrays of the deletes, adds and updates
+      await Promise.all([...deletePromises, ...updatesPromises]);
 
       // Clear the delete tracking for next time
       linksToDelete.value = [];
@@ -327,9 +327,10 @@
 
   // Temporarily add a new image to profile picture and display it. Get information ready in case of profile save
   const imageUpload = (e) => {
-    // The event object passed, target is the input and the file[0] represents the image
+    // The event object passed, target is the input and the file[0] represents the image to be uploaded
     const file = e.target.files[0]
     if (file) {
+      // Set file name and the file itself
       imageFileName.value = file.name
       imageFile.value = file
 

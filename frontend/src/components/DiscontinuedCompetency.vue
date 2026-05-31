@@ -86,8 +86,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import ViewReflection from '@/components/ViewReflection.vue'
 import { getLvl, publishedReflec, formatDate } from '@/composables/useCompetencies.js'
+import ViewReflection from '@/components/ViewReflection.vue'
+
 
 const props = defineProps({
   categories: { type: Array, required: true },

@@ -290,6 +290,7 @@
     expandedAchCerts.value = 0;
 	};
 
+  // Adds an empty cert to the frontend profile data when add cert is clicked
 	const addAttCert = () => {
 		profile.value.attainment_certs.unshift({
 			title: '',
@@ -303,23 +304,26 @@
     expandedAttCerts.value = 0;
 	};
 
+  // Push the index of certs to be deleted to a special array to be handled on save
 	const removeAchCert = (index) => {
     const cert = profile.value.achievement_certs[index];
 		if (cert.achievement_cert_id) {
 			achievementCertsToDelete.value.push(cert.achievement_cert_id);
 		}
-
+    // Remove from the certs shown on the page
 		profile.value.achievement_certs.splice(index, 1);
 
     // Remove errors on delete
     errors.value = {}
 	};
 
+  // Push the index of certs to be deleted to a special array to be handled on save
 	const removeAttCert = (index) => {
 		const cert = profile.value.attainment_certs[index];
 		if (cert.attainment_cert_id) {
 			attainmentCertsToDelete.value.push(cert.attainment_cert_id);
 		}
+    // Remove from the certs shown on the page
 		profile.value.attainment_certs.splice(index, 1);
 
     // Remove errors on delete
@@ -327,8 +331,9 @@
 	};
 
   // Attempt to make a URL object to test if link is correct
-  function isValidUrl(url) {
+  const isValidUrl = (url) => {
     try {
+      // URL constructor throws an error if the url format is invalid
       new URL(url)
       return true
     } catch {
@@ -348,76 +353,84 @@
       errors.value = {}
 
       // Loop through each cert and check for errors and assign order, entries deconstructs the array into index and entry pairs
-      for (const [index, cert] of profile.value.achievement_certs.entries()) {
+      for (let i = 0; i < profile.value.achievement_certs.length; i++) {
+        const cert = profile.value.achievement_certs[i]
         if (!cert.title) {
-          errors.value[`achieveTitle_${index}`] = true
+          errors.value[`achieveTitle_${i}`] = true
         }
         if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
-          errors.value[`achieveURL_${index}`] = true
+          errors.value[`achieveURL_${i}`] = true
         }
-        // Set the order based off the array
-        cert.sort_order = index + 1;
+        // Set the order based off the array since i starts at 0 and order starts at 1
+        cert.sort_order = i + 1;
       }
 
-      for (const [index, cert] of profile.value.attainment_certs.entries()) {
+      for (let i = 0; i < profile.value.attainment_certs.length; i++) {
+        const cert = profile.value.attainment_certs[i]
         if (!cert.title) {
-          errors.value[`attainTitle_${index}`] = true
+          errors.value[`attainTitle_${i}`] = true
         }
         if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
-          errors.value[`attainURL_${index}`] = true
+          errors.value[`attainURL_${i}`] = true
         }
-        // Set the order based off the array
-        cert.sort_order = index + 1;
+        // Set the order based off the array since i starts at 0 and order starts at 1
+        cert.sort_order = i + 1;
       }
 
-      // Check if error object contains any key value pairs by converting it into an array of keys
-      if (Object.keys(errors.value).length) {
+      // Covert object into JSON and check if it is empty to see if there are any errors
+      if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not save certificates. Please fix highlighted fields.", "error");
         return;
-      }
+      } 
 
-      // Deletions (Handles both types of certs)
+      // Create arrays of delete requests to be run
       const deleteAchPromises = achievementCertsToDelete.value.map(id => api.delete(`/achievement-cert/${id}`));
       const deleteAttPromises = attainmentCertsToDelete.value.map(id => api.delete(`/attainment-cert/${id}`));
 
-      // Handle Achievement Upserts
-      const achUpsertPromises = profile.value.achievement_certs.map(cert => {
-        if (!cert.title || cert.title.trim() === '') return null;
-
+      // Handle Achievement updates
+      const achUpdatesPromises = profile.value.achievement_certs.map(cert => {
+        // Ignore certs with empty titles, filtered out so are not passed to promise.all
+        if (!cert.title || cert.title.trim() === '') {
+          return null;
+        }
+        // If it already exists put to update, else post a new cert
         if (cert.achievement_cert_id) {
           return api.put(`/achievement-cert/${cert.achievement_cert_id}`, cert);
         } else {
-          return api.post(`/achievement-cert`, { ...cert, profile_id: route.params.id });
+          return api.post(`/achievement-cert`, cert);
         }
       }).filter(p => p !== null);
 
-      // Handle Attainment Upserts
-      const attUpsertPromises = profile.value.attainment_certs.map(cert => {
-        if (!cert.title || cert.title.trim() === '') return null;
-
+      // Handle Attainment Updates
+      const attUpdatesPromises = profile.value.attainment_certs.map(cert => {
+         // Ignore certs with empty titles, filtered out so are not passed to promise.all
+        if (!cert.title || cert.title.trim() === '') {
+          return null;
+        }
+        // If it already exists put to update, else post a new cert
         if (cert.attainment_cert_id) {
           return api.put(`/attainment-cert/${cert.attainment_cert_id}`, cert);
         } else {
-          return api.post(`/attainment-cert`, { ...cert, profile_id: route.params.id });
+          return api.post(`/attainment-cert`, cert);
         }
       }).filter(p => p !== null);
 
-      // Execute all API calls concurrently
+      // Execute all backend delete and update calls in parallel
       await Promise.all([
           ...deleteAchPromises, 
           ...deleteAttPromises, 
-          ...achUpsertPromises, 
-          ...attUpsertPromises
+          ...achUpdatesPromises, 
+          ...attUpdatesPromises
       ]);
       
-      // Clear tracking arrays
+      // Reset arrays tracking what certs to delete
       achievementCertsToDelete.value = [];
       attainmentCertsToDelete.value = [];
 
       // Add a post to student actions for updated certificates
       await api.post(`/student-actions/new`, {action: "Updated certificates", student_profile_id: route.params.id});
       
-      // Redirect back to the view page
+      // Redirect back to the view profile page
       router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
     } catch (error) {
       showPopUp("There was an error saving your certifications.", "error");

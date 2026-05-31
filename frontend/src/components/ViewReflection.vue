@@ -101,11 +101,9 @@
             </select>
 
             <select v-model="ef.associated_year" class="pill-select">
-              <option value="0">Prior to degree</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-              <option value="4">Year 4</option>
+              <option v-for="opt in yearOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
             </select>
 
             <select v-model="ef.entry_level_id" class="pill-select">
@@ -281,15 +279,18 @@
   const originalEf = ref(null)
   const showCancelConfirm = ref(false)
 
-  // Set up a pop up notification instead of having an alert
+  // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
 
+  // Used to display the popup message and the type being either success or error
   const showPopUp = (message, type) => {
     popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
 
-  // local state
+  // local states
   const editing = ref(false)
   const showDeleteConfirm = ref(false)
 
@@ -374,9 +375,10 @@
     originalEf.value = JSON.stringify(ef.value)
   }
 
-  // Check to see if url sent is valid
-  function isValidUrl(url) {
+  // Attempt to make a URL object to test if link is correct
+  const isValidUrl = (url) => {
     try {
+      // URL constructor throws an error if the url format is invalid
       new URL(url)
       return true
     } catch {
@@ -486,6 +488,7 @@
     }
   }
 
+  // Delete the competency entry
   async function doDelete() {
     try {
       await api.delete(`/competency-entries/${props.reflec.entry_id}`)

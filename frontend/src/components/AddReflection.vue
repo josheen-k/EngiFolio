@@ -55,11 +55,9 @@
           <div class="col-4">
             <label class="form-label field-label">Associated year</label>
             <select v-model="f.year" class="form-select field-select rounded-3">
-              <option value="0">Prior to degree</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-              <option value="4">Year 4</option>
+              <option v-for="opt in yearOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
             </select>
           </div>
         </div>
@@ -185,7 +183,7 @@
 
 <script setup>
   import { ref, computed, watch } from 'vue'
-  import { fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+  import { fileAccept, uploadHint, yearOptions } from '@/composables/useCompetencies.js'
   import { useRoute } from 'vue-router'
   import api from "@/services/api"
 
