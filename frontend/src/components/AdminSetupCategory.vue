@@ -18,7 +18,7 @@
                 <div v-if="currentCats.length" class="row g-3">
                     <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="cat in currentCats" :key="cat.group_id">
 
-                        <div class="compt-card p-3">
+                        <div class="compt-card p-3" @click="openView(cat)">
                             <h5 class="compt-id mb-2">{{ cat.display_id }}</h5>
                             <h5 class="compt-label mb-2" :data-tooltip="cat.group_name">{{ cat.group_name }}</h5>
 
@@ -51,7 +51,7 @@
                 <div v-if="discontinuedCats.length" class="row g-3">
                     <div class="col-6 col-sm-4 col-md-3 col-xl-3" v-for="cat in discontinuedCats" :key="cat.group_id">
 
-                        <div class="compt-card compt-card-disc p-3">
+                        <div class="compt-card p-3" @click="openView(cat)">
                             <h5 class="compt-id mb-1">{{ cat.display_id }}</h5>
                             <h5 class="compt-name mb-2" :data-tooltip="cat.group_name">{{ cat.group_name }}</h5>
 
@@ -121,6 +121,45 @@
         </div>
     </div>
 
+    <!-- view category popup-->
+    <div v-if="viewPopup.show" class="view-popup" @click.self="viewPopup.show = false">
+        <div class="view-popup-box">
+            <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                <img class="plus-btn" src="@/assets/back.png" @click="viewPopup.show = false"/>
+                <h2 class="view-title mb-0">{{ viewPopup.cat?.group_name }}</h2>
+
+                <div class="d-flex gap-2">
+                    <img class="plus-btn" src="@/assets/del.png" title="Delete"
+                    @click="triggerDelete(viewPopup.cat); viewPopup.show = false"/>
+                    <img class="plus-btn" src="@/assets/edit.png" title="Edit"
+                    @click="openModal(viewPopup.cat); viewPopup.show = false"/>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 pt-3 pb-2 flex-wrap px-3">
+                <span class="pill-tag">{{ viewPopup.cat?.display_id }}</span>
+                <span v-if="viewPopup.cat?.discontinued_date" class="pill-tag pill-tag-disc">
+                    Discontinued {{ viewPopup.cat.discontinued_date }}
+                </span>
+            </div>
+
+            <div class="view-popup-scroll px-4 py-3 d-flex flex-column gap-4">
+                <div>
+                    <p class="section-label">Description:</p>
+                    <p class="body-txt">{{ viewPopup.cat?.description || 'No description added.' }}</p>
+                </div>
+                <div>
+                    <p class="section-label">Competencies:</p>
+                    <p class="body-txt">{{ comptCount(viewPopup.cat?.group_id) }} competenc{{ comptCount(viewPopup.cat?.group_id) === 1 ? 'y' : 'ies' }} in this category.</p>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center p-3 border-top date-txt">
+                <span>Updated {{ formatDate(viewPopup.cat?.updated_at) }}</span>
+            </div>
+        </div>
+    </div>
+
     <!-- delete confirmation -->
     <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
         <div class="delete-box text-center p-4">
@@ -170,6 +209,12 @@ const fetchAll = async () => {
 const popup = reactive({ show: false, editing: null, error: '' })
 const blankForm = () => ({ display_id: '', group_name: '', description: '', discontinued_date: '' })
 const form = ref(blankForm())
+const viewPopup = reactive({ show: false, cat: null })
+
+const openView = (cat) => {
+  viewPopup.cat = cat
+  viewPopup.show = true
+}
 
 const openModal = (cat) => {
     popup.editing = cat
@@ -344,8 +389,8 @@ onMounted(fetchAll)
 .compt-label {
     font-family: 'Maven Pro', sans-serif;
     font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-    font-weight: 500;
-    color: #333333;
+    font-weight: 100;
+    color: #888888;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -455,6 +500,78 @@ onMounted(fetchAll)
     align-items: center;
     justify-content: center;
     padding: 1.25rem;
+}
+
+.view-popup-box {
+    background: #ffffff;
+    border-radius: 1.25rem;
+    width: 100%;
+    max-width: 45rem;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.view-popup-scroll {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.view-title {
+    font-family: 'Martel', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2b2b2b;
+}
+
+.plus-btn {
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.plus-btn:hover { 
+    transform: scale(1.1); 
+}
+
+.pill-tag {
+    border: 0.09rem solid #d0d0d0;
+    border-radius: 999px;
+    padding: 0.25rem 1rem;
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 0.8rem;
+    color: #444444;
+    background: #ffffff;
+}
+
+.pill-tag-disc {
+    border-color: #f0c0c0;
+    color: #c08080;
+    background: #fff5f5;
+}
+
+.section-label {
+    font-family: 'Martel', sans-serif;
+    font-size: 1rem;
+    text-decoration: underline;
+    color: #222222;
+    margin-bottom: 0.5rem;
+}
+
+.body-txt {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.75;
+    color: #444444;
+    margin-bottom: 0;
+}
+
+.date-txt {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 0.9rem;
+    color: #888888;
 }
 
 .delete-box {

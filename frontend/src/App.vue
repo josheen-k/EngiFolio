@@ -19,6 +19,26 @@
 </script>
 
 <template>
-  <router-view :key="$route.fullPath" />
-  <Footer/>
+  <div class="app">
+    <router-view :key="$route.fullPath" />
+    <Footer/>
+  </div>
 </template>
+
+<style>
+html, body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+footer {
+  margin-top: auto;
+}
+</style>
