@@ -23,7 +23,7 @@ import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 import CDL from '@/pages/student/CDL.vue'
 import PrivacyPolicy from '@/pages/public/PrivacyPolicy.vue'
-import AdminManageCompetency from '@/components/AdminManageCompetency.vue'
+import AdminSetup from '@/pages/admin/AdminSetup.vue'
 
 const routes = [
   {
@@ -146,8 +146,8 @@ const routes = [
 
   {
     path: '/admin/:id/management',
-    name: 'adminManagement',
-    component: AdminManageCompetency,
+    name: 'adminSetup',
+    component: AdminSetup,
     beforeEnter: (to) => {
       return String(to.params.id) === '1' ? true : { name: 'Homepage' }
     }
