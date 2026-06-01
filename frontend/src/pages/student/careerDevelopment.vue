@@ -1216,9 +1216,10 @@ onMounted(() => {
   vertical-align: middle;
 }
 
+/* Table body typography matches SMART Goals (GoalsPage.vue). */
 .career-development-page .career-table tbody td {
-  font: 400 0.92rem/1.4 'Maven Pro', sans-serif;
-  color: #6d6d6d;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #2b2b2b;
 }
 
 /* Employers column (col 3): full-width list so rows share the same left edge. */
@@ -1245,8 +1246,8 @@ onMounted(() => {
 .career-development-page .career-table .text-preview {
   max-width: min(18rem, 100%);
   text-align: left;
-  font: inherit;
-  color: inherit;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
 }
 
 .career-development-page .career-table .cell-copy {
@@ -1255,19 +1256,20 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   text-align: left;
-  font: inherit;
-  color: inherit;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #2b2b2b;
 }
 
 .career-development-page .career-table .compact-list,
 .career-development-page .career-table .compact-list li {
-  font: inherit;
-  color: inherit;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
 }
 
 .career-development-page .career-table .view-more-btn {
-  font-size: inherit;
-  line-height: inherit;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.35;
 }
 
 .career-development-page .career-table .goal-stack {
@@ -1355,7 +1357,7 @@ onMounted(() => {
 }
 
 .year-cell {
-  font-weight: 800;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #2b2b2b;
 }
 
@@ -1491,8 +1493,12 @@ onMounted(() => {
 .career-development-page .mobile-plan-card section .text-preview,
 .career-development-page .mobile-plan-card section .compact-list,
 .career-development-page .mobile-plan-card section .compact-list li {
-  font: 400 0.92rem/1.4 'Maven Pro', sans-serif;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #6d6d6d;
+}
+
+.career-development-page .mobile-plan-card section .mobile-value {
+  color: #2b2b2b;
 }
 
 .career-development-page .mobile-plan-card section .text-preview,
@@ -1506,8 +1512,9 @@ onMounted(() => {
 }
 
 .career-development-page .mobile-plan-card section .view-more-btn {
-  font-size: inherit;
-  line-height: inherit;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.35;
 }
 
 .career-development-page .mobile-plan-card section .goal-stack {
