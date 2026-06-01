@@ -53,7 +53,7 @@
 
                         <div class="compt-card p-3" @click="openView(cat)">
                             <h5 class="compt-id mb-1">{{ cat.display_id }}</h5>
-                            <h5 class="compt-name mb-2" :data-tooltip="cat.group_name">{{ cat.group_name }}</h5>
+                            <h5 class="compt-label mb-2" :data-tooltip="cat.group_name">{{ cat.group_name }}</h5>
 
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <span class="reflecs-red rounded-pill px-3 py-1">

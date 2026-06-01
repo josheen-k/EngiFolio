@@ -6,10 +6,10 @@
                 <div class="navLogo"></div>
             <!-- </router-link> -->
              <div class="nav-item">
-                <router-link active-class="active-link" :to="`/admin/${$route.params.id}`" @click="closeMenu">Dashboard</router-link>
+                <router-link active-class="active-link" :to="`/admin/${$route.params.id}`">Dashboard</router-link>
             </div>
             <div class="nav-item">
-                <router-link active-class="active-link" :to="`/admin/${$route.params.id}/management`" @click="closeMenu">Management</router-link>
+                <router-link active-class="active-link" :to="`/admin/${$route.params.id}/management`">Management</router-link>
             </div>
         </div>
 
