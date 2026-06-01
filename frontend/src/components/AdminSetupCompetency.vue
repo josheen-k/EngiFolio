@@ -238,12 +238,12 @@
         <div class="add-popup-box">
             <h2 class="text-center fw-bold border-bottom p-3 add-title">Edit {{ selected.size }} Competencies</h2>
             <div class="add-popup-scroll px-4 py-4 d-flex flex-column gap-4">
-                <p class="field-label">Mass editing is applicable for following fields only</p>
+                <p class="body-txt">- Mass editing is applicable for following fields only -</p>
 
                 <div>
-                    <label class="form-label field-label">Change Category</label>
+                    <label class="field-label">Change Category</label>
                     <select v-model.number="massForm.group_id" class="form-select field-select rounded-3">
-                        <option :value="null">/ keep existing /</option>
+                        <option :value="null">Keep existing</option>
                         <option v-for="g in categories" :key="g.group_id" :value="g.group_id">
                             {{ g.display_id }} - {{ g.group_name }}
                         </option>
@@ -252,8 +252,11 @@
 
                 <div>
                     <label class="form-label field-label">Discontinued Date</label>
-                    <input v-model="massForm.discontinued_date" type="date"
-                        class="form-control field-input rounded-3" />
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <input type="checkbox" v-model="massForm.clearDate" id="clearDate"/>
+                        <p class="body-txt mb-0" for="clearDate">Clear existing dates</p>
+                    </div>
+                    <input v-model="massForm.discontinued_date" type="date" class="form-control field-input rounded-3" :disabled="massForm.clearDate"/>
                 </div>
                 <p v-if="massEditPopup.error" class="error-text mb-0">{{ massEditPopup.error }}</p>
             </div>
@@ -466,7 +469,7 @@ const saveCompt = async () => {
     try {
         const p = { ...f.value, attainment_indicators: f.value.attainment_indicators.filter(a => a.trim()) }
         if (!p.discontinued_date) {
-            delete p.discontinued_date
+           p.discontinued_date = null
         }
         if (!p.indicator_link) {
             delete p.indicator_link
@@ -531,10 +534,10 @@ const doDelete = async () => {
 
 // mass edit
 const massEditPopup = reactive({ show: false, error: '' })
-const massForm = ref({ group_id: null, discontinued_date: '' })
+const massForm = ref({ group_id: null, discontinued_date: '', clearDate: false })
 
 const openMassEdit = () => {
-    massForm.value = { group_id: null, discontinued_date: '' }
+    massForm.value = { group_id: null, discontinued_date: '', clearDate: false }
     massEditPopup.error = ''
     massEditPopup.show = true
 }
@@ -547,7 +550,9 @@ const saveMassEdit = async () => {
             if (massForm.value.group_id) {
                 p.group_id = massForm.value.group_id
             }
-            if (massForm.value.discontinued_date) {
+            if (massForm.value.clearDate) {
+                p.discontinued_date = null
+            } else if (massForm.value.discontinued_date) {
                 p.discontinued_date = massForm.value.discontinued_date
             }
             return api.put(`/competency-indicators/${id}`, p)
