@@ -164,7 +164,11 @@
     <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
         <div class="delete-box text-center p-4">
             <h5 class="fw-bold mb-2 field-label">Delete this category?</h5>
-            <p class="field-desc mb-4">This action cannot be undone.</p>
+            <p class="field-desc mb-4">
+                <span class="disc-date" v-if="comptCount(itemToDelete?.group_id) > 0">
+                This will also delete {{ comptCount(itemToDelete?.group_id) }} competencies linked with it!<br/></span>
+                This action cannot be undone.
+            </p>
             <div class="d-flex gap-2 justify-content-center">
                 <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
                 <button class="btn btn-add rounded-pill px-4" @click="doDelete">Delete</button>
