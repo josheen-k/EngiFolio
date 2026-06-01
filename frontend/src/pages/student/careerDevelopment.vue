@@ -136,7 +136,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'professional_interests') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'professional_interests') }}</span>
                 </td>
                 <td>
                   <template v-if="!splitList(plan.employers_of_interest).length">Not added yet.</template>
@@ -166,7 +166,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'personal_values') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'personal_values') }}</span>
                 </td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'development_focus')">Not added yet.</template>
@@ -180,7 +180,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'development_focus') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'development_focus') }}</span>
                 </td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'extracurriculars')">Not added yet.</template>
@@ -194,7 +194,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'extracurriculars') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'extracurriculars') }}</span>
                 </td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'networking_plan')">Not added yet.</template>
@@ -208,26 +208,27 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'networking_plan') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'networking_plan') }}</span>
                 </td>
                 <td>
                   <div v-if="getPlanGoals(plan).length" class="goal-stack">
-                    <article v-for="goal in getPlanGoals(plan)" :key="goal.goal_id" class="linked-goal">
-                      <div v-if="hasLongText(goal.goal_description || '')" class="text-preview-stack linked-goal-preview">
-                        <p class="text-preview">{{ getTextPreview(goal.goal_description || '') }}</p>
-                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                        <button
-                          type="button"
-                          class="btn btn-link view-more-btn p-0"
-                          @click="openTextModal('SMART Goal', goal.goal_description || '')"
-                        >
-                          View more
-                        </button>
+                    <article
+                      v-for="goal in getPlanGoals(plan)"
+                      :key="goal.goal_id"
+                      class="linked-goal"
+                    >
+                      <div
+                        class="linked-goal-title-wrap"
+                        :class="{ 'is-tooltip-visible': activeGoalTooltipId === goal.goal_id }"
+                        :data-tooltip="goalTitleTooltips[goal.goal_id]"
+                        @mouseenter="showGoalTitleTooltip(goal, $event)"
+                        @mouseleave="hideGoalTitleTooltip(goal.goal_id)"
+                      >
+                        <p class="linked-goal-title">
+                          {{ getGoalDescription(goal) || 'Untitled goal' }}
+                        </p>
                       </div>
-                      <div v-else class="linked-goal-head">
-                        <span>{{ goal.goal_description }}</span>
-                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                      </div>
+                      <span class="status-pill linked-goal-status">{{ getGoalStatus(goal) }}</span>
                     </article>
                   </div>
                   <span v-else>No SMART goals linked yet.</span>
@@ -381,22 +382,23 @@
             <section class="mobile-section">
               <p class="mobile-label">Linked SMART Goals</p>
               <div v-if="getPlanGoals(plan).length" class="goal-stack">
-                <article v-for="goal in getPlanGoals(plan)" :key="`mobile-goal-${goal.goal_id}`" class="linked-goal">
-                  <div v-if="hasLongText(goal.goal_description || '')" class="text-preview-stack linked-goal-preview">
-                    <p class="mobile-value text-preview">{{ getTextPreview(goal.goal_description || '') }}</p>
-                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                    <button
-                      type="button"
-                      class="btn btn-link view-more-btn p-0"
-                      @click="openTextModal('SMART Goal', goal.goal_description || '')"
-                    >
-                      View more
-                    </button>
+                <article
+                  v-for="goal in getPlanGoals(plan)"
+                  :key="`mobile-goal-${goal.goal_id}`"
+                  class="linked-goal"
+                >
+                  <div
+                    class="linked-goal-title-wrap"
+                    :class="{ 'is-tooltip-visible': activeGoalTooltipId === goal.goal_id }"
+                    :data-tooltip="goalTitleTooltips[goal.goal_id]"
+                    @mouseenter="showGoalTitleTooltip(goal, $event)"
+                    @mouseleave="hideGoalTitleTooltip(goal.goal_id)"
+                  >
+                    <p class="linked-goal-title">
+                      {{ getGoalDescription(goal) || 'Untitled goal' }}
+                    </p>
                   </div>
-                  <div v-else class="linked-goal-head">
-                    <span>{{ goal.goal_description }}</span>
-                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                  </div>
+                  <span class="status-pill linked-goal-status">{{ getGoalStatus(goal) }}</span>
                 </article>
               </div>
               <p v-else class="mobile-value">No SMART goals linked yet.</p>
@@ -573,6 +575,32 @@ const closeTextModal = () => {
 // API may return snake_case or camelCase relation names.
 const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
 const getGoalStatus = (goal) => goal.status?.status || 'No status'
+const getGoalDescription = (goal) => normalizeDisplayText(goal?.goal_description || '')
+
+// Show full goal title on hover only when ellipsis truncates the visible text.
+const goalTitleTooltips = ref({})
+const activeGoalTooltipId = ref(null)
+
+const showGoalTitleTooltip = (goal, event) => {
+  const wrap = event.currentTarget
+  if (!(wrap instanceof HTMLElement)) return
+  const titleEl = wrap.querySelector('.linked-goal-title')
+  if (!(titleEl instanceof HTMLElement)) return
+  const text = getGoalDescription(goal) || 'Untitled goal'
+  if (titleEl.scrollWidth <= titleEl.clientWidth + 1) return
+  activeGoalTooltipId.value = goal.goal_id
+  goalTitleTooltips.value = { ...goalTitleTooltips.value, [goal.goal_id]: text }
+}
+
+const hideGoalTitleTooltip = (goalId) => {
+  if (activeGoalTooltipId.value === goalId) {
+    activeGoalTooltipId.value = null
+  }
+  if (!goalTitleTooltips.value[goalId]) return
+  const next = { ...goalTitleTooltips.value }
+  delete next[goalId]
+  goalTitleTooltips.value = next
+}
 
 // Top toggle highlight (this page is always CAREER_PLAN; SMART_GOALS uses GoalsPage).
 const currTab = computed(() =>
@@ -1025,10 +1053,11 @@ onMounted(() => {
 }
 
 .text-preview-stack {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
+  text-align: left;
 }
 
 .text-preview {
@@ -1041,7 +1070,7 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #6d6d6d;
-  text-align: center;
+  text-align: left;
 }
 
 .modal-backdrop {
@@ -1131,32 +1160,60 @@ onMounted(() => {
   border-bottom: none;
 }
 
-/* Career plan table: headers and cell copy stay centered. */
+/* Career plan table: blocks centered in cells; copy inside blocks left-aligned. */
 .career-development-page .career-table th,
 .career-development-page .career-table td {
   text-align: center;
   vertical-align: middle;
 }
 
+/* Employers column (col 3): full-width list so rows share the same left edge. */
 .career-development-page .career-table .compact-list {
-  list-style-position: inside;
-  padding-left: 0;
-  margin-left: auto;
-  margin-right: auto;
-  display: inline-block;
-  text-align: center;
+  list-style-position: outside;
+  padding-left: 1.1rem;
+  margin: 0;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
 }
 
-.career-development-page .career-table .linked-goal-head {
+.career-development-page .career-table td:nth-child(3) .text-preview-stack {
+  display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  text-align: center;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.career-development-page .career-table .text-preview-stack {
+  align-items: flex-start;
+}
+
+.career-development-page .career-table .text-preview {
+  max-width: min(18rem, 100%);
+  text-align: left;
+}
+
+.career-development-page .career-table .cell-copy {
+  display: inline-block;
+  max-width: min(18rem, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  color: #6d6d6d;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
 }
 
 .career-development-page .career-table .goal-stack {
   justify-items: center;
+  text-align: left;
+}
+
+.career-development-page .career-table td:has(.goal-stack) {
+  overflow: visible;
 }
 
 /* Career plan table column widths. */
@@ -1172,7 +1229,8 @@ onMounted(() => {
 .career-table td:nth-child(5),
 .career-table th:nth-child(8),
 .career-table td:nth-child(8) {
-  min-width: 15rem;
+  min-width: 11rem;
+  width: 11rem;
 }
 
 .career-table th:nth-child(3),
@@ -1250,10 +1308,73 @@ onMounted(() => {
 }
 
 .linked-goal {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: min(10.25rem, 100%);
+  max-width: 10.25rem;
+  min-height: 4.75rem;
+  height: 4.75rem;
   border: 1px solid #e3e3e3;
   border-radius: 0.85rem;
   background: #ffffff;
-  padding: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  text-align: center;
+  align-items: center;
+  overflow: visible;
+}
+
+.linked-goal-title-wrap {
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.linked-goal-title {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #2b2b2b;
+  cursor: default;
+  text-align: center;
+}
+
+.linked-goal-title-wrap[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
+  z-index: 30;
+  background: #727272;
+  color: #ffffff;
+  font: 400 0.75rem/1.35 'Maven Pro', sans-serif;
+  white-space: normal;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.linked-goal-title-wrap[data-tooltip].is-tooltip-visible::after {
+  opacity: 1;
+}
+
+.linked-goal-status {
+  align-self: center;
 }
 
 .linked-goal-head {
@@ -1278,7 +1399,7 @@ onMounted(() => {
   display: none;
 }
 
-/* Mobile career cards: same centered copy as the desktop table. */
+/* Mobile career cards: blocks centered; copy inside blocks left-aligned. */
 .career-development-page .mobile-plan-card {
   text-align: center;
 }
@@ -1290,23 +1411,31 @@ onMounted(() => {
 }
 
 .career-development-page .mobile-section .compact-list {
-  list-style-position: inside;
-  padding-left: 0;
-  margin-left: auto;
-  margin-right: auto;
-  display: inline-block;
-  text-align: center;
+  list-style-position: outside;
+  padding-left: 1.1rem;
+  margin: 0;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
 }
 
-.career-development-page .mobile-section .linked-goal-head {
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
+.career-development-page .mobile-section .text-preview-stack {
+  align-items: flex-start;
+}
+
+.career-development-page .mobile-section .text-preview,
+.career-development-page .mobile-section .mobile-value {
+  display: inline-block;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
 }
 
 .career-development-page .mobile-section .goal-stack {
   justify-items: center;
+  text-align: left;
 }
 
 /* Mobile-only card layout for career plans. */
