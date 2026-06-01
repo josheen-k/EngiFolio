@@ -680,6 +680,17 @@ const normalizePlanPayload = () => {
   }
 }
 
+// API may return an array of plans, a single plan object, or nothing.
+const normalizePlansResponse = (data) => {
+  if (Array.isArray(data)) {
+    return data
+  }
+  if (data) {
+    return [data]
+  }
+  return []
+}
+
 // API loading functions fetch plans and all goals that can be linked to a plan.
 const fetchCareerPlans = async () => {
   try {
@@ -687,7 +698,7 @@ const fetchCareerPlans = async () => {
     errorMessage.value = ''
 
     const response = await api.get(`/career-plans/${route.params.id}`)
-    plans.value = Array.isArray(response.data) ? response.data : [response.data]
+    plans.value = normalizePlansResponse(response.data)
   } catch (error) {
     console.error('Failed to load career development plans:', error)
     errorMessage.value = error.response?.data?.message || 'Failed to load career development plan.'
@@ -1375,13 +1386,6 @@ onMounted(() => {
 
 .linked-goal-status {
   align-self: center;
-}
-
-.linked-goal-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  align-items: flex-start;
 }
 
 .status-pill,
