@@ -149,6 +149,15 @@ const routes = [
       return String(to.params.id) === '1' ? true : { name: 'Homepage' }
     }
   },
+
+  {
+    path: '/admin/:id/management',
+    name: 'adminSetup',
+    component: AdminSetup,
+    beforeEnter: (to) => {
+      return String(to.params.id) === '1' ? true : { name: 'Homepage' }
+    }
+  },
   
   {
     path: '/certification-settings/:id',
