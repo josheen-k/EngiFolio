@@ -67,18 +67,24 @@ const routes = [
   },
   {
     path: '/student/networking/:id',
-    name: 'networking',
-    component: Event
+    component: Networking,
+    children: [
+      {
+        path: '',
+        name: 'networking-events',
+        component: Event,
+      },
+      {
+        path: 'contacts',
+        name: 'networking-contacts',
+        component: IndustryContacts,
+      }
+    ]
   },
   {
     path: '/student/event',
     name: 'event',
     component: Event
-  },
-  {
-    path: '/student/networking/contacts/:id',
-    name: 'networking-contacts',
-    component: Networking
   },
   {
     path: '/student/export/:id',
@@ -142,13 +148,7 @@ const routes = [
       return String(to.params.id) === '1' ? true : { name: 'Homepage' }
     }
   },
-
-  {
-    path: '/student/networking/contacts/:id',
-    name: 'networking-contacts',
-    component: Networking
-  },
-
+  
   {
     path: '/certification-settings/:id',
     name: 'certificationSettings',

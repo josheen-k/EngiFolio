@@ -1,15 +1,6 @@
 <template>
-  <Navbar />
-
   <main class="networking-page">
     <section class="networking-shell">
-      <div class="pitch-box">
-        <label class="pitch-label"> Elevator Pitch</label>
-        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
-        <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
-        </div>
-      </div>
       <div class="page-header">
         <div>
           <p class="eyebrow">Networking Planner</p>
@@ -18,10 +9,6 @@
             Tap a date to add a new event, or open an event day to review its details,
             questions, and comments.
           </p>
-          <div class="networking-switch">
-            <RouterLink :to="`/student/networking/${route.params.id || 1}`" class="switch-pill active"> Events Calendar</RouterLink>
-            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill"> Industry Contacts</RouterLink>
-          </div>
         </div>
 
         <button class="action-button" @click="openCreateForm()">
@@ -207,32 +194,32 @@
 
             <div v-if="contacts.length" class="contact-picker-panel">
               <div class="contact-picker-toolbar">
-              <input v-model="contactSearch" class="contact-search" type="text" placeholder="Search contact or company..."/>
+                <input v-model="contactSearch" class="contact-search" type="text" placeholder="Search contact or company..."/>
 
-              <select v-model="contactSort" class="contact-sort">
-                <option value="name-asc">Name A-Z</option>
-                <option value="name-desc">Name Z-A</option>
-                <option value="company-asc">Company A-Z</option>
-                <option value="company-desc">Company Z-A</option>
-              </select>
+                <select v-model="contactSort" class="contact-sort">
+                  <option value="name-asc">Name A-Z</option>
+                  <option value="name-desc">Name Z-A</option>
+                  <option value="company-asc">Company A-Z</option>
+                  <option value="company-desc">Company Z-A</option>
+                </select>
+              </div>
+
+              <div class="contact-picker-scroll">
+                <label v-for="contact in filteredContactsForPicker" :key="contact.contact_id" class="contact-option">
+                  <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids"/>
+                  <span class="contact-option-text">
+                    <strong>{{ contact.contact_name }}</strong>
+                    <small v-if="contact.company">{{ contact.company }}</small>
+                  </span>
+                </label>
+
+                <p v-if="!filteredContactsForPicker.length" class="contact-empty"> No matching contacts found.</p>
+              </div>
             </div>
-
-            <div class="contact-picker-scroll">
-              <label v-for="contact in filteredContactsForPicker" :key="contact.contact_id" class="contact-option">
-                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids"/>
-                <span class="contact-option-text">
-                  <strong>{{ contact.contact_name }}</strong>
-                  <small v-if="contact.company">{{ contact.company }}</small>
-                </span>
-              </label>
-
-              <p v-if="!filteredContactsForPicker.length" class="contact-empty"> No matching contacts found.</p>
-            </div>
-          </div>
           
-          <p v-else>No contacts available</p>
+            <p v-else>No contacts available</p>
+          </div>
         </div>
-      </div>
 
         <div class="modal-actions">
           <button class="ghost-button" @click="closeForm">Cancel</button>
@@ -267,8 +254,9 @@
               </div>
 
               <div class="card-actions">
-                <button class="ghost-button" @click="editEvent(event)">Edit</button>
-                <button class="delete-button" @click="deleteEvent(event.event_id)">Delete</button>
+                <ButtonsStyle
+                  @edit="editEvent(event)"
+                  @delete="deleteEvent(event.event_id)"/>
               </div>
             </div>
 
@@ -323,15 +311,9 @@
                   <li v-for="question in event.questions" :key="question.question_id" class="list-item">
                     <span>{{ question.question_text }}</span>
                     <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editQuestion(event.event_id, question)">
-                        Edit
-                      </button>
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteQuestion(event.event_id, question.question_id)"
-                      >
-                        Delete
-                      </button>
+                      <ButtonsStyle
+                        @edit="editQuestion(event.event_id, question)"
+                        @delete="deleteQuestion(event.event_id , question.question_id)"/>
                     </div>
                   </li>
                 </ul>
@@ -432,12 +414,9 @@
                     </div>
 
                     <div class="list-actions">
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteComment(event.event_id, comment.id)"
-                      >
-                        Delete
-                      </button>
+                      <ButtonsStyle
+                        :show-edit="false"
+                        @delete="deleteComment(event.event_id, comment.id)"/>
                     </div>
                   </li>
                 </ul>
@@ -471,17 +450,14 @@
         </div>
       </div>
     </div>
-    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
-      {{ popUp.message }}
-    </div>
   </main>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import axios from 'axios'
-import Navbar from '@/components/Navbar.vue'
 import { useRoute } from 'vue-router'
+import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 
 const route = useRoute()
@@ -508,8 +484,7 @@ const YEAR_VIEW_END = 2100
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
 const calendarView = ref('month')
-const elevatorPitch = ref('')
-const savingPitch = ref(false)
+
 const showForm = ref(false)
 const showEventDetails = ref(false)
 const showConfirmDialog = ref(false)
@@ -686,7 +661,6 @@ const fetchContacts = async () => {
 onMounted(async () => {
   await fetchEvents()
   fetchContacts()
-  fetchElevatorPitch()
 
   if (route.query.eventId) {
     const event = events.value.find(e=> e.event_id === Number(route.query.eventId))
@@ -696,38 +670,6 @@ onMounted(async () => {
     }
   }
 })
-
-const fetchElevatorPitch = async() => {
-  const response = await axios.get(
-    `${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`
-  )
-  elevatorPitch.value = response.data.pitch_text || ''
-}
-
-const saveElevatorPitch = async() => {
-  const trimmedPitch = elevatorPitch.value.trim();
-
-  if(!trimmedPitch) {
-    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
-    return;
-  }
-  savingPitch.value = true
-  try {
-    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
-
-    showPopUp("Your elevator pitch has been saved.", "success");
-  } finally {
-    savingPitch.value = false
-  }
-}
-
-// Set up a pop up notification instead of having an alert
-const popUp = ref({ show: false, message: '', type: '' })
-
-const showPopUp = (message, type) => {
-  popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, 3000)
-}
 
 
 const eventsByDate = computed(() => {
@@ -1224,7 +1166,6 @@ function goToToday() {
 <style scoped>
 .networking-page {
   min-height: 100vh;
-  background: #ffffff;
   font-family: 'Maven Pro', sans-serif;
 }
 
@@ -1990,63 +1931,6 @@ function goToToday() {
   font-style: italic;
 }
 
-.networking-switch {
-  display: inline-flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.switch-pill {
-  padding: 0.6rem 1rem;
-  border-radius: 999px;
-  border: 1px solid #d6e0ea;
-  text-decoration: none;
-  color: #4e6577;
-  background: #fff;
-  font-size: 0.95rem;
-}
-
-.switch-pill.active {
-  background:#172334;
-  color: #fff;
-  border-color: #172334;
-}
-
-.pitch-box {
-  background: #fff;
-  border: 1px solid #d9e0e7;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  width: 100%;
-  box-sizing: border-box;
-
-}
-
-.pitch-label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #24364b;
-}
-
-.pitch-textarea{
-  width: 100%;
-  min-height: 120px;
-  border: 1px solid #cfd8e3;
-  border-radius: 10px;
-  padding: 12px;
-  resize: vertical;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.pitch-actions{
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
 .comment-evidence-grid{
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
@@ -2133,29 +2017,6 @@ function goToToday() {
   font-weight: 600;
 }
 
-
-.popUp-msg {
-  position: fixed;
-  top: 5rem;   
-  left: 0;
-  right: 0;
-  margin-inline: auto;
-  width: max-content;
-  padding: 0.75rem 2rem;
-  border-radius: 2rem; 
-  font-family: 'Maven Pro', sans-serif;
-  font-size: 1.15rem;
-}
-
-.popUp-msg.success {
-  background: #5d5d5d;
-  color: #fff;
-}
-
-.popUp-msg.error {
-  background: #db7979;
-  color: #fff;
-}
 
 .field-input.form-control.field-error {
   border-color: #db7979;

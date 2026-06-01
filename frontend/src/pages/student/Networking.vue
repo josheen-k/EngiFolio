@@ -23,163 +23,17 @@
         </div>
       </div>
 
-      <div class="header">
-        <div class="title-wrap">
-          <h2 class="page-title">Industry Contacts</h2>
+      <div class="networking-toggle">
+        <RouterLink :to="`/student/networking/${route.params.id}`" class="toggle-pill" :class="{ active: $route.name === 'networking-events' }">
+          Events Calendar
+        </RouterLink>
 
-          <div class="networking-switch">
-            <RouterLink
-              :to="`/student/networking/${route.params.id || 1}`"
-              class="switch-pill"
-            >
-              Events Calendar
-            </RouterLink>
-
-            <RouterLink
-              :to="`/student/networking/contacts/${route.params.id || 1}`"
-              class="switch-pill active"
-            >
-              Industry Contacts
-            </RouterLink>
-          </div>
-        </div>
-
-        <button class="btn btn-dark btn-main" @click="openForm">
-          + Add Contact
-        </button>
+        <RouterLink :to="`/student/networking/${route.params.id}/contacts`" class="toggle-pill" :class="{ active: $route.name === 'networking-contacts' }">
+          Industry Contacts
+        </RouterLink>
       </div>
 
-      <div class="controls">
-        <input
-          v-model="search"
-          class="search"
-          placeholder="Search contacts"
-        />
-
-        <select v-model="sortBy" class="sort">
-          <option disabled value="">Sort</option>
-          <option value="name_asc">A-Z</option>
-          <option value="date_desc">Newest</option>
-          <option value="date_asc">Oldest</option>
-        </select>
-      </div>
-
-      <div class="card-grid">
-        <div
-          v-for="c in sortedContacts"
-          :key="c.contact_id"
-          class="contact-card"
-          @click="openDetails(c)"
-        >
-          <div class="menu-wrapper" @click.stop>
-            <button class="menu-btn" @click="toggleMenu(c.contact_id)">
-              ⋯
-            </button>
-
-            <div v-if="openMenuId === c.contact_id" class="dropdown">
-              <ButtonsStyle
-                @edit="editContact(c)"
-                @delete="deleteContact(c.contact_id)"
-              />
-            </div>
-          </div>
-
-          <div class="card-top">
-            <div class="avatar">
-              <img :src="getAvatar(c.contact_name)" />
-            </div>
-
-            <div class="info">
-              <h3 class="contact-name">{{ c.contact_name }}</h3>
-              <p class="meta">📅 {{ c.date_met || 'No date added' }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- DETAILS MODAL -->
-      <div
-        v-if="selectedContact"
-        class="modal-overlay"
-        @click.self="selectedContact = null"
-      >
-        <div class="modal-box">
-          <h3>{{ selectedContact.contact_name }}</h3>
-
-          <p><b>Company:</b> {{ selectedContact.company || 'Not specified' }}</p>
-          <p><b>Date Met:</b> {{ selectedContact.date_met || 'Not specified' }}</p>
-
-          <p>
-  <b>LinkedIn:</b>
-
-  <a
-    v-if="selectedContact.link_url"
-    :href="formatUrl(selectedContact.link_url)"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    View LinkedIn
-  </a>
-
-  <span v-else>
-    Not added
-  </span>
-</p>
-
-          <p class="notes-title"><b>Progress Notes</b></p>
-
-          <p class="notes-body">
-            {{
-              selectedContact.progress_notes ||
-              'No progress notes added yet.'
-            }}
-          </p>
-
-          <div class="btn-row">
-            <ButtonsStyle
-              @edit="editContact(selectedContact)"
-              @delete="deleteContact(selectedContact.contact_id)"
-            />
-
-            <button class="btn btn-light" @click="selectedContact = null">
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- FORM MODAL -->
-      <div v-if="showForm" class="modal-overlay" @click.self="closeForm">
-        <div class="modal-box">
-          <h3>{{ editMode ? 'Edit Contact' : 'Create Contact' }}</h3>
-
-          <input v-model="form.contact_name" placeholder="Name" />
-          <input v-model="form.company" placeholder="Company" />
-
-          <textarea
-            v-model="form.progress_notes"
-            placeholder="Progress notes"
-          ></textarea>
-
-          <input
-            v-model="form.link_url"
-            type="url"
-            placeholder="LinkedIn URL"
-          />
-
-          <input type="date" v-model="form.date_met" />
-
-          <div class="btn-row">
-            <button class="btn btn-dark" @click="saveContact">
-              {{ editMode ? 'Update' : 'Create' }}
-            </button>
-
-            <button class="btn btn-light" @click="closeForm">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
+      <RouterView />
 
       <div
         v-if="showPitchDialog"
@@ -201,33 +55,6 @@
         </div>
       </div>
 
-      <div
-        v-if="showConfirmDialog"
-        class="confirm-overlay"
-        @click.self="resolveConfirmDialog(false)"
-      >
-        <div class="confirm-widget">
-          <p class="confirm-title">{{ confirmDialog.title }}</p>
-          <p class="confirm-message">{{ confirmDialog.message }}</p>
-
-          <div class="confirm-actions">
-            <button
-              class="ghost-button small-button"
-              @click="resolveConfirmDialog(false)"
-            >
-              {{ confirmDialog.cancelLabel }}
-            </button>
-
-            <button
-              class="small-button"
-              :class="confirmDialog.variant === 'danger' ? 'delete-button' : 'action-button'"
-              @click="resolveConfirmDialog(true)"
-            >
-              {{ confirmDialog.confirmLabel }}
-            </button>
-          </div>
-        </div>
-      </div>
     </section>
 
   </div>
@@ -235,59 +62,22 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import api from '@/services/api'
-
 import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
-import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 const route = useRoute()
 const profileId = computed(() => route.params.id || 1)
 
-const contacts = ref([])
-const search = ref('')
-const sortBy = ref('')
-
-const showForm = ref(false)
-const editMode = ref(false)
-const selectedContact = ref(null)
-const openMenuId = ref(null)
-
 const elevatorPitch = ref('')
 const savingPitch = ref(false)
 const showPitchDialog = ref(false)
-const showConfirmDialog = ref(false)
-
-const confirmDialog = ref({
-  title: '',
-  message: '',
-  confirmLabel: 'Confirm',
-  cancelLabel: 'Cancel',
-  variant: 'default',
-})
-
-let confirmResolver = null
 
 const pitchDialog = ref({
   title: '',
   message: '',
   buttonLabel: 'OK',
 })
-
-const form = ref({
-  contact_id: null,
-  contact_name: '',
-  company: '',
-  progress_notes: '',
-  link_url: '',
-  date_met: '',
-})
-
-const fetchContacts = async () => {
-  const res = await api.get(`/users/${profileId.value}/industry-contacts`)
-  contacts.value = res.data
-}
 
 const fetchElevatorPitch = async () => {
   const res = await api.get(`/profile/${route.params.id}/elevator-pitch`)
@@ -319,44 +109,8 @@ const saveElevatorPitch = async () => {
 }
 
 onMounted(() => {
-  fetchContacts()
   fetchElevatorPitch()
 })
-
-const filteredContacts = computed(() => {
-  return contacts.value.filter(c =>
-    c.contact_name?.toLowerCase().includes(search.value.toLowerCase()) ||
-    c.company?.toLowerCase().includes(search.value.toLowerCase()) ||
-    c.progress_notes?.toLowerCase().includes(search.value.toLowerCase())
-  )
-})
-
-const sortedContacts = computed(() => {
-  let list = [...filteredContacts.value]
-
-  switch (sortBy.value) {
-    case 'name_asc':
-      return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name))
-    case 'date_desc':
-      return list.sort((a, b) => new Date(b.date_met) - new Date(a.date_met))
-    case 'date_asc':
-      return list.sort((a, b) => new Date(a.date_met) - new Date(b.date_met))
-    default:
-      return list
-  }
-})
-
-const getAvatar = (name) => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`
-}
-
-const formatUrl = (url) => {
-  if (!url) return ''
-
-  return url.startsWith('http://') || url.startsWith('https://')
-    ? url
-    : `https://${url}`
-}
 
 const openPitchDialog = (title, message) => {
   pitchDialog.value = {
@@ -372,178 +126,6 @@ const closePitchDialog = () => {
   showPitchDialog.value = false
 }
 
-const openConfirmDialog = (options) => {
-  confirmDialog.value = {
-    title: '',
-    message: '',
-    confirmLabel: 'Confirm',
-    cancelLabel: 'Cancel',
-    variant: 'default',
-    ...options,
-  }
-
-  showConfirmDialog.value = true
-
-  return new Promise((resolve) => {
-    confirmResolver = resolve
-  })
-}
-
-const resolveConfirmDialog = (result) => {
-  showConfirmDialog.value = false
-
-  if (confirmResolver) {
-    confirmResolver(result)
-    confirmResolver = null
-  }
-}
-
-const toggleMenu = (id) => {
-  openMenuId.value = openMenuId.value === id ? null : id
-}
-
-const openDetails = (c) => {
-  selectedContact.value = c
-}
-
-const openForm = () => {
-  editMode.value = false
-
-  form.value = {
-    contact_id: null,
-    contact_name: '',
-    company: '',
-    progress_notes: '',
-    link_url: '',
-    date_met: '',
-  }
-
-  showForm.value = true
-}
-
-const closeForm = () => {
-  showForm.value = false
-}
-
-const saveContact = async () => {
-  const payload = { ...form.value }
-  const trimmedLinkedIn = (payload.link_url || '').trim()
-
-  if (trimmedLinkedIn) {
-    try {
-      let normalizedUrl = trimmedLinkedIn
-
-if (
-  !normalizedUrl.startsWith('http://') &&
-  !normalizedUrl.startsWith('https://')
-) {
-  normalizedUrl = `https://${normalizedUrl}`
-}
-
-const parsedUrl = new URL(normalizedUrl)
-
-if (!parsedUrl.hostname.includes('.')) {
-  throw new Error('Invalid LinkedIn URL')
-}
-
-payload.link_url = normalizedUrl
-    } catch {
-      openPitchDialog(
-        'Invalid LinkedIn URL',
-        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
-      )
-      return
-    }
-  }
-
-  if (editMode.value) {
-    const shouldUpdate = await openConfirmDialog({
-      title: 'Confirm update',
-      message: 'Save these changes to this contact?',
-      confirmLabel: 'Update',
-      cancelLabel: 'Undo',
-    })
-
-    if (!shouldUpdate) {
-      return
-    }
-  }
-
-  try {
-    if (editMode.value) {
-      await api.put(
-        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
-        payload
-      )
-    } else {
-      await api.post(`/users/${profileId.value}/industry-contacts`, payload)
-    }
-
-    closeForm()
-    await fetchContacts()
-  } catch (error) {
-    const linkErrors = error.response?.data?.errors?.link_url
-
-    if (linkErrors?.length) {
-      openPitchDialog(
-        'Invalid LinkedIn URL',
-        'Please enter a valid LinkedIn URL, for example: https://linkedin.com/in/your-name'
-      )
-      return
-    }
-
-    console.error('Save contact failed:', error)
-
-    if (error.response) {
-      openPitchDialog(
-        'Save Failed',
-        'Something went wrong while saving this contact.'
-      )
-    } else {
-      openPitchDialog(
-        'Save Failed',
-        'Please check your connection and try again.'
-      )
-    }
-  }
-}
-
-const editContact = (c) => {
-  selectedContact.value = null
-  openMenuId.value = null
-  editMode.value = true
-
-  form.value = {
-    contact_id: c.contact_id,
-    contact_name: c.contact_name || '',
-    company: c.company || '',
-    progress_notes: c.progress_notes || '',
-    link_url: c.link_url || '',
-    date_met: c.date_met || '',
-  }
-
-  showForm.value = true
-}
-
-const deleteContact = async (id) => {
-  const shouldDelete = await openConfirmDialog({
-    title: 'Confirm delete',
-    message: 'Delete this contact?',
-    confirmLabel: 'Delete',
-    cancelLabel: 'Keep',
-    variant: 'danger',
-  })
-
-  if (!shouldDelete) {
-    return
-  }
-
-  await api.delete(`/users/${profileId.value}/industry-contacts/${id}`)
-
-  selectedContact.value = null
-  openMenuId.value = null
-  fetchContacts()
-}
 </script>
 
 <style scoped>
@@ -551,166 +133,6 @@ const deleteContact = async (id) => {
   font-family: 'Maven Pro', sans-serif;
   background: #f4f6f8;
   min-height: 100vh;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.controls {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.search {
-  width: 240px;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  font-size: 0.85rem;
-}
-
-.sort {
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  font-size: 0.85rem;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
-}
-
-.contact-card {
-  background: white;
-  border-radius: 12px;
-  padding: 14px;
-  position: relative;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-}
-
-.menu-wrapper {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-}
-
-.menu-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 24px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.card-top {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.avatar img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-}
-
-.contact-name {
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.meta {
-  font-size: 0.7rem;
-  color: #777;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-box {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: 380px;
-}
-
-.modal-box input,
-.modal-box textarea {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-}
-
-.btn-row {
-  display: flex;
-  gap: 10px;
-}
-
-.notes-title {
-  margin-top: 14px;
-  margin-bottom: 6px;
-  color: #24364b;
-}
-
-.notes-body {
-  background: #f8fafc;
-  border: 1px solid #dbe4ee;
-  border-radius: 10px;
-  padding: 12px;
-  line-height: 1.6;
-  color: #44576b;
-  white-space: pre-wrap;
-}
-
-.networking-switch {
-  display: inline-flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.switch-pill {
-  padding: 0.6rem 1rem;
-  border-radius: 999px;
-  border: 1px solid #d6e0ea;
-  text-decoration: none;
-  color: #4e6577;
-  background: #fff;
-  font-size: 0.95rem;
-}
-
-.switch-pill.active {
-  background: #172334;
-  color: #fff;
-  border-color: #172334;
 }
 
 .pitch-box {
@@ -809,19 +231,28 @@ const deleteContact = async (id) => {
   margin-top: 1rem;
 }
 
-.ghost-button {
-  background: #f5f8fb;
-  border: 1px solid #d4dfe9;
-  color: #2d4658;
+.networking-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem;
   border-radius: 999px;
-  cursor: pointer;
+  background: #eef2f5;
+  margin-bottom: 0.01rem;
 }
 
-.delete-button {
-  background: #fff1f1;
-  border: 1px solid #f3c6c6;
-  color: #a63f3f;
+.toggle-pill {
+  padding: 0.8rem 1.4rem;
   border-radius: 999px;
-  cursor: pointer;
+  text-decoration: none;
+  color: #5d7182;
+  background: transparent;
+  transition: all 0.18s ease;
+}
+
+.toggle-pill.active {
+  background: #ffffff;
+  color: #13202c;
+  box-shadow: 0 4px 14px rgba(18, 32, 44, 0.08);
 }
 </style>
