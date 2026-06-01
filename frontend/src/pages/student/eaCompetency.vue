@@ -76,6 +76,7 @@ const loadData = async () => {
       api.get('/competency-levels'),
     ])
 
+    // Pass categories with competency details with student reflections and feedback
     categories.value = compRes.data.map(group => ({
       key: group.display_id,
       label: group.group_name,

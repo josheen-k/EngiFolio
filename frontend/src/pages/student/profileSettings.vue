@@ -145,7 +145,7 @@
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
 
-   
+  // Variables for getting and changing URL information
   const router = useRouter();
   const route = useRoute();
 
@@ -257,7 +257,7 @@
         } 
       }
 
-      // Covert object into JSON and check if it is empty to see if there are any errors
+      // Convert object into JSON and check if it is empty to see if there are any errors
       if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not save profile. Please fix highlighted fields.", "error");
         return;

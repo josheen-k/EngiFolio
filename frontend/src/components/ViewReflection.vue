@@ -260,9 +260,10 @@
 <script setup>
   import { ref, watch, computed } from 'vue'
   import { useRoute } from 'vue-router'
-  import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+  import { evLabel, fileAccept, uploadHint, yearOptions } from '@/composables/useCompetencies.js'
   import api from "@/services/api"
 
+  // Props received from currentCompetencies or draftReflections when an entry is open
   const props = defineProps({
     show: Boolean,
     reflec: Object,
@@ -273,11 +274,23 @@
     categories: Array
   })
 
+  // Variables for getting profile id from url
+  const route = useRoute();
+
+
+  // Store errors from input and show/hide cancel confirm popup
   const errors = ref({});
-  const emit = defineEmits(['close', 'refresh'])
-  const route = useRoute()
-  const originalEf = ref(null)
+
+  // Show popup window states
+  const editing = ref(false)
   const showCancelConfirm = ref(false)
+  const showDeleteConfirm = ref(false)
+
+  // Declares that events that can be sent to parent 
+  const emit = defineEmits(['close', 'refresh'])
+
+  // Stores the original entry to be compared to any edits to see if changes were made
+  const originalEf = ref(null)
 
   // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
@@ -289,12 +302,8 @@
     popUp.value = { show: true, message, type }
     setTimeout(() => popUp.value.show = false, popUpTime)
   }
-
-  // local states
-  const editing = ref(false)
-  const showDeleteConfirm = ref(false)
-
-  // edit form
+  
+  // Edit form
   const ef = ref({
     profile_id: route.params.id,
     indicator_id: null,
@@ -408,6 +417,7 @@
           errors.value.title = true
         }
 
+        // Check if a start date has been inputted
         if (!ef.value.start_date) {
           errors.value.startDate = true
         }
@@ -417,7 +427,7 @@
           errors.value.tasks = true
         }
 
-        // Check for valid links
+        // Loop through and check if url evidence contains a valid link
         for (let i = 0; i < evidenceToSave.length; i++) {
           if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
             errors.value[`evidenceURL_${i}`] = true
@@ -425,12 +435,13 @@
         }
       }
 
-      if (Object.keys(errors.value).length) {
+      if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not submit entry. Please fix highlighted fields.", "error");
         return;
       }
 
-      await api.put(`/competency-entries/${ef.value.id}`, {
+      // Creates a payload to be submitted, some compulsory values have fallback values if the user chooses to save as a draft
+      const payload = {
         profile_id: route.params.id,
         indicator_id: Number(ef.value.indicator_id),
         experience_title: ef.value.experience_title || 'Untitled',
@@ -442,15 +453,19 @@
         experience_tasks: ef.value.experience_tasks || 'Empty',
         key_learnings: ef.value.key_learnings,
         future_applications: ef.value.future_applications,
-      })
+      }
+
+      // Edit the backend database with the changed data
+      await api.put(`/competency-entries/${ef.value.id}`, payload)
 
       const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
       for (const id of existingIds) {
         await api.delete(`/competency-evidence/${id}`)
       }
 
-      // Save current evidence entries
+      // Go through each evidence to save  
       for (const ev of evidenceToSave) {
+        // Call to backend to save data
         await api.post('/competency-evidence', {
           entry_id: ef.value.id,
           evidence_type: ev.type,
@@ -458,12 +473,12 @@
         })
       }
 
+      // Only add a post to student actions when the competency is published
       if (Number(statusId) === 2) {
-        // Add a post to student actions for updated certificates
         await api.post(`/student-actions/new`, {action: `Updated entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
       }
 
-      // Close window
+      // Call parent functions to close the window and show the popup message
       emit('refresh', statusId, ef.value.experience_title || 'Untitled')
       emit('close');
       
@@ -491,10 +506,15 @@
   // Delete the competency entry
   async function doDelete() {
     try {
+      // Send call to the backend to check for delete
       await api.delete(`/competency-entries/${props.reflec.entry_id}`)
       showDeleteConfirm.value = false
+
+      // Add new entry to the student actions table
       await api.post(`/student-actions/new`, {action: `Deleted entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
-      emit('refresh')
+      
+      // Send calls to currentCompetency to run onSaveReflec
+      emit('refresh', -1, '')
       emit('close')
     } catch (error) {
       showPopUp('Could not delete this reflection', "error")

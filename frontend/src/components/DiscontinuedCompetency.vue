@@ -89,16 +89,26 @@ import { ref, computed } from 'vue'
 import { getLvl, publishedReflec, formatDate } from '@/composables/useCompetencies.js'
 import ViewReflection from '@/components/ViewReflection.vue'
 
-
+// Catches components passed down though the eaCompetencies template
+// Categories contains competency data and student entry data
 const props = defineProps({
   categories: { type: Array, required: true },
   levelOptions: { type: Array, required: true }
 });
 
+// Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null);
 
-// Only keep compts where the indicator has a discontinued_date
+// Empty view reflection that is filled when the user selects a reflection
+const viewReflec = ref({
+  show: false,
+  reflec: null,
+  compt: null,
+  index: null
+})
+
+// Filter out categories that are discontinued
 const filteredCategories = computed(() => {
   return props.categories
     .map(cat => ({
@@ -109,10 +119,12 @@ const filteredCategories = computed(() => {
     .filter(cat => cat.compt.length > 0);
 });
 
+// Filter out draft reflections
 function publishedOnly(compt) {
   return publishedReflec(compt);
 }
 
+// View details about the competencies the student chooses to view
 function openDetail(compt, catLabel) {
   selectedCompt.value = {
     id: compt.id,
@@ -128,27 +140,22 @@ function closeDetail() {
   selectedCompt.value = null
 }
 
+// Recalculated when a user changes to a different reflection
 const processedReflec = computed(() => {
   if (!selectedCompt.value) return []
   return publishedOnly(selectedCompt.value)
 })
 
-const viewReflec = ref({
-  show: false,
-  reflec: null,
-  compt: null,
-  index: null
-})
-
 function openReflec(reflec, index) {
   viewReflec.value = {
     show: true,
-    reflec,
+    reflec: reflec,
     compt: selectedCompt.value,
-    index
+    index: index
   }
 }
 
+// Close the reflection popup screen
 function closeReflec() {
   viewReflec.value.show = false
 }

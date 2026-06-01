@@ -138,14 +138,16 @@ const showPopUp = (message, type) => {
   setTimeout(() => popUp.value.show = false, popUpTime)
 }
 
-// Handle refresh from view competency
+// Called by refresh from viewReflection, shows the message depending on the action taken
 function onSaveReflec(statusId, entryName) {
-  viewReflec.value.show = false
   // Pass refresh to eaCompetencies page
   emit('refresh')
   // Convert status id to number so can compare to 2
   // Determines whether the entry was saved as a draft or published
-  if (Number(statusId) === 1) {
+  if (Number(statusId) === -1) {
+    showPopUp(`Draft has successfully been deleted.`, "success")
+  } 
+  else if (Number(statusId) === 1) {
     showPopUp(`${entryName} has been saved to drafts.`, "success")
   } else {
     showPopUp(`${entryName} has been published.`, "success")
@@ -295,9 +297,8 @@ const confirmDelete = async () => {
     // Reset values
     showDeleteConfirm.value = false
     draftEntryToDelete.value = null
+    showPopUp(`Draft has successfully been deleted.`, "success")
     emit('refresh') 
-    showPopUp(`Draft has been deleted.`, "success")
-
   } catch (error) {
     showPopUp("Error when deleting the draft.", "error")
   }
