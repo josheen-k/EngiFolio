@@ -139,9 +139,16 @@
                   <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'professional_interests') }}</span>
                 </td>
                 <td>
-                  <template v-if="!splitList(plan.employers_of_interest).length">Not added yet.</template>
-                  <div v-else-if="hasLongText(employersJoined(plan))" class="text-preview-stack">
-                    <p class="text-preview">{{ getTextPreview(employersJoined(plan)) }}</p>
+                  <template v-if="!getEmployersList(plan).length">Not added yet.</template>
+                  <div v-else-if="hasExtraEmployers(plan)" class="text-preview-stack employers-preview-stack">
+                    <ul class="compact-list">
+                      <li
+                        v-for="(employer, index) in getEmployersPreviewList(plan)"
+                        :key="employerListItemKey(plan, employer, index)"
+                      >
+                        {{ employer }}
+                      </li>
+                    </ul>
                     <button
                       type="button"
                       class="btn btn-link view-more-btn p-0"
@@ -151,7 +158,12 @@
                     </button>
                   </div>
                   <ul v-else class="compact-list">
-                    <li v-for="employer in splitList(plan.employers_of_interest)" :key="employer">{{ employer }}</li>
+                    <li
+                      v-for="(employer, index) in getEmployersList(plan)"
+                      :key="employerListItemKey(plan, employer, index)"
+                    >
+                      {{ employer }}
+                    </li>
                   </ul>
                 </td>
                 <td class="text-preview-cell">
@@ -288,11 +300,18 @@
 
             <section class="mobile-section">
               <p class="mobile-label">Employers</p>
-              <template v-if="!splitList(plan.employers_of_interest).length">
+              <template v-if="!getEmployersList(plan).length">
                 <p class="mobile-value">Not added yet.</p>
               </template>
-              <div v-else-if="hasLongText(employersJoined(plan))" class="text-preview-stack">
-                <p class="mobile-value text-preview">{{ getTextPreview(employersJoined(plan)) }}</p>
+              <div v-else-if="hasExtraEmployers(plan)" class="text-preview-stack employers-preview-stack">
+                <ul class="compact-list">
+                  <li
+                    v-for="(employer, index) in getEmployersPreviewList(plan)"
+                    :key="employerListItemKey(plan, employer, index)"
+                  >
+                    {{ employer }}
+                  </li>
+                </ul>
                 <button
                   type="button"
                   class="btn btn-link view-more-btn p-0"
@@ -302,7 +321,12 @@
                 </button>
               </div>
               <ul v-else class="compact-list">
-                <li v-for="employer in splitList(plan.employers_of_interest)" :key="`mobile-employer-${employer}`">{{ employer }}</li>
+                <li
+                  v-for="(employer, index) in getEmployersList(plan)"
+                  :key="employerListItemKey(plan, employer, index)"
+                >
+                  {{ employer }}
+                </li>
               </ul>
             </section>
 
@@ -539,9 +563,14 @@ const getPlanFieldRaw = (plan, field) => {
   return String(v).trim()
 }
 
-// Employers column: list for bullets, joined string for preview/modal.
-const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
-const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
+// Employers column: show first 3 in the table; View more opens the full list in a modal.
+const EMPLOYERS_PREVIEW_LIMIT = 3
+
+const getEmployersList = (plan) => splitList(plan.employers_of_interest)
+const hasExtraEmployers = (plan) => getEmployersList(plan).length > EMPLOYERS_PREVIEW_LIMIT
+const getEmployersPreviewList = (plan) => getEmployersList(plan).slice(0, EMPLOYERS_PREVIEW_LIMIT)
+const employerListItemKey = (plan, employer, index) => `${plan.plan_id}-employer-${index}-${employer}`
+const employersModalBody = (plan) => getEmployersList(plan).join('\n')
 
 // "View more" modal for long table/card text.
 const showTextModal = ref(false)
@@ -952,10 +981,6 @@ onMounted(() => {
   min-height: 72px;
 }
 
-.goal-form-card select[multiple] {
-  min-height: 8rem;
-}
-
 /* Clickable SMART goal cards used instead of a native multi-select. */
 .goal-link-field {
   display: flex;
@@ -1138,8 +1163,6 @@ onMounted(() => {
 .goals-table td {
   border-color: #e0e0e0;
   padding: 0.9rem 0.8rem;
-  vertical-align: top;
-  text-align: left;
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.4;
@@ -1178,6 +1201,11 @@ onMounted(() => {
   vertical-align: middle;
 }
 
+.career-development-page .career-table tbody td {
+  font: 400 0.92rem/1.4 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
 /* Employers column (col 3): full-width list so rows share the same left edge. */
 .career-development-page .career-table .compact-list {
   list-style-position: outside;
@@ -1189,7 +1217,7 @@ onMounted(() => {
   text-align: left;
 }
 
-.career-development-page .career-table td:nth-child(3) .text-preview-stack {
+.career-development-page .career-table .employers-preview-stack {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1199,13 +1227,11 @@ onMounted(() => {
   text-align: left;
 }
 
-.career-development-page .career-table .text-preview-stack {
-  align-items: flex-start;
-}
-
 .career-development-page .career-table .text-preview {
   max-width: min(18rem, 100%);
   text-align: left;
+  font: inherit;
+  color: inherit;
 }
 
 .career-development-page .career-table .cell-copy {
@@ -1214,8 +1240,19 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   text-align: left;
-  color: #6d6d6d;
-  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  font: inherit;
+  color: inherit;
+}
+
+.career-development-page .career-table .compact-list,
+.career-development-page .career-table .compact-list li {
+  font: inherit;
+  color: inherit;
+}
+
+.career-development-page .career-table .view-more-btn {
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .career-development-page .career-table .goal-stack {
@@ -1310,7 +1347,6 @@ onMounted(() => {
 .compact-list {
   margin: 0;
   padding-left: 1.1rem;
-  color: #5f5f5f;
 }
 
 .goal-stack {
@@ -1424,8 +1460,22 @@ onMounted(() => {
   text-align: left;
 }
 
-.career-development-page .mobile-section .text-preview-stack {
+.career-development-page .mobile-section .employers-preview-stack {
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.career-development-page .mobile-section .mobile-value,
+.career-development-page .mobile-section .text-preview,
+.career-development-page .mobile-section .compact-list,
+.career-development-page .mobile-section .compact-list li {
+  font: 400 0.92rem/1.4 'Maven Pro', sans-serif;
+  color: #6d6d6d;
 }
 
 .career-development-page .mobile-section .text-preview,
@@ -1435,6 +1485,11 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   text-align: left;
+}
+
+.career-development-page .mobile-section .view-more-btn {
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .career-development-page .mobile-section .goal-stack {
@@ -1479,7 +1534,6 @@ onMounted(() => {
 
 .mobile-value {
   margin: 0;
-  color: #2b2b2b;
 }
 
 .mobile-grid {
