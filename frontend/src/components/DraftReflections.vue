@@ -232,8 +232,8 @@ const processedDrafts = computed(function () {
   // filter by level
   if (reflecFilterLevel.value.length > 0) {
     list = list.filter(item => {
-      const lvl = item.reflec.entry_level?.competency_level;
-      return reflecFilterLevel.value.includes(lvl);
+      const currentLvl = item.reflec.entry_level?.competency_level;
+      return reflecFilterLevel.value.includes(currentLvl);
     });
   }
 

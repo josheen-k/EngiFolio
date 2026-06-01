@@ -91,22 +91,22 @@
         <!-- editable title in box-->
         <div class="border-bottom p-3">
           <label v-if="errors.title" class="field-label error-message">*Title cannot be empty</label>
-          <input v-model.trim="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"
+          <input v-model.trim="editForm.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"
            :class="{ 'field-error': errors.title }" @input="delete errors.title" />
 
           <!-- compt, level and year -->
           <div class="d-flex justify-content-center gap-2 mt-3">
-            <select v-model="ef.indicator_id" class="pill-select">
+            <select v-model="editForm.indicator_id" class="pill-select">
               <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
             </select>
 
-            <select v-model="ef.associated_year" class="pill-select">
+            <select v-model="editForm.associated_year" class="pill-select">
               <option v-for="opt in yearOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>
             </select>
 
-            <select v-model="ef.entry_level_id" class="pill-select">
+            <select v-model="editForm.entry_level_id" class="pill-select">
               <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>
@@ -116,10 +116,10 @@
           <!-- date range-->
           <label v-if="errors.startDate" class="field-label error-message">*Invalid start date</label>
           <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
-            <input v-model="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"
+            <input v-model="editForm.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"
               :class="{ 'field-error': errors.startDate }" @input="delete errors.startDate"/>
             <span class="body-txt">–</span>
-            <input v-model="ef.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="editForm.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
           </div>
         </div>
 
@@ -132,7 +132,7 @@
               <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
               <label v-if="errors.tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
             </div>
-            <textarea v-model.trim="ef.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model.trim="editForm.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
               :class="{ 'field-error': errors.tasks }" @input="delete errors.tasks"  
               placeholder="Describe the experience and tasks you undertook"></textarea>
           </div>
@@ -140,21 +140,21 @@
           <!-- key learnings -->
           <div>
             <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
-            <textarea v-model.trim="ef.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model.trim="editForm.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="What did you learn that was most valuable?"></textarea>
           </div>
 
           <!-- future application -->
           <div>
             <label class="form-label field-label">Future application: (Max 500 characters)</label>
-            <textarea v-model.trim="ef.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model.trim="editForm.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="How will you apply these learnings in the future?"></textarea>
           </div>
 
           <!-- editable evidence entries -->
           <div>
-            <div v-for="(ev, idx) in ef.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3" 
-            :class="{ 'border-bottom': idx < ef.evidenceEntries.length-1 }">
+            <div v-for="(ev, idx) in editForm.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3" 
+            :class="{ 'border-bottom': idx < editForm.evidenceEntries.length-1 }">
 
               <!-- evidence type -->
               <div>
@@ -203,13 +203,13 @@
               </div>
 
               <!-- remove evidence row -->
-              <button v-if="ef.evidenceEntries.length>1" class="del-btn mb-1"
-              @click="ef.evidenceEntries.splice(idx, 1)" title="Remove">
+              <button v-if="editForm.evidenceEntries.length>1" class="del-btn mb-1"
+              @click="editForm.evidenceEntries.splice(idx, 1)" title="Remove">
                 <img src="@/assets/delete.png">
               </button>
             </div>
 
-            <button  v-if="ef.evidenceEntries.length < 3"
+            <button  v-if="editForm.evidenceEntries.length < 3"
             class="btn btn-filter rounded-pill px-3 py-1" 
             @click="addEvidence()">+ Add evidence</button>
           </div>
@@ -290,7 +290,7 @@
   const emit = defineEmits(['close', 'refresh'])
 
   // Stores the original entry to be compared to any edits to see if changes were made
-  const originalEf = ref(null)
+  const originalEditForm = ref(null)
 
   // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
@@ -304,7 +304,7 @@
   }
   
   // Edit form
-  const ef = ref({
+  const editForm = ref({
     profile_id: route.params.id,
     indicator_id: null,
     experience_title: '',
@@ -319,19 +319,23 @@
     evidenceEntries: []
   })
 
+  // Takes the competency data and turns it into an array of competencies so it can be used for the drop down
   const allCompts = computed(() => {
-    if (!props.categories) return []
-    return props.categories.flatMap(cat =>
-      cat.compt.map(c => ({
-        id: c.id,
-        displayId: c.displayId,
-      }))
-    )
-  })
+    // Flatmap gives a single array containing all competencies instead of nested arrays
+    return props.categories.flatMap(category => {
+      return category.compt
+      .filter(indicator => !indicator.discontinuedDate)
+      .map(indicator => ({
+        id: indicator.id, 
+        displayId: indicator.displayId,
+      }));
+    });
+  });
 
+   // Add a new evidence entry to the form, limited to 3 evidence entries
   const addEvidence = () => {
-    if (ef.value.evidenceEntries.length < 3) {
-      ef.value.evidenceEntries.push({
+    if (editForm.value.evidenceEntries.length < 3) {
+      editForm.value.evidenceEntries.push({
         type: '',
         value: '',
         fileName: '',
@@ -347,6 +351,7 @@
     }
   })
 
+  // Gets the file from the upload field and prepares it for upload
   function handleFile(e, ev) {
     const file = e.target.files[0]
     if (file) {
@@ -357,31 +362,36 @@
 
   // enter edit
   function enterEdit() {
+    // Map existing reflection evidence with new file name field. Name it the evidence type for a start
     const existingEvidence = (props.reflec.evidence || []).map(ev => ({
       evidence_id: ev.evidence_id,
       type: ev.evidence_type,
       value: ev.evidence_value,
+      // If it is a url set to empty string, else set it to the filename
       fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
     }))
 
-    ef.value = {
+    // Populate the edit form with the values saved 
+    editForm.value = {
       id: props.reflec.entry_id,
       experience_title: props.reflec.experience_title || '',
       indicator_id: props.compt?.id || '',
-      associated_year: props.reflec.associated_year ?? 0,
+      associated_year: props.reflec.associated_year || 0,
       entry_level_id: props.reflec.entry_level_id || null,
       start_date: props.reflec.start_date || '',
       end_date: props.reflec.end_date || '',
       experience_tasks: props.reflec.experience_tasks || '',
       key_learnings: props.reflec.key_learnings || '',
       future_applications: props.reflec.future_applications || '',
+      // If evidence exists then add it, else add an empty field
       evidenceEntries: existingEvidence.length 
-        ? existingEvidence
-        : [{ type: '', value: '', fileName: '' }]
+        ? existingEvidence : [{ type: '', value: '', fileName: '' }]
     }
+
+    // Enter editing
     editing.value = true
     // Store original entry as string to check for changes
-    originalEf.value = JSON.stringify(ef.value)
+    originalEditForm.value = JSON.stringify(editForm.value)
   }
 
   // Attempt to make a URL object to test if link is correct
@@ -401,29 +411,29 @@
       errors.value = {} 
 
       // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
-      const noChange = (JSON.stringify(ef.value) === originalEf.value && ef.entry_status_id === statusId)
+      const noChange = (JSON.stringify(editForm.value) === originalEditForm.value && editForm.entry_status_id === statusId)
         if (noChange) {
           emit('close');
           return;
         }
 
       // Removes empty evidence
-      const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
+      const evidenceToSave = editForm.value.evidenceEntries.filter(ev => ev.type && ev.value)
 
       // If the user is trying to publish the entry, not triggered for drafts
       if (Number(statusId) === 2) {
         // Check for valid title
-        if (!ef.value.experience_title) {
+        if (!editForm.value.experience_title) {
           errors.value.title = true
         }
 
         // Check if a start date has been inputted
-        if (!ef.value.start_date) {
+        if (!editForm.value.start_date) {
           errors.value.startDate = true
         }
 
         // Check for experiences field
-        if (!ef.value.experience_tasks) {
+        if (!editForm.value.experience_tasks) {
           errors.value.tasks = true
         }
 
@@ -443,22 +453,24 @@
       // Creates a payload to be submitted, some compulsory values have fallback values if the user chooses to save as a draft
       const payload = {
         profile_id: route.params.id,
-        indicator_id: Number(ef.value.indicator_id),
-        experience_title: ef.value.experience_title || 'Untitled',
-        associated_year: Number(ef.value.associated_year),
-        entry_level_id: ef.value.entry_level_id,
+        indicator_id: Number(editForm.value.indicator_id),
+        experience_title: editForm.value.experience_title || 'Untitled',
+        associated_year: Number(editForm.value.associated_year),
+        entry_level_id: editForm.value.entry_level_id,
         entry_status_id: statusId,
-        start_date: ef.value.start_date,
-        end_date: ef.value.end_date,
-        experience_tasks: ef.value.experience_tasks || 'Empty',
-        key_learnings: ef.value.key_learnings,
-        future_applications: ef.value.future_applications,
+        start_date: editForm.value.start_date,
+        end_date: editForm.value.end_date,
+        experience_tasks: editForm.value.experience_tasks || 'Empty',
+        key_learnings: editForm.value.key_learnings,
+        future_applications: editForm.value.future_applications,
       }
 
       // Edit the backend database with the changed data
-      await api.put(`/competency-entries/${ef.value.id}`, payload)
+      await api.put(`/competency-entries/${editForm.value.id}`, payload)
 
+      // Delete all existing evidences so that the new evidence can be added
       const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
+      // For each existing id execute a delete
       for (const id of existingIds) {
         await api.delete(`/competency-evidence/${id}`)
       }
@@ -467,7 +479,7 @@
       for (const ev of evidenceToSave) {
         // Call to backend to save data
         await api.post('/competency-evidence', {
-          entry_id: ef.value.id,
+          entry_id: editForm.value.id,
           evidence_type: ev.type,
           evidence_value: ev.value
         })
@@ -479,7 +491,7 @@
       }
 
       // Call parent functions to close the window and show the popup message
-      emit('refresh', statusId, ef.value.experience_title || 'Untitled')
+      emit('refresh', statusId, editForm.value.experience_title || 'Untitled')
       emit('close');
       
     } catch (error) {
@@ -494,7 +506,7 @@
  
   // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
-    const noChange = JSON.stringify(ef.value) === originalEf.value
+    const noChange = JSON.stringify(editForm.value) === originalEditForm.value
     if (noChange) {
       editing.value = false
       errors.value = {}

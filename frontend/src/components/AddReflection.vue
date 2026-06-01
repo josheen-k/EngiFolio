@@ -9,7 +9,7 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Adding reflection for:</label>
-            <select v-model="f.indicator_id" class="form-select field-select rounded-3">
+            <select v-model="newEntry.indicator_id" class="form-select field-select rounded-3">
               <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
             </select>
           </div>
@@ -23,7 +23,7 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Attainment level</label>
-            <select v-model="f.entry_level_id" class="form-select field-select rounded-3">
+            <select v-model="newEntry.entry_level_id" class="form-select field-select rounded-3">
             <option v-for="opt in levelOptions.filter(o=> o.label !== 'Not Started')" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
@@ -34,7 +34,7 @@
               <label class="form-label field-label">Experience title</label>
               <label v-if="errors.experience_title" class="field-label error-message">*Title cannot be empty</label>
             </div>
-            <input v-model="f.experience_title" maxlength="50" class="form-control field-input rounded-3" :class="{ 'field-error': errors.experience_title }" @input="delete errors.experience_title" placeholder="My experience"/>
+            <input v-model="newEntry.experience_title" maxlength="50" class="form-control field-input rounded-3" :class="{ 'field-error': errors.experience_title }" @input="delete errors.experience_title" placeholder="My experience"/>
           </div>
         </div>
 
@@ -45,16 +45,16 @@
               <label class="form-label field-label">Start date</label>
               <label v-if="errors.start_date" class="field-label error-message">*Invalid start date</label>
             </div>
-            <input v-model="f.start_date" type="date" class="form-control field-input rounded-3" 
+            <input v-model="newEntry.start_date" type="date" class="form-control field-input rounded-3" 
             :class="{ 'field-error': errors.start_date }" @input="delete errors.start_date"/>
           </div>
           <div class="col-4">
             <label class="form-label field-label">End date</label>
-            <input v-model="f.end_date" type="date" class="form-control field-input rounded-3"/>
+            <input v-model="newEntry.end_date" type="date" class="form-control field-input rounded-3"/>
           </div>
           <div class="col-4">
             <label class="form-label field-label">Associated year</label>
-            <select v-model="f.associated_year" class="form-select field-select rounded-3">
+            <select v-model="newEntry.associated_year" class="form-select field-select rounded-3">
               <option v-for="opt in yearOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>
@@ -68,7 +68,7 @@
             <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
             <label v-if="errors.experience_tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
           </div>
-          <textarea v-model="f.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          <textarea v-model="newEntry.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
           :class="{ 'field-error': errors.experience_tasks }" @input="delete errors.experience_tasks"
           placeholder="Describe the experience and tasks you undertook"></textarea>
         </div>
@@ -76,21 +76,21 @@
         <!-- key learnings textbox-->
         <div>
           <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
-          <textarea v-model="f.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          <textarea v-model="newEntry.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="What did you learn that was most valuable?"></textarea>
         </div>
 
         <!-- future application textbox-->
         <div>
           <label class="form-label field-label">Future application: (Max 500 characters)</label>
-          <textarea v-model="f.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          <textarea v-model="newEntry.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="How will you apply these learnings in the future?"></textarea>
         </div>
 
         <!-- evidence entries-->
         <div>
-          <div v-for="(ev, idx) in f.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3"
-          :class="{ 'border-bottom': idx < f.evidenceEntries.length-1 }">
+          <div v-for="(ev, idx) in newEntry.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3"
+          :class="{ 'border-bottom': idx < newEntry.evidenceEntries.length-1 }">
 
             <!-- evidence type -->
             <div>
@@ -142,13 +142,13 @@
             </div>
 
             <!-- remove evidence (need 1 field atleast)-->
-            <button v-if="f.evidenceEntries.length>1" class="del-btn mb-1"
-            @click="f.evidenceEntries.splice(idx, 1)" title="Remove">
+            <button v-if="newEntry.evidenceEntries.length>1" class="del-btn mb-1"
+            @click="newEntry.evidenceEntries.splice(idx, 1)" title="Remove">
               <img src="@/assets/delete.png">
             </button>
           </div>
 
-          <button v-if="f.evidenceEntries.length < 3" class="btn btn-add-ev rounded-pill px-3 py-1 mt-1"
+          <button v-if="newEntry.evidenceEntries.length < 3" class="btn btn-add-ev rounded-pill px-3 py-1 mt-1"
           @click="addEvidence()">+ Add evidence</button>
         </div>
       </div>
@@ -232,8 +232,8 @@
 
   // Add a new evidence entry to the form, limited to 3 evidence entries
   const addEvidence = () => {
-    if (f.value.evidenceEntries.length < 3) {
-      f.value.evidenceEntries.push({
+    if (newEntry.value.evidenceEntries.length < 3) {
+      newEntry.value.evidenceEntries.push({
         type: '',
         value: '',
         fileName: '',
@@ -242,7 +242,7 @@
   };
 
   // Create an empty competency entry, with year and level set so that there is a default drop down value
-  const newForm = () => ({
+  const emptyEntry  = () => ({
     indicator_id: null,
     experience_title: '',
     associated_year: 1,
@@ -256,20 +256,20 @@
   })
 
   // Create a new form
-  const f = ref(newForm())
+  const newEntry = ref(emptyEntry())
 
   // when popup opens or initialComptId changes, reset and prefill
   watch(() => props.show, (v) => {
     if (v) {
-      f.value = newForm();
-      f.value.indicator_id = props.initialComptId;
+      newEntry.value = emptyEntry();
+      newEntry.value.indicator_id = props.initialComptId;
     }}, 
     // Run straight away
     { immediate: true });
 
-  
+  // Find the competency that has been passed as the indicator_id
   const selectedCompt = computed(()=>
-    allCompts.value.find(c=> c.id===f.value.indicator_id)
+    allCompts.value.find(c=> c.id === newEntry.value.indicator_id)
   )
 
   // Gets the file from the upload field and prepares it for upload
@@ -299,22 +299,22 @@
       errors.value = {} 
 
       // Removes empty evidence by filtering out entries without a type and a value
-      const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
+      const evidenceToSave = newEntry.value.evidenceEntries.filter(ev => ev.type && ev.value)
 
       // If the user is trying to publish the entry, not triggered for drafts
       if (Number(statusId) === 2) {
         // Check for valid title
-        if (!f.value.experience_title.trim()) {
+        if (!newEntry.value.experience_title.trim()) {
           errors.value.experience_title = true
         }
 
         // Check if a start date has been inputted
-        if (!f.value.start_date) {
+        if (!newEntry.value.start_date) {
           errors.value.start_date = true
         }
 
         // Check for experiences field
-        if (!f.value.experience_tasks.trim()) {
+        if (!newEntry.value.experience_tasks.trim()) {
           errors.value.experience_tasks = true
         }
 
@@ -336,16 +336,16 @@
       // date() creates a standardised date string for the current date and time and splits the string so only the date is saved
       const payload = {
         profile_id: route.params.id,
-        indicator_id: Number(f.value.indicator_id),
-        experience_title: f.value.experience_title || 'Untitled',
-        associated_year: Number(f.value.associated_year),
-        entry_level_id: f.value.entry_level_id, 
+        indicator_id: Number(newEntry.value.indicator_id),
+        experience_title: newEntry.value.experience_title || 'Untitled',
+        associated_year: Number(newEntry.value.associated_year),
+        entry_level_id: newEntry.value.entry_level_id, 
         entry_status_id: statusId, 
-        start_date: f.value.start_date || new Date().toISOString().split('T')[0],
-        end_date: f.value.end_date,
-        experience_tasks: f.value.experience_tasks || "Empty",
-        key_learnings: f.value.key_learnings,
-        future_applications: f.value.future_applications,
+        start_date: newEntry.value.start_date || new Date().toISOString().split('T')[0],
+        end_date: newEntry.value.end_date,
+        experience_tasks: newEntry.value.experience_tasks || "Empty",
+        key_learnings: newEntry.value.key_learnings,
+        future_applications: newEntry.value.future_applications,
       };
 
       // Create the new entry on the backend. Get the returned entry_id so that evidence can be linked to the entry
@@ -364,7 +364,7 @@
       // Add a post to student actions for an added competency
       await api.post(`/student-actions/new`, {action: `Added entry to competency ${selectedCompt.value?.displayId}`, student_profile_id: route.params.id});
       // Refresh and close the window, pass the statusId and title to current competencies so that confirmation bubble can display them
-      emit('refresh', statusId, f.value.experience_title || 'Untitled');
+      emit('refresh', statusId, newEntry.value.experience_title || 'Untitled');
       emit('close');
 
     } catch (error) {
@@ -379,8 +379,8 @@
 
   // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
-    // Copy all data from newForm and add the competency id before checking if there was a change
-    const noChange = JSON.stringify(f.value) === JSON.stringify({ ...newForm(), indicator_id: props.initialComptId })
+    // Copy all data from emptyEntry and add the competency id before checking if there was a change
+    const noChange = JSON.stringify(newEntry.value) === JSON.stringify({ ...emptyEntry(), indicator_id: props.initialComptId })
     if (noChange) {
       emit('close')
     } else {
