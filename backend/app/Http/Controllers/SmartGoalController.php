@@ -156,6 +156,7 @@ class SmartGoalController extends Controller
             'profile_id' => 'required|integer|exists:student_profiles,profile_id',
             'steps' => 'required|array',
             'steps.*.step_description' => 'required|string',
+            'steps.*.is_completed' => 'sometimes|boolean',
         ]);
 
         $smartGoal = $this->findGoalForProfileOrFail((int) $goalId, (int) $validated['profile_id']);
@@ -168,6 +169,7 @@ class SmartGoalController extends Controller
                     'goal_id' => $smartGoal->goal_id,
                     'step_description' => $step['step_description'],
                     'step_order' => $index + 1,
+                    'is_completed' => (bool) ($step['is_completed'] ?? false),
                 ]);
             }
         });
