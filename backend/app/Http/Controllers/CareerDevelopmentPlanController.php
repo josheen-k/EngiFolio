@@ -119,8 +119,9 @@ class CareerDevelopmentPlanController extends Controller
     {
         $validated = $request->validate([
             'profile_id' => 'required|integer|exists:student_profiles,profile_id',
-            'goal_ids' => 'required|array',
-            'goal_ids.*' => 'required|integer|distinct|exists:smart_goals,goal_id',
+            // present|array allows zero linked goals; required rejects an empty [].
+            'goal_ids' => 'present|array',
+            'goal_ids.*' => 'integer|distinct|exists:smart_goals,goal_id',
         ]);
 
         if ((int) $validated['profile_id'] !== (int) $plan->profile_id) {

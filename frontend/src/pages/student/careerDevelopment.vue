@@ -764,16 +764,28 @@ const savePlan = async () => {
       return
     }
 
-    const response = editingPlanId.value
-      ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
-      : await api.post('/career-plans', payload)
+    const isCreate = !editingPlanId.value
+    const response = isCreate
+      ? await api.post('/career-plans', payload)
+      : await api.put(`/career-plans/${editingPlanId.value}`, payload)
 
     const savedPlan = response.data
 
-    await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
-      profile_id: Number(route.params.id),
-      goal_ids: selectedGoalIds.value
-    })
+    try {
+      await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
+        profile_id: Number(route.params.id),
+        goal_ids: selectedGoalIds.value
+      })
+    } catch (linkError) {
+      if (isCreate) {
+        try {
+          await api.delete(`/career-plans/${savedPlan.plan_id}`)
+        } catch (rollbackError) {
+          console.error('Failed to roll back career plan after link error:', rollbackError)
+        }
+      }
+      throw linkError
+    }
 
     showPlanForm.value = false
     resetPlanForm()
@@ -786,6 +798,9 @@ const savePlan = async () => {
       Object.values(error.response?.data?.errors || {}).flat()[0]
 
     planFormError.value = serverMessage || 'Failed to save career development plan.'
+    if (!editingPlanId.value) {
+      await fetchCareerPlans()
+    }
   } finally {
     savingPlan.value = false
   }
