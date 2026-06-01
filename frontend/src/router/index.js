@@ -23,6 +23,7 @@ import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 import CDL from '@/pages/student/CDL.vue'
 import PrivacyPolicy from '@/pages/public/PrivacyPolicy.vue'
+import AdminSetup from '@/pages/admin/AdminSetup.vue'
 
 const routes = [
   {

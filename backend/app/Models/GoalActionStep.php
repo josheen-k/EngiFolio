@@ -15,6 +15,11 @@ class GoalActionStep extends Model
         'goal_id',
         'step_order',
         'step_description',
+        'is_completed',
+    ];
+
+    protected $casts = [
+        'is_completed' => 'boolean',
     ];
 
     public function smartGoal()
