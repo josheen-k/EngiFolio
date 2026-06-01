@@ -89,6 +89,15 @@
 
         <div class="table-scroll">
           <table class="admin-table">
+            <colgroup>
+              <col class="col-user" />
+              <col class="col-role" />
+              <col class="col-id" />
+              <col class="col-goals" />
+              <col class="col-completed" />
+              <col class="col-date" />
+              <col class="col-actions" />
+            </colgroup>
             <thead>
               <tr>
                 <th>User</th>
@@ -612,17 +621,47 @@ const deleteUser = async (user) => {
 
 .admin-table {
   width: 100%;
-  min-width: 860px;
+  min-width: 920px;
+  table-layout: fixed;
   border: 1px solid #dddddd;
   border-collapse: separate;
   border-spacing: 0;
   background: #ffffff;
 }
 
+.admin-table .col-user {
+  width: 26%;
+}
+
+.admin-table .col-role {
+  width: 9%;
+}
+
+.admin-table .col-id {
+  width: 10%;
+}
+
+.admin-table .col-goals {
+  width: 8%;
+}
+
+.admin-table .col-completed {
+  width: 9%;
+}
+
+.admin-table .col-date {
+  width: 14%;
+}
+
+.admin-table .col-actions {
+  width: 9.5rem;
+}
+
 .admin-table th,
 .admin-table td {
   padding: 0.82rem 0.75rem;
   border-bottom: 1px solid #e6e6e6;
+  text-align: center;
   vertical-align: middle;
 }
 
@@ -640,16 +679,22 @@ const deleteUser = async (user) => {
 
 .user-name {
   font-weight: 600;
+  text-align: center;
 }
 
 .user-email {
   color: #6c6c6c;
   font-size: 0.92rem;
+  text-align: center;
+}
+
+.admin-table th:nth-child(6),
+.admin-table td:nth-child(6) {
+  white-space: nowrap;
 }
 
 .actions-col,
 .actions-cell {
-  width: 1%;
   white-space: nowrap;
 }
 
@@ -662,7 +707,8 @@ const deleteUser = async (user) => {
   flex-direction: row;
   gap: 0.55rem;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 .action-icon-btn {
