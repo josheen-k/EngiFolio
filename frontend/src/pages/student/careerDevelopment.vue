@@ -331,7 +331,7 @@
             </section>
 
             <div class="mobile-grid">
-              <section>
+              <section class="mobile-section">
                 <p class="mobile-label">Personal Values</p>
                 <template v-if="!getPlanFieldRaw(plan, 'personal_values')">
                   <p class="mobile-value">Not added yet.</p>
@@ -348,7 +348,7 @@
                 </div>
                 <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'personal_values') }}</p>
               </section>
-              <section>
+              <section class="mobile-section">
                 <p class="mobile-label">Development Focus</p>
                 <template v-if="!getPlanFieldRaw(plan, 'development_focus')">
                   <p class="mobile-value">Not added yet.</p>
@@ -1439,18 +1439,19 @@ onMounted(() => {
   display: none;
 }
 
-/* Mobile career cards: blocks centered; copy inside blocks left-aligned. */
-.career-development-page .mobile-plan-card {
-  text-align: center;
-}
-
+/* Mobile career cards: header centered; section copy left-aligned. */
 .career-development-page .mobile-plan-head {
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.career-development-page .mobile-section .compact-list {
+.career-development-page .mobile-plan-card section {
+  text-align: left;
+  min-width: 0;
+}
+
+.career-development-page .mobile-plan-card section .compact-list {
   list-style-position: outside;
   padding-left: 1.1rem;
   margin: 0;
@@ -1460,7 +1461,8 @@ onMounted(() => {
   text-align: left;
 }
 
-.career-development-page .mobile-section .employers-preview-stack {
+.career-development-page .mobile-plan-card section .employers-preview-stack,
+.career-development-page .mobile-plan-card section .text-preview-stack {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1470,31 +1472,38 @@ onMounted(() => {
   text-align: left;
 }
 
-.career-development-page .mobile-section .mobile-value,
-.career-development-page .mobile-section .text-preview,
-.career-development-page .mobile-section .compact-list,
-.career-development-page .mobile-section .compact-list li {
+.career-development-page .mobile-plan-card section .mobile-value,
+.career-development-page .mobile-plan-card section .text-preview,
+.career-development-page .mobile-plan-card section .compact-list,
+.career-development-page .mobile-plan-card section .compact-list li {
   font: 400 0.92rem/1.4 'Maven Pro', sans-serif;
   color: #6d6d6d;
 }
 
-.career-development-page .mobile-section .text-preview,
-.career-development-page .mobile-section .mobile-value {
-  display: inline-block;
+.career-development-page .mobile-plan-card section .text-preview,
+.career-development-page .mobile-plan-card section .mobile-value {
+  display: block;
+  width: 100%;
   max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   text-align: left;
 }
 
-.career-development-page .mobile-section .view-more-btn {
+.career-development-page .mobile-plan-card section .view-more-btn {
   font-size: inherit;
   line-height: inherit;
 }
 
-.career-development-page .mobile-section .goal-stack {
-  justify-items: center;
-  text-align: left;
+.career-development-page .mobile-plan-card section .goal-stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  justify-items: stretch;
+}
+
+.career-development-page .mobile-plan-card .linked-goal {
+  width: 100%;
+  max-width: none;
 }
 
 /* Mobile-only card layout for career plans. */
@@ -1522,14 +1531,37 @@ onMounted(() => {
 }
 
 .mobile-section {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8e8e8;
 }
 
-.mobile-label {
-  margin: 0 0 0.22rem 0;
-  font-size: 0.77rem;
-  color: #747474;
-  font-family: 'Montserrat Alternates', sans-serif;
+.career-development-page .mobile-plan-card > .mobile-section:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.career-development-page .mobile-grid {
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.career-development-page .mobile-grid .mobile-section {
+  padding-top: 0;
+  border-top: 0;
+  margin-bottom: 0;
+}
+
+.career-development-page .mobile-grid .mobile-section + .mobile-section {
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.career-development-page .mobile-plan-card .mobile-label {
+  margin: 0 0 0.45rem;
+  font: 600 0.82rem/1.3 'Montserrat Alternates', sans-serif;
+  color: #2b2b2b;
+  letter-spacing: 0.02em;
 }
 
 .mobile-value {
@@ -1538,9 +1570,9 @@ onMounted(() => {
 
 .mobile-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-bottom: 0.85rem;
 }
 
 .mobile-actions {
@@ -1604,10 +1636,6 @@ onMounted(() => {
 
   .mobile-plan-list {
     display: block;
-  }
-
-  .mobile-grid {
-    grid-template-columns: 1fr;
   }
 
   .goal-select-grid {
