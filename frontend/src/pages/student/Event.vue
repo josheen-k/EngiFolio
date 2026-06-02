@@ -413,9 +413,8 @@
                       <span v-else>No file available</span>
                     </div>
 
-                    <div class="list-actions">
+                    <div class="list-actions comment-delete-only">
                       <ButtonsStyle
-                        :show-edit="false"
                         @delete="deleteComment(event.event_id, comment.id)"/>
                     </div>
                   </li>
@@ -1555,10 +1554,11 @@ function goToToday() {
 .delete-button:hover,
 .icon-button:hover {
   transform: translateY(-1px);
+  background: #333333;
 }
 
 .action-button {
-  background: #13202c;
+  background: #555555;
   color: #ffffff;
   padding: 0.85rem 1.4rem;
 }
@@ -2093,5 +2093,9 @@ function goToToday() {
   .contact-picker-toolbar {
     grid-template-columns: 1fr;
   }
+}
+
+.comment-delete-only :deep(.icon-btn:first-child) {
+  display: none;
 }
 </style>
