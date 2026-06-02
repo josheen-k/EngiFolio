@@ -3,7 +3,6 @@
     <section class="networking-shell">
       <div class="page-header">
         <div>
-          <p class="eyebrow">Networking Planner</p>
           <h1 class="page-title">Track events on a calendar</h1>
           <p class="page-copy">
             Tap a date to add a new event, or open an event day to review its details,
@@ -459,6 +458,7 @@ import { useRoute } from 'vue-router'
 import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 
+
 const route = useRoute()
 const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const miniWeekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -477,8 +477,8 @@ const monthOptions = [
   'December',
 ]
 const apiBaseUrl = 'http://127.0.0.1:8000/api'
-const YEAR_VIEW_START = 1900
-const YEAR_VIEW_END = 2100
+const YEAR_VIEW_START = 2020
+const YEAR_VIEW_END = 2030
 
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
@@ -1187,7 +1187,7 @@ function goToToday() {
   width: auto;
   white-space: nowrap;
 }
-.eyebrow,
+
 .toolbar-label,
 .modal-label,
 .event-date,
@@ -1547,7 +1547,7 @@ function goToToday() {
 .ghost-button,
 .delete-button,
 .icon-button {
-  border: 1px solid transparent;
+  border: none;
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -1555,14 +1555,23 @@ function goToToday() {
     border-color 0.18s ease;
 }
 
-.action-button:hover,
-.ghost-button:hover,
-.delete-button:hover,
-.icon-button:hover {
+.action-button:hover {
   transform: translateY(-1px);
   background: #333333;
 }
 
+.ghost-button:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+  background: #e6e6e6;
+  color: #2d4658;
+}
+
+.delete-button:hover {
+  transform: translateY(-1px);
+  background: #f5dede;
+  color: #a63f3f;
+}
 .action-button {
   background: #555555;
   color: #ffffff;
@@ -1572,14 +1581,12 @@ function goToToday() {
 .ghost-button,
 .icon-button {
   background: #f5f8fb;
-  border-color: #d4dfe9;
   color: #2d4658;
   padding: 0.8rem 1.2rem;
 }
 
 .delete-button {
   background: #fff1f1;
-  border-color: #f3c6c6;
   color: #a63f3f;
   padding: 0.8rem 1.2rem;
 }

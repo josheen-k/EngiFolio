@@ -25,16 +25,15 @@
 
       <div class="networking-toggle">
         <div class="toggle-line">
-          <RouterLink :to="`/student/networking/${route.params.id}`" class="toggle-btn" :class="{ active: $route.name === 'networking-events'}">
+          <button class="toggle-btn" :class="{ active: currentTab === 'events' }" @click="switchNetworkingTab('events')">
             Events Calendar
-          </RouterLink>
+          </button>
 
-          <RouterLink :to="`/student/networking/${route.params.id}/contacts`" class="toggle-btn" :class="{ active: $route.name === 'networking-contacts' }">
-            Industry Contacts
-          </RouterLink>
-
-          <div class="toggle-pill" :class="$route.name === 'networking-contacts' ? 'pill-right' : 'pill-left'"></div>
-          </div>  
+          <button class="toggle-btn" :class="{ active: currentTab === 'contacts'}" @click="switchNetworkingTab('contacts')">
+            industry Contacts
+          </button>
+          <div class="toggle-pill" :class="currentTab === 'contacts' ? 'pill-right' : 'pill-left'"></div>
+        </div>
       </div>
 
       <RouterView />
@@ -65,13 +64,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 
 const route = useRoute()
-const profileId = computed(() => route.params.id || 1)
+const router = useRouter()
+
+const currentTab = ref(route.name === 'networking-contacts' ? 'contacts' : 'events')
 
 const elevatorPitch = ref('')
 const savingPitch = ref(false)
@@ -115,6 +116,22 @@ const saveElevatorPitch = async () => {
 onMounted(() => {
   fetchElevatorPitch()
 })
+watch(
+  () => route.name,
+  (name) => {
+    currentTab.value = name === 'networking-contacts' ? 'contacts' : 'events'
+  }
+)
+
+const switchNetworkingTab = (tab) => {
+  currentTab.value = tab
+
+  const target = tab === 'events' ? `/student/networking/${route.params.id}` : `/student/networking/${route.params.id}/contacts`
+
+  setTimeout(() => {
+    router.push(target)
+  }, 180)
+}
 
 const openPitchDialog = (title, message) => {
   pitchDialog.value = {
@@ -179,7 +196,7 @@ const closePitchDialog = () => {
   background: #555555;
   color: #ffffff;
   padding: 0.85rem 1.4rem;
-  border: 1px solid #13202c;
+  border: none;
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -191,7 +208,6 @@ const closePitchDialog = () => {
 .action-button:hover {
   transform: translateY(-1px);
   background: #333333;
-  border-color: #333333;
 }
 
 .small-button {
