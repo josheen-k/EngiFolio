@@ -57,9 +57,10 @@
           </div>
         </div>
       </div>
-
+      <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+        {{ popUp.message }}
+      </div>
     </section>
-
   </div>
 </template>
 
@@ -84,6 +85,12 @@ const pitchDialog = ref({
   buttonLabel: 'OK',
 })
 
+const popUp = ref({ show:false, message: '', type: ''})
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+}
+
 const fetchElevatorPitch = async () => {
   const res = await api.get(`/profile/${route.params.id}/elevator-pitch`)
   elevatorPitch.value = res.data.pitch_text || ''
@@ -93,10 +100,7 @@ const saveElevatorPitch = async () => {
   const trimmedPitch = elevatorPitch.value.trim()
 
   if (!trimmedPitch) {
-    openPitchDialog(
-      'Elevator Pitch',
-      "It's empty. Please enter something first."
-    )
+    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
     return
   }
 
@@ -107,7 +111,7 @@ const saveElevatorPitch = async () => {
       pitch_text: trimmedPitch,
     })
 
-    openPitchDialog('Saved', 'Your elevator pitch has been saved.')
+    showPopUp('Your elevator pitch has been saved.', 'success')
   } finally {
     savingPitch.value = false
   }
@@ -130,7 +134,7 @@ const switchNetworkingTab = (tab) => {
 
   setTimeout(() => {
     router.push(target)
-  }, 180)
+  }, 100)
 }
 
 const openPitchDialog = (title, message) => {
@@ -306,5 +310,38 @@ const closePitchDialog = () => {
 
 .toggle-btn.active {
   color: #222222;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.field-input.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
 }
 </style>
