@@ -150,6 +150,7 @@ const closePitchDialog = () => {
 }
 
 .pitch-label {
+  font-family: 'Martel', serif;
   display: block;
   font-weight: 700;
   margin-bottom: 8px;
@@ -174,6 +175,7 @@ const closePitchDialog = () => {
 }
 
 .action-button {
+  font-family: 'Montserrat Alternates', sans-serif;
   background: #555555;
   color: #ffffff;
   padding: 0.85rem 1.4rem;

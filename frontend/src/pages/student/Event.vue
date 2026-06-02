@@ -1192,6 +1192,7 @@ function goToToday() {
 .modal-label,
 .event-date,
 .detail-label {
+  font-family: 'Maven Pro', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.8rem;
@@ -1200,9 +1201,14 @@ function goToToday() {
 }
 
 .page-title,
-.calendar-title,
 .modal-header h2,
 .event-detail-card h3 {
+  font-family: 'Maven', sans-serif;
+  margin: 0;
+  color: #13202c;
+}
+
+.calendar-title {
   font-family: 'Maven Pro', sans-serif;
   margin: 0;
   color: #13202c;
