@@ -247,12 +247,15 @@ const totalUsers = computed(() => stats.value.totalUsers)
 const totalGoals = computed(() => stats.value.totalGoals)
 const totalCompletedGoals = computed(() => stats.value.totalCompletedGoals)
 
-// Set up a pop up notification instead of having an alert
+// Object to store data about the popup message
 const popUp = ref({ show: false, message: '', type: '' })
+// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+const popUpTime = 3000
 
+// Used to display the popup message and the type being either success or error
 const showPopUp = (message, type) => {
   popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, 3000)
+  setTimeout(() => popUp.value.show = false, popUpTime)
 }
 
 const fetchUsersOverview = async () => {
