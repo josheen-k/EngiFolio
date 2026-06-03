@@ -197,3 +197,16 @@ Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class,
 
 //CDL Page
 Route::get('/cdl-modules', [CdlModuleController::class, 'index']);
+
+
+/* ================= ADMIN ================= */
+// Competency Groups for admin
+Route::get('/competency-groups', [CompetencyGroupController::class, 'index']);
+Route::post('/competency-groups', [CompetencyGroupController::class, 'store']);
+Route::put('/competency-groups/{competencyGroup}', [CompetencyGroupController::class, 'update']);
+Route::delete('/competency-groups/{competencyGroup}', [CompetencyGroupController::class, 'destroy']);
+
+// Competencies for admin
+Route::post('/competency-indicators', [CompetencyIndicatorController::class, 'store']);
+Route::put('/competency-indicators/{competencyIndicator}', [CompetencyIndicatorController::class, 'update']);
+Route::delete('/competency-indicators/{competencyIndicator}', [CompetencyIndicatorController::class, 'destroy']);

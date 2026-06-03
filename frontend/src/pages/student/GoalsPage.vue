@@ -353,17 +353,28 @@
 
         <div class="steps-editor">
           <div v-for="(step, index) in stepDrafts" :key="step.localKey" class="step-row">
-            <label class="step-label">
-              <span>Step {{ index + 1 }}</span>
+            <div class="step-editor-body">
+              <div class="step-row-head">
+                <span class="step-number">Step {{ index + 1 }}</span>
+                <label class="step-complete-label">
+                  <input
+                    v-model="step.is_completed"
+                    type="checkbox"
+                    class="step-complete-checkbox"
+                  />
+                  <span>Completed</span>
+                </label>
+                <button type="button" class="btn page-btn-danger step-remove-btn" @click="removeStep(index)">
+                  Remove
+                </button>
+              </div>
               <textarea
                 v-model="step.step_description"
                 class="step-input"
+                :class="{ 'step-input--done': step.is_completed }"
                 placeholder="Describe this action step"
               ></textarea>
-            </label>
-            <button type="button" class="btn page-btn-danger align-self-start" @click="removeStep(index)">
-              Remove
-            </button>
+            </div>
           </div>
         </div>
 
@@ -483,6 +494,7 @@ const showPopUp = (message, type) => {
 
 // Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
+const isStepCompleted = (step) => Boolean(step?.is_completed ?? step?.isCompleted ?? false)
 const getStatusLabel = (goalStatusId) => {
   const matched = progressStatusOptions.find((item) => item.value === Number(goalStatusId))
   return matched ? matched.label : '—'
@@ -831,6 +843,7 @@ const editSteps = (goal) => {
     step_id: step.step_id,
     step_description: step.step_description || '',
     step_order: step.step_order ?? index + 1,
+    is_completed: isStepCompleted(step),
     localKey: `existing-${step.step_id}`
   }))
 
@@ -846,6 +859,7 @@ const addStep = () => {
     step_id: null,
     step_description: '',
     step_order: stepDrafts.value.length + 1,
+    is_completed: false,
     localKey: `new-${Date.now()}-${Math.random()}`
   })
 }
@@ -858,8 +872,8 @@ const removeStep = (index) => {
   })
 }
 
-const closeStepModal = () => {
-  if (savingSteps.value) {
+const closeStepModal = (force = false) => {
+  if (!force && savingSteps.value) {
     return
   }
 
@@ -875,19 +889,22 @@ const saveSteps = async () => {
   }
 
   const normalizedSteps = stepDrafts.value
-    .map((step) => step.step_description.trim())
-    .filter((stepDescription) => stepDescription)
+    .map((step) => ({
+      step_description: step.step_description.trim(),
+      is_completed: Boolean(step.is_completed),
+    }))
+    .filter((step) => step.step_description)
 
   try {
     savingSteps.value = true
 
     await api.put(`/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
       profile_id: profileId.value,
-      steps: normalizedSteps.map((step_description) => ({ step_description }))
+      steps: normalizedSteps,
     })
 
     await loadGoals()
-    closeStepModal()
+    closeStepModal(true)
     showPopUp('Action steps updated successfully.', 'success')
   } catch (error) {
     console.error('Error updating action steps:', error)
@@ -1194,7 +1211,7 @@ const deleteGoal = async (goal) => {
 .goals-table {
   /* Wide desktop table is intentionally scrollable in its wrapper to preserve readable column widths. */
   width: 100%;
-  min-width: 1220px;
+  min-width: 1360px;
   table-layout: auto;
   border: 1px solid #dddddd;
   border-collapse: separate;
@@ -1207,10 +1224,20 @@ const deleteGoal = async (goal) => {
   border-color: #e0e0e0;
   padding: 0.9rem 0.8rem;
   vertical-align: middle;
-  text-align: center;
+  text-align: left;
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.4;
+}
+
+.goals-table th:nth-child(1),
+.goals-table td:nth-child(1),
+.goals-table th:nth-child(4),
+.goals-table td:nth-child(4),
+.goals-table th:last-child,
+.goals-table td:last-child {
+  text-align: center;
+  vertical-align: middle;
 }
 
 .goals-table th {
@@ -1292,7 +1319,8 @@ const deleteGoal = async (goal) => {
 .goals-table th:nth-child(8),
 .goals-table td:nth-child(8) {
   /* Columns 5,8: Learnings, Completion Notes */
-  min-width: 10rem;
+  min-width: 16rem;
+  width: 16rem;
 }
 
 .goals-table th:nth-child(4),
@@ -1331,6 +1359,11 @@ const deleteGoal = async (goal) => {
 .steps-list li {
   font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #6d6d6d;
+}
+
+.step-input--done {
+  color: #9a9a9a;
+  text-decoration: line-through;
 }
 
 .step-preview-text {
@@ -1378,14 +1411,11 @@ const deleteGoal = async (goal) => {
   letter-spacing: -0.1rem;
 }
 
-.steps-cell {
-  vertical-align: middle !important;
-}
 
 .steps-stack {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
 }
 
@@ -1407,21 +1437,18 @@ const deleteGoal = async (goal) => {
   color: #6d6d6d;
 }
 
-.text-preview-cell {
-  vertical-align: middle !important;
-}
-
 .text-preview-stack {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
+  width: 100%;
 }
 
 .text-preview {
   display: -webkit-box;
   margin: 0;
-  max-width: 12rem;
+  max-width: 100%;
   overflow: hidden;
   line-clamp: 3;
   -webkit-line-clamp: 3;
@@ -1450,12 +1477,7 @@ const deleteGoal = async (goal) => {
 }
 
 .completion-notes-cell {
-  min-width: 10rem;
-  vertical-align: middle !important;
-}
-
-.actions-cell {
-  vertical-align: middle !important;
+  min-width: 16rem;
 }
 
 .actions-stack {
@@ -1597,20 +1619,51 @@ const deleteGoal = async (goal) => {
 }
 
 .step-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
   padding: 1rem;
   border: 1px solid #e4e4e4;
   border-radius: 1rem;
   background: #fafafa;
 }
 
-.step-label {
-  flex: 1;
+.step-editor-body {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
+}
+
+.step-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+}
+
+.step-number {
+  font: 600 0.9rem/1.2 'Maven Pro', sans-serif;
+  color: #555555;
+}
+
+.step-complete-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font: 400 0.88rem/1.2 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.step-complete-checkbox {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: #3f7ccf;
+  cursor: pointer;
+}
+
+.step-row-head .step-remove-btn {
+  margin-left: auto;
 }
 
 .step-input {
@@ -1903,12 +1956,31 @@ const deleteGoal = async (goal) => {
     border-radius: 1rem;
   }
 
-  .step-row {
-    flex-direction: column;
+  .step-row-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.45rem 0.75rem;
   }
 
-  .step-row .btn {
-    width: 100%;
+  .step-number {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .step-row-head .step-remove-btn {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    margin-left: 0;
+    justify-self: end;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .step-complete-label {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .table-scroll {

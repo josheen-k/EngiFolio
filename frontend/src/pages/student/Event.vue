@@ -1,15 +1,6 @@
 <template>
-  <Navbar />
-
   <main class="networking-page">
     <section class="networking-shell">
-      <div class="pitch-box">
-        <label class="pitch-label"> Elevator Pitch</label>
-        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
-        <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
-        </div>
-      </div>
       <div class="page-header">
         <div>
           <p class="eyebrow">Networking Planner</p>
@@ -18,10 +9,6 @@
             Tap a date to add a new event, or open an event day to review its details,
             questions, and comments.
           </p>
-          <div class="networking-switch">
-            <RouterLink :to="`/student/networking/${route.params.id || 1}`" class="switch-pill active"> Events Calendar</RouterLink>
-            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill"> Industry Contacts</RouterLink>
-          </div>
         </div>
 
         <button class="action-button" @click="openCreateForm()">
@@ -201,14 +188,35 @@
               placeholder="What is this event about, and what do you want to remember?"
             ></textarea>
           </label>
+
           <div class="field field-full">
             <span>Related Contacts</span>
-            <div v-if="contacts.length" class="contact-picker">
-              <label v-for="contact in contacts" :key="contact.contact_id" class="contact-option">
-                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids">
-                <span>{{ contact.contact_name }}</span>
-              </label>
+
+            <div v-if="contacts.length" class="contact-picker-panel">
+              <div class="contact-picker-toolbar">
+                <input v-model="contactSearch" class="contact-search" type="text" placeholder="Search contact or company..."/>
+
+                <select v-model="contactSort" class="contact-sort">
+                  <option value="name-asc">Name A-Z</option>
+                  <option value="name-desc">Name Z-A</option>
+                  <option value="company-asc">Company A-Z</option>
+                  <option value="company-desc">Company Z-A</option>
+                </select>
+              </div>
+
+              <div class="contact-picker-scroll">
+                <label v-for="contact in filteredContactsForPicker" :key="contact.contact_id" class="contact-option">
+                  <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids"/>
+                  <span class="contact-option-text">
+                    <strong>{{ contact.contact_name }}</strong>
+                    <small v-if="contact.company">{{ contact.company }}</small>
+                  </span>
+                </label>
+
+                <p v-if="!filteredContactsForPicker.length" class="contact-empty"> No matching contacts found.</p>
+              </div>
             </div>
+          
             <p v-else>No contacts available</p>
           </div>
         </div>
@@ -246,8 +254,9 @@
               </div>
 
               <div class="card-actions">
-                <button class="ghost-button" @click="editEvent(event)">Edit</button>
-                <button class="delete-button" @click="deleteEvent(event.event_id)">Delete</button>
+                <ButtonsStyle
+                  @edit="editEvent(event)"
+                  @delete="deleteEvent(event.event_id)"/>
               </div>
             </div>
 
@@ -302,15 +311,9 @@
                   <li v-for="question in event.questions" :key="question.question_id" class="list-item">
                     <span>{{ question.question_text }}</span>
                     <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editQuestion(event.event_id, question)">
-                        Edit
-                      </button>
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteQuestion(event.event_id, question.question_id)"
-                      >
-                        Delete
-                      </button>
+                      <ButtonsStyle
+                        @edit="editQuestion(event.event_id, question)"
+                        @delete="deleteQuestion(event.event_id , question.question_id)"/>
                     </div>
                   </li>
                 </ul>
@@ -411,12 +414,9 @@
                     </div>
 
                     <div class="list-actions">
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteComment(event.event_id, comment.id)"
-                      >
-                        Delete
-                      </button>
+                      <ButtonsStyle
+                        :show-edit="false"
+                        @delete="deleteComment(event.event_id, comment.id)"/>
                     </div>
                   </li>
                 </ul>
@@ -459,8 +459,8 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import api from "@/services/api";
-import Navbar from '@/components/Navbar.vue'
 import { useRoute } from 'vue-router'
+import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 
 const route = useRoute()
@@ -487,8 +487,7 @@ const YEAR_VIEW_END = 2100
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
 const calendarView = ref('month')
-const elevatorPitch = ref('')
-const savingPitch = ref(false)
+
 const showForm = ref(false)
 const showEventDetails = ref(false)
 const showConfirmDialog = ref(false)
@@ -507,6 +506,9 @@ const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
 
 const contacts = ref([])
+const contactSearch = ref('')
+const contactSort = ref('name-asc')
+
 let confirmResolver = null
 let syncingYearScroll = false
 let yearScrollFrameId = null
@@ -670,7 +672,6 @@ const fetchContacts = async () => {
 onMounted(async () => {
   await fetchEvents()
   fetchContacts()
-  fetchElevatorPitch()
 
   if (route.query.eventId) {
     const event = events.value.find(e=> e.event_id === Number(route.query.eventId))
@@ -680,29 +681,6 @@ onMounted(async () => {
     }
   }
 })
-
-const fetchElevatorPitch = async() => {
-  const response = await api.get(`/profile/${route.params.id}/elevator-pitch`)
-  elevatorPitch.value = response.data.pitch_text || ''
-}
-
-const saveElevatorPitch = async() => {
-  const trimmedPitch = elevatorPitch.value.trim();
-
-  if(!trimmedPitch) {
-    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
-    return;
-  }
-  savingPitch.value = true
-  try {
-    await api.put(`/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
-
-    showPopUp("Your elevator pitch has been saved.", "success");
-  } finally {
-    savingPitch.value = false
-  }
-}
-
 
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
@@ -771,6 +749,37 @@ const selectedDateEvents = computed(() => {
 })
 
 const selectedDateLabel = computed(() => formatFullDate(selectedDate.value))
+
+const filteredContactsForPicker = computed(() => {
+  const keyword = contactSearch.value.trim().toLowerCase()
+
+  let result = contacts.value.filter((contact) => {
+    const name = (contact.contact_name || '').toLowerCase()
+    const company = (contact.company || '').toLowerCase()
+
+    return !keyword || name.includes(keyword) || company.includes(keyword)
+  })
+
+  result = [...result].sort((a,b) => {
+    const nameA = (a.contact_name || '').toLowerCase()
+    const nameB = (b.contact_name || '').toLowerCase()
+    const companyA = (a.company || '').toLowerCase()
+    const companyB = (b.company || '').toLowerCase()
+
+    switch (contactSort.value) {
+      case 'name-desc':
+        return nameB.localeCompare(nameA)
+      case 'company-asc':
+        return companyA.localeCompare(companyB)
+      case 'company-desc':
+        return companyB.localeCompare(companyA)
+      case 'name-asc':
+      default:
+        return nameA.localeCompare(nameB)
+    }
+  })
+  return result
+})
 
 function openCreateForm(date = '') {
   editingEventId.value = null
@@ -1192,7 +1201,6 @@ function goToToday() {
 <style scoped>
 .networking-page {
   min-height: 100vh;
-  background: #ffffff;
   font-family: 'Maven Pro', sans-serif;
 }
 
@@ -1353,7 +1361,7 @@ function goToToday() {
 .year-section-title {
   margin: 0 0 1rem;
   color: #13202c;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Martel', sans-serif;
   font-size: clamp(2rem, 3vw, 2.6rem);
 }
 
@@ -1384,7 +1392,7 @@ function goToToday() {
   border: 0;
   background: transparent;
   color: #f05c48;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Martel', sans-serif;
   font-size: 1.2rem;
   padding: 0;
   margin-bottom: 0.8rem;
@@ -1958,63 +1966,6 @@ function goToToday() {
   font-style: italic;
 }
 
-.networking-switch {
-  display: inline-flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.switch-pill {
-  padding: 0.6rem 1rem;
-  border-radius: 999px;
-  border: 1px solid #d6e0ea;
-  text-decoration: none;
-  color: #4e6577;
-  background: #fff;
-  font-size: 0.95rem;
-}
-
-.switch-pill.active {
-  background:#172334;
-  color: #fff;
-  border-color: #172334;
-}
-
-.pitch-box {
-  background: #fff;
-  border: 1px solid #d9e0e7;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  width: 100%;
-  box-sizing: border-box;
-
-}
-
-.pitch-label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #24364b;
-}
-
-.pitch-textarea{
-  width: 100%;
-  min-height: 120px;
-  border: 1px solid #cfd8e3;
-  border-radius: 10px;
-  padding: 12px;
-  resize: vertical;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.pitch-actions{
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
 .comment-evidence-grid{
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
@@ -2134,5 +2085,72 @@ function goToToday() {
 
 .error-message {
   color:  #db7979;
+}
+
+.contact-picker-panel {
+  border: 1px solid #d9e3ec;
+  border-radius: 1rem;
+  background: #f9fbfd;
+  padding: 1rem;
+}
+
+.contact-picker-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.contact-search,
+.contact-sort {
+  width: 100%;
+  border: 1px solid #ccd8e2;
+  border-radius: 0.9rem;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  background: #ffffff;
+  color: #13202c;
+}
+
+.contact-picker-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.65rem;
+  padding-right: 0.25rem;
+}
+
+.contact-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e1e9f0;
+  border-radius: 0.9rem;
+  background: #ffffff;
+}
+
+.contact-option input {
+  margin-top: 0.2rem;
+}
+.contact-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  color: #243746;
+}
+
+.contact-option-text strong {
+  font-weight: 600;
+}
+
+.contact-option-text small {
+  color: #6b8293;
+}
+
+@media (max-width: 640px) {
+  .contact-picker-toolbar {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

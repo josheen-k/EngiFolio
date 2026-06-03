@@ -16,8 +16,10 @@ class ElevatorPitch extends Model
         'pitch_text',
     ];
 
+    //get the profile that owns this elevator pitch
     public function user()
-    {
-        return $this->belongsTo(Profile::class, 'profile_id');
+    {   
+        //this elevator pitch belongs to one profile, linked by profile_id
+        return $this->belongsTo(StudentProfile::class, 'profile_id');
     }
 }

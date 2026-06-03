@@ -21,6 +21,7 @@ class NetworkingEventComment extends Model
         'file_name',
     ];
 
+    //get the networking event that owns this comment 
     public function event()
     {
         return $this->belongsTo(NetworkingEvent::class, 'event_id', 'event_id');
