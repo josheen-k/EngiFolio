@@ -6,6 +6,7 @@
 	@endif
 	<p><strong>Degree:</strong> {{ $profile->degree_title ?? '' }}</p>
 	<p><strong>Specialisation:</strong> {{ $profile->specialisation ?? '' }}</p>
+	<p><strong>Year Started:</strong> {{ $profile->year_started ?? '' }}</p>
 	<p><strong>Personal Intro:</strong> {{ $profile->personal_intro ?? '' }}</p>
 		@if($profile->links->isNotEmpty())
 		<h3>Professional Links</h3>

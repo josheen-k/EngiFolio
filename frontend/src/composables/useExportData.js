@@ -18,6 +18,7 @@ export const addProfile = async (profileId) => {
       `"Preferred name:","${profileData.preferred_name || firstName || lastName}"`,
       `"Degree:","${profileData.degree_title || 'N/A'}"`,
       `"Specialisation:","${profileData.specialisation || 'N/A'}"`,
+      `"Year Started:","${profileData.year_started}"`,
       `"Personal Intro:","${profileData.personal_intro || 'N/A'}"`
     ]
 
