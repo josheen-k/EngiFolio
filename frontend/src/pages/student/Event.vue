@@ -3,7 +3,6 @@
     <section class="networking-shell">
       <div class="page-header">
         <div>
-          <p class="eyebrow">Networking Planner</p>
           <h1 class="page-title">Track events on a calendar</h1>
           <p class="page-copy">
             Tap a date to add a new event, or open an event day to review its details,
@@ -413,9 +412,8 @@
                       <span v-else>No file available</span>
                     </div>
 
-                    <div class="list-actions">
+                    <div class="list-actions comment-delete-only">
                       <ButtonsStyle
-                        :show-edit="false"
                         @delete="deleteComment(event.event_id, comment.id)"/>
                     </div>
                   </li>
@@ -461,6 +459,7 @@ import { computed, nextTick, onMounted, ref } from 'vue'
 import api from "@/services/api";
 import { useRoute } from 'vue-router'
 import ButtonsStyle from '@/components/ButtonsStyle.vue'
+
 
 
 const route = useRoute()
@@ -1223,11 +1222,12 @@ function goToToday() {
   width: auto;
   white-space: nowrap;
 }
-.eyebrow,
+
 .toolbar-label,
 .modal-label,
 .event-date,
 .detail-label {
+  font-family: 'Maven Pro', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.8rem;
@@ -1236,9 +1236,14 @@ function goToToday() {
 }
 
 .page-title,
-.calendar-title,
 .modal-header h2,
 .event-detail-card h3 {
+  font-family: 'Maven', sans-serif;
+  margin: 0;
+  color: #13202c;
+}
+
+.calendar-title {
   font-family: 'Maven Pro', sans-serif;
   margin: 0;
   color: #13202c;
@@ -1577,7 +1582,7 @@ function goToToday() {
 .ghost-button,
 .delete-button,
 .icon-button {
-  border: 1px solid transparent;
+  border: none;
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -1585,15 +1590,25 @@ function goToToday() {
     border-color 0.18s ease;
 }
 
-.action-button:hover,
-.ghost-button:hover,
-.delete-button:hover,
-.icon-button:hover {
+.action-button:hover {
   transform: translateY(-1px);
+  background: #333333;
 }
 
+.ghost-button:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+  background: #e6e6e6;
+  color: #2d4658;
+}
+
+.delete-button:hover {
+  transform: translateY(-1px);
+  background: #f5dede;
+  color: #a63f3f;
+}
 .action-button {
-  background: #13202c;
+  background: #555555;
   color: #ffffff;
   padding: 0.85rem 1.4rem;
 }
@@ -1601,14 +1616,12 @@ function goToToday() {
 .ghost-button,
 .icon-button {
   background: #f5f8fb;
-  border-color: #d4dfe9;
   color: #2d4658;
   padding: 0.8rem 1.2rem;
 }
 
 .delete-button {
   background: #fff1f1;
-  border-color: #f3c6c6;
   color: #a63f3f;
   padding: 0.8rem 1.2rem;
 }
@@ -2152,5 +2165,9 @@ function goToToday() {
   .contact-picker-toolbar {
     grid-template-columns: 1fr;
   }
+}
+
+.comment-delete-only :deep(.icon-btn:first-child) {
+  display: none;
 }
 </style>

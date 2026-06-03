@@ -24,13 +24,16 @@
       </div>
 
       <div class="networking-toggle">
-        <RouterLink :to="`/student/networking/${route.params.id}`" class="toggle-pill" :class="{ active: $route.name === 'networking-events' }">
-          Events Calendar
-        </RouterLink>
+        <div class="toggle-line">
+          <button class="toggle-btn" :class="{ active: currentTab === 'events' }" @click="switchNetworkingTab('events')">
+            Events Calendar
+          </button>
 
-        <RouterLink :to="`/student/networking/${route.params.id}/contacts`" class="toggle-pill" :class="{ active: $route.name === 'networking-contacts' }">
-          Industry Contacts
-        </RouterLink>
+          <button class="toggle-btn" :class="{ active: currentTab === 'contacts'}" @click="switchNetworkingTab('contacts')">
+            industry Contacts
+          </button>
+          <div class="toggle-pill" :class="currentTab === 'contacts' ? 'pill-right' : 'pill-left'"></div>
+        </div>
       </div>
 
       <RouterView />
@@ -42,8 +45,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 
@@ -59,6 +62,9 @@ const showPopUp = (message, type) => {
   popUp.value = { show: true, message, type }
   setTimeout(() => popUp.value.show = false, popUpTime)
 }
+const router = useRouter()
+
+const currentTab = ref(route.name === 'networking-contacts' ? 'contacts' : 'events')
 
 const elevatorPitch = ref('')
 const savingPitch = ref(false)
@@ -96,13 +102,29 @@ const saveElevatorPitch = async () => {
 onMounted(() => {
   fetchElevatorPitch()
 })
+watch(
+  () => route.name,
+  (name) => {
+    currentTab.value = name === 'networking-contacts' ? 'contacts' : 'events'
+  }
+)
+
+const switchNetworkingTab = (tab) => {
+  currentTab.value = tab
+
+  const target = tab === 'events' ? `/student/networking/${route.params.id}` : `/student/networking/${route.params.id}/contacts`
+
+  setTimeout(() => {
+    router.push(target)
+  }, 100)
+}
 
 </script>
 
 <style scoped>
 .page {
   font-family: 'Maven Pro', sans-serif;
-  background: #f4f6f8;
+  background: #ffffff;
   min-height: 100vh;
 }
 
@@ -117,6 +139,7 @@ onMounted(() => {
 }
 
 .pitch-label {
+  font-family: 'Martel', serif;
   display: block;
   font-weight: 700;
   margin-bottom: 8px;
@@ -141,10 +164,11 @@ onMounted(() => {
 }
 
 .action-button {
-  background: #13202c;
+  font-family: 'Montserrat Alternates', sans-serif;
+  background: #555555;
   color: #ffffff;
   padding: 0.85rem 1.4rem;
-  border: 1px solid #13202c;
+  border: none;
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -155,6 +179,7 @@ onMounted(() => {
 
 .action-button:hover {
   transform: translateY(-1px);
+  background: #333333;
 }
 
 .small-button {
@@ -203,28 +228,89 @@ onMounted(() => {
 }
 
 .networking-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem;
-  border-radius: 999px;
-  background: #eef2f5;
-  margin-bottom: 0.01rem;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.toggle-line {
+  position: relative;
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 2rem;
+  padding: 0.3rem;
+  gap: 0;
 }
 
 .toggle-pill {
-  padding: 0.8rem 1.4rem;
-  border-radius: 999px;
-  text-decoration: none;
-  color: #5d7182;
-  background: transparent;
-  transition: all 0.18s ease;
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  width: calc(50% - 0.3rem);
+  background: #ffffff;
+  border-radius: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.25s ease;
+  pointer-events: none;
 }
 
-.toggle-pill.active {
-  background: #ffffff;
-  color: #13202c;
-  box-shadow: 0 4px 14px rgba(18, 32, 44, 0.08);
+.pill-left {
+  transform: translateX(0);
+}
+
+.pill-right {
+  transform: translateX(calc(100%));
+}
+
+.toggle-btn {
+  position: relative;
+  z-index: 1;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.95rem;
+  color: #888888;
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  padding: 0.45rem 1.5rem 0.45rem 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.toggle-btn.active {
+  color: #222222;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.field-input.form-control.field-error {
+  border-color: #db7979;
+  background: #fff5f5;
+  box-shadow: #db7979;
+}
+
+.error-message {
+  color:  #db7979;
 }
 
 .popUp-msg {
