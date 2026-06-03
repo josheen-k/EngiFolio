@@ -21,14 +21,14 @@
 	@foreach($roleSections as $section)
     <div class="role-section">
         <h2>{{ $section['title'] }} ({{ $section['users']->count() }})</h2>
-
         @if($section['title'] === 'Students')
+			{{-- Sort the students by year in alphabetical order (Ascending) --}}
             @php
                 $byYear = $section['users']->groupBy('year_started')->sortKeys();
             @endphp
 
             @foreach($byYear as $year => $users)
-                <h3>{{ $year ?? 'Year Unknown' }}</h3>
+                <h3>{{ $year ?? 'No year' }}</h3>
                 <table>
                     <thead>
                         <tr>
@@ -62,9 +62,6 @@
                         <th style="width: 18%;">Name</th>
                         <th style="width: 26%;">Email</th>
                         <th style="width: 12%;">ID</th>
-                        <th style="width: 10%;">Goals</th>
-                        <th style="width: 12%;">Completed</th>
-                        <th style="width: 14%;">Last Updated</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,9 +70,6 @@
                             <td>{{ $user['name'] }}</td>
                             <td>{{ $user['email'] }}</td>
                             <td>{{ $user['username'] ?? '-' }}</td>
-                            <td>{{ $user['goals'] }}</td>
-                            <td>{{ $user['completedGoals'] }}</td>
-                            <td>{{ $user['updatedAt'] ?? '-' }}</td>
                         </tr>
                     @empty
                         <tr>

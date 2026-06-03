@@ -58,6 +58,7 @@ class AdminController extends Controller
                 'users.first_name',
                 'users.last_name',
                 'sp.profile_id',
+                'sp.year_started', 
                 'users.updated_at as user_updated_at',
                 'r.role_name',
                 DB::raw('COUNT(DISTINCT sg.goal_id) as goals_count'),
@@ -71,6 +72,7 @@ class AdminController extends Controller
                 'users.first_name',
                 'users.last_name',
                 'sp.profile_id',
+                'sp.year_started', 
                 'users.updated_at',
                 'r.role_name',
             ]);
@@ -102,6 +104,7 @@ class AdminController extends Controller
             return [
                 'user_id' => (int) $row->user_id,
                 'profile_id' => $row->profile_id ? (int) $row->profile_id : null,
+                'year_started'   => $row->year_started ?? null, 
                 'username' => $row->username,
                 'name' => $name,
                 'email' => $row->email,
