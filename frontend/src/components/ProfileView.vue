@@ -36,13 +36,19 @@
 
                     <!-- bottom row: degree, specialisation -->
                     <div class="row g-3">
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-4">
+                            <div class="info">
+                                <span class="info-label">Year Started</span>
+                                <span class="info-value">{{ profile.year_started }}</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
                             <div class="info">
                                 <span class="info-label">Degree undertaking</span>
                                 <span class="info-value">{{ profile.degree_title }}</span>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-4">
                             <div class="info">
                                 <span class="info-label">Specialisation chosen</span>
                                 <span class="info-value">{{ profile.specialisation }}</span>

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('specialisation', 60)->nullable();
             $table->text('personal_intro')->nullable();
             $table->string('profile_image_url')->nullable();
+            $table->year('year_started')->nullable();
             $table->timestamps();
         });
     }

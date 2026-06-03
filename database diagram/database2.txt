@@ -60,6 +60,7 @@ Table student_profiles {
   personal_intro text
   upcoming_actions text [note: 'Future personal development actions']
   profile_image_url text
+  year_started year
   created_at datetime [not null]
   updated_at datetime [not null]
 }
