@@ -18,7 +18,7 @@
             @click="saveElevatorPitch"
             :disabled="savingPitch"
           >
-            {{ savingPitch ? 'Saving...' : 'Save' }}
+            Save
           </button>
         </div>
       </div>
@@ -34,49 +34,34 @@
       </div>
 
       <RouterView />
-
-      <div
-        v-if="showPitchDialog"
-        class="confirm-overlay"
-        @click.self="closePitchDialog"
-      >
-        <div class="confirm-widget">
-          <p class="confirm-title">{{ pitchDialog.title }}</p>
-          <p class="confirm-message">{{ pitchDialog.message }}</p>
-
-          <div class="confirm-actions">
-            <button
-              class="action-button small-button"
-              @click="closePitchDialog"
-            >
-              {{ pitchDialog.buttonLabel }}
-            </button>
-          </div>
-        </div>
-      </div>
-
     </section>
+  </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import api from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 
 const route = useRoute()
-const profileId = computed(() => route.params.id || 1)
+
+// Object to store data about the popup message
+const popUp = ref({ show: false, message: '', type: '' })
+// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+const popUpTime = 3000
+
+// Used to display the popup message and the type being either success or error
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, popUpTime)
+}
 
 const elevatorPitch = ref('')
 const savingPitch = ref(false)
-const showPitchDialog = ref(false)
-
-const pitchDialog = ref({
-  title: '',
-  message: '',
-  buttonLabel: 'OK',
-})
 
 const fetchElevatorPitch = async () => {
   const res = await api.get(`/profile/${route.params.id}/elevator-pitch`)
@@ -111,20 +96,6 @@ const saveElevatorPitch = async () => {
 onMounted(() => {
   fetchElevatorPitch()
 })
-
-const openPitchDialog = (title, message) => {
-  pitchDialog.value = {
-    title,
-    message,
-    buttonLabel: 'OK',
-  }
-
-  showPitchDialog.value = true
-}
-
-const closePitchDialog = () => {
-  showPitchDialog.value = false
-}
 
 </script>
 
@@ -294,5 +265,29 @@ const closePitchDialog = () => {
 
 .action-button:hover {
   transform: translateY(-1px);
+}
+
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 </style>

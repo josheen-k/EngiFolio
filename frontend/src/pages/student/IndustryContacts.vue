@@ -145,6 +145,9 @@
       </div>
     </section>
   </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
@@ -173,6 +176,18 @@ const form = ref({
   link_url: '',
   date_met: '',
 })
+
+// Object to store data about the popup message
+const popUp = ref({ show: false, message: '', type: '' })
+// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+const popUpTime = 3000
+
+// Used to display the popup message and the type being either success or error
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, popUpTime)
+}
+
 
 const fetchContacts = async () => {
   const res = await api.get(`/users/${profileId.value}/industry-contacts`)
@@ -247,6 +262,11 @@ const closeForm = () => {
 
 const saveContact = async () => {
   try {
+    if (!form.value.contact_name.trim()) {
+      showPopUp('Contact name is required.', 'error')
+      return
+    }
+
     const payload = {
       contact_name: form.value.contact_name,
       company: form.value.company,
@@ -260,14 +280,16 @@ const saveContact = async () => {
         `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
         payload
       )
+      showPopUp(`${payload.contact_name}  successfully updated.`, 'success')
     } else {
       await api.post(`/users/${profileId.value}/industry-contacts`, payload)
+      showPopUp(`New contact ${payload.contact_name} successfully added.`, 'success')
     }
 
     closeForm()
     fetchContacts()
-  } catch (err) {
-    console.error('Save error:', err.response?.data || err)
+  } catch (error) {
+    showPopUp('Save Failed. Something went wrong while saving this contact.', 'error')
   }
 }
 
@@ -294,8 +316,9 @@ const deleteContact = async (id) => {
     selectedContact.value = null
     openMenuId.value = null
     fetchContacts()
+    showPopUp('Contact successfully deleted.', 'error')
   } catch (err) {
-    console.error('Delete error:', err)
+    showPopUp('Error. Cannot delete contact.', 'error')
   }
 }
 </script>
@@ -482,6 +505,29 @@ const deleteContact = async (id) => {
 .btn {
   font-family: 'Montserrat Alternates', sans-serif;
   border-radius: 30px;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
