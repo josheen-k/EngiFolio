@@ -75,8 +75,6 @@ export const fileAccept = (type) => {
   switch (type) {
     case 'image':
       return 'image/*'
-    case 'video':
-      return 'video/*'
     case 'document':
       return '.pdf,.doc,.docx,.txt,.ppt,.pptx'
     default:
@@ -89,8 +87,6 @@ export const uploadHint = (type) => {
   switch (type) {
     case 'image':
       return 'PNG, JPG, JPEG, GIF'
-    case 'video':
-      return 'MP4, MOV'
     case 'document':
       return 'PDF, DOC, DOCX, TXT, PPT, PPTX'
     default:

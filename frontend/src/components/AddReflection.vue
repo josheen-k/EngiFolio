@@ -110,6 +110,7 @@
               <div class="d-flex justify-content-between align-items-center"> 
                 <label class="form-label field-label mb-3">Evidence input</label>
                 <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
+                <label v-else-if="errors[`evidenceVideo_${idx}`]" class="field-label error-message">*Invalid YouTube link</label>
               </div> 
             
               <!-- nothing selected-->
@@ -121,6 +122,11 @@
                 class="form-control field-input rounded-3" 
                 :class="{ 'field-error': errors[`evidenceURL_${idx}`] }" @input="delete errors[`evidenceURL_${idx}`]"
                 placeholder="https://example.com"/>
+
+              <input v-else-if="ev.type==='video'" v-model="ev.value" type="video"
+                class="form-control field-input rounded-3" 
+                :class="{ 'field-error': errors[`evidenceVideo_${idx}`] }" @input="delete errors[`evidenceVideo_${idx}`]"
+                placeholder="https://www.youtube.com/watch?v="/>
 
               <!-- if file upload selected -->
               <div v-else>
@@ -318,10 +324,12 @@
           errors.value.experience_tasks = true
         }
 
-        // Loop through and check if url evidence contains a valid link
+        // Loop through and check if evidence input is valid
         for (let i = 0; i < evidenceToSave.length; i++) {
           if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
             errors.value[`evidenceURL_${i}`] = true
+          } else if (evidenceToSave[i].type === 'video' && !evidenceToSave[i].value.startsWith('https://www.youtube.com/watch?v=')) {
+            errors.value[`evidenceVideo_${i}`] = true
           }
         }
       }
@@ -603,4 +611,4 @@
   font-size: 1.1rem;
   color: #222222;
 }
-</style>
+</style>URL
