@@ -67,8 +67,9 @@ Route::get('/profile/{id}/dashboard', [StudentProfileController::class, 'getDash
 Route::get('/profile/{id}/image', [StudentProfileController::class, 'getProfileImage']);
 Route::get('/profile/{id}/certifications', [StudentProfileController::class, 'getCertifications']);
 Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);
-/* ================= INDUSTRY CONTACTS ================= */
+Route::post('/profile/{id}/upload-cert', [StudentProfileController::class, 'uploadCertFile']);
 
+/* ================= INDUSTRY CONTACTS ================= */
 // Industry contacts/networking pages
 Route::get('/users/{profile}/industry-contacts', [IndustryContactController::class, 'index']);
 Route::post('/users/{profile}/industry-contacts', [IndustryContactController::class, 'store']);

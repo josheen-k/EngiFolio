@@ -148,7 +148,7 @@ class StudentProfileController extends Controller
 
         $profile = StudentProfile::findOrFail($id);
 
-        // Deletes existing profile, find in storage folder with a file that starts with the url 
+        // Deletes existing profile picture, find in storage folder with a file that starts with the url 
         if ($profile->profile_image_url) {
             // Breaks the url into its parts
             $parsed = parse_url($profile->profile_image_url);
@@ -163,6 +163,7 @@ class StudentProfileController extends Controller
         // Concatenate the full url using the pathway stored in .env
         $fullUrl = config('app.url') . '/storage/' . $path;
 
+        // Save the path to the profile
         $profile->profile_image_url = $fullUrl;
         $profile->save();
         return response()->json(['image_url' => '/storage/' . $path]);
@@ -213,5 +214,48 @@ class StudentProfileController extends Controller
             'notStarted' => max(0, $indicators->count() - $attainedCount),
             'levels' => $levelCounts,
         ];
+    }
+
+    // Add a pdf file to a certificate
+    public function uploadCertFile(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:2048',
+            'type' => 'required|in:achievement,attainment',
+            'cert_id' => 'nullable|integer',
+        ]);
+
+        StudentProfile::findOrFail($id);
+
+        // Get the cert_id from the request and see where it is an achievement or attainment cert
+        $certId = $request->input('cert_id');
+
+        // If it is an existing cert then delete any existing file if a new file is uploaded
+        if ($certId) {
+            // Check the type sent from the front end to know what cert it is and find that cert
+            if ($request->input('type') === 'achievement') {
+                $cert = \App\Models\AchievementCert::find($certId);
+                $folder = 'achievement-certs';
+            } else {
+                $cert = \App\Models\AttainmentCert::find($certId);
+                $folder = 'attainment-certs';
+            }
+
+            // Deletes existing profile, find in storage folder with a file that starts with the url 
+            if ($cert && $cert->file_path) {
+                // Breaks the url into its parts
+                $parsed = parse_url($cert->file_path);
+                // Remove /storage/ as backend already knows this
+                $storagePath = str_replace('/storage/', '', $parsed['path']);
+                Storage::disk('public')->delete($storagePath);
+            }
+        }
+
+    // Store the file and assemble the full path for the file and return it to the frontend
+    $path = $request->file('file')->store($folder, 'public');
+    $fullUrl = config('app.url') . '/storage/' . $path;
+
+    return response()->json(['file_path' => $fullUrl]);
+
     }
 }
