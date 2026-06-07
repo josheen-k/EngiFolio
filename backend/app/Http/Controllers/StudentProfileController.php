@@ -186,8 +186,12 @@ class StudentProfileController extends Controller
 
     // Count up the amount of max competency indicators the user has for each level
     public function competencyLevelCounts($profileId): array {
+
+        // Get all possible levels that an entry can have
+        $levels = DB::table('competency_entry_levels')->orderBy('competency_level_weighting')->pluck('competency_level');
+
         // Associative array to store levels and their counts
-        $levelCounts = ['Emerging' => 0, 'Developing' => 0, 'Proficient' => 0, 'Confident' => 0];
+        $levelCounts = $levels->mapWithKeys(fn($l) => [$l => 0])->toArray();
         $attainedCount = 0;
 
         // Fetch the highest entry for each competency indicator
@@ -206,11 +210,8 @@ class StudentProfileController extends Controller
 
         // Return values
         return [
-            'notStarted'  => $indicators->count() - $attainedCount,
-            'emerging'    => $levelCounts['Emerging'],
-            'developing'  => $levelCounts['Developing'],
-            'proficient'  => $levelCounts['Proficient'],
-            'confident'   => $levelCounts['Confident'],
+            'notStarted' => max(0, $indicators->count() - $attainedCount),
+            'levels' => $levelCounts,
         ];
     }
 }

@@ -29,9 +29,13 @@ class AdminController extends Controller
     {
         $data = $this->buildUsersOverview($request);
 
+        // Get the possible level names that can be shown in the table
+        $levelNames = DB::table('competency_entry_levels')->orderBy('competency_level_weighting')->pluck('competency_level');
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
             'stats' => $data['stats'],
             'roleSections' => $this->groupUsersByRoleForPdf($data['users']),
+            'levelNames' => $levelNames,
         ]);
 
         return $pdf->download('user_management_export.pdf');
@@ -96,7 +100,8 @@ class AdminController extends Controller
 
             $levels = $row->profile_id
                 ? $profileController->competencyLevelCounts((int) $row->profile_id)
-                : ['notStarted' => $totalIndicators, 'emerging' => 0, 'developing' => 0, 'proficient' => 0, 'confident' => 0];
+                : ['notStarted' => $totalIndicators, 'levels' => []];
+
 
             return [
                 'user_id'      => (int) $row->user_id,
@@ -107,11 +112,8 @@ class AdminController extends Controller
                 'email'        => $row->email,
                 'role'         => $row->role_name ?? 'Unknown',
                 'updatedAt'    => Carbon::parse($row->user_updated_at)->format('Y-m-d'),
-                'notStarted'   => $levels['notStarted'],
-                'emerging'     => $levels['emerging'],
-                'developing'   => $levels['developing'],
-                'proficient'   => $levels['proficient'],
-                'confident'    => $levels['confident'],
+                'notStarted' => $levels['notStarted'],
+                'levels' => $levels['levels'],
             ];
         })->values();
 

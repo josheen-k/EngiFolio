@@ -34,10 +34,9 @@
                         <th style="width: 26%;">Email</th>
                         <th style="width: 12%;">ID</th>
                         <th style="width: 10%;">Not Started</th>
-                        <th style="width: 12%;">Emerging</th>
-                        <th style="width: 12%;">Developing</th>
-                        <th style="width: 14%;">Proficient</th>
-                        <th style="width: 14%;">Confident</th>
+                        @foreach($levelNames as $levelName)
+                            <th>{{ $levelName }}</th>
+                        @endforeach
                     </tr>
                 </thead>
                 <tbody>
@@ -47,10 +46,9 @@
                             <td>{{ $user['email'] }}</td>
                             <td>{{ $user['username'] ?? '-' }}</td>
                             <td>{{ $user['notStarted'] }}</td>
-                            <td>{{ $user['emerging'] }}</td>
-                            <td>{{ $user['developing'] }}</td>
-                            <td>{{ $user['proficient'] }}</td>
-                            <td>{{ $user['confident'] }}</td>
+                            @foreach($levelNames as $levelName)
+                                <td>{{ $user['levels'][$levelName] ?? 0 }}</td>
+                            @endforeach
                         </tr>
                     @endforeach
                 </tbody>
