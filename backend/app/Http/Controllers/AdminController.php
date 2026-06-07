@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\StudentProfileController;
 
 class AdminController extends Controller
 {
@@ -40,17 +41,14 @@ class AdminController extends Controller
      * Build user rows and totals for the admin table, CSV (frontend), and PDF.
      * Returns ['stats' => [...], 'users' => Collection of row arrays].
      */
-    private function buildUsersOverview(Request $request): array
-    {
+    private function buildUsersOverview(Request $request): array  {
         $validated = $request->validate([
             'q' => 'nullable|string|max:100',
         ]);
 
-        // One row per user; goal counts via profile (smart_goals.profile_id after pivot migration).
         $query = User::query()
             ->leftJoin('roles as r', 'r.role_id', '=', 'users.role_id')
             ->leftJoin('student_profiles as sp', 'sp.user_id', '=', 'users.user_id')
-            ->leftJoin('smart_goals as sg', 'sg.profile_id', '=', 'sp.profile_id')
             ->select([
                 'users.user_id',
                 'users.username',
@@ -58,12 +56,8 @@ class AdminController extends Controller
                 'users.first_name',
                 'users.last_name',
                 'sp.profile_id',
-                'sp.year_started', 
-                'users.updated_at as user_updated_at',
+                'sp.year_started',
                 'r.role_name',
-                DB::raw('COUNT(DISTINCT sg.goal_id) as goals_count'),
-                DB::raw('SUM(CASE WHEN sg.goal_status_id = 3 THEN 1 ELSE 0 END) as completed_goals_count'),
-                DB::raw('MAX(sg.updated_at) as goals_updated_at'),
             ])
             ->groupBy([
                 'users.user_id',
@@ -72,14 +66,13 @@ class AdminController extends Controller
                 'users.first_name',
                 'users.last_name',
                 'sp.profile_id',
-                'sp.year_started', 
+                'sp.year_started',
                 'users.updated_at',
                 'r.role_name',
             ]);
 
         if (! empty($validated['q'])) {
             $search = trim($validated['q']);
-            // Search by common admin fields: name, email, or username.
             $query->where(function ($q) use ($search) {
                 $q->where('users.email', 'like', "%{$search}%")
                     ->orWhere('users.username', 'like', "%{$search}%")
@@ -89,42 +82,48 @@ class AdminController extends Controller
 
         $rows = $query->orderBy('users.user_id')->get();
 
-        $users = $rows->map(function ($row) {
-            $goalsCount = (int) $row->goals_count;
-            $completedGoalsCount = (int) $row->completed_goals_count;
+        $totalIndicators = DB::table('competency_indicators')
+            ->whereNull('discontinued_date')
+            ->count();
 
+        $profileController = new StudentProfileController();
+
+        $users = $rows->map(function ($row) use ($totalIndicators, $profileController) {
             $name = trim(implode(' ', array_filter([$row->first_name, $row->last_name])));
             if ($name === '') {
                 $name = $row->username;
             }
 
-            // Prefer latest goal activity; fall back to the user account updated_at.
-            $lastUpdated = $row->goals_updated_at ?? $row->user_updated_at;
+            $levels = $row->profile_id
+                ? $profileController->competencyLevelCounts((int) $row->profile_id)
+                : ['notStarted' => $totalIndicators, 'emerging' => 0, 'developing' => 0, 'proficient' => 0, 'confident' => 0];
 
             return [
-                'user_id' => (int) $row->user_id,
-                'profile_id' => $row->profile_id ? (int) $row->profile_id : null,
-                'year_started'   => $row->year_started ?? null, 
-                'username' => $row->username,
-                'name' => $name,
-                'email' => $row->email,
-                'role' => $row->role_name ?? 'Unknown',
-                'goals' => $goalsCount,
-                'completedGoals' => $completedGoalsCount,
-                // parse(): normalise DB datetime/string to Carbon before format(); admin table shows date only.
-                'updatedAt' => $lastUpdated ? Carbon::parse($lastUpdated)->format('Y-m-d') : null,
+                'user_id'      => (int) $row->user_id,
+                'profile_id'   => $row->profile_id ? (int) $row->profile_id : null,
+                'year_started' => $row->year_started ?? null,
+                'username'     => $row->username,
+                'name'         => $name,
+                'email'        => $row->email,
+                'role'         => $row->role_name ?? 'Unknown',
+                'updatedAt'    => Carbon::parse($row->user_updated_at)->format('Y-m-d'),
+                'notStarted'   => $levels['notStarted'],
+                'emerging'     => $levels['emerging'],
+                'developing'   => $levels['developing'],
+                'proficient'   => $levels['proficient'],
+                'confident'    => $levels['confident'],
             ];
         })->values();
 
         return [
             'stats' => [
                 'totalUsers' => $users->count(),
-                'totalGoals' => (int) $users->sum('goals'),
-                'totalCompletedGoals' => (int) $users->sum('completedGoals'),
+                'totalIndicators' => $totalIndicators,
             ],
             'users' => $users,
         ];
     }
+
 
     /**
      * Split overview rows into Student / Staff / Admin lists for the PDF export layout.

@@ -6,8 +6,10 @@ use App\Models\StudentProfile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\CompetencyIndicator;
 // For storing the profile picture
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class StudentProfileController extends Controller
 {
@@ -172,12 +174,43 @@ class StudentProfileController extends Controller
         return response()->json(['profile_image_url' => $profile->profile_image_url]);
     }
 
+
     // Return only the achievement and attainment certs relating to a profile
     public function getCertifications($id) {
-    $profile = StudentProfile::with(['achievementCerts', 'attainmentCerts'])->findOrFail($id);
-    return response()->json([
-        'achievement_certs' => $profile->achievementCerts,
-        'attainment_certs' => $profile->attainmentCerts,
-    ]);
-}
+        $profile = StudentProfile::with(['achievementCerts', 'attainmentCerts'])->findOrFail($id);
+        return response()->json([
+            'achievement_certs' => $profile->achievementCerts,
+            'attainment_certs' => $profile->attainmentCerts,
+        ]);
+    }
+
+    // Count up the amount of max competency indicators the user has for each level
+    public function competencyLevelCounts($profileId): array {
+        // Associative array to store levels and their counts
+        $levelCounts = ['Emerging' => 0, 'Developing' => 0, 'Proficient' => 0, 'Confident' => 0];
+        $attainedCount = 0;
+
+        // Fetch the highest entry for each competency indicator
+        $indicators = CompetencyIndicator::whereNull('discontinued_date')
+            ->with(['highestEntry' => fn($q) => $q->where('profile_id', $profileId)])
+            ->get();
+
+        // Loop through each indicator and add a count to the level of the highest entry
+        foreach ($indicators as $indicator) {
+            $level = $indicator->highestEntry?->competency_level;
+            if ($level) {
+                $levelCounts[$level]++;
+                $attainedCount++;
+            }
+        }
+
+        // Return values
+        return [
+            'notStarted'  => $indicators->count() - $attainedCount,
+            'emerging'    => $levelCounts['Emerging'],
+            'developing'  => $levelCounts['Developing'],
+            'proficient'  => $levelCounts['Proficient'],
+            'confident'   => $levelCounts['Confident'],
+        ];
+    }
 }

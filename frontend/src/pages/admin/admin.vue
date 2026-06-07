@@ -16,19 +16,6 @@
           <p class="stat-label">Total Users</p>
           <p class="stat-value">{{ totalUsers }}</p>
         </article>
-        <article class="stat-card">
-          <p class="stat-label">Total Goals Logged</p>
-          <p class="stat-value">{{ totalGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Completed Goals</p>
-          <p class="stat-value">{{ totalCompletedGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Open Goals</p>
-          <!-- Derived on the client; backend exposes completed count via goal_status_id = 3. -->
-          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
-        </article>
       </section>
 
       <!-- POST /admin/users — server hashes password; role_id 3 also creates a student_profiles row for View/Edit. -->
