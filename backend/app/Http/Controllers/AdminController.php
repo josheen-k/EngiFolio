@@ -130,12 +130,22 @@ class AdminController extends Controller
         return [
             'stats' => [
                 'totalUsers' => $users->count(),
+                'totalStudents' => $this->countUsersByRole($users, 'Student'),
+                'totalStaff' => $this->countUsersByRole($users, 'Staff'),
+                'totalAdmins' => $this->countUsersByRole($users, 'Admin'),
                 'totalGoals' => (int) $users->sum('goals'),
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
                 'totalIndicators' => $totalIndicators,
             ],
             'users' => $users,
         ];
+    }
+
+    private function countUsersByRole($users, string $role): int
+    {
+        return $users
+            ->filter(static fn (array $user): bool => strcasecmp((string) ($user['role'] ?? ''), $role) === 0)
+            ->count();
     }
 
 

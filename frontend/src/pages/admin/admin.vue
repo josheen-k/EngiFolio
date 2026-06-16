@@ -13,6 +13,18 @@
       <!-- Summary cards: totals mirror backend aggregation over the current result set (same request as the table). -->
       <section class="stats-grid mb-4">
         <article class="stat-card">
+          <p class="stat-label">Students</p>
+          <p class="stat-value">{{ totalStudents }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Staff</p>
+          <p class="stat-value">{{ totalStaff }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Admins</p>
+          <p class="stat-value">{{ totalAdmins }}</p>
+        </article>
+        <article class="stat-card">
           <p class="stat-label">Total Users</p>
           <p class="stat-value">{{ totalUsers }}</p>
         </article>
@@ -221,6 +233,9 @@ const newUser = ref({
 // Populated from the same /admin/users-overview response as the table (totals are sums over returned rows).
 const stats = ref({
   totalUsers: 0,
+  totalStudents: 0,
+  totalStaff: 0,
+  totalAdmins: 0,
   totalGoals: 0,
   totalCompletedGoals: 0
 })
@@ -231,6 +246,9 @@ const filteredUsers = computed(() => {
 })
 
 const totalUsers = computed(() => stats.value.totalUsers)
+const totalStudents = computed(() => stats.value.totalStudents)
+const totalStaff = computed(() => stats.value.totalStaff)
+const totalAdmins = computed(() => stats.value.totalAdmins)
 const totalGoals = computed(() => stats.value.totalGoals)
 const totalCompletedGoals = computed(() => stats.value.totalCompletedGoals)
 
@@ -265,6 +283,9 @@ const fetchUsersOverview = async () => {
     users.value = response.data.users || []
     stats.value = response.data.stats || {
       totalUsers: 0,
+      totalStudents: 0,
+      totalStaff: 0,
+      totalAdmins: 0,
       totalGoals: 0,
       totalCompletedGoals: 0
     }
@@ -274,6 +295,9 @@ const fetchUsersOverview = async () => {
     users.value = []
     stats.value = {
       totalUsers: 0,
+      totalStudents: 0,
+      totalStaff: 0,
+      totalAdmins: 0,
       totalGoals: 0,
       totalCompletedGoals: 0
     }
@@ -499,19 +523,20 @@ const deleteUser = async (user) => {
   border-radius: 1rem;
   padding: 1rem 1.1rem;
   background: #fbfbfb;
+  text-align: center;
 }
 
 .stat-label {
   margin: 0;
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   color: #707070;
 }
 
 .stat-value {
   margin: 0.35rem 0 0;
   font-family: 'Martel', serif;
-  font-size: 1.9rem;
+  font-size: 2.25rem;
 }
 
 .panel-card {
@@ -664,12 +689,13 @@ const deleteUser = async (user) => {
   border-bottom: 1px solid #e6e6e6;
   text-align: center;
   vertical-align: middle;
+  font-size: 0.95rem;
 }
 
 .admin-table th {
   background: #f3f3f3;
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   color: #333333;
   font-weight: 500;
 }
@@ -685,7 +711,7 @@ const deleteUser = async (user) => {
 
 .user-email {
   color: #6c6c6c;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   text-align: center;
 }
 
