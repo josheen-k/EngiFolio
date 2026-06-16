@@ -53,6 +53,7 @@ class AdminController extends Controller
         $query = User::query()
             ->leftJoin('roles as r', 'r.role_id', '=', 'users.role_id')
             ->leftJoin('student_profiles as sp', 'sp.user_id', '=', 'users.user_id')
+            ->leftJoin('smart_goals as sg', 'sg.profile_id', '=', 'sp.profile_id')
             ->select([
                 'users.user_id',
                 'users.username',
@@ -61,7 +62,11 @@ class AdminController extends Controller
                 'users.last_name',
                 'sp.profile_id',
                 'sp.year_started',
+                'users.updated_at as user_updated_at',
                 'r.role_name',
+                DB::raw('COUNT(DISTINCT sg.goal_id) as goals_count'),
+                DB::raw('SUM(CASE WHEN sg.goal_status_id = 3 THEN 1 ELSE 0 END) as completed_goals_count'),
+                DB::raw('MAX(sg.updated_at) as goals_updated_at'),
             ])
             ->groupBy([
                 'users.user_id',
@@ -102,6 +107,9 @@ class AdminController extends Controller
                 ? $profileController->competencyLevelCounts((int) $row->profile_id)
                 : ['notStarted' => $totalIndicators, 'levels' => []];
 
+            $goalsCount = (int) $row->goals_count;
+            $completedGoalsCount = (int) $row->completed_goals_count;
+            $lastUpdated = $row->goals_updated_at ?? $row->user_updated_at;
 
             return [
                 'user_id'      => (int) $row->user_id,
@@ -111,7 +119,9 @@ class AdminController extends Controller
                 'name'         => $name,
                 'email'        => $row->email,
                 'role'         => $row->role_name ?? 'Unknown',
-                'updatedAt'    => Carbon::parse($row->user_updated_at)->format('Y-m-d'),
+                'goals'        => $goalsCount,
+                'completedGoals' => $completedGoalsCount,
+                'updatedAt'    => $lastUpdated ? Carbon::parse($lastUpdated)->format('Y-m-d') : null,
                 'notStarted' => $levels['notStarted'],
                 'levels' => $levels['levels'],
             ];
@@ -120,6 +130,8 @@ class AdminController extends Controller
         return [
             'stats' => [
                 'totalUsers' => $users->count(),
+                'totalGoals' => (int) $users->sum('goals'),
+                'totalCompletedGoals' => (int) $users->sum('completedGoals'),
                 'totalIndicators' => $totalIndicators,
             ],
             'users' => $users,
