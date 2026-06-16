@@ -174,7 +174,7 @@ class AdminController extends Controller
             'role_id' => 'required|exists:roles,role_id',
             'username' => 'required|string|max:9|unique:users,username',
             'email' => 'required|email|max:254|unique:users,email',
-            'first_name' => 'nullable|string|max:50',
+            'first_name' => 'required|string|max:50',
             'last_name' => 'required|string|max:50',
             'password' => 'required|string|min:6',
         ]);
@@ -183,7 +183,7 @@ class AdminController extends Controller
             'role_id' => (int) $validated['role_id'],
             'username' => $validated['username'],
             'email' => $validated['email'],
-            'first_name' => $validated['first_name'] ?? null,
+            'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             // Store a one-way hash only, never plaintext passwords.
             'password_hash' => Hash::make($validated['password']),
@@ -195,7 +195,7 @@ class AdminController extends Controller
         if ((int) $validated['role_id'] === 3) {
             StudentProfile::create([
                 'user_id' => $user->user_id,
-                'preferred_name' => $validated['first_name'] ?? null,
+                'preferred_name' => $validated['first_name'],
             ]);
         }
 

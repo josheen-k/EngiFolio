@@ -42,7 +42,7 @@
           </select>
           <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
           <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
-          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
+          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name" required />
           <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
           <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
           <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
