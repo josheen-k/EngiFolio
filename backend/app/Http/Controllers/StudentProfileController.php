@@ -241,7 +241,7 @@ class StudentProfileController extends Controller
                 $folder = 'attainment-certs';
             }
 
-            // Deletes existing profile, find in storage folder with a file that starts with the url 
+            // Deletes existing cert, find in storage folder with a file that starts with the url 
             if ($cert && $cert->file_path) {
                 // Breaks the url into its parts
                 $parsed = parse_url($cert->file_path);
