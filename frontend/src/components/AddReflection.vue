@@ -96,7 +96,7 @@
             <div>
               <label class="form-label field-label mb-3">Evidence type</label>
               <select v-model="ev.type" class="form-select field-select rounded-3"
-              @change="ev.value = ''; ev.fileName = ''">
+              @change="ev.value = ''; ev.fileName = ''; ev.file = null">
                 <option value="">Select evidence type</option>
                 <option value="url">Link</option>
                 <option value="document">Document</option>
@@ -111,6 +111,7 @@
                 <label class="form-label field-label mb-3">Evidence input</label>
                 <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
                 <label v-else-if="errors[`evidenceVideo_${idx}`]" class="field-label error-message">*Invalid YouTube link</label>
+                <label v-else-if="errors[`evidenceFileType_${idx}`]" class="field-label error-message">*Invalid file type</label>
               </div> 
             
               <!-- nothing selected-->
@@ -133,7 +134,7 @@
                 <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': ev.fileName }">
 
                   <input type="file" :accept="fileAccept(ev.type)" class="position-absolute w-100 h-100 opacity-0"
-                  @change="e=> handleFile(e, ev)"/>
+                  @change="e=> handleFile(e, ev, idx)"/>
 
                   <div v-if="!ev.fileName">
                     <p><b>Click to upload or drag & drop</b></p>
@@ -243,6 +244,7 @@
         type: '',
         value: '',
         fileName: '',
+        file: null
       })
     }
   };
@@ -258,7 +260,7 @@
     experience_tasks: '',
     key_learnings: '',
     future_applications: '',
-    evidenceEntries: [{ type: '', value: '', fileName: '' }]
+    evidenceEntries: [{ type: '', value: '', fileName: '', file: null }]
   })
 
   // Create a new form
@@ -279,11 +281,23 @@
   )
 
   // Gets the file from the upload field and prepares it for upload
-  function handleFile(e, ev) {
+  function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) { 
+      if (ev.type === 'document' && file.type !== 'application/pdf') {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
+
+      if (ev.type === 'image' && !file.type.startsWith('image/')) {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
+
       ev.fileName = file.name; 
-      ev.value = file.name 
+      ev.value = file.name;
+      ev.file = file;
+      delete errors.value[`evidenceFileType_${idx}`]
     }
   }
 
@@ -362,11 +376,33 @@
 
       // Save each evidence entry
       for (const ev of evidenceToSave) {
-        await api.post('/competency-evidence', {
-          entry_id: entryId,
-          evidence_type: ev.type,
-          evidence_value: ev.value
-        })
+        // Check if evidence type requires a file upload
+        if (ev.type === 'document' || ev.type === 'image') {
+          // Create a special object for sending files over HTTP, handles binary data
+          const formData = new FormData()
+          // Add data to the form for passing to the backend
+          formData.append('entry_id', entryId);
+          formData.append('evidence_type', ev.type)
+
+          // Set the content type so laravel knows to parse it as a file upload
+          if (ev.type === 'document') {
+            formData.append('file', ev.file)
+          } else {
+            formData.append('image', ev.file)
+          }
+          
+          // Call the backend to add the evidence
+          await api.post('/competency-evidence', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        } else {
+          // If the evidence is a link, add it
+          await api.post('/competency-evidence', {
+            entry_id: entryId,
+            evidence_type: ev.type,
+            evidence_value: ev.value
+          })
+        } 
       }
 
       // Add a post to student actions for an added competency
@@ -488,6 +524,10 @@
   border-style: solid;
   border-color: #88c2d2;
   background: #f0fafa;
+}
+
+.upload-zone input[type="file"] {
+  cursor: pointer;
 }
 
 .del-btn {

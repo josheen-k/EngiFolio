@@ -374,25 +374,25 @@
 
    const newCert = (e, type, index) => {
     const file = e.target.files[0]
-    if (!file) return
-
-    if (file.type !== 'application/pdf') {
-      if (type === 'achievement') {
-        errors.value[`achieveFileType_${index}`] = true
-      } else {
-        errors.value[`attainFileType_${index}`] = true
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        if (type === 'achievement') {
+          errors.value[`achieveFileType_${index}`] = true
+        } else {
+          errors.value[`attainFileType_${index}`] = true
+        }
+        return
       }
-      return
-    }
 
-    if (type === 'achievement') {
-      achCertFiles.value[index] = file
-      achCertFileNames.value[index] = file.name
-      delete errors.value[`achieveFileType_${index}`]
-    } else {
-      attCertFiles.value[index] = file
-      attCertFileNames.value[index] = file.name
-      delete errors.value[`attainFileType_${index}`]
+      if (type === 'achievement') {
+        achCertFiles.value[index] = file
+        achCertFileNames.value[index] = file.name
+        delete errors.value[`achieveFileType_${index}`]
+      } else {
+        attCertFiles.value[index] = file
+        attCertFileNames.value[index] = file.name
+        delete errors.value[`attainFileType_${index}`]
+      }
     }
   }
 

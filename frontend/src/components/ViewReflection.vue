@@ -57,7 +57,9 @@
                   <a v-if="ev.evidence_type === 'video'" :href="ev.evidence_value" target="_blank">
                     {{ ev.evidence_value }}
                   </a>
-                  <span v-else>{{ ev.evidence_value }}</span>
+                  <span v-else><a :href="ev.evidence_value" target="_blank">
+                    Link to {{ ev.evidence_type }}
+                  </a></span>
                 </span>
               </div>
             </div>
@@ -162,7 +164,7 @@
               <!-- evidence type -->
               <div>
                 <label class="form-label field-label mb-3">Evidence type</label>
-                <select v-model="ev.type" class="form-select field-select rounded-3" @change="ev.value = ''; ev.fileName = ''">
+                <select v-model="ev.type" class="form-select field-select rounded-3" @change="ev.value = ''; ev.fileName = ''; ev.file = null">
                   <option value="">Select evidence type</option>
                   <option value="url">Link</option>
                   <option value="document">Document</option>
@@ -177,6 +179,7 @@
                   <label class="form-label field-label mb-3">Evidence input</label>
                   <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
                   <label v-else-if="errors[`evidenceVideo_${idx}`]" class="field-label error-message">*Invalid YouTube link</label>
+                  <label v-else-if="errors[`evidenceFileType_${idx}`]" class="field-label error-message">*Invalid file type</label>
                 </div> 
 
                 <!-- nothing selected -->
@@ -196,7 +199,7 @@
                 <!-- file upload -->
                 <div v-else>
                   <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': ev.fileName }">
-                    <input type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev)"/>
+                    <input v-if="!ev.fileName" type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev, idx)"/>
 
                     <div v-if="!ev.fileName">
                       <p><b>Click to upload or drag & drop</b></p>
@@ -347,6 +350,7 @@
         type: '',
         value: '',
         fileName: '',
+        file: null
       })
     }
   };
@@ -360,11 +364,22 @@
   })
 
   // Gets the file from the upload field and prepares it for upload
-  function handleFile(e, ev) {
+  function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) {
+      if (ev.type === 'document' && file.type !== 'application/pdf') {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
+
+      if (ev.type === 'image' && !file.type.startsWith('image/')) {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
       ev.fileName = file.name
       ev.value = file.name
+      ev.file = file
+      delete errors.value[`evidenceFileType_${idx}`]
     }
   }
 
@@ -376,7 +391,8 @@
       type: ev.evidence_type,
       value: ev.evidence_value,
       // If it is a url set to empty string, else set it to the filename
-      fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
+      fileName: ev.evidence_type !== 'url' ? ev.evidence_value : '',
+      file: null
     }))
 
     // Populate the edit form with the values saved 
@@ -393,7 +409,7 @@
       future_applications: props.reflec.future_applications || '',
       // If evidence exists then add it, else add an empty field
       evidenceEntries: existingEvidence.length 
-        ? existingEvidence : [{ type: '', value: '', fileName: '' }]
+        ? existingEvidence : [{ type: '', value: '', fileName: '', file: null }]
     }
 
     // Enter editing
@@ -487,12 +503,42 @@
 
       // Go through each evidence to save  
       for (const ev of evidenceToSave) {
-        // Call to backend to save data
-        await api.post('/competency-evidence', {
-          entry_id: editForm.value.id,
-          evidence_type: ev.type,
-          evidence_value: ev.value
-        })
+        // Check if evidence type requires a file upload
+        if (ev.type === 'document' || ev.type === 'image') {
+          if (!ev.file) {
+            await api.post('/competency-evidence', {
+              entry_id: editForm.value.id,
+              evidence_type: ev.type,
+              evidence_value: ev.value
+            })
+          } else {          
+            // Create a special object for sending files over HTTP, handles binary data
+            const formData = new FormData()
+            // Add data to the form for passing to the backend
+            formData.append('entry_id', editForm.value.id)
+            formData.append('evidence_type', ev.type)
+
+            // Set the content type so laravel knows to parse it as a file upload
+            if (ev.type === 'document') {
+              formData.append('file', ev.file)
+            } else {
+              formData.append('image', ev.file)
+            }
+            
+            // Call the backend to add the evidence
+            await api.post('/competency-evidence', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            })
+          }
+
+        } else {
+          // If the evidence is a link, add it
+          await api.post('/competency-evidence', {
+            entry_id: editForm.value.id,
+            evidence_type: ev.type,
+            evidence_value: ev.value
+          })
+        } 
       }
 
       // Only add a post to student actions when the competency is published
@@ -735,6 +781,11 @@
   border-style: solid;
   border-color: #88c2d2;
   background: #f0fafa;
+  cursor: default;
+}
+
+.upload-zone input[type="file"] {
+  cursor: pointer;
 }
 
 .del-btn {
