@@ -378,61 +378,121 @@ const exportUsersCsv = () => {
     return
   }
 
-  const lines = [
-    '"----- User Management -----"',
-    [
-      'Name',
-      'Email',
-      'Role',
-      'ID',
-      'Goals',
-      'Completed',
-      'Last Updated'
-    ]
-      .map(escapeCsvCell)
-      .join(',')
-  ]
+  try {
+    const lines = ['"----- User Management -----"']
 
-  users.value.forEach((user) => {
+    // Push user stats to the lines array
     lines.push(
       [
-        user.name,
-        user.email,
-        user.role,
-        user.username || '-',
-        user.goals,
-        user.completedGoals,
-        user.updatedAt || ''
-      ]
-        .map(escapeCsvCell)
-        .join(',')
+        escapeCsvCell('Total Users'),
+        escapeCsvCell(stats.value.totalUsers),
+        escapeCsvCell('Students'),
+        escapeCsvCell(stats.value.totalStudents),
+        escapeCsvCell('Staff'),
+        escapeCsvCell(stats.value.totalStaff),
+        escapeCsvCell('Admins'),
+        escapeCsvCell(stats.value.totalAdmins)
+      ].join(',')
     )
-  })
+    lines.push('')
 
-  lines.push('')
-  lines.push(
-    [
-      escapeCsvCell('Total Users'),
-      escapeCsvCell(stats.value.totalUsers),
-      escapeCsvCell('Total Goals'),
-      escapeCsvCell(stats.value.totalGoals),
-      escapeCsvCell('Completed Goals'),
-      escapeCsvCell(stats.value.totalCompletedGoals)
-    ].join(',')
-  )
+    // Filter into students, staff and admin
+    const students = users.value.filter((user) => user.role === 'Student')
+    const staff = users.value.filter((user) => user.role === 'Staff')
+    const admins = users.value.filter((user) => user.role === 'Admin')
 
-  const blob = new Blob(['\ufeff', lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(blob)
-  link.setAttribute('href', url)
-  link.setAttribute('download', 'user_management_export.csv')
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+    // Add student stats and amount of possible competency indicators
+    lines.push(`"Students: ${students.length}"`)
+    lines.push(`"Student Details And Competency Level Count Out Of ${stats.value.totalIndicators ?? ''}"`)
 
-  showPopUp('Downloading exported data', 'success')
+
+    // Group the students by their year starting with an empty object
+    const byYear = students.reduce((groups, user) => {
+      // If a year does not exist then add to no year
+      const year = user.year_started ?? 'No year'
+
+      // If a year does not exist in the groups then add it
+      if (!groups[year]) groups[year] = []
+
+      // Add the user to the group and return the group
+      groups[year].push(user)
+      return groups
+    }, {})
+
+    // Sort the years from oldest to newest
+    const sortedYears = Object.keys(byYear).sort((a, b) => {
+      if (a === 'No year') return 1
+      if (b === 'No year') return -1
+      return Number(a) - Number(b)
+    })
+
+    // Go through each year and add the students for each year level
+    sortedYears.forEach((year) => {
+      // Add the year number and titles
+      lines.push(`"${year}"`)
+      lines.push(['Name', 'Email', 'ID', 'Not Started', 'Emerging', 'Developing', 'Proficient', 'Confident'].map(escapeCsvCell).join(','))
+      
+      // Add each student from that year into the file
+      byYear[year].forEach((user) => {
+        lines.push(
+          [
+            user.name,
+            user.email,
+            user.username || '-',
+            user.notStarted,
+            user.levels?.Emerging ?? 0,
+            user.levels?.Developing ?? 0,
+            user.levels?.Proficient ?? 0,
+            user.levels?.Confident ?? 0
+          ]
+            .map(escapeCsvCell)
+            .join(',')
+        )
+      })
+      lines.push('')
+    })
+
+    // Add staff members section and all users who are staff
+    lines.push(`"Staff members: ${staff.length}"`)
+    lines.push(['Name', 'Email', 'ID'].map(escapeCsvCell).join(','))
+    if (staff.length === 0) {
+      lines.push(escapeCsvCell('No staff members found.'))
+    } else {
+      staff.forEach((user) => {
+        lines.push([user.name, user.email, user.username || '-'].map(escapeCsvCell).join(','))
+      })
+    }
+    lines.push('')
+
+    // Add admin members sections and all members who are admins
+    lines.push(`"Admins: ${admins.length}"`)
+    lines.push(['Name', 'Email', 'ID'].map(escapeCsvCell).join(','))
+    if (admins.length === 0) {
+      lines.push(escapeCsvCell('No users in this group.'))
+    } else {
+      admins.forEach((user) => {
+        lines.push([user.name, user.email, user.username || '-'].map(escapeCsvCell).join(','))
+      })
+    }
+
+    // Create and download the CSV file
+    const blob = new Blob(['\ufeff', lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'user_management_export.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    showPopUp('Downloading exported data', 'success')
+
+  } catch {
+    showPopUp('Error downloading data', 'error')
+  }
+
 }
 
 const exportUsersPdf = async () => {
