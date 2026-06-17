@@ -156,6 +156,24 @@
               placeholder="How will you apply these learnings in the future?"></textarea>
           </div>
 
+          <!-- existing evidence entries -->
+          <div>
+            <p class="form-label field-label">Existing Evidence</p>
+            <div v-if="editForm.existingEvidence?.length" class="d-flex flex-column gap-2 mb-3">
+              <div v-for="ev in editForm.existingEvidence" :key="ev.evidence_id"
+                class="d-flex align-items-center justify-content-between p-2 rounded-3 field-input">
+                <span class="field-label">{{ evLabel(ev.evidence_type) }}: 
+                  <a :href="ev.evidence_value" target="_blank">{{ ev.evidence_type === 'url' || ev.evidence_type === 'video' ? ev.evidence_value : 'View file' }}</a>
+                </span>
+                <button class="del-btn" @click="editForm.existingEvidence = editForm.existingEvidence.filter(e => e.evidence_id !== ev.evidence_id); evidenceToDelete.push(ev.evidence_id)" title="Remove">
+                  <img src="@/assets/delete.png">
+                </button>
+              </div>
+            </div>
+            <p v-else class="field-label">No existing evidence</p>
+          </div>
+
+
           <!-- editable evidence entries -->
           <div>
             <div v-for="(ev, idx) in editForm.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3" 
@@ -302,6 +320,7 @@
 
   // Stores the original entry to be compared to any edits to see if changes were made
   const originalEditForm = ref(null)
+  const evidenceToDelete = ref([])
 
   // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
@@ -395,6 +414,8 @@
       file: null
     }))
 
+    evidenceToDelete.value = []
+
     // Populate the edit form with the values saved 
     editForm.value = {
       id: props.reflec.entry_id,
@@ -407,9 +428,8 @@
       experience_tasks: props.reflec.experience_tasks || '',
       key_learnings: props.reflec.key_learnings || '',
       future_applications: props.reflec.future_applications || '',
-      // If evidence exists then add it, else add an empty field
-      evidenceEntries: existingEvidence.length 
-        ? existingEvidence : [{ type: '', value: '', fileName: '', file: null }]
+      existingEvidence: props.reflec.evidence || [],  // read-only, just for display and deletion
+      evidenceEntries: [{ type: '', value: '', fileName: '', file: null }] 
     }
 
     // Enter editing
@@ -435,7 +455,7 @@
       errors.value = {} 
 
       // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
-      const noChange = (JSON.stringify(editForm.value) === originalEditForm.value && editForm.entry_status_id === statusId)
+      const noChange = (JSON.stringify(editForm.value) === originalEditForm.value && editForm.value.entry_status_id === statusId)
         if (noChange) {
           emit('close');
           return;
@@ -494,57 +514,38 @@
       // Edit the backend database with the changed data
       await api.put(`/competency-entries/${editForm.value.id}`, payload)
 
-      // Delete all existing evidences so that the new evidence can be added
-      const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
-      // For each existing id execute a delete
-      for (const id of existingIds) {
+      // Delete evidence that was deleted by the user
+      for (const id of evidenceToDelete.value) {
         await api.delete(`/competency-evidence/${id}`)
       }
 
       // Go through each evidence to save  
-      for (const ev of evidenceToSave) {
-        // Check if evidence type requires a file upload
+      const newEvidence = editForm.value.evidenceEntries.filter(ev => ev.type && ev.value)
+      for (const ev of newEvidence) {
         if (ev.type === 'document' || ev.type === 'image') {
-          if (!ev.file) {
-            await api.post('/competency-evidence', {
-              entry_id: editForm.value.id,
-              evidence_type: ev.type,
-              evidence_value: ev.value
-            })
-          } else {          
-            // Create a special object for sending files over HTTP, handles binary data
-            const formData = new FormData()
-            // Add data to the form for passing to the backend
-            formData.append('entry_id', editForm.value.id)
-            formData.append('evidence_type', ev.type)
-
-            // Set the content type so laravel knows to parse it as a file upload
-            if (ev.type === 'document') {
-              formData.append('file', ev.file)
-            } else {
-              formData.append('image', ev.file)
-            }
-            
-            // Call the backend to add the evidence
-            await api.post('/competency-evidence', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            })
-          }
-
+          const formData = new FormData()
+          formData.append('entry_id', editForm.value.id)
+          formData.append('evidence_type', ev.type)
+          formData.append(ev.type === 'document' ? 'file' : 'image', ev.file)
+          await api.post('/competency-evidence', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
         } else {
-          // If the evidence is a link, add it
           await api.post('/competency-evidence', {
             entry_id: editForm.value.id,
             evidence_type: ev.type,
             evidence_value: ev.value
           })
-        } 
+        }
       }
 
       // Only add a post to student actions when the competency is published
       if (Number(statusId) === 2) {
         await api.post(`/student-actions/new`, {action: `Updated entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
       }
+
+      // Reset evidence to delete
+      evidenceToDelete.value = []
 
       // Call parent functions to close the window and show the popup message
       emit('refresh', statusId, editForm.value.experience_title || 'Untitled')
@@ -560,6 +561,8 @@
   const saveEdit = () => saveEntry(2)
   const saveAsDraft = () => saveEntry(1)
  
+  
+
   // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
     const noChange = JSON.stringify(editForm.value) === originalEditForm.value
