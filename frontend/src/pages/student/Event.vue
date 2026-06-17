@@ -480,8 +480,8 @@ const monthOptions = [
   'December',
 ]
 
-const YEAR_VIEW_START = 1900
-const YEAR_VIEW_END = 2100
+const YEAR_VIEW_START = 2020
+const YEAR_VIEW_END = 2030
 
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
