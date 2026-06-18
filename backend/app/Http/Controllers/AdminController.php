@@ -177,6 +177,7 @@ class AdminController extends Controller
             'first_name' => 'required|string|max:50',
             'last_name' => 'required|string|max:50',
             'password' => 'required|string|min:6',
+            'year_started' => 'required_if:role_id,3|nullable|integer|min:2000|max:2100',
         ]);
 
         $user = User::create([
@@ -196,6 +197,7 @@ class AdminController extends Controller
             StudentProfile::create([
                 'user_id' => $user->user_id,
                 'preferred_name' => $validated['first_name'],
+                'year_started' => (int) $validated['year_started'],
             ]);
         }
 
