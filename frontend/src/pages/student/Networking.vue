@@ -3,7 +3,7 @@
     <Navbar />
 
     <section class="container-lg py-5">
-      //Elevator pitch
+      <!-- Elevator pitch -->
       <div class="pitch-box">
         <label class="pitch-label">Elevator pitch</label>
 
@@ -14,7 +14,7 @@
         ></textarea>
 
         <div class="pitch-actions">
-          //save button of elevator pitch
+          <!-- save button of elevator pitch -->
           <button
             class="action-button small-button"
             @click="saveElevatorPitch"
@@ -187,8 +187,7 @@ const switchNetworkingTab = (tab) => {
 
 .action-button {
   font-family: 'Montserrat Alternates', sans-serif;
-  background: #555555;
-  color: #ffffff;
+  background: #e6e6e6;
   padding: 0.85rem 1.4rem;
   border: none;
   border-radius: 999px;
@@ -201,7 +200,8 @@ const switchNetworkingTab = (tab) => {
 
 .action-button:hover {
   transform: translateY(-1px);
-  background: #333333;
+  background: #666666;
+  color: #ffffff;
 }
 
 .small-button {
@@ -357,24 +357,6 @@ const switchNetworkingTab = (tab) => {
   background: #db7979;
   color: #fff;
 }
-
-
-.action-button {
-  border: 1px solid transparent;
-  cursor: pointer;
-  background: #13202c;
-  color: #ffffff;
-  padding: 0.85rem 1.4rem;
-  transition:
-    transform 0.18s ease,
-    background-color 0.18s ease,
-    border-color 0.18s ease;
-}
-
-.action-button:hover {
-  transform: translateY(-1px);
-}
-
 
 .popUp-msg {
   position: fixed;

@@ -1592,7 +1592,8 @@ function goToToday() {
 
 .action-button:hover {
   transform: translateY(-1px);
-  background: #333333;
+  color: #ffffff;
+  background: #666666;
 }
 
 .ghost-button:hover,
@@ -1608,8 +1609,7 @@ function goToToday() {
   color: #a63f3f;
 }
 .action-button {
-  background: #555555;
-  color: #ffffff;
+  background: #e6e6e6;
   padding: 0.85rem 1.4rem;
 }
 
