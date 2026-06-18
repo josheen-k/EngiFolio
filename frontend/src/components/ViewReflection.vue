@@ -157,9 +157,9 @@
           </div>
 
           <!-- existing evidence entries -->
-          <div>
+          <div v-if="editForm.existingEvidence?.length">
             <p class="form-label field-label">Existing Evidence</p>
-            <div v-if="editForm.existingEvidence?.length" class="d-flex flex-column gap-2 mb-3">
+            <div class="d-flex flex-column gap-2 mb-3">
               <div v-for="ev in editForm.existingEvidence" :key="ev.evidence_id"
                 class="d-flex align-items-center justify-content-between p-2 rounded-3 field-input">
                 <span class="field-label">{{ evLabel(ev.evidence_type) }}: 
@@ -170,7 +170,6 @@
                 </button>
               </div>
             </div>
-            <p v-else class="field-label">No existing evidence</p>
           </div>
 
 
