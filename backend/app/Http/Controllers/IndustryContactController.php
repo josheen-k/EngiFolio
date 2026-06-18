@@ -43,7 +43,7 @@ class IndustryContactController extends Controller
             'date_met' => 'nullable|date',
 
             'contact_methods' => 'nullable|array',
-            'contact_methods.*.type' => 'required|string|max:50',
+            'contact_methods.*.type' => 'required|string|max:50', // * for automatic indexing for every item in the array
             'contact_methods.*.value' => 'required|string|max:255',
         ]);
 

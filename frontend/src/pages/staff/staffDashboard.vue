@@ -139,7 +139,7 @@ import StaffNavbar from '@/components/StaffNavbar.vue'
 
 const router = useRouter()
 
-const staffUserId = 4
+const staffUserId = 4 // staff user id hardcoded to 4 for the project scope
 
 const students = ref([])
 const allEntries = ref([])
@@ -160,7 +160,7 @@ const fetchDashboardData = async () => {
       api.get(`/competency-entries/${student.profile_id}`)
     )
 
-    const entryResponses = await Promise.allSettled(entryRequests)
+    const entryResponses = await Promise.allSettled(entryRequests) // promise all settled is used to return all requests, even if one fails
 
     allEntries.value = entryResponses.flatMap((result, index) => {
       if (result.status !== 'fulfilled') {
@@ -186,17 +186,20 @@ const fetchDashboardData = async () => {
 }
 
 const hasFeedback = (entry) => {
-  return entry.competency_feedback?.length > 0
+  return entry.competency_feedback?.length > 0 // optional chaining used here
 }
 
+// count the pending feedback entries
 const pendingFeedbackCount = computed(() => {
   return allEntries.value.filter(entry => !hasFeedback(entry)).length
 })
 
+// count the reviewed feedback entries
 const reviewedEntriesCount = computed(() => {
   return allEntries.value.filter(entry => hasFeedback(entry)).length
 })
 
+// recent entries, restricted to 5 at most
 const recentEntries = computed(() => {
   return [...allEntries.value]
     .sort(
@@ -225,7 +228,7 @@ const openEntry = (entry) => {
 
     localStorage.setItem(
       'readEntries',
-      JSON.stringify(readEntries.value)
+      JSON.stringify(readEntries.value) // conversion into a string
     )
   }
 
@@ -429,7 +432,7 @@ onMounted(fetchDashboardData)
   border-radius: 50%;
   background: #302a86;
   margin-top: 6px;
-  flex-shrink: 0;
+  flex-shrink: 0; /*use to maintain the size*/
 }
 
 .activity-content {

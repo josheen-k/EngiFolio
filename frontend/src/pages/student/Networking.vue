@@ -49,6 +49,10 @@
         </button>
       </div>
 
+      <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+  {{ popUp.message }}
+</div>
+
       <div class="controls">
         <input
           v-model="search"
@@ -274,6 +278,16 @@ const elevatorPitch = ref('')
 const savingPitch = ref(false)
 const showPitchDialog = ref(false)
 const showConfirmDialog = ref(false)
+const popUp = ref({ show: false, message: '', type: '' })
+const popUpTime = 3000
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+
+  setTimeout(() => {
+    popUp.value.show = false
+  }, popUpTime)
+}
 
 const confirmDialog = ref({
   title: '',
@@ -359,7 +373,7 @@ const filteredContacts = computed(() => {
 const sortedContacts = computed(() => {
   let list = [...filteredContacts.value]
 
-  switch (sortBy.value) {
+  switch (sortBy.value) { //different cases for sorting
     case 'name_asc':
       return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name))
     case 'date_desc':
@@ -371,7 +385,7 @@ const sortedContacts = computed(() => {
   }
 })
 
-const getAvatar = (name) => {
+const getAvatar = (name) => { // get random avatar images for industry contacts
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=111&color=fff&size=64`
 }
 
@@ -409,7 +423,7 @@ const openConfirmDialog = (options) => {
 
   showConfirmDialog.value = true
 
-  return new Promise((resolve) => {
+  return new Promise((resolve) => { // promise is used as a placeholder for a future value
     confirmResolver = resolve
   })
 }
@@ -427,11 +441,11 @@ const toggleMenu = (id) => {
   openMenuId.value = openMenuId.value === id ? null : id
 }
 
-const openDetails = (c) => {
+const openDetails = (c) => { // open details
   selectedContact.value = c
 }
 
-const openForm = () => {
+const openForm = () => { // pop out box for creating a new contact
   editMode.value = false
 
   form.value = {
@@ -452,7 +466,7 @@ const closeForm = () => {
 
 const saveContact = async () => {
   const payload = {
-    ...form.value,
+    ...form.value, // spread operator is used to create a copy
     contact_methods: form.value.contact_methods
       .filter(method => method.value.trim() !== '')
       .map(method => ({
@@ -461,7 +475,7 @@ const saveContact = async () => {
       })),
   }
 
-  const linkedInMethod = payload.contact_methods.find(
+  const linkedInMethod = payload.contact_methods.find( // to check if the method is linkedIn and if the linkedIn link is a valid one
     method => method.type === 'LinkedIn'
   )
 
@@ -470,8 +484,7 @@ const saveContact = async () => {
       let normalizedUrl = linkedInMethod.value
 
       if (
-        !normalizedUrl.startsWith('http://') &&
-        !normalizedUrl.startsWith('https://')
+        !normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')
       ) {
         normalizedUrl = `https://${normalizedUrl}`
       }
@@ -506,35 +519,74 @@ const saveContact = async () => {
   }
 
   try {
-    if (editMode.value) {
-      await api.put(
-        `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
-        payload
-      )
-    } else {
-      await api.post(`/users/${profileId.value}/industry-contacts`, payload)
-    }
+  if (editMode.value) {
+    await api.put(
+      `/users/${profileId.value}/industry-contacts/${form.value.contact_id}`,
+      payload
+    )
 
-    closeForm()
-    await fetchContacts()
-  } catch (error) {
-    console.error('Save contact failed:', error)
+    showPopUp(
+      'Contact updated successfully.',
+      'success'
+    )
+  } else {
+    await api.post(`/users/${profileId.value}/industry-contacts`, payload)
 
-    if (error.response) {
-      openPitchDialog(
-        'Save Failed',
-        'Something went wrong while saving this contact.'
-      )
-    } else {
-      openPitchDialog(
-        'Save Failed',
-        'Please check your connection and try again.'
-      )
-    }
+    showPopUp(
+      'Contact created successfully.',
+      'success'
+    )
   }
+
+  closeForm()
+  await fetchContacts()
+} catch (error) {
+  if (!error.response) {
+    openPitchDialog(
+      'Connection Error',
+      'Unable to reach the server. Please check your connection and try again.'
+    )
+    return
+  }
+
+  if (error.response.status === 422) {
+    const validationErrors = Object.values(
+      error.response.data?.errors || {}
+    )
+      .flat() // flattens nested arrays
+      .join('\n') // combines strings into one string, separated by newlines
+
+    openPitchDialog(
+      'Invalid Contact Details',
+      validationErrors || 'Please check the required fields and try again.'
+    )
+    return
+  }
+
+  if (error.response.status === 404) {
+    openPitchDialog(
+      'Contact Not Found',
+      'This contact may have already been deleted or could not be found.'
+    )
+    return
+  }
+
+  if (error.response.status >= 500) {
+    openPitchDialog(
+      'Server Error',
+      'The server had a problem saving this contact. Please try again later.'
+    )
+    return
+  }
+
+  openPitchDialog(
+    'Save Failed',
+    'An unexpected error occurred while saving this contact.'
+  )
+}
 }
 
-const editContact = (c) => {
+const editContact = (c) => { // edit contact funtion
   selectedContact.value = null
   openMenuId.value = null
   editMode.value = true
@@ -547,7 +599,7 @@ const editContact = (c) => {
     company: c.company || '',
     progress_notes: c.progress_notes || '',
     date_met: c.date_met || '',
-    contact_methods: [
+    contact_methods: [ // three methods for contact methods
       {
         type: 'LinkedIn',
         value:
@@ -574,9 +626,12 @@ const deleteContact = async (id) => {
     title: 'Confirm delete',
     message: 'Delete this contact?',
     confirmLabel: 'Delete',
-    cancelLabel: 'Keep',
+    cancelLabel: 'Keep', // it makes the button customizable
     variant: 'danger',
   })
+
+  // variant controls the visual style of the confirmation dialog. The danger variant is used for destructive actions such as
+  // deleting contacts, which applies the red delete-button styling to warn the user before proceeding."
 
   if (!shouldDelete) {
     return
@@ -584,9 +639,11 @@ const deleteContact = async (id) => {
 
   await api.delete(`/users/${profileId.value}/industry-contacts/${id}`)
 
+  showPopUp('Contact deleted successfully.', 'success')
+
   selectedContact.value = null
   openMenuId.value = null
-  fetchContacts()
+  await fetchContacts()
 }
 </script>
 
@@ -671,6 +728,21 @@ const deleteContact = async (id) => {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+  padding-right: 30px;
+}
+
+.contact-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .avatar img {
@@ -895,5 +967,29 @@ const deleteContact = async (id) => {
   color: #a63f3f;
   border-radius: 999px;
   cursor: pointer;
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+  z-index: 3000;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 </style>

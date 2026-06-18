@@ -8,6 +8,10 @@
         <h2>Assigned Students</h2>
       </div>
 
+      <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+        {{ popUp.message }}
+      </div>
+
       <p v-if="errorMessage" class="error">
         {{ errorMessage }}
       </p>
@@ -175,7 +179,7 @@
 
                 <td>{{ entry.start_date }}</td>
 
-                <td @click.stop>
+                <td @click.stop>  <!-- to stop event propagation -->
   <div class="feedback-cell">
     <span
       class="feedback-status"
@@ -206,7 +210,7 @@
 
           <div class="pill-row">
             <span class="pill-tag">
-              Competency {{ selectedDetails.indicator?.display_id }}
+              Competency {{ selectedDetails.indicator?.display_id }} <!-- optional chaining used here -->
             </span>
 
             <span class="pill-tag">
@@ -333,12 +337,14 @@
 </template>
 
 <script setup>
+
+// ref is used to create a reactive variable
 import { ref, computed, onMounted } from 'vue'
 
 import StaffNavbar from '@/components/StaffNavbar.vue'
 import api from '@/services/api'
 
-const staffUserId = 4
+const staffUserId = 4 // staff harcoded for the prototype / MVP
 
 const students = ref([])
 const entries = ref([])
@@ -362,8 +368,19 @@ const feedbackText = ref('')
 const feedbackLoading = ref(false)
 const feedbackError = ref('')
 const feedbackSuccess = ref('')
+const popUp = ref({ show: false, message: '', type: '' })
+const popUpTime = 3000
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+
+  setTimeout(() => {
+    popUp.value.show = false
+  }, popUpTime)
+}
 
 // Fetch assigned students and load their competency entries
+
 const fetchStudents = async () => {
   try {
     loading.value = true
@@ -373,7 +390,7 @@ const fetchStudents = async () => {
       `/staff/my-students?staff_id=${staffUserId}`
     )
 
-    students.value = await Promise.all(
+    students.value = await Promise.all( // promise.all requests start together
       res.data.map(async student => {
         try {
           const entryRes = await api.get(
@@ -401,7 +418,8 @@ const fetchStudents = async () => {
     )
 
     errorMessage.value = 'Could not load assigned students.'
-  } finally {
+
+  } finally { // this part runs no matter what
     loading.value = false
   }
 }
@@ -411,22 +429,23 @@ const getEntryCount = (student) => {
   return student.entries?.length || 0
 }
 
-const degreeOptions = computed(() => {
-  return [
-    ...new Set(
-      students.value
-        .map(student => student.degree_title)
-        .filter(Boolean)
-    )
-  ]
-})
+// const degreeOptions = computed(() => {
+//   return [
+//     ...new Set(
+//       students.value
+//         .map(student => student.degree_title)
+//         .filter(Boolean)
+//     )
+//   ]
+// })
 
+// for different disciplines in Engineering
 const specialisationOptions = computed(() => {
   return [
-    ...new Set(
+    ...new Set( // removes duplicate entries, the spread operator converts the set back into an array
       students.value
         .map(student => student.specialisation)
-        .filter(Boolean)
+        .filter(Boolean) // filters out the empty values, like null or undefined
     )
   ]
 })
@@ -447,7 +466,7 @@ const filteredStudents = computed(() => {
 
     const matchesDegree =
       !selectedDegree.value ||
-      student.degree_title === selectedDegree.value
+      student.degree_title === selectedDegree.value // === is used for strict inequality, for both type and value
 
     const matchesSpecialisation =
       !selectedSpecialisation.value ||
@@ -455,13 +474,11 @@ const filteredStudents = computed(() => {
 
 
     return (
-      matchesSearch &&
-      matchesDegree &&
-      matchesSpecialisation
+      matchesSearch && matchesDegree && matchesSpecialisation
     )
   })
 
-
+// ... is called the spread operator and used to create a new array and copy all elements into new array
   result = [...result].sort((a, b) => {
     if (sortBy.value === 'entries') {
       return getEntryCount(b) - getEntryCount(a)
@@ -474,6 +491,8 @@ const filteredStudents = computed(() => {
 
   return result
 })
+
+//fetches entries for the selected students
 
 const selectStudent = async (student) => {
   selectedStudent.value = student
@@ -523,19 +542,21 @@ const filteredEntries = computed(() => {
   return entries.value
 })
 
-const getInitials = (student) => {
+const getInitials = (student) => { // to get initials for sorting
   const first = student.first_name?.charAt(0) || ''
   const last = student.last_name?.charAt(0) || ''
 
-  return `${first}${last}`.toUpperCase()
+  return `${first}${last}`.toUpperCase() // use of backticks to return first + last
 }
 
+// date formatting
 const formatDate = (date) => {
   if (!date) return 'No date'
 
-  return new Date(date).toLocaleDateString()
+  return new Date(date).toLocaleDateString() // this function is used to convert date into a human readable format
 }
 
+// expanding the competency entry details
 const openDetails = (entry) => {
   selectedDetails.value = entry
 }
@@ -548,8 +569,8 @@ const openFeedback = (entry) => {
   selectedEntry.value = entry
   selectedDetails.value = null
   feedbackText.value = ''
-  feedbackError.value = ''
-  feedbackSuccess.value = ''
+  feedbackError.value = '' // clear old error messages
+  feedbackSuccess.value = '' // clear old success messages
 }
 
 const closeFeedback = () => {
@@ -564,11 +585,12 @@ const hasFeedback = (entry) => {
   return entry.competency_feedback?.length > 0
 }
 
+// feedback submission mechanism for the staff
 const submitFeedback = async () => {
   feedbackError.value = ''
   feedbackSuccess.value = ''
 
-  if (!feedbackText.value.trim()) {
+  if (!feedbackText.value.trim()) { // trim function used here to remove any trailing or leading whitsespaces
     feedbackError.value = 'Please enter feedback before submitting.'
     return
   }
@@ -586,9 +608,14 @@ const submitFeedback = async () => {
 
     feedbackSuccess.value = 'Feedback submitted successfully.'
 
+    showPopUp(
+  'Feedback submitted successfully.',
+  'success'
+)
+
     await fetchEntries()
 
-    setTimeout(() => {
+    setTimeout(() => { // set timeout function is used so as feedback success value is printed before the modal is closed
       closeFeedback()
     }, 800)
   } catch (err) {
@@ -604,6 +631,11 @@ const submitFeedback = async () => {
     } else {
       feedbackError.value = 'Could not submit feedback.'
     }
+
+    showPopUp(
+    feedbackError.value,
+    'error'
+  )
   } finally {
     feedbackLoading.value = false
   }
@@ -944,5 +976,30 @@ onMounted(fetchStudents)
   background: #ffe2e2;
   color: #b42318;
 }
+
+}
+
+.popUp-msg {
+  position: fixed;
+  top: 5rem;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem;
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+  z-index: 3000;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
 }
 </style>
