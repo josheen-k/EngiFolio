@@ -128,6 +128,7 @@ watch(() => route.query.indicator, () => {
   handleIndicatorParam();
 });
 
+// Load data before redirecting the user
 onMounted(async () => {
   await loadData()
   handleIndicatorParam()

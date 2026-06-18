@@ -36,7 +36,7 @@ class RoleController extends Controller
     {
         // Check to see if any users have the role before deleting
         if ($role->users()->count() > 0) {
-            return response()->json(['Cannot delete role: role assigned to users'], 422);
+            return response()->json(['Cannot delete role: role assigned to users'], 409);
         }
 
         $role->delete();

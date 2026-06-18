@@ -7,7 +7,6 @@ use App\Models\CompetencyEvidence;
 use App\Models\StudentProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
 
 class CompetencyEntryController extends Controller
 {
@@ -59,7 +58,7 @@ class CompetencyEntryController extends Controller
     public function update(Request $request, $competencyEntryId)
     {
         // Fails if no entry is found
-        $entry = \App\Models\CompetencyEntry::findOrFail($competencyEntryId);
+        $entry = CompetencyEntry::findOrFail($competencyEntryId);
 
         // Validate all data coming in
         $validated = $request->validate([
@@ -86,22 +85,22 @@ class CompetencyEntryController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy($id)
-{
-    $entry = CompetencyEntry::with('competencyEvidence')->findOrFail($id);
+    {
+        $entry = CompetencyEntry::with('competencyEvidence')->findOrFail($id);
 
-    // Delete any stored files before deleting the entry
-    foreach ($entry->competencyEvidence as $ev) {  
-        if ($ev->evidence_type === 'document' || $ev->evidence_type === 'image') {
-            // Breaks the url into its parts
-            $parsed = parse_url($ev->evidence_value);
-            // Remove /storage/ as backend already knows this
-            $storagePath = str_replace('/storage/', '', $parsed['path']);
-            Storage::disk('public')->delete($storagePath);    
+        // Delete any stored files before deleting the entry
+        foreach ($entry->competencyEvidence as $ev) {  
+            if ($ev->evidence_type === 'document' || $ev->evidence_type === 'image') {
+                // Breaks the url into its components to get the file path
+                $parsed = parse_url($ev->evidence_value);
+                // Remove /storage/ as backend already knows this
+                $storagePath = str_replace('/storage/', '', $parsed['path']);
+                Storage::disk('public')->delete($storagePath);    
+            }
         }
+
+        $entry->delete();
+
+        return response()->json(['message' => 'Competency entry successfully deleted']);
     }
-
-    $entry->delete();
-
-    return response()->json(['message' => 'Competency entry successfully deleted']);
-}
 }

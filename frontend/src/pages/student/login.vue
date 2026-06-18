@@ -1,7 +1,3 @@
-<script setup>
-
-</script>
-
 <template>
   <nav class="nav-wrapper">
     <div>
@@ -104,21 +100,21 @@
 		padding: 0;
 	}
 
-.navLogo {
-  width: 6.25rem;
-  height: 3.75rem;
-  margin: 0 1.5rem;
-  background: linear-gradient(45deg, #d9bebe, #6b6be4);
-  -webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
-  -webkit-mask-size: contain;
-  mask: url('@/assets/engiFolio.png') no-repeat center;
-  mask-size: contain;
-}
+	.navLogo {
+	width: 6.25rem;
+	height: 3.75rem;
+	margin: 0 1.5rem;
+	background: linear-gradient(45deg, #d9bebe, #6b6be4);
+	-webkit-mask: url('@/assets/engiFolio.png') no-repeat center;
+	-webkit-mask-size: contain;
+	mask: url('@/assets/engiFolio.png') no-repeat center;
+	mask-size: contain;
+	}
 
-.nav-bar {
-  display: flex;
-  align-items: center;
-}
+	.nav-bar {
+	display: flex;
+	align-items: center;
+	}
 
 	.nav-item {
 		display: flex;

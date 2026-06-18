@@ -35,7 +35,7 @@ class CompetencyIndicator extends Model
         return $this->hasMany(AttainmentIndicator::class, 'indicator_id', 'indicator_id');
     }
 
-    // Called by the controller to find the highest weighted entry
+    // Called by the controller to find the highest weighted entry, returns null if no matching entries
     public function highestEntry()
     {
         // Return the first entry when joining entries to entry levels and ordering from highest weight first

@@ -20,7 +20,7 @@
 
 	// Store image in a local cache on the user's browser so image doesn't flicker when user navigates between pages
 	// Get item searches local storage for the profile picture with key profile_img_(profile_id)
-	const cachedImage = localStorage.getItem(`profile_img_${route.params.id}`);
+	const cachedImage = localStorage.getItem('profile_img');
 	// Update profile picture with cachedImage or use default avatar if no cached image
 	const profileImage = ref(cachedImage || defaultAvatar);
 
@@ -35,7 +35,7 @@
 				// Checks if profile image has changed. If so updates profile image and the local cache
 				if (profileImage.value !== newProfilePic) {
 					profileImage.value = newProfilePic;
-					localStorage.setItem(`profile_img_${route.params.id}`, newProfilePic);
+					localStorage.setItem('profile_img', newProfilePic);
 				}
 			}
 		} catch (error) {

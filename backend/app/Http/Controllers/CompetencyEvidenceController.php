@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CompetencyEvidence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
 
 class CompetencyEvidenceController extends Controller
 {
@@ -79,14 +78,14 @@ class CompetencyEvidenceController extends Controller
         return response()->json(['message' => 'Competency evidence successfully deleted'], 200);
     }
 
-    // Called when evidence store is called
+    // Called when an image is included in the new competency evidence
     public function uploadImage(Request $request) {
         // Only accept the 3 file formats
         $request->validate([
             'image' => 'required|image|mimes:jpeg,jpg,png|max:2048'
         ]);
 
-        // Gets the image from the request and saves it on the public disk in the profile-images file
+        // Gets the image from the request and saves it on the public disk in the evidence-images folder
         $path = $request->file('image')->store('evidence-images', 'public');
 
         // Concatenate the full url using the pathway stored in .env
@@ -95,13 +94,14 @@ class CompetencyEvidenceController extends Controller
         return $fullUrl;
     }
 
+    // Called when an image is included in the new competency evidence
     public function uploadDoc(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:pdf,doc,docx,txt,ppt,pptx|max:10240'
         ]);
 
-        // Store the file and assemble the full path for the file and return it to the frontend
+        // Gets the file from the request and saves it on the public disk in the evidence-documents folder
         $path = $request->file('file')->store('evidence-documents', 'public');
 
         // Concatenate the full url using the pathway stored in .env

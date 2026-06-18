@@ -7,7 +7,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\CompetencyIndicator;
-// For storing the profile picture
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 

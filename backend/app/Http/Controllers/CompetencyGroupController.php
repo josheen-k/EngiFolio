@@ -72,13 +72,13 @@ class CompetencyGroupController extends Controller
     // Gets student competencies
     public function getStudentCompetencies($profileId)
     {
-    $data = CompetencyGroup::with([
+    $studentComp = CompetencyGroup::with([
         'indicators.attainmentIndicators',
         'indicators.entries' => function ($query) use ($profileId) {
             $query->where('profile_id', $profileId)->with('entryLevel', 'competencyFeedback.staff', 'competencyEvidence');
         }
     ])->get();
 
-    return response()->json($data);
+    return response()->json($studentComp);
     }
 }
