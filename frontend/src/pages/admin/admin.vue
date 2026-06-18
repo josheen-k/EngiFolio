@@ -43,16 +43,19 @@
                 <option :value="3">Student</option>
               </select>
             </div>
-            <div class="form-field">
-              <label for="create-username">Student ID</label>
+            <div class="form-field form-field-id">
+              <label for="create-username">ID</label>
               <input
                 id="create-username"
+                ref="usernameInput"
                 v-model.trim="newUser.username"
                 type="text"
                 class="filter-input"
                 placeholder="e.g. a123456"
                 maxlength="9"
                 required
+                @input="clearUsernameValidation"
+                @blur="checkUsernameAvailable"
               />
             </div>
             <div class="form-field">
@@ -346,6 +349,19 @@ const showPopUp = (message, type) => {
   setTimeout(() => popUp.value.show = false, popUpTime)
 }
 
+const usernameInput = ref(null)
+
+const clearUsernameValidation = () => {
+  usernameInput.value?.setCustomValidity('')
+}
+
+const showUsernameValidation = (message) => {
+  if (usernameInput.value) {
+    usernameInput.value.setCustomValidity(message)
+    usernameInput.value.reportValidity()
+  }
+}
+
 const fetchUsersOverview = async () => {
   try {
     loading.value = true
@@ -419,11 +435,55 @@ const resetCreateForm = () => {
     password: '',
     year_started: '',
   }
+  clearUsernameValidation()
+}
+
+const checkUsernameAvailable = async () => {
+  const id = newUser.value.username.trim()
+  if (!id) {
+    clearUsernameValidation()
+    return true
+  }
+
+  if (users.value.some((user) => user.username === id)) {
+    showUsernameValidation('This ID is already in use.')
+    return false
+  }
+
+  try {
+    const response = await api.get('/admin/users-overview', { params: { q: id } })
+    const taken = (response.data.users || []).some((user) => user.username === id)
+    if (taken) {
+      showUsernameValidation('This ID is already in use.')
+      return false
+    }
+    clearUsernameValidation()
+    return true
+  } catch {
+    clearUsernameValidation()
+    return true
+  }
+}
+
+const getCreateUserErrorMessage = (error) => {
+  const errors = error.response?.data?.errors
+  if (errors?.username?.length) {
+    return 'This ID is already in use.'
+  }
+  if (errors?.email?.length) {
+    return 'This email is already in use.'
+  }
+  return error.response?.data?.message || 'Failed to create user.'
 }
 
 const createUser = async () => {
   if (newUser.value.role_id === 3 && !newUser.value.year_started) {
     showPopUp('Please select a start year for the student.', 'error')
+    return
+  }
+
+  const idAvailable = await checkUsernameAvailable()
+  if (!idAvailable) {
     return
   }
 
@@ -439,7 +499,12 @@ const createUser = async () => {
     await fetchUsersOverview()
   } catch (error) {
     console.error('Failed to create user:', error)
-    showPopUp("Failed to create user", "error")
+    const message = getCreateUserErrorMessage(error)
+    if (message === 'This ID is already in use.') {
+      showUsernameValidation(message)
+      return
+    }
+    showPopUp(message, "error")
   } finally {
     creatingUser.value = false
   }
@@ -759,13 +824,15 @@ const deleteUser = async (user) => {
 }
 
 .create-user-btn {
-  min-width: 7.5rem;
-  padding: 0.52rem 1.2rem;
-  border-radius: 0.5rem;
-  font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 0.9rem;
-  line-height: 1.2;
+  padding: 0.55rem 1.5rem;
+  min-height: 2.5rem;
+  line-height: 1.3;
   white-space: nowrap;
+}
+
+.create-user-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .panel-head {
