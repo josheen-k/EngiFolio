@@ -18,6 +18,7 @@ class StudentProfile extends Model
         'specialisation',
         'personal_intro',
         'profile_image_url',
+        'year_started',
     ];
 
     public function user()

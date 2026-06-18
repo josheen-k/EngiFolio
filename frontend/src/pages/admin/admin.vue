@@ -34,20 +34,92 @@
       <section class="panel-card mb-4">
         <h2 class="panel-title mb-3">Create User</h2>
         <form class="create-user-form" @submit.prevent="createUser">
-          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
-          <select v-model.number="newUser.role_id" class="filter-select" required>
-            <option :value="1">Admin</option>
-            <option :value="2">Staff</option>
-            <option :value="3">Student</option>
-          </select>
-          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
-          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
-          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name" required />
-          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
-          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
-          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
-            {{ creatingUser ? 'Creating...' : 'Create User' }}
-          </button>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="create-role">Role</label>
+              <select id="create-role" v-model.number="newUser.role_id" class="filter-select" required>
+                <option :value="1">Admin</option>
+                <option :value="2">Staff</option>
+                <option :value="3">Student</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="create-username">Student ID</label>
+              <input
+                id="create-username"
+                v-model.trim="newUser.username"
+                type="text"
+                class="filter-input"
+                placeholder="e.g. a123456"
+                maxlength="9"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="create-email">Email</label>
+              <input
+                id="create-email"
+                v-model.trim="newUser.email"
+                type="email"
+                class="filter-input"
+                placeholder="name@adelaide.edu.au"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="create-first-name">First name</label>
+              <input
+                id="create-first-name"
+                v-model.trim="newUser.first_name"
+                type="text"
+                class="filter-input"
+                placeholder="First name"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="create-last-name">Last name</label>
+              <input
+                id="create-last-name"
+                v-model.trim="newUser.last_name"
+                type="text"
+                class="filter-input"
+                placeholder="Last name"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="create-password">Password</label>
+              <input
+                id="create-password"
+                v-model="newUser.password"
+                type="password"
+                class="filter-input"
+                placeholder="Minimum 6 characters"
+                minlength="6"
+                required
+              />
+            </div>
+          </div>
+
+          <div v-if="newUser.role_id === 3" class="form-row form-row-student">
+            <div class="form-field form-field-year">
+              <label for="create-year">Start year</label>
+              <select id="create-year" v-model.number="newUser.year_started" class="filter-select" required>
+                <option disabled value="">Select start year</option>
+                <option v-for="year in yearOptions" :key="year" :value="year">{{ year }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn page-btn-primary create-user-btn" :disabled="creatingUser">
+              {{ creatingUser ? 'Creating...' : 'Create User' }}
+            </button>
+          </div>
         </form>
       </section>
 
@@ -219,6 +291,16 @@ const deletingUserId = ref(null)
 const userToDelete = ref(null)
 const showDeleteConfirm = ref(false)
 
+const currentYear = new Date().getFullYear()
+
+const yearOptions = computed(() => {
+  const years = []
+  for (let year = currentYear - 6; year <= currentYear + 2; year += 1) {
+    years.push(year)
+  }
+  return years
+})
+
 const newUser = ref({
   // Role mapping in this project: 1 = Admin, 2 = Staff, 3 = Student.
   // Defaulting to Student
@@ -227,7 +309,8 @@ const newUser = ref({
   email: '',
   first_name: '',
   last_name: '',
-  password: ''
+  password: '',
+  year_started: '',
 })
 
 // Populated from the same /admin/users-overview response as the table (totals are sums over returned rows).
@@ -333,15 +416,24 @@ const resetCreateForm = () => {
     email: '',
     first_name: '',
     last_name: '',
-    password: ''
+    password: '',
+    year_started: '',
   }
 }
 
 const createUser = async () => {
+  if (newUser.value.role_id === 3 && !newUser.value.year_started) {
+    showPopUp('Please select a start year for the student.', 'error')
+    return
+  }
+
   try {
     creatingUser.value = true
-    // Backend expects role_id, names, email, and plaintext password for hashing server-side.
-    await api.post('/admin/users', newUser.value)
+    const payload = { ...newUser.value }
+    if (payload.role_id !== 3) {
+      delete payload.year_started
+    }
+    await api.post('/admin/users', payload)
     showPopUp("User created successfully.", "success")
     resetCreateForm()
     await fetchUsersOverview()
@@ -607,9 +699,73 @@ const deleteUser = async (user) => {
 }
 
 .create-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.create-user-form .form-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
+  gap: 0.85rem 1rem;
+  align-items: end;
+}
+
+.create-user-form .form-row-student {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 0.15rem;
+}
+
+.create-user-form .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.create-user-form .form-field label {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.create-user-form .form-field-year {
+  max-width: 14rem;
+}
+
+.create-user-form .filter-input,
+.create-user-form .filter-select {
+  width: 100%;
+  min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-user-form .filter-input:focus,
+.create-user-form .filter-select:focus {
+  outline: none;
+  border-color: #8a8a8a;
+  box-shadow: 0 0 0 3px rgba(43, 43, 43, 0.08);
+}
+
+.create-user-form .form-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid #ececec;
+}
+
+.create-user-btn {
+  min-width: 7.5rem;
+  padding: 0.52rem 1.2rem;
+  border-radius: 0.5rem;
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .panel-head {
@@ -991,8 +1147,12 @@ const deleteUser = async (user) => {
     align-items: stretch;
   }
 
-  .create-user-form {
+  .create-user-form .form-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .create-user-form .form-field-year {
+    max-width: none;
   }
 
   .filter-input {
@@ -1014,7 +1174,7 @@ const deleteUser = async (user) => {
     grid-template-columns: 1fr;
   }
 
-  .create-user-form {
+  .create-user-form .form-row {
     grid-template-columns: 1fr;
   }
 
