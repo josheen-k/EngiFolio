@@ -322,8 +322,6 @@ const stats = ref({
   totalStudents: 0,
   totalStaff: 0,
   totalAdmins: 0,
-  totalGoals: 0,
-  totalCompletedGoals: 0
 })
 
 const filteredUsers = computed(() => {
@@ -335,8 +333,6 @@ const totalUsers = computed(() => stats.value.totalUsers)
 const totalStudents = computed(() => stats.value.totalStudents)
 const totalStaff = computed(() => stats.value.totalStaff)
 const totalAdmins = computed(() => stats.value.totalAdmins)
-const totalGoals = computed(() => stats.value.totalGoals)
-const totalCompletedGoals = computed(() => stats.value.totalCompletedGoals)
 
 // Object to store data about the popup message
 const popUp = ref({ show: false, message: '', type: '' })
@@ -385,8 +381,6 @@ const fetchUsersOverview = async () => {
       totalStudents: 0,
       totalStaff: 0,
       totalAdmins: 0,
-      totalGoals: 0,
-      totalCompletedGoals: 0
     }
   } catch (error) {
     // Reset displayed data on failure so stale results are not shown.
@@ -397,8 +391,6 @@ const fetchUsersOverview = async () => {
       totalStudents: 0,
       totalStaff: 0,
       totalAdmins: 0,
-      totalGoals: 0,
-      totalCompletedGoals: 0
     }
     // Prefer the backend error message when available.
     loadError.value = error.response?.data?.message || 'Failed to load user management data'
@@ -1080,53 +1072,10 @@ const deleteUser = async (user) => {
   color: #ffffff;
 }
 
-.page-btn-outline {
-  background: #ffffff;
-  color: #2b2b2b;
-  border: 1px solid #cfcfcf;
-}
-
-.page-btn-outline:hover {
-  background: #f3f3f3;
-}
-
-.page-btn-danger {
-  background: #b42318;
-  color: #ffffff;
-  border: 1px solid #b42318;
-}
-
-.page-btn-danger:hover {
-  background: #912018;
-  color: #ffffff;
-}
-
-.action-feedback {
-  font-size: 0.92rem;
-}
-
-.success-text {
-  color: #166534;
-}
-
-.error-text {
-  color: #b42318;
-}
-
 .empty-state {
   text-align: center;
   color: #707070;
   padding: 1rem;
-}
-
-.quick-actions .panel-title {
-  margin-bottom: 0.7rem;
-}
-
-.quick-action-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
 }
 
 .popUp-msg {
@@ -1242,10 +1191,6 @@ const deleteUser = async (user) => {
   }
 
   .create-user-form .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-action-grid {
     grid-template-columns: 1fr;
   }
 }
