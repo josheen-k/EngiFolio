@@ -239,6 +239,10 @@ onMounted(() => {
     const val = route.query.filterLevel
     filterLevel.value = Array.isArray(val) ? val : [val]
   }
+
+  if (route.query.openAdd==='true') {
+    openAdd()
+  }
 })
 
 // Signal parent to reload the data when changed
