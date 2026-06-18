@@ -390,7 +390,8 @@
         const response = await api.get(`/profile/${route.params.id}/dashboard`);
         profile.value = response.data;
         userCompetencies.value = response.data.competency_entries;
-        recentAct.value = response.data.actions
+        // Sort from newest to oldest and only take the 6 most recent actions
+        recentAct.value = response.data.actions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6)
       } catch (error) {
         console.error("Error while fetching profile info:", error);
       }

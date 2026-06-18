@@ -216,7 +216,7 @@
                 <!-- file upload -->
                 <div v-else>
                   <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': ev.fileName }">
-                    <input v-if="!ev.fileName" type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev, idx)"/>
+                    <input type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev, idx)"/>
 
                     <div v-if="!ev.fileName">
                       <p><b>Click to upload or drag & drop</b></p>
@@ -385,7 +385,17 @@
   function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) {
-      if (ev.type === 'document' && file.type !== 'application/pdf') {
+      const allowedDocTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ]
+
+
+      if (ev.type === 'document' && !allowedDocTypes.includes(file.type)) {
         errors.value[`evidenceFileType_${idx}`] = true
         return
       }

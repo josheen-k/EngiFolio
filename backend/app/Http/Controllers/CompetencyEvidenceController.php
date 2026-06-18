@@ -98,7 +98,7 @@ class CompetencyEvidenceController extends Controller
     public function uploadDoc(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf|max:2048'
+            'file' => 'required|file|mimes:pdf,doc,docx,txt,ppt,pptx|max:10240'
         ]);
 
         // Store the file and assemble the full path for the file and return it to the frontend
