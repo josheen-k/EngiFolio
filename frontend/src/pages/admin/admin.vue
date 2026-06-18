@@ -62,11 +62,14 @@
               <label for="create-email">Email</label>
               <input
                 id="create-email"
+                ref="emailInput"
                 v-model.trim="newUser.email"
                 type="email"
                 class="filter-input"
                 placeholder="name@adelaide.edu.au"
                 required
+                @input="clearEmailValidation"
+                @blur="checkEmailAvailable"
               />
             </div>
           </div>
@@ -346,7 +349,9 @@ const showPopUp = (message, type) => {
 }
 
 const usernameInput = ref(null)
+const emailInput = ref(null)
 
+// Inline field validation via the browser constraint API (same bubble UI for ID and email).
 const clearUsernameValidation = () => {
   usernameInput.value?.setCustomValidity('')
 }
@@ -355,6 +360,17 @@ const showUsernameValidation = (message) => {
   if (usernameInput.value) {
     usernameInput.value.setCustomValidity(message)
     usernameInput.value.reportValidity()
+  }
+}
+
+const clearEmailValidation = () => {
+  emailInput.value?.setCustomValidity('')
+}
+
+const showEmailValidation = (message) => {
+  if (emailInput.value) {
+    emailInput.value.setCustomValidity(message)
+    emailInput.value.reportValidity()
   }
 }
 
@@ -428,8 +444,10 @@ const resetCreateForm = () => {
     year_started: '',
   }
   clearUsernameValidation()
+  clearEmailValidation()
 }
 
+// Check ID uniqueness on blur and before submit; local list first, then server search.
 const checkUsernameAvailable = async () => {
   const id = newUser.value.username.trim()
   if (!id) {
@@ -437,12 +455,14 @@ const checkUsernameAvailable = async () => {
     return true
   }
 
+  // Fast path: already loaded in the current overview table.
   if (users.value.some((user) => user.username === id)) {
     showUsernameValidation('This ID is already in use.')
     return false
   }
 
   try {
+    // `q` matches username on the server; catches users outside the current table page/filter.
     const response = await api.get('/admin/users-overview', { params: { q: id } })
     const taken = (response.data.users || []).some((user) => user.username === id)
     if (taken) {
@@ -452,11 +472,43 @@ const checkUsernameAvailable = async () => {
     clearUsernameValidation()
     return true
   } catch {
+    // Do not block submit if the availability check request fails.
     clearUsernameValidation()
     return true
   }
 }
 
+// Same availability pattern as ID; email comparison is case-insensitive.
+const checkEmailAvailable = async () => {
+  const email = newUser.value.email.trim()
+  if (!email) {
+    clearEmailValidation()
+    return true
+  }
+
+  if (users.value.some((user) => user.email.toLowerCase() === email.toLowerCase())) {
+    showEmailValidation('This email is already in use.')
+    return false
+  }
+
+  try {
+    const response = await api.get('/admin/users-overview', { params: { q: email } })
+    const taken = (response.data.users || []).some(
+      (user) => user.email.toLowerCase() === email.toLowerCase()
+    )
+    if (taken) {
+      showEmailValidation('This email is already in use.')
+      return false
+    }
+    clearEmailValidation()
+    return true
+  } catch {
+    clearEmailValidation()
+    return true
+  }
+}
+
+// Map Laravel validation errors to short messages for inline field feedback.
 const getCreateUserErrorMessage = (error) => {
   const errors = error.response?.data?.errors
   if (errors?.username?.length) {
@@ -479,6 +531,11 @@ const createUser = async () => {
     return
   }
 
+  const emailAvailable = await checkEmailAvailable()
+  if (!emailAvailable) {
+    return
+  }
+
   try {
     creatingUser.value = true
     const payload = { ...newUser.value }
@@ -492,8 +549,13 @@ const createUser = async () => {
   } catch (error) {
     console.error('Failed to create user:', error)
     const message = getCreateUserErrorMessage(error)
+    // Duplicate ID/email: show on the field; other errors use the top toast.
     if (message === 'This ID is already in use.') {
       showUsernameValidation(message)
+      return
+    }
+    if (message === 'This email is already in use.') {
+      showEmailValidation(message)
       return
     }
     showPopUp(message, "error")
