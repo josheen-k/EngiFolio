@@ -706,6 +706,7 @@ const exportUsersCsv = () => {
 
 }
 
+// PDF export is generated on the server so layout matches the admin overview report.
 const exportUsersPdf = async () => {
   if (users.value.length === 0) {
     showPopUp('No users to export.', 'error')
@@ -713,6 +714,7 @@ const exportUsersPdf = async () => {
   }
 
   try {
+    // Pass the same search filter as the table so the PDF matches what is on screen.
     const params = {}
     const query = searchQuery.value.trim()
     if (query) {
@@ -725,6 +727,7 @@ const exportUsersPdf = async () => {
       headers: { Accept: 'application/pdf' }
     })
 
+    // Trigger a browser download from the PDF blob returned by the API.
     const blob = new Blob([response.data], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
