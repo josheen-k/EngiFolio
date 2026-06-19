@@ -134,9 +134,9 @@ class AdminController extends Controller
         return [
             'stats' => [
                 'totalUsers' => $users->count(),
-                'totalStudents' => $this->countUsersByRole($users, 'Student'),
-                'totalStaff' => $this->countUsersByRole($users, 'Staff'),
-                'totalAdmins' => $this->countUsersByRole($users, 'Admin'),
+                'totalStudents' => $users->where('role', 'Student')->count(),
+                'totalStaff'  => $users->where('role', 'Staff')->count(),
+                'totalAdmins' => $users->where('role', 'Admin')->count(),
                 'totalGoals' => (int) $users->sum('goals'),
                 'totalCompletedGoals' => (int) $users->sum('completedGoals'),
                 'totalIndicators' => $totalIndicators,
