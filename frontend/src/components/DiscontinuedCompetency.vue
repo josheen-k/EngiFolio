@@ -110,13 +110,11 @@ const viewReflec = ref({
 
 // Filter out categories that are discontinued
 const filteredCategories = computed(() => {
-  return props.categories
-    .map(cat => ({
-      ...cat,
+  // Make a shallow copy of cat for filtering
+  return props.categories.map(cat => ({...cat,
       // Double !! used to convert date to boolean and then back again
       compt: cat.compt.filter(compt => !!compt.discontinuedDate)
-    }))
-    .filter(cat => cat.compt.length > 0);
+    })).filter(cat => cat.compt.length > 0);
 });
 
 // Filter out draft reflections

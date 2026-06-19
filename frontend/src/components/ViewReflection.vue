@@ -352,9 +352,7 @@
   const allCompts = computed(() => {
     // Flatmap gives a single array containing all competencies instead of nested arrays
     return props.categories.flatMap(category => {
-      return category.compt
-      .filter(indicator => !indicator.discontinuedDate)
-      .map(indicator => ({
+      return category.compt.filter(indicator => !indicator.discontinuedDate).map(indicator => ({
         id: indicator.id, 
         displayId: indicator.displayId,
       }));
@@ -385,6 +383,7 @@
   function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) {
+      // Allowed media types: pdf, doc, docx, txt, ppt, pptx
       const allowedDocTypes = [
         'application/pdf',
         'application/msword',
@@ -394,12 +393,13 @@
         'application/vnd.openxmlformats-officedocument.presentationml.presentation'
       ]
 
-
+      // Give an error if the file is not allowed
       if (ev.type === 'document' && !allowedDocTypes.includes(file.type)) {
         errors.value[`evidenceFileType_${idx}`] = true
         return
       }
 
+      // Give an error if the file is not an image
       if (ev.type === 'image' && !file.type.startsWith('image/')) {
         errors.value[`evidenceFileType_${idx}`] = true
         return
@@ -413,16 +413,7 @@
 
   // enter edit
   function enterEdit() {
-    // Map existing reflection evidence with new file name field. Name it the evidence type for a start
-    const existingEvidence = (props.reflec.evidence || []).map(ev => ({
-      evidence_id: ev.evidence_id,
-      type: ev.evidence_type,
-      value: ev.evidence_value,
-      // If it is a url set to empty string, else set it to the filename
-      fileName: ev.evidence_type !== 'url' ? ev.evidence_value : '',
-      file: null
-    }))
-
+    // Reset array with evidence to delete
     evidenceToDelete.value = []
 
     // Populate the edit form with the values saved 

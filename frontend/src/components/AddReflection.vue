@@ -227,8 +227,7 @@
   const allCompts = computed(() => {
     // Flatmap gives a single array containing all competencies instead of nested arrays
     return props.categories.flatMap(category => {
-      return category.compt
-      .filter(indicator => !indicator.discontinuedDate)
+      return category.compt.filter(indicator => !indicator.discontinuedDate)
       .map(indicator => ({
         id: indicator.id, 
         displayId: indicator.displayId,
@@ -283,20 +282,31 @@
   // Gets the file from the upload field and prepares it for upload
   function handleFile(e, ev, idx) {
     const file = e.target.files[0]
-    if (file) { 
-      if (ev.type === 'document' && file.type !== 'application/pdf') {
+    if (file) {
+      // Allowed media types: pdf, doc, docx, txt, ppt, pptx
+      const allowedDocTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ]
+
+      // Give an error if the file is not allowed
+      if (ev.type === 'document' && !allowedDocTypes.includes(file.type)) {
         errors.value[`evidenceFileType_${idx}`] = true
         return
       }
 
+      // Give an error if the file is not an image
       if (ev.type === 'image' && !file.type.startsWith('image/')) {
         errors.value[`evidenceFileType_${idx}`] = true
         return
       }
-
-      ev.fileName = file.name; 
-      ev.value = file.name;
-      ev.file = file;
+      ev.fileName = file.name
+      ev.value = file.name
+      ev.file = file
       delete errors.value[`evidenceFileType_${idx}`]
     }
   }
@@ -363,7 +373,7 @@
         associated_year: Number(newEntry.value.associated_year),
         entry_level_id: newEntry.value.entry_level_id, 
         entry_status_id: statusId, 
-        start_date: newEntry.value.start_date || new Date().toISOString().split('T')[0],
+        start_date: newEntry.value.start_date,
         end_date: newEntry.value.end_date,
         experience_tasks: newEntry.value.experience_tasks || "Empty",
         key_learnings: newEntry.value.key_learnings,

@@ -111,198 +111,198 @@
 
 
 <script setup>
-import { ref, computed } from 'vue'
-import ViewReflection from '@/components/ViewReflection.vue'
-import { formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
-import { onClickOutside } from '@vueuse/core'
-import api from "@/services/api"
+  import { ref, computed } from 'vue'
+  import ViewReflection from '@/components/ViewReflection.vue'
+  import { formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
+  import { onClickOutside } from '@vueuse/core'
+  import api from "@/services/api"
 
-// Catches components passed down though the eaCompetencies template
-// Categories contains competency data and student entry data
-const props = defineProps({
-  categories: { type: Array, required: true },
-  levelOptions: { type: Array, required: true }
-});
+  // Catches components passed down though the eaCompetencies template
+  // Categories contains competency data and student entry data
+  const props = defineProps({
+    categories: { type: Array, required: true },
+    levelOptions: { type: Array, required: true }
+  });
 
-// Signal parent to reload the data when changed
-const emit = defineEmits(['refresh']);
+  // Signal parent to reload the data when changed
+  const emit = defineEmits(['refresh']);
 
-// Object to store data about the popup message
-const popUp = ref({ show: false, message: '', type: '' })
-// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
-const popUpTime = 3000
+  // Object to store data about the popup message
+  const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
 
-// Used to display the popup message and the type being either success or error
-const showPopUp = (message, type) => {
-  popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, popUpTime)
-}
-
-// Called by refresh from viewReflection, shows the message depending on the action taken
-function onSaveReflec(statusId, entryName) {
-  // Pass refresh to eaCompetencies page
-  emit('refresh')
-  // Convert status id to number so can compare to 2
-  // Determines whether the entry was saved as a draft or published
-  if (Number(statusId) === -1) {
-    showPopUp(`Draft has successfully been deleted.`, "success")
-  } 
-  else if (Number(statusId) === 1) {
-    showPopUp(`${entryName} has been saved to drafts.`, "success")
-  } else {
-    showPopUp(`${entryName} has been published.`, "success")
+  // Used to display the popup message and the type being either success or error
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
-}
 
-// Sort refs
-const sortRef = ref(null)
-const sortDdOpen = ref(false)
-const sortBy = ref('date')
-const sortOrder = ref('asc')
+  // Called by refresh from viewReflection, shows the message depending on the action taken
+  function onSaveReflec(statusId, entryName) {
+    // Pass refresh to eaCompetencies page
+    emit('refresh')
+    // Convert status id to number so can compare to 2
+    // Determines whether the entry was saved as a draft or published
+    if (Number(statusId) === -1) {
+      showPopUp(`Draft has successfully been deleted.`, "success")
+    } 
+    else if (Number(statusId) === 1) {
+      showPopUp(`${entryName} has been saved to drafts.`, "success")
+    } else {
+      showPopUp(`${entryName} has been published.`, "success")
+    }
+  }
 
-// Filter refs
-const reflecFilterRef = ref(null)
-const reflecFilterDdOpen = ref(false)
-const reflecFilterYear = ref([])
-const reflecFilterLevel = ref([])
+  // Sort refs
+  const sortRef = ref(null)
+  const sortDdOpen = ref(false)
+  const sortBy = ref('date')
+  const sortOrder = ref('asc')
 
-// Used to display the delete pop up
-const showDeleteConfirm = ref(false)
-const draftEntryToDelete = ref(null)
+  // Filter refs
+  const reflecFilterRef = ref(null)
+  const reflecFilterDdOpen = ref(false)
+  const reflecFilterYear = ref([])
+  const reflecFilterLevel = ref([])
 
-// Empty view reflection that is filled when the user selects a reflection
-const viewReflec = ref({
-  show: false,
-  reflec: null,
-  compt: null,
-  index: null
-})
+  // Used to display the delete pop up
+  const showDeleteConfirm = ref(false)
+  const draftEntryToDelete = ref(null)
 
-// Returns if a filter is selected or not
-const hasActiveReflecFilter = computed(function () {
-  return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
-})
+  // Empty view reflection that is filled when the user selects a reflection
+  const viewReflec = ref({
+    show: false,
+    reflec: null,
+    compt: null,
+    index: null
+  })
 
-// Set sorts back to default values
-function clearSort() {
-  sortBy.value = 'date'
-  sortOrder.value = 'asc'
-  sortDdOpen.value = false
-}
+  // Returns if a filter is selected or not
+  const hasActiveReflecFilter = computed(function () {
+    return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
+  })
 
-// Close menu when user clicks outside of the menu
-onClickOutside(sortRef, function () {
-  sortDdOpen.value = false
-})
+  // Set sorts back to default values
+  function clearSort() {
+    sortBy.value = 'date'
+    sortOrder.value = 'asc'
+    sortDdOpen.value = false
+  }
 
-// Set filters back to default values
-function clearReflecFilter() {
-  reflecFilterYear.value = []
-  reflecFilterLevel.value = []
-  reflecFilterDdOpen.value = false
-}
+  // Close menu when user clicks outside of the menu
+  onClickOutside(sortRef, function () {
+    sortDdOpen.value = false
+  })
 
-// Close menu when user clicks outside of the menu
-onClickOutside(reflecFilterRef, function () {
-  reflecFilterDdOpen.value = false
-})
+  // Set filters back to default values
+  function clearReflecFilter() {
+    reflecFilterYear.value = []
+    reflecFilterLevel.value = []
+    reflecFilterDdOpen.value = false
+  }
 
-const processedDrafts = computed(function () {
-  let list = []
-  // For all categories, competencies and reflections, add the competency to the list
-  for (const cat of props.categories) {
-    for (const compt of cat.compt) {
-      for (const refl of compt.reflec) {
-        if (refl.entry_status_id === 1) {
-          list.push({
-            comptId: compt.displayId,
-            reflec: refl,
-            compt: compt
-          })
+  // Close menu when user clicks outside of the menu
+  onClickOutside(reflecFilterRef, function () {
+    reflecFilterDdOpen.value = false
+  })
+
+  const processedDrafts = computed(function () {
+    let list = []
+    // For all categories, competencies and reflections, add the competency to the list
+    for (const cat of props.categories) {
+      for (const compt of cat.compt) {
+        for (const refl of compt.reflec) {
+          if (refl.entry_status_id === 1) {
+            list.push({
+              comptId: compt.displayId,
+              reflec: refl,
+              compt: compt
+            })
+          }
         }
       }
     }
-  }
 
-  // Filter by year
-  if (reflecFilterYear.value.length > 0) {
-    list = list.filter(r => reflecFilterYear.value.includes(r.reflec.associated_year))
-  }
+    // Filter by year
+    if (reflecFilterYear.value.length > 0) {
+      list = list.filter(r => reflecFilterYear.value.includes(r.reflec.associated_year))
+    }
 
-  // filter by level
-  if (reflecFilterLevel.value.length > 0) {
-    list = list.filter(item => {
-      const currentLvl = item.reflec.entry_level?.competency_level;
-      return reflecFilterLevel.value.includes(currentLvl);
-    });
-  }
+    // filter by level
+    if (reflecFilterLevel.value.length > 0) {
+      list = list.filter(item => {
+        const currentLvl = item.reflec.entry_level?.competency_level;
+        return reflecFilterLevel.value.includes(currentLvl);
+      });
+    }
 
-  // Sort by looping through the list by comparing two items at a time
-  // A negative number means a comes first, positive means b comes first and 0 means stay the same
-  list = list.sort((a, b) => {
-    // Sorting by name
-    if (sortBy.value === 'name') {
-      // Sort by alphabetical order
-      if (sortOrder.value === 'asc') {
-        // Compares a to b and returns negative if a comes before b alphabetically
-        return (a.reflec.experience_title || '').localeCompare(b.reflec.experience_title || '')    
-      } else {
-        // Compares a to b and returns negative if b comes before a alphabetically
-        return (b.reflec.experience_title || '').localeCompare(a.reflec.experience_title || '')  
+    // Sort by looping through the list by comparing two items at a time
+    // A negative number means a comes first, positive means b comes first and 0 means stay the same
+    list = list.sort((a, b) => {
+      // Sorting by name
+      if (sortBy.value === 'name') {
+        // Sort by alphabetical order
+        if (sortOrder.value === 'asc') {
+          // Compares a to b and returns negative if a comes before b alphabetically
+          return (a.reflec.experience_title || '').localeCompare(b.reflec.experience_title || '')    
+        } else {
+          // Compares a to b and returns negative if b comes before a alphabetically
+          return (b.reflec.experience_title || '').localeCompare(a.reflec.experience_title || '')  
+        }
       }
-    }
 
-    // Convert date into a number and sort by date
-    const dateA = new Date(a.reflec.updated_at);
-    const dateB = new Date(b.reflec.updated_at);
+      // Convert date into a number and sort by date
+      const dateA = new Date(a.reflec.updated_at);
+      const dateB = new Date(b.reflec.updated_at);
 
-    // Sort newest to oldest
-    if (sortOrder.value === 'asc') {
-      // Positive number means b is before a
-      return dateB - dateA
-    } else {
-      // Positive number means a is before b
-      return dateA - dateB
-    }
+      // Sort newest to oldest
+      if (sortOrder.value === 'asc') {
+        // Positive number means b is before a
+        return dateB - dateA
+      } else {
+        // Positive number means a is before b
+        return dateA - dateB
+      }
+    })
+    return list
   })
-  return list
-})
 
-// Runs when the user selects a reflection to open
-function openReflec(item) {
-  // Finds the original entry in the array as filtering may change where it is
-  const originalIndex = item.compt.reflec.findIndex(r => r.entry_id === item.reflec.entry_id);
+  // Runs when the user selects a reflection to open
+  function openReflec(item) {
+    // Finds the original entry in the array as filtering may change where it is
+    const originalIndex = item.compt.reflec.findIndex(r => r.entry_id === item.reflec.entry_id);
 
-  viewReflec.value = {
-    show: true,
-    reflec: item.reflec,
-    compt: item.compt,
-    index: originalIndex
+    viewReflec.value = {
+      show: true,
+      reflec: item.reflec,
+      compt: item.compt,
+      index: originalIndex
+    }
   }
-}
 
-// Show popup for delete, set the entry to be deleted
-function doDelete(draftEntry ) {
-  draftEntryToDelete.value = draftEntry 
-  showDeleteConfirm.value = true
-}
-
-// Delete the selected draft after getting confirmation
-const confirmDelete = async () => { 
-  const id = draftEntryToDelete.value.reflec.entry_id
-  
-  try {
-    // Call backend to delete the competency entry
-    await api.delete(`/competency-entries/${id}`)
-    // Reset values
-    showDeleteConfirm.value = false
-    draftEntryToDelete.value = null
-    showPopUp(`Draft has successfully been deleted.`, "success")
-    emit('refresh') 
-  } catch (error) {
-    showPopUp("Error when deleting the draft.", "error")
+  // Show popup for delete, set the entry to be deleted
+  function doDelete(draftEntry ) {
+    draftEntryToDelete.value = draftEntry 
+    showDeleteConfirm.value = true
   }
-}
+
+  // Delete the selected draft after getting confirmation
+  const confirmDelete = async () => { 
+    const id = draftEntryToDelete.value.reflec.entry_id
+    
+    try {
+      // Call backend to delete the competency entry
+      await api.delete(`/competency-entries/${id}`)
+      // Reset values
+      showDeleteConfirm.value = false
+      draftEntryToDelete.value = null
+      showPopUp(`Draft has successfully been deleted.`, "success")
+      emit('refresh') 
+    } catch (error) {
+      showPopUp("Error when deleting the draft.", "error")
+    }
+  }
 </script>
 
 <style scoped>
