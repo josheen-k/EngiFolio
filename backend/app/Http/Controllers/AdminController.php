@@ -105,7 +105,7 @@ class AdminController extends Controller
                 $name = $row->username;
             }
 
-            // Get the numbers for the indicators if the user has a student profile
+            // If the user has a student profile get the numbers for the levels
             $levels = $row->profile_id ? $profileController->competencyLevelCounts($row->profile_id)
                 : ['notStarted' => $totalIndicators, 'levels' => []];
 
@@ -113,6 +113,7 @@ class AdminController extends Controller
             $completedGoalsCount = (int) $row->completed_goals_count;
             $lastUpdated = $row->goals_updated_at ?? $row->user_updated_at;
 
+            // User information
             return [
                 'user_id'      => (int) $row->user_id,
                 'profile_id'   => $row->profile_id ? (int) $row->profile_id : null,

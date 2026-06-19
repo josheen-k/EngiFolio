@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\StudentProfile;
+use App\Models\CompetencyEntryLevel;
+use App\Models\AchievementCert;
+use App\Models\AttainmentCert;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\CompetencyIndicator;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
 
 class StudentProfileController extends Controller
 {
@@ -188,16 +190,20 @@ class StudentProfileController extends Controller
     public function competencyLevelCounts($profileId): array {
 
         // Get all possible levels that an entry can have
-        $levels = DB::table('competency_entry_levels')->orderBy('competency_level_weighting')->pluck('competency_level');
+        $levels = CompetencyEntryLevel::orderBy('competency_level_weighting')->pluck('competency_level');
 
-        // Associative array to store levels and their counts
-        $levelCounts = $levels->mapWithKeys(fn($l) => [$l => 0])->toArray();
+        // Associative array to store levels and their counts and set them to 0
+        $levelCounts = $levels->mapWithKeys(function($level) {
+            return [$level => 0];
+        })->toArray();
+
         $attainedCount = 0;
 
         // Fetch the highest entry for each competency indicator
         $indicators = CompetencyIndicator::whereNull('discontinued_date')
-            ->with(['highestEntry' => fn($q) => $q->where('profile_id', $profileId)])
-            ->get();
+            ->with(['highestEntry' => function($query) use ($profileId) {
+                return $query->where('profile_id', $profileId);
+            }])->get();
 
         // Loop through each indicator and add a count to the level of the highest entry
         foreach ($indicators as $indicator) {
@@ -233,10 +239,10 @@ class StudentProfileController extends Controller
         if ($certId) {
             // Check the type sent from the front end to know what cert it is and find that cert
             if ($request->input('type') === 'achievement') {
-                $cert = \App\Models\AchievementCert::find($certId);
+                $cert = AchievementCert::find($certId);
                 $folder = 'achievement-certs';
             } else {
-                $cert = \App\Models\AttainmentCert::find($certId);
+                $cert = AttainmentCert::find($certId);
                 $folder = 'attainment-certs';
             }
 
