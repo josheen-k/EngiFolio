@@ -108,9 +108,9 @@ export const addCompetencies = async (profileId) => {
     .join(","));
 
     // Use optional chaining to ensure that competencies exist within the response data
-    if (userCompetencies.value?.length > 0) {
+    if (userCompetencies?.length > 0) {
       // Add each competency, use empty string as fallback in case of errors
-      userCompetencies.value.forEach(comp => {
+      userCompetencies.forEach(comp => {
         const row = [
           `"${comp.indicator?.display_id || ''}"`,
           `"${comp.experience_title || ''}"`,
@@ -154,9 +154,9 @@ export const addNetworkingContacts = async (profileId) => {
     ].join(","));
 
     // Use optional chaining to ensure that contacts exist within the response data
-    if (contacts?.value.length > 0) {
+    if (contacts?.length > 0) {
       // Add each contact to the response array
-      contacts.value.forEach(contact => {
+      contacts.forEach(contact => {
         const row = [
           `"${contact.contact_name || ''}"`,
           `"${contact.company || ''}"`,
