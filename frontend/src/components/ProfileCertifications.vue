@@ -158,9 +158,9 @@ const formatDate = (rawDate) => {
     if (rawDate) {
         // Takes a raw text string and passes it to the date constructor 
         const d = new Date(rawDate)
-        // Formats the date data into British order (DD MM YYYY)
+        // Formats the date data into AU order
         // Day and year are represented by a number and the month is a short abbreviation (E.g., 1 Jan 2026) 
-        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
     } else {
         return ''
     }

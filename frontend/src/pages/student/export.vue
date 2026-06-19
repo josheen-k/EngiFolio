@@ -122,15 +122,13 @@
             const exportContent = exportCSV.join("\n");
 
             // Creates the Binary Large Object to hold the raw data and store the exportContent and other data
-            // \ufeff is a Byte Order Mark to tell applications that the file is an excel file with UTF-8 encoding
-            // Type is used so the browser can recognise that the data represents a csv file
             const blob = new Blob(["\ufeff", exportContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             
             // Creates an a tag in memory for downloading and link to url and add download attribute with file name
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `engifolio_export_${route.params.id}.csv`);
+            link.setAttribute("download", `portfolio_export_${route.params.id}.csv`);
             
             // Create download link, click it to trigger the download it then remove download link and free memory
             document.body.appendChild(link);

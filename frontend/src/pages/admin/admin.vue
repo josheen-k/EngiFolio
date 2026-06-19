@@ -616,7 +616,6 @@ const exportUsersCsv = () => {
     lines.push(`"Students: ${students.length}"`)
     lines.push(`"Student Details And Competency Level Count Out Of ${stats.value.totalIndicators ?? ''}"`)
 
-
     // Group the students by their year starting with an empty object
     const byYear = students.reduce((groups, user) => {
       // If a year does not exist then add to no year
@@ -629,13 +628,6 @@ const exportUsersCsv = () => {
       groups[year].push(user)
       return groups
     }, {})
-
-    // Sort the years from oldest to newest
-    const sortedYears = Object.keys(byYear).sort((a, b) => {
-      if (a === 'No year') return 1
-      if (b === 'No year') return -1
-      return Number(a) - Number(b)
-    })
 
     // Go through each year and add the students for each year level
     sortedYears.forEach((year) => {
@@ -703,7 +695,6 @@ const exportUsersCsv = () => {
   } catch {
     showPopUp('Error downloading data', 'error')
   }
-
 }
 
 // PDF export is generated on the server so layout matches the admin overview report.

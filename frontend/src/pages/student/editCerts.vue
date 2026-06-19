@@ -255,7 +255,8 @@
     }
   };
 
-  // Used for drop down for the achievement certificates
+  
+  // Used for drop down for the attainment certificates
   const toggleAttCert = (index) => {
       if (expandedAttCerts.value === index) {
         expandedAttCerts.value = -1;
@@ -264,7 +265,7 @@
       }  
     }
 
-    // Used for drop down for the attainment certificates
+    // Used for drop down for the achievement certificates
     const toggleAchCert = (index) => {
     if (expandedAchCerts.value === index) {
       expandedAchCerts.value = -1;
@@ -372,9 +373,11 @@
     errors.value = {}
 	};
 
-   const newCert = (e, type, index) => {
+  // Add new cert file
+  const newCert = (e, type, index) => {
     const file = e.target.files[0]
     if (file) {
+      // Check to see if the file that was given was a pdf
       if (file.type !== 'application/pdf') {
         if (type === 'achievement') {
           errors.value[`achieveFileType_${index}`] = true
@@ -384,6 +387,7 @@
         return
       }
 
+      // Add file name and file to achievement or attainment arrays
       if (type === 'achievement') {
         achCertFiles.value[index] = file
         achCertFileNames.value[index] = file.name
@@ -399,12 +403,15 @@
   // Save the certificate to the backend and returns the file path where the file is located
   const certFileUpload = async (file, type, cert) => {
     const formData = new FormData()
+
+    // Attach the file and the type for the backend to know where to save it
     formData.append('file', file)
     formData.append('type', type)
 
-    if (cert.achievement_cert_id || cert.attainment_cert_id) {
-      formData.append('cert_id', cert.achievement_cert_id ?? cert.attainment_cert_id)
-    }
+    // Attach either the achievement or attainment cert id
+    formData.append('cert_id', cert.achievement_cert_id ?? cert.attainment_cert_id)
+    
+    // Send file to backend
     const res = await api.post(`/profile/${route.params.id}/upload-cert`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentProfile;
 use App\Models\User;
+use App\Models\CompetencyEntryLevel;
+use App\Models\CompetencyIndicator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +32,7 @@ class AdminController extends Controller
         $data = $this->buildUsersOverview($request);
 
         // Get the possible level names that can be shown in the table
-        $levelNames = DB::table('competency_entry_levels')->orderBy('competency_level_weighting')->pluck('competency_level');
+        $levelNames = CompetencyEntryLevel::orderBy('competency_level_weighting')->pluck('competency_level');
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin-users-overview', [
             'stats' => $data['stats'],
@@ -91,9 +93,9 @@ class AdminController extends Controller
 
         $rows = $query->orderBy('users.user_id')->get();
 
-        $totalIndicators = DB::table('competency_indicators')
-            ->whereNull('discontinued_date')
-            ->count();
+        // Count the total EA competency indicators
+        $totalIndicators = CompetencyIndicator::whereNull('discontinued_date')->count();
+
 
         $profileController = new StudentProfileController();
 
@@ -103,8 +105,8 @@ class AdminController extends Controller
                 $name = $row->username;
             }
 
-            $levels = $row->profile_id
-                ? $profileController->competencyLevelCounts((int) $row->profile_id)
+            // Get the numbers for the indicators if the user has a student profile
+            $levels = $row->profile_id ? $profileController->competencyLevelCounts($row->profile_id)
                 : ['notStarted' => $totalIndicators, 'levels' => []];
 
             $goalsCount = (int) $row->goals_count;
@@ -127,6 +129,7 @@ class AdminController extends Controller
             ];
         })->values();
 
+        // Return stats and user info for all users
         return [
             'stats' => [
                 'totalUsers' => $users->count(),

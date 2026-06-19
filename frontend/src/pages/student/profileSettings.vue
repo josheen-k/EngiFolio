@@ -179,7 +179,7 @@
   // Retrieve profile data from the backend
   const loadProfile = async () => {
     try {
-      const response = await  api.get(`/profile/${route.params.id}`);
+      const response = await api.get(`/profile/${route.params.id}`);
       profile.value = response.data;
       // Store original profile as a standard text format to check for changes
       originalProfile.value = JSON.stringify(profile.value)
@@ -280,7 +280,7 @@
         profile.value.profile_image_url = savedUrl;
 
         // Update the local storage used by the dashboard with new url
-        localStorage.setItem(`profile_img_${route.params.id}`, savedUrl);
+        localStorage.setItem(`profile_img`, savedUrl);
       }
 
       // Update the student profile with changes
@@ -330,7 +330,6 @@
     // The event object passed, target is the input and the file[0] represents the image to be uploaded
     const file = e.target.files[0]
     if (file) {
-      // Set file name and the file itself
       imageFileName.value = file.name
       imageFile.value = file
 
