@@ -594,11 +594,19 @@ const deleteContact = async (id) => {
   margin-bottom: 15px;
 }
 
+
 .btn-main {
   background: #172334;
   color: white;
   border-radius: 999px;
   padding: 0.75rem 1.4rem;
+}
+
+.btn-dark{
+  border-radius: 999px;
+}
+.btn-light{
+  border-radius: 999px;
 }
 
 .title-wrap {
