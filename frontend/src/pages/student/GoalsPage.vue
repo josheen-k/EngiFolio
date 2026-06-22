@@ -176,6 +176,7 @@
             </td>
 
             <td class="progress-cell">
+              <!-- @focus stores the prior value so updateGoalStatus can revert the dropdown on API failure. -->
               <select
                 class="status-select"
                 v-model.number="goal.goal_status_id"
@@ -266,6 +267,7 @@
 
           <div class="mobile-section">
             <p class="mobile-label">Progress</p>
+            <!-- Same _previousStatusId rollback pattern as the desktop status dropdown. -->
             <select
               class="status-select mobile-status-select"
               v-model.number="goal.goal_status_id"
@@ -684,6 +686,7 @@ const moveGoalBefore = (sourceGoalId, targetGoalId) => {
 
   const nextGoals = [...goals.value]
   const [movedGoal] = nextGoals.splice(sourceIndex, 1)
+  // Drop on a row inserts the dragged goal at that row's index (after the source row is removed).
   const insertIndex = sourceIndex < targetIndex ? targetIndex : targetIndex
   nextGoals.splice(insertIndex, 0, movedGoal)
 
@@ -730,6 +733,7 @@ const persistGoalOrder = async (previousGoals) => {
   }
 }
 
+// Pick the first career plan returned for this profile so new goals auto-link when one exists.
 const loadDefaultPlanForNewGoals = async () => {
   try {
     const response = await api.get('/career-plans', {
@@ -767,6 +771,7 @@ const createGoal = async () => {
       ...payload,
       profile_id: profileId.value
     }
+    // Attach to the default career plan when available; goals can be linked to more plans later.
     if (defaultPlanIdForNewGoals.value) {
       body.plan_id = defaultPlanIdForNewGoals.value
     }
@@ -919,6 +924,7 @@ const saveSteps = async () => {
 
 // Optimistically update status from dropdown; revert on API failure.
 const updateGoalStatus = async (goal) => {
+  // Set on @focus in the template before the user changes the dropdown.
   const previousId = goal._previousStatusId ?? goal.goal_status_id
   try {
     await api.put(`/smart-goals/${goal.goal_id}`, {

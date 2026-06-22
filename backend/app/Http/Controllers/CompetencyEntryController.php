@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompetencyEntry;
+use App\Models\CompetencyEvidence;
 use App\Models\StudentProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class CompetencyEntryController extends Controller
 {
@@ -82,12 +85,23 @@ class CompetencyEntryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($competencyEntryId)
-    {
-        $entry  = CompetencyEntry::findOrFail($competencyEntryId);
-        $entry->delete();
+    public function destroy($id)
+{
+    $entry = CompetencyEntry::with('competencyEvidence')->findOrFail($id);
 
-
-        return response()->json(['message' => 'Competency entry successfully deleted'], 200);
+    // Delete any stored files before deleting the entry
+    foreach ($entry->competencyEvidence as $ev) {  
+        if ($ev->evidence_type === 'document' || $ev->evidence_type === 'image') {
+            // Breaks the url into its parts
+            $parsed = parse_url($ev->evidence_value);
+            // Remove /storage/ as backend already knows this
+            $storagePath = str_replace('/storage/', '', $parsed['path']);
+            Storage::disk('public')->delete($storagePath);    
+        }
     }
+
+    $entry->delete();
+
+    return response()->json(['message' => 'Competency entry successfully deleted']);
+}
 }

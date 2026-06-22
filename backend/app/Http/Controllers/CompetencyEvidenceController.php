@@ -27,17 +27,20 @@ class CompetencyEvidenceController extends Controller
         $validated = $request->validate([
             'entry_id'       => 'required|exists:competency_entries,entry_id',
             'evidence_type'  => 'required|string|max:15',
+            'evidence_value' => 'nullable|string|max:500',
         ]);
 
-        if ($request->input('evidence_type') === 'document') {
-            $validated['evidence_value'] = $this->uploadDoc($request);
-        } else if ($request->input('evidence_type') === 'image') {
-            $validated['evidence_value'] = $this->uploadImage($request);
-        }
+        
+    if ($request->input('evidence_type') === 'document') {
+        $validated['evidence_value'] = $this->uploadDoc($request);
+    } else if ($request->input('evidence_type') === 'image') {
+        $validated['evidence_value'] = $this->uploadImage($request);
+    }
+    // For url/video, evidence_value is already in $validated from the request
 
-        $evidence = CompetencyEvidence::create($validated);
+    $evidence = CompetencyEvidence::create($validated);
 
-        return response()->json($evidence, 201);
+    return response()->json($evidence, 201);
     }
 
     /**
@@ -95,7 +98,7 @@ class CompetencyEvidenceController extends Controller
     public function uploadDoc(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf|max:2048'
+            'file' => 'required|file|mimes:pdf,doc,docx,txt,ppt,pptx|max:10240'
         ]);
 
         // Store the file and assemble the full path for the file and return it to the frontend

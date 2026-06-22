@@ -54,11 +54,11 @@
                   <a v-if="ev.evidence_type === 'url'" :href="ev.evidence_value" target="_blank">
                     {{ ev.evidence_value }}
                   </a>
-                  <a v-if="ev.evidence_type === 'video'" :href="ev.evidence_value" target="_blank">
+                  <a v-else-if="ev.evidence_type === 'video'" :href="ev.evidence_value" target="_blank">
                     {{ ev.evidence_value }}
                   </a>
                   <span v-else><a :href="ev.evidence_value" target="_blank">
-                    Link to {{ ev.evidence_type }}
+                    {{ ev.evidence_type }}
                   </a></span>
                 </span>
               </div>
@@ -157,9 +157,9 @@
           </div>
 
           <!-- existing evidence entries -->
-          <div>
+          <div v-if="editForm.existingEvidence?.length">
             <p class="form-label field-label">Existing Evidence</p>
-            <div v-if="editForm.existingEvidence?.length" class="d-flex flex-column gap-2 mb-3">
+            <div class="d-flex flex-column gap-2 mb-3">
               <div v-for="ev in editForm.existingEvidence" :key="ev.evidence_id"
                 class="d-flex align-items-center justify-content-between p-2 rounded-3 field-input">
                 <span class="field-label">{{ evLabel(ev.evidence_type) }}: 
@@ -170,13 +170,12 @@
                 </button>
               </div>
             </div>
-            <p v-else class="field-label">No existing evidence</p>
           </div>
 
 
           <!-- editable evidence entries -->
           <div>
-            <div v-for="(ev, idx) in editForm.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3" 
+            <div v-for="(ev, idx) in editForm.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-start mb-3 pb-3" 
             :class="{ 'border-bottom': idx < editForm.evidenceEntries.length-1 }">
 
               <!-- evidence type -->
@@ -205,19 +204,19 @@
                   disabled placeholder="Select a type first"/>
 
                 <!-- link -->
-                <input v-else-if="ev.type === 'url'" v-model="ev.value" type="url"
+                <input v-else-if="ev.type === 'url'" v-model="ev.value" type="text"
                   class="form-control field-input rounded-3" 
                   :class="{ 'field-error': errors[`evidenceURL_${idx}`] }" @input="delete errors[`evidenceURL_${idx}`]"
                   placeholder="https://example.com"/>
 
-                <input v-else-if="ev.type==='video'" v-model="ev.value" type="video"
+                <input v-else-if="ev.type==='video'" v-model="ev.value" type="text"
                   class="form-control field-input rounded-3" 
                   :class="{ 'field-error': errors[`evidenceVideo_${idx}`] }" @input="delete errors[`evidenceVideo_${idx}`]"
                   placeholder="https://www.youtube.com/watch?v="/>
                 <!-- file upload -->
                 <div v-else>
                   <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': ev.fileName }">
-                    <input v-if="!ev.fileName" type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev, idx)"/>
+                    <input type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev, idx)"/>
 
                     <div v-if="!ev.fileName">
                       <p><b>Click to upload or drag & drop</b></p>
@@ -238,7 +237,7 @@
               </button>
             </div>
 
-            <button  v-if="editForm.evidenceEntries.length < 3"
+            <button  v-if="editForm.evidenceEntries.length + editForm.existingEvidence.length < 3"
             class="btn btn-filter rounded-pill px-3 py-1" 
             @click="addEvidence()">+ Add evidence</button>
           </div>
@@ -386,7 +385,17 @@
   function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) {
-      if (ev.type === 'document' && file.type !== 'application/pdf') {
+      const allowedDocTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ]
+
+
+      if (ev.type === 'document' && !allowedDocTypes.includes(file.type)) {
         errors.value[`evidenceFileType_${idx}`] = true
         return
       }
@@ -766,6 +775,8 @@
   text-align: center;
   background: #fafafa;
   cursor: pointer;
+  margin-top: auto; 
+  transform: translateY(0);
 }
 
 .upload-zone p {

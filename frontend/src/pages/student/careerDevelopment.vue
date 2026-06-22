@@ -1,6 +1,7 @@
 <template>
   <div class="goals-page career-development-page">
     <Navbar />
+    <!-- Tab bar shared with GoalsPage.vue; currTab drives the sliding pill highlight. -->
     <div class="toggle">
       <div class="toggle-line">
         <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
@@ -272,7 +273,8 @@
           </table>
         </div>
 
-        <!-- Mobile card view keeps the same data readable on narrow screens. -->
+        <!-- Mobile card view keeps the same data readable on narrow screens.
+             Field layout mirrors the desktop table; keep both in sync when adding columns. -->
         <div class="mobile-plan-list">
           <article v-for="plan in sortedPlans" :key="`mobile-${plan.plan_id}`" class="mobile-plan-card">
             <div class="mobile-plan-head">
@@ -449,6 +451,7 @@
       </div>
     </main>
   </div>
+  <!-- Success/error toast for save and delete actions -->
   <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
     {{ popUp.message }}
   </div>
@@ -498,6 +501,7 @@ const CALENDAR_YEAR_MIN = 2020
 // Suggested years for the Plan Year dropdown (merged with years from existing plans below).
 const buildCalendarYearRange = () => {
   const currentYear = new Date().getFullYear()
+  // Cap start at 2026 so the dropdown does not list years before the feature launch window.
   const start = Math.min(currentYear - 1, 2026)
   const end = currentYear + 4
   const years = []
@@ -556,7 +560,7 @@ const emptyPlanForm = () => ({
 
 const planForm = ref(emptyPlanForm())
 
-// Display helpers keep plan ordering and handle backend relation naming differences.
+// Display order: plan_year ascending; within the same year, oldest created_at first.
 const sortedPlans = computed(() => {
   return [...plans.value].sort((a, b) => {
     const yearDifference = Number(a.plan_year) - Number(b.plan_year)
@@ -641,6 +645,7 @@ const showGoalTitleTooltip = (goal, event) => {
   const titleEl = wrap.querySelector('.linked-goal-title')
   if (!(titleEl instanceof HTMLElement)) return
   const text = getGoalDescription(goal) || 'Untitled goal'
+  // Skip tooltip when the full title already fits (no ellipsis truncation).
   if (titleEl.scrollWidth <= titleEl.clientWidth + 1) return
   activeGoalTooltipId.value = goal.goal_id
   goalTitleTooltips.value = { ...goalTitleTooltips.value, [goal.goal_id]: text }
@@ -661,11 +666,13 @@ const currTab = computed(() =>
   route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
 )
 const goToGoals = () => {
+  // No-op when already on GoalsPage to avoid redundant navigation.
   if (route.name !== 'GoalsPage') {
     router.push(`/goals/${route.params.id}`)
   }
 }
 const goToCareerPlan = () => {
+  // No-op when already on this page to avoid redundant navigation.
   if (route.name !== 'careerDevelopment') {
     router.push(`/student/career-development/${route.params.id}`)
   }
@@ -725,6 +732,7 @@ const normalizePlanPayload = () => {
   return {
     profile_id: Number(route.params.id),
     plan_year: planYear,
+    // Empty strings become null so the API stores "not filled in" rather than blank text.
     professional_interests: planForm.value.professional_interests || null,
     employers_of_interest: planForm.value.employers_of_interest || null,
     personal_values: planForm.value.personal_values || null,
@@ -745,7 +753,7 @@ const normalizePlansResponse = (data) => {
   return []
 }
 
-// API loading functions fetch plans and all goals that can be linked to a plan.
+// Plans for the table/cards; each row may include nested smart_goals from the API.
 const fetchCareerPlans = async () => {
   try {
     loading.value = true
@@ -761,6 +769,7 @@ const fetchCareerPlans = async () => {
   }
 }
 
+// All profile goals for the create/edit link picker (wider set than nested goals on each plan row).
 const fetchSmartGoals = async () => {
   try {
     const response = await api.get('/smart-goals', {
@@ -790,6 +799,7 @@ const savePlan = async () => {
     }
 
     const isCreate = !editingPlanId.value
+    // Step 1: create or update plan fields.
     const response = isCreate
       ? await api.post('/career-plans', payload)
       : await api.put(`/career-plans/${editingPlanId.value}`, payload)
@@ -797,12 +807,14 @@ const savePlan = async () => {
       
     const savedPlan = response.data
 
+    // Step 2: sync linked goals in a separate request (same goal can belong to multiple plans).
     try {
       await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
         profile_id: Number(route.params.id),
         goal_ids: selectedGoalIds.value
       })
     } catch (linkError) {
+      // On create, roll back the new plan if goal linking fails so we do not leave an orphan row.
       if (isCreate) {
         try {
           await api.delete(`/career-plans/${savedPlan.plan_id}`)
@@ -831,6 +843,7 @@ const savePlan = async () => {
       Object.values(error.response?.data?.errors || {}).flat()[0]
 
     planFormError.value = serverMessage || 'Failed to save career development plan.'
+    // After a failed create, refresh in case rollback removed the plan from the list.
     if (!editingPlanId.value) {
       await fetchCareerPlans()
     }
@@ -841,8 +854,6 @@ const savePlan = async () => {
 
 // Remove plan row; linked goals stay in DB but lose this plan association.
 const deletePlan = async (plan) => {
-  
-
   try {
     await api.delete(`/career-plans/${plan.plan_id}`)
     await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
@@ -854,8 +865,8 @@ const deletePlan = async (plan) => {
 }
 
 onMounted(() => {
-  fetchCareerPlans() // list + nested goals for table/cards
-  fetchSmartGoals() // full goal list for link picker in create/edit form
+  fetchCareerPlans() // table/cards with per-plan nested goals
+  fetchSmartGoals() // full picker list for linking goals in the form
 })
 </script>
 

@@ -89,7 +89,7 @@
 
         <!-- evidence entries-->
         <div>
-          <div v-for="(ev, idx) in newEntry.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3"
+          <div v-for="(ev, idx) in newEntry.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-start mb-3 pb-3"
           :class="{ 'border-bottom': idx < newEntry.evidenceEntries.length-1 }">
 
             <!-- evidence type -->

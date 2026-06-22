@@ -86,7 +86,7 @@ export const fileAccept = (type) => {
 export const uploadHint = (type) => {
   switch (type) {
     case 'image':
-      return 'PNG, JPG, JPEG, GIF'
+      return 'PNG, JPG, JPEG'
     case 'document':
       return 'PDF, DOC, DOCX, TXT, PPT, PPTX'
     default:
