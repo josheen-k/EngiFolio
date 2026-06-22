@@ -209,6 +209,7 @@ const recentEntries = computed(() => {
     .slice(0, 5)
 })
 
+// unread notification(for entries)
 const unreadCount = computed(() => {
   return recentEntries.value.filter(
     entry =>
@@ -222,6 +223,7 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString()
 }
 
+// open entry mechanism
 const openEntry = (entry) => {
   if (!readEntries.value.includes(entry.entry_id)) {
     readEntries.value.push(entry.entry_id)
@@ -243,8 +245,6 @@ onMounted(fetchDashboardData)
   min-height: 100vh;
   background: #f8f8fb;
 }
-
-/* Hero */
 
 .dash {
   background:
@@ -485,8 +485,8 @@ onMounted(fetchDashboardData)
 .clickable {
   cursor: pointer;
   transition:
-    background 0.2s ease,
-    padding-left 0.2s ease;
+  background 0.2s ease,
+  padding-left 0.2s ease;
 }
 
 .clickable:hover {

@@ -63,8 +63,8 @@
         <select v-model="sortBy" class="sort">
           <option disabled value="">Sort</option>
           <option value="name_asc">A-Z</option>
-          <option value="date_desc">Newest</option>
-          <option value="date_asc">Oldest</option>
+          <option value="date_desc">Newest</option>  <!-- Date from oldest to newest -->
+          <option value="date_asc">Oldest</option>   <!-- Date from newest to oldest -->
         </select>
       </div>
 
@@ -263,7 +263,7 @@ import Navbar from '@/components/Navbar.vue'
 import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 const route = useRoute()
-const profileId = computed(() => route.params.id || 1)
+const profileId = computed(() => route.params.id || 1) // student profile default to 1
 
 const contacts = ref([])
 const search = ref('')
@@ -305,11 +305,13 @@ const pitchDialog = ref({
   buttonLabel: 'OK',
 })
 
+// different contact methods
 const defaultContactMethods = () => [
   { type: 'LinkedIn', value: '' },
   { type: 'Email', value: '' },
   { type: 'Phone', value: '' },
 ]
+
 
 const form = ref({
   contact_id: null,
@@ -359,6 +361,7 @@ onMounted(() => {
   fetchElevatorPitch()
 })
 
+// filtered contacts
 const filteredContacts = computed(() => {
   return contacts.value.filter(c =>
     c.contact_name?.toLowerCase().includes(search.value.toLowerCase()) ||
@@ -370,10 +373,11 @@ const filteredContacts = computed(() => {
   )
 })
 
+// sorted contacts
 const sortedContacts = computed(() => {
   let list = [...filteredContacts.value]
 
-  switch (sortBy.value) { //different cases for sorting
+  switch (sortBy.value) { // different cases for sorting
     case 'name_asc':
       return list.sort((a, b) => a.contact_name.localeCompare(b.contact_name))
     case 'date_desc':
@@ -392,7 +396,7 @@ const getAvatar = (name) => { // get random avatar images for industry contacts
 const formatUrl = (url) => {
   if (!url) return ''
 
-  return url.startsWith('http://') || url.startsWith('https://')
+  return url.startsWith('http://') || url.startsWith('https://') // ternary operator, substitute for if-else
     ? url
     : `https://${url}`
 }
@@ -466,10 +470,10 @@ const closeForm = () => {
 
 const saveContact = async () => {
   const payload = {
-    ...form.value, // spread operator is used to create a copy
+    ...form.value, // spread operator here is used to create a copy, here the value is being copied into a new object
     contact_methods: form.value.contact_methods
       .filter(method => method.value.trim() !== '')
-      .map(method => ({
+      .map(method => ({ // new array is being created due to the use of map function
         type: method.type,
         value: method.value.trim(),
       })),
@@ -491,7 +495,7 @@ const saveContact = async () => {
 
       const parsedUrl = new URL(normalizedUrl)
 
-      if (!parsedUrl.hostname.includes('.')) {
+      if (!parsedUrl.hostname.includes('.')) { // hostname refers to the domain name
         throw new Error('Invalid LinkedIn URL')
       }
 
@@ -540,6 +544,7 @@ const saveContact = async () => {
 
   closeForm()
   await fetchContacts()
+
 } catch (error) {
   if (!error.response) {
     openPitchDialog(
@@ -553,8 +558,8 @@ const saveContact = async () => {
     const validationErrors = Object.values(
       error.response.data?.errors || {}
     )
-      .flat() // flattens nested arrays
-      .join('\n') // combines strings into one string, separated by newlines
+      .flat()
+      .join('\n')
 
     openPitchDialog(
       'Invalid Contact Details',
@@ -571,7 +576,7 @@ const saveContact = async () => {
     return
   }
 
-  if (error.response.status >= 500) {
+  if (error.response.status >= 500) { // error 5xx is used for server errors
     openPitchDialog(
       'Server Error',
       'The server had a problem saving this contact. Please try again later.'
@@ -588,7 +593,7 @@ const saveContact = async () => {
 
 const editContact = (c) => { // edit contact funtion
   selectedContact.value = null
-  openMenuId.value = null
+  openMenuId.value = null // three dots menu
   editMode.value = true
 
   const existingMethods = c.contact_methods || []

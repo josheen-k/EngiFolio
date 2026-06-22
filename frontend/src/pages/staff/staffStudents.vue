@@ -16,26 +16,36 @@
         {{ errorMessage }}
       </p>
 
-      <div class="controls">
-        <input v-model="search" class="search" placeholder="Search students" />
+      <div class="controls-row">
+  <div class="controls">
+    <input v-model="search" class="search" placeholder="Search students" />
 
-        <select v-model="selectedSpecialisation" class="search">
-          <option value="">All specialisations</option>
-          <option
-            v-for="specialisation in specialisationOptions"
-            :key="specialisation"
-            :value="specialisation"
-          >
-            {{ specialisation }}
-          </option>
-        </select>
+    <select v-model="selectedSpecialisation" class="search">
+      <option value="">All specialisations</option>
+      <option
+        v-for="specialisation in specialisationOptions"
+        :key="specialisation"
+        :value="specialisation"
+      >
+        {{ specialisation }}
+      </option>
+    </select>
 
+    <select v-model="sortBy" class="search">
+      <option value="name">Sort by name</option>
+      <option value="entries">Sort by entries submitted</option>
+    </select>
+  </div>
 
-        <select v-model="sortBy" class="search">
-          <option value="name">Sort by name</option>
-          <option value="entries">Sort by entries submitted</option>
-        </select>
-      </div>
+  <div class="legend">
+    <span class="legend-title">Legend:</span>
+
+    <span class="legend-pill low">0-5</span>
+    <span class="legend-pill medium">6-10</span>
+    <span class="legend-pill high">11+</span>
+  </div>
+</div>
+
 
       <div class="table-box">
         <table class="students-table">
@@ -85,7 +95,7 @@
                 </span>
               </td>
 
-              <td>
+              <td>  <!-- Link to the profile page -->
                 <router-link
                   class="btn btn-filter"
                   :to="`/profile/${student.user_id}`"
@@ -273,6 +283,7 @@
             Feedback for {{ selectedEntry.experience_title }}
           </h3>
 
+           <!-- Feedback log -->
           <div
             v-if="selectedEntry?.competency_feedback?.length"
             class="previous-feedback"
@@ -429,15 +440,6 @@ const getEntryCount = (student) => {
   return student.entries?.length || 0
 }
 
-// const degreeOptions = computed(() => {
-//   return [
-//     ...new Set(
-//       students.value
-//         .map(student => student.degree_title)
-//         .filter(Boolean)
-//     )
-//   ]
-// })
 
 // for different disciplines in Engineering
 const specialisationOptions = computed(() => {
@@ -553,7 +555,7 @@ const getInitials = (student) => { // to get initials for sorting
 const formatDate = (date) => {
   if (!date) return 'No date'
 
-  return new Date(date).toLocaleDateString() // this function is used to convert date into a human readable format
+  return new Date(date).toLocaleDateString()
 }
 
 // expanding the competency entry details
@@ -590,7 +592,7 @@ const submitFeedback = async () => {
   feedbackError.value = ''
   feedbackSuccess.value = ''
 
-  if (!feedbackText.value.trim()) { // trim function used here to remove any trailing or leading whitsespaces
+  if (!feedbackText.value.trim()) {
     feedbackError.value = 'Please enter feedback before submitting.'
     return
   }
@@ -663,11 +665,38 @@ onMounted(fetchStudents)
   margin-bottom: 6px;
 }
 
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
 .controls {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 22px;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Maven Pro', sans-serif;
+}
+
+.legend-title {
+  font-weight: 600;
+  color: #333;
+}
+
+.legend-pill {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .search {
