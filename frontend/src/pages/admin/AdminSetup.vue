@@ -1,13 +1,13 @@
 <template>
-  <Navbar/>
+  <AdminNavbar/>
 
   <!--using toggle instead of sidebar cause there's only 2 views -->
   <div class="toggle">
     <div class="toggle-line">
-      <button class="toggle-btn" :class="{active: currTab === 'PROFILE' }" @click="currTab = 'PROFILE'">Profile</button>
-      <button class="toggle-btn" :class="{ active: currTab === 'CERTIFICATIONS' }" @click="currTab = 'CERTIFICATIONS'">Certifications</button>
+      <button class="toggle-btn" :class="{active: currTab === 'CATEGORY' }" @click="currTab = 'CATEGORY'">Category</button>
+      <button class="toggle-btn" :class="{ active: currTab === 'COMPETENCY' }" @click="currTab = 'COMPETENCY'">Competency</button>
       <!--sliding pill -->
-      <div class="toggle-pill" :class="currTab === 'CERTIFICATIONS' ? 'pill-right' : 'pill-left'"></div>
+      <div class="toggle-pill" :class="currTab === 'COMPETENCY' ? 'pill-right' : 'pill-left'"></div>
     </div>
   </div>
   <main class="main-area">
@@ -16,30 +16,32 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useRoute } from 'vue-router' 
-  import Navbar from '@/components/Navbar.vue';
-  import ProfileView from '@/components/ProfileView.vue';
-  import ProfileCertifications from '@/components/ProfileCertifications.vue';
+  import AdminNavbar from '@/components/AdminNavbar.vue';
+  import SetupCategory from '@/components/AdminSetupCategory.vue';
+  import SetupCompetency from '@/components/AdminSetupCompetency.vue';
 
   const route = useRoute() 
 
-  // Different tabs in side panel
-  // Use the value of tab in the query or default to profile
-  const currTab = ref(route.query.tab || 'PROFILE');
+  // different tabs in side pannel
+  const currTab = ref('CATEGORY');
 
-  // Render components based on current tab
-  // Load profileView in case of no cases met
+  // render components based on current tab
   const currComponent = computed(()=> {
     switch (currTab.value) {
-      case 'PROFILE':
-        return ProfileView
-      case 'CERTIFICATIONS':
-        return ProfileCertifications
-      default:
-          return ProfileView
+      case 'CATEGORY':
+        return SetupCategory
+      case 'COMPETENCY':
+        return SetupCompetency
     }
   });
+
+  onMounted(() => {
+    if (route.query.tab === 'COMPETENCY') {
+      currTab.value = 'COMPETENCY'
+    }
+  })
 </script>
 
 <style scoped>

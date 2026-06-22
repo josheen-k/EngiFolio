@@ -5,7 +5,6 @@ import StudentDashboard from '@/pages/student/Dashboard.vue'
 import StudentProfile from '@/pages/student/profile.vue'
 import ProfileSettings from '@/pages/student/profileSettings.vue'
 import EACompetency from '@/pages/student/eaCompetency.vue'
-import CareerPlanning from '@/pages/student/careerPlanning.vue'
 import CareerDevelopment from '@/pages/student/careerDevelopment.vue'
 import IndustryContacts from '@/pages/student/IndustryContacts.vue'
 import Networking from '@/pages/student/Networking.vue'
@@ -23,6 +22,7 @@ import AdminPage from '@/pages/admin/admin.vue'
 import GoalFeedback from '@/pages/staff/goalFeedback.vue'
 import CDL from '@/pages/student/CDL.vue'
 import PrivacyPolicy from '@/pages/public/PrivacyPolicy.vue'
+import AdminSetup from '@/pages/admin/AdminSetup.vue'
 
 const routes = [
   {
@@ -51,11 +51,6 @@ const routes = [
     component: CareerDevelopment
   },
   {
-    path: '/student/career-planning/:id',
-    name: 'careerPlanning',
-    component: CareerPlanning
-  },
-  {
     path: '/student/eaCompetency/:id',
     name: 'eaCompetency',
     component: EACompetency
@@ -67,18 +62,24 @@ const routes = [
   },
   {
     path: '/student/networking/:id',
-    name: 'networking',
-    component: Event
+    component: Networking,
+    children: [
+      {
+        path: '',
+        name: 'networking-events',
+        component: Event,
+      },
+      {
+        path: 'contacts',
+        name: 'networking-contacts',
+        component: IndustryContacts,
+      }
+    ]
   },
   {
     path: '/student/event',
     name: 'event',
     component: Event
-  },
-  {
-    path: '/student/networking/contacts/:id',
-    name: 'networking-contacts',
-    component: Networking
   },
   {
     path: '/student/export/:id',
@@ -144,11 +145,14 @@ const routes = [
   },
 
   {
-    path: '/student/networking/contacts/:id',
-    name: 'networking-contacts',
-    component: Networking
+    path: '/admin/:id/management',
+    name: 'adminSetup',
+    component: AdminSetup,
+    beforeEnter: (to) => {
+      return String(to.params.id) === '1' ? true : { name: 'Homepage' }
+    }
   },
-
+  
   {
     path: '/certification-settings/:id',
     name: 'certificationSettings',

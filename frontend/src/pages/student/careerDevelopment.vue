@@ -1,6 +1,7 @@
 <template>
   <div class="goals-page career-development-page">
     <Navbar />
+    <!-- Tab bar shared with GoalsPage.vue; currTab drives the sliding pill highlight. -->
     <div class="toggle">
       <div class="toggle-line">
         <button class="toggle-btn" :class="{ active: currTab === 'CAREER_PLAN' }" @click="goToCareerPlan">Career Development Plan</button>
@@ -136,12 +137,19 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'professional_interests') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'professional_interests') }}</span>
                 </td>
                 <td>
-                  <template v-if="!splitList(plan.employers_of_interest).length">Not added yet.</template>
-                  <div v-else-if="hasLongText(employersJoined(plan))" class="text-preview-stack">
-                    <p class="text-preview">{{ getTextPreview(employersJoined(plan)) }}</p>
+                  <template v-if="!getEmployersList(plan).length">Not added yet.</template>
+                  <div v-else-if="hasExtraEmployers(plan)" class="text-preview-stack employers-preview-stack">
+                    <ul class="compact-list">
+                      <li
+                        v-for="(employer, index) in getEmployersPreviewList(plan)"
+                        :key="employerListItemKey(plan, employer, index)"
+                      >
+                        {{ employer }}
+                      </li>
+                    </ul>
                     <button
                       type="button"
                       class="btn btn-link view-more-btn p-0"
@@ -151,7 +159,12 @@
                     </button>
                   </div>
                   <ul v-else class="compact-list">
-                    <li v-for="employer in splitList(plan.employers_of_interest)" :key="employer">{{ employer }}</li>
+                    <li
+                      v-for="(employer, index) in getEmployersList(plan)"
+                      :key="employerListItemKey(plan, employer, index)"
+                    >
+                      {{ employer }}
+                    </li>
                   </ul>
                 </td>
                 <td class="text-preview-cell">
@@ -166,7 +179,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'personal_values') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'personal_values') }}</span>
                 </td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'development_focus')">Not added yet.</template>
@@ -180,7 +193,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'development_focus') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'development_focus') }}</span>
                 </td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'extracurriculars')">Not added yet.</template>
@@ -194,7 +207,7 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'extracurriculars') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'extracurriculars') }}</span>
                 </td>
                 <td class="text-preview-cell">
                   <template v-if="!getPlanFieldRaw(plan, 'networking_plan')">Not added yet.</template>
@@ -208,26 +221,27 @@
                       View more
                     </button>
                   </div>
-                  <span v-else>{{ getPlanFieldRaw(plan, 'networking_plan') }}</span>
+                  <span v-else class="cell-copy">{{ getPlanFieldRaw(plan, 'networking_plan') }}</span>
                 </td>
                 <td>
                   <div v-if="getPlanGoals(plan).length" class="goal-stack">
-                    <article v-for="goal in getPlanGoals(plan)" :key="goal.goal_id" class="linked-goal">
-                      <div v-if="hasLongText(goal.goal_description || '')" class="text-preview-stack linked-goal-preview">
-                        <p class="text-preview">{{ getTextPreview(goal.goal_description || '') }}</p>
-                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                        <button
-                          type="button"
-                          class="btn btn-link view-more-btn p-0"
-                          @click="openTextModal('SMART Goal', goal.goal_description || '')"
-                        >
-                          View more
-                        </button>
+                    <article
+                      v-for="goal in getPlanGoals(plan)"
+                      :key="goal.goal_id"
+                      class="linked-goal"
+                    >
+                      <div
+                        class="linked-goal-title-wrap"
+                        :class="{ 'is-tooltip-visible': activeGoalTooltipId === goal.goal_id }"
+                        :data-tooltip="goalTitleTooltips[goal.goal_id]"
+                        @mouseenter="showGoalTitleTooltip(goal, $event)"
+                        @mouseleave="hideGoalTitleTooltip(goal.goal_id)"
+                      >
+                        <p class="linked-goal-title">
+                          {{ getGoalDescription(goal) || 'Untitled goal' }}
+                        </p>
                       </div>
-                      <div v-else class="linked-goal-head">
-                        <span>{{ goal.goal_description }}</span>
-                        <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                      </div>
+                      <span class="status-pill linked-goal-status">{{ getGoalStatus(goal) }}</span>
                     </article>
                   </div>
                   <span v-else>No SMART goals linked yet.</span>
@@ -248,7 +262,7 @@
                       class="action-icon-btn"
                       aria-label="Delete career plan"
                       title="Delete"
-                      @click="deletePlan(plan)"
+                      @click="showDeleteConfirm = true, planToDelete = plan"
                     >
                       <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                     </button>
@@ -259,7 +273,8 @@
           </table>
         </div>
 
-        <!-- Mobile card view keeps the same data readable on narrow screens. -->
+        <!-- Mobile card view keeps the same data readable on narrow screens.
+             Field layout mirrors the desktop table; keep both in sync when adding columns. -->
         <div class="mobile-plan-list">
           <article v-for="plan in sortedPlans" :key="`mobile-${plan.plan_id}`" class="mobile-plan-card">
             <div class="mobile-plan-head">
@@ -287,11 +302,18 @@
 
             <section class="mobile-section">
               <p class="mobile-label">Employers</p>
-              <template v-if="!splitList(plan.employers_of_interest).length">
+              <template v-if="!getEmployersList(plan).length">
                 <p class="mobile-value">Not added yet.</p>
               </template>
-              <div v-else-if="hasLongText(employersJoined(plan))" class="text-preview-stack">
-                <p class="mobile-value text-preview">{{ getTextPreview(employersJoined(plan)) }}</p>
+              <div v-else-if="hasExtraEmployers(plan)" class="text-preview-stack employers-preview-stack">
+                <ul class="compact-list">
+                  <li
+                    v-for="(employer, index) in getEmployersPreviewList(plan)"
+                    :key="employerListItemKey(plan, employer, index)"
+                  >
+                    {{ employer }}
+                  </li>
+                </ul>
                 <button
                   type="button"
                   class="btn btn-link view-more-btn p-0"
@@ -301,12 +323,17 @@
                 </button>
               </div>
               <ul v-else class="compact-list">
-                <li v-for="employer in splitList(plan.employers_of_interest)" :key="`mobile-employer-${employer}`">{{ employer }}</li>
+                <li
+                  v-for="(employer, index) in getEmployersList(plan)"
+                  :key="employerListItemKey(plan, employer, index)"
+                >
+                  {{ employer }}
+                </li>
               </ul>
             </section>
 
             <div class="mobile-grid">
-              <section>
+              <section class="mobile-section">
                 <p class="mobile-label">Personal Values</p>
                 <template v-if="!getPlanFieldRaw(plan, 'personal_values')">
                   <p class="mobile-value">Not added yet.</p>
@@ -323,7 +350,7 @@
                 </div>
                 <p v-else class="mobile-value">{{ getPlanFieldRaw(plan, 'personal_values') }}</p>
               </section>
-              <section>
+              <section class="mobile-section">
                 <p class="mobile-label">Development Focus</p>
                 <template v-if="!getPlanFieldRaw(plan, 'development_focus')">
                   <p class="mobile-value">Not added yet.</p>
@@ -381,22 +408,23 @@
             <section class="mobile-section">
               <p class="mobile-label">Linked SMART Goals</p>
               <div v-if="getPlanGoals(plan).length" class="goal-stack">
-                <article v-for="goal in getPlanGoals(plan)" :key="`mobile-goal-${goal.goal_id}`" class="linked-goal">
-                  <div v-if="hasLongText(goal.goal_description || '')" class="text-preview-stack linked-goal-preview">
-                    <p class="mobile-value text-preview">{{ getTextPreview(goal.goal_description || '') }}</p>
-                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                    <button
-                      type="button"
-                      class="btn btn-link view-more-btn p-0"
-                      @click="openTextModal('SMART Goal', goal.goal_description || '')"
-                    >
-                      View more
-                    </button>
+                <article
+                  v-for="goal in getPlanGoals(plan)"
+                  :key="`mobile-goal-${goal.goal_id}`"
+                  class="linked-goal"
+                >
+                  <div
+                    class="linked-goal-title-wrap"
+                    :class="{ 'is-tooltip-visible': activeGoalTooltipId === goal.goal_id }"
+                    :data-tooltip="goalTitleTooltips[goal.goal_id]"
+                    @mouseenter="showGoalTitleTooltip(goal, $event)"
+                    @mouseleave="hideGoalTitleTooltip(goal.goal_id)"
+                  >
+                    <p class="linked-goal-title">
+                      {{ getGoalDescription(goal) || 'Untitled goal' }}
+                    </p>
                   </div>
-                  <div v-else class="linked-goal-head">
-                    <span>{{ goal.goal_description }}</span>
-                    <span class="status-pill">{{ getGoalStatus(goal) }}</span>
-                  </div>
+                  <span class="status-pill linked-goal-status">{{ getGoalStatus(goal) }}</span>
                 </article>
               </div>
               <p v-else class="mobile-value">No SMART goals linked yet.</p>
@@ -404,7 +432,7 @@
 
             <div class="mobile-actions">
               <button class="btn page-btn-outline w-100" @click="openEditPlanForm(plan)">Edit</button>
-              <button class="btn page-btn-danger w-100" @click="deletePlan(plan)">Delete</button>
+              <button class="btn page-btn-danger w-100" @click="showDeleteConfirm = true, planToDelete = plan">Delete</button>
             </div>
           </article>
         </div>
@@ -422,6 +450,22 @@
         </div>
       </div>
     </main>
+  </div>
+  <!-- Success/error toast for save and delete actions -->
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
+
+  <!--Delete confirm -->
+  <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+    <div class="delete-box text-center p-4">
+      <h5 class="fw-bold mb-2 field-label delete-title">Delete career development plan {{ planToDelete.plan_year }}? This cannot be undone.</h5>
+
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
+        <button class="btn btn-add rounded-pill px-4" @click="deletePlan(planToDelete); showDeleteConfirm = false">Delete</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -445,6 +489,8 @@ const errorMessage = ref('')
 const showPlanForm = ref(false)
 const editingPlanId = ref(null)
 const savingPlan = ref(false)
+const showDeleteConfirm = ref(false)
+const planToDelete = ref(null)
 const planFormError = ref('')
 // Goal IDs selected in the create/edit form (synced to plan via PUT .../smart-goals).
 const selectedGoalIds = ref([])
@@ -455,6 +501,7 @@ const CALENDAR_YEAR_MIN = 2020
 // Suggested years for the Plan Year dropdown (merged with years from existing plans below).
 const buildCalendarYearRange = () => {
   const currentYear = new Date().getFullYear()
+  // Cap start at 2026 so the dropdown does not list years before the feature launch window.
   const start = Math.min(currentYear - 1, 2026)
   const end = currentYear + 4
   const years = []
@@ -462,6 +509,14 @@ const buildCalendarYearRange = () => {
     years.push(year)
   }
   return years
+}
+
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
 }
 
 // Safe display for API/form values that may be number or string.
@@ -480,7 +535,8 @@ const planYearSelectOptions = computed(() => {
     }
   })
 
-  return [...years]
+  return [...years] // Convert Set to array for sorting and mapping
+
     .sort((a, b) => a - b)
     .map((year) => ({ value: year, label: String(year) }))
 })
@@ -490,7 +546,7 @@ const defaultPlanYearForCreate = () => {
   const currentYear = new Date().getFullYear()
   const options = planYearSelectOptions.value
   const match = options.find((opt) => opt.value === currentYear)
-  return match?.value ?? options[0]?.value ?? currentYear
+  return match?.value ?? options[0]?.value ?? currentYear // Fallback to currentYear even if it's not in options, to avoid empty selection.
 }
 
 const emptyPlanForm = () => ({
@@ -505,7 +561,7 @@ const emptyPlanForm = () => ({
 
 const planForm = ref(emptyPlanForm())
 
-// Display helpers keep plan ordering and handle backend relation naming differences.
+// Display order: plan_year ascending; within the same year, oldest created_at first.
 const sortedPlans = computed(() => {
   return [...plans.value].sort((a, b) => {
     const yearDifference = Number(a.plan_year) - Number(b.plan_year)
@@ -522,7 +578,7 @@ const splitList = (value) => {
     return []
   }
 
-  return String(value)
+  return String(value) // Convert null/undefined to empty string and ensure value is a string for splitting
     .split(/\r?\n|,/)
     .map((item) => item.trim())
     .filter(Boolean)
@@ -537,9 +593,14 @@ const getPlanFieldRaw = (plan, field) => {
   return String(v).trim()
 }
 
-// Employers column: list for bullets, joined string for preview/modal.
-const employersJoined = (plan) => splitList(plan.employers_of_interest).join(', ')
-const employersModalBody = (plan) => splitList(plan.employers_of_interest).join('\n')
+// Employers column: show first 3 in the table; View more opens the full list in a modal.
+const EMPLOYERS_PREVIEW_LIMIT = 3
+
+const getEmployersList = (plan) => splitList(plan.employers_of_interest)
+const hasExtraEmployers = (plan) => getEmployersList(plan).length > EMPLOYERS_PREVIEW_LIMIT
+const getEmployersPreviewList = (plan) => getEmployersList(plan).slice(0, EMPLOYERS_PREVIEW_LIMIT)
+const employerListItemKey = (plan, employer, index) => `${plan.plan_id}-employer-${index}-${employer}`
+const employersModalBody = (plan) => getEmployersList(plan).join('\n')
 
 // "View more" modal for long table/card text.
 const showTextModal = ref(false)
@@ -573,17 +634,46 @@ const closeTextModal = () => {
 // API may return snake_case or camelCase relation names.
 const getPlanGoals = (plan) => plan.smart_goals || plan.smartGoals || []
 const getGoalStatus = (goal) => goal.status?.status || 'No status'
+const getGoalDescription = (goal) => normalizeDisplayText(goal?.goal_description || '')
+
+// Show full goal title on hover only when ellipsis truncates the visible text.
+const goalTitleTooltips = ref({})
+const activeGoalTooltipId = ref(null)
+
+const showGoalTitleTooltip = (goal, event) => {
+  const wrap = event.currentTarget
+  if (!(wrap instanceof HTMLElement)) return
+  const titleEl = wrap.querySelector('.linked-goal-title')
+  if (!(titleEl instanceof HTMLElement)) return
+  const text = getGoalDescription(goal) || 'Untitled goal'
+  // Skip tooltip when the full title already fits (no ellipsis truncation).
+  if (titleEl.scrollWidth <= titleEl.clientWidth + 1) return
+  activeGoalTooltipId.value = goal.goal_id
+  goalTitleTooltips.value = { ...goalTitleTooltips.value, [goal.goal_id]: text }
+}
+
+const hideGoalTitleTooltip = (goalId) => {
+  if (activeGoalTooltipId.value === goalId) {
+    activeGoalTooltipId.value = null
+  }
+  if (!goalTitleTooltips.value[goalId]) return
+  const next = { ...goalTitleTooltips.value }
+  delete next[goalId]
+  goalTitleTooltips.value = next
+}
 
 // Top toggle highlight (this page is always CAREER_PLAN; SMART_GOALS uses GoalsPage).
 const currTab = computed(() =>
   route.name === 'careerDevelopment' ? 'CAREER_PLAN' : 'SMART_GOALS',
 )
 const goToGoals = () => {
+  // No-op when already on GoalsPage to avoid redundant navigation.
   if (route.name !== 'GoalsPage') {
     router.push(`/goals/${route.params.id}`)
   }
 }
 const goToCareerPlan = () => {
+  // No-op when already on this page to avoid redundant navigation.
   if (route.name !== 'careerDevelopment') {
     router.push(`/student/career-development/${route.params.id}`)
   }
@@ -643,6 +733,7 @@ const normalizePlanPayload = () => {
   return {
     profile_id: Number(route.params.id),
     plan_year: planYear,
+    // Empty strings become null so the API stores "not filled in" rather than blank text.
     professional_interests: planForm.value.professional_interests || null,
     employers_of_interest: planForm.value.employers_of_interest || null,
     personal_values: planForm.value.personal_values || null,
@@ -652,14 +743,25 @@ const normalizePlanPayload = () => {
   }
 }
 
-// API loading functions fetch plans and all goals that can be linked to a plan.
+// API may return an array of plans, a single plan object, or nothing.
+const normalizePlansResponse = (data) => {
+  if (Array.isArray(data)) {
+    return data
+  }
+  if (data) {
+    return [data]
+  }
+  return []
+}
+
+// Plans for the table/cards; each row may include nested smart_goals from the API.
 const fetchCareerPlans = async () => {
   try {
     loading.value = true
     errorMessage.value = ''
 
     const response = await api.get(`/career-plans/${route.params.id}`)
-    plans.value = Array.isArray(response.data) ? response.data : [response.data]
+    plans.value = normalizePlansResponse(response.data)
   } catch (error) {
     console.error('Failed to load career development plans:', error)
     errorMessage.value = error.response?.data?.message || 'Failed to load career development plan.'
@@ -668,6 +770,7 @@ const fetchCareerPlans = async () => {
   }
 }
 
+// All profile goals for the create/edit link picker (wider set than nested goals on each plan row).
 const fetchSmartGoals = async () => {
   try {
     const response = await api.get('/smart-goals', {
@@ -696,16 +799,39 @@ const savePlan = async () => {
       return
     }
 
-    const response = editingPlanId.value
-      ? await api.put(`/career-plans/${editingPlanId.value}`, payload)
-      : await api.post('/career-plans', payload)
+    const isCreate = !editingPlanId.value
+    // Step 1: create or update plan fields.
+    const response = isCreate
+      ? await api.post('/career-plans', payload)
+      : await api.put(`/career-plans/${editingPlanId.value}`, payload)
 
+      
     const savedPlan = response.data
 
-    await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
-      profile_id: Number(route.params.id),
-      goal_ids: selectedGoalIds.value
-    })
+    // Step 2: sync linked goals in a separate request (same goal can belong to multiple plans).
+    try {
+      await api.put(`/career-plans/${savedPlan.plan_id}/smart-goals`, {
+        profile_id: Number(route.params.id),
+        goal_ids: selectedGoalIds.value
+      })
+    } catch (linkError) {
+      // On create, roll back the new plan if goal linking fails so we do not leave an orphan row.
+      if (isCreate) {
+        try {
+          await api.delete(`/career-plans/${savedPlan.plan_id}`)
+        } catch (rollbackError) {
+          console.error('Failed to roll back career plan after link error:', rollbackError)
+        }
+      }
+      throw linkError
+    }
+
+    if (editingPlanId.value) {
+      showPopUp('Plan successfully updated.', 'success')
+    } else {
+      showPopUp('New plan successfully added.', 'success')
+    }
+
 
     showPlanForm.value = false
     resetPlanForm()
@@ -718,6 +844,10 @@ const savePlan = async () => {
       Object.values(error.response?.data?.errors || {}).flat()[0]
 
     planFormError.value = serverMessage || 'Failed to save career development plan.'
+    // After a failed create, refresh in case rollback removed the plan from the list.
+    if (!editingPlanId.value) {
+      await fetchCareerPlans()
+    }
   } finally {
     savingPlan.value = false
   }
@@ -725,23 +855,19 @@ const savePlan = async () => {
 
 // Remove plan row; linked goals stay in DB but lose this plan association.
 const deletePlan = async (plan) => {
-  const confirmed = window.confirm(`Delete ${formatPlanYearLabel(plan.plan_year)} career plan? This cannot be undone.`)
-  if (!confirmed) {
-    return
-  }
-
   try {
     await api.delete(`/career-plans/${plan.plan_id}`)
     await Promise.all([fetchCareerPlans(), fetchSmartGoals()])
+    showPopUp('Plan successfully deleted.', 'success')
   } catch (error) {
     console.error('Failed to delete career development plan:', error)
-    alert(error.response?.data?.message || 'Failed to delete career development plan.')
+    showPopUp('Failed to delete career development plan.', 'error')
   }
 }
 
 onMounted(() => {
-  fetchCareerPlans() // list + nested goals for table/cards
-  fetchSmartGoals() // full goal list for link picker in create/edit form
+  fetchCareerPlans() // table/cards with per-plan nested goals
+  fetchSmartGoals() // full picker list for linking goals in the form
 })
 </script>
 
@@ -913,10 +1039,6 @@ onMounted(() => {
   min-height: 72px;
 }
 
-.goal-form-card select[multiple] {
-  min-height: 8rem;
-}
-
 /* Clickable SMART goal cards used instead of a native multi-select. */
 .goal-link-field {
   display: flex;
@@ -1025,10 +1147,11 @@ onMounted(() => {
 }
 
 .text-preview-stack {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
+  text-align: left;
 }
 
 .text-preview {
@@ -1041,7 +1164,7 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #6d6d6d;
-  text-align: center;
+  text-align: left;
 }
 
 .modal-backdrop {
@@ -1098,8 +1221,6 @@ onMounted(() => {
 .goals-table td {
   border-color: #e0e0e0;
   padding: 0.9rem 0.8rem;
-  vertical-align: top;
-  text-align: left;
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.4;
@@ -1131,32 +1252,76 @@ onMounted(() => {
   border-bottom: none;
 }
 
-/* Career plan table: headers and cell copy stay centered. */
+/* Career plan table: blocks centered in cells; copy inside blocks left-aligned. */
 .career-development-page .career-table th,
 .career-development-page .career-table td {
   text-align: center;
   vertical-align: middle;
 }
 
-.career-development-page .career-table .compact-list {
-  list-style-position: inside;
-  padding-left: 0;
-  margin-left: auto;
-  margin-right: auto;
-  display: inline-block;
-  text-align: center;
+/* Table body typography matches SMART Goals (GoalsPage.vue). */
+.career-development-page .career-table tbody td {
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #2b2b2b;
 }
 
-.career-development-page .career-table .linked-goal-head {
+/* Employers column (col 3): full-width list so rows share the same left edge. */
+.career-development-page .career-table .compact-list {
+  list-style-position: outside;
+  padding-left: 1.1rem;
+  margin: 0;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.career-development-page .career-table .employers-preview-stack {
+  display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  text-align: center;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.career-development-page .career-table .text-preview {
+  max-width: min(18rem, 100%);
+  text-align: left;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
+.career-development-page .career-table .cell-copy {
+  display: inline-block;
+  max-width: min(18rem, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #2b2b2b;
+}
+
+.career-development-page .career-table .compact-list,
+.career-development-page .career-table .compact-list li {
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
+.career-development-page .career-table .view-more-btn {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.35;
 }
 
 .career-development-page .career-table .goal-stack {
   justify-items: center;
+  text-align: left;
+}
+
+.career-development-page .career-table td:has(.goal-stack) {
+  overflow: visible;
 }
 
 /* Career plan table column widths. */
@@ -1172,7 +1337,8 @@ onMounted(() => {
 .career-table td:nth-child(5),
 .career-table th:nth-child(8),
 .career-table td:nth-child(8) {
-  min-width: 15rem;
+  min-width: 11rem;
+  width: 11rem;
 }
 
 .career-table th:nth-child(3),
@@ -1234,14 +1400,13 @@ onMounted(() => {
 }
 
 .year-cell {
-  font-weight: 800;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #2b2b2b;
 }
 
 .compact-list {
   margin: 0;
   padding-left: 1.1rem;
-  color: #5f5f5f;
 }
 
 .goal-stack {
@@ -1250,17 +1415,73 @@ onMounted(() => {
 }
 
 .linked-goal {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: min(10.25rem, 100%);
+  max-width: 10.25rem;
+  min-height: 4.75rem;
+  height: 4.75rem;
   border: 1px solid #e3e3e3;
   border-radius: 0.85rem;
   background: #ffffff;
-  padding: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  text-align: center;
+  align-items: center;
+  overflow: visible;
 }
 
-.linked-goal-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  align-items: flex-start;
+.linked-goal-title-wrap {
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.linked-goal-title {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #2b2b2b;
+  cursor: default;
+  text-align: center;
+}
+
+.linked-goal-title-wrap[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
+  z-index: 30;
+  background: #727272;
+  color: #ffffff;
+  font: 400 0.75rem/1.35 'Maven Pro', sans-serif;
+  white-space: normal;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.linked-goal-title-wrap[data-tooltip].is-tooltip-visible::after {
+  opacity: 1;
+}
+
+.linked-goal-status {
+  align-self: center;
 }
 
 .status-pill,
@@ -1278,35 +1499,76 @@ onMounted(() => {
   display: none;
 }
 
-/* Mobile career cards: same centered copy as the desktop table. */
-.career-development-page .mobile-plan-card {
-  text-align: center;
-}
-
+/* Mobile career cards: header centered; section copy left-aligned. */
 .career-development-page .mobile-plan-head {
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.career-development-page .mobile-section .compact-list {
-  list-style-position: inside;
-  padding-left: 0;
-  margin-left: auto;
-  margin-right: auto;
-  display: inline-block;
-  text-align: center;
+.career-development-page .mobile-plan-card section {
+  text-align: left;
+  min-width: 0;
 }
 
-.career-development-page .mobile-section .linked-goal-head {
+.career-development-page .mobile-plan-card section .compact-list {
+  list-style-position: outside;
+  padding-left: 1.1rem;
+  margin: 0;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.career-development-page .mobile-plan-card section .employers-preview-stack,
+.career-development-page .mobile-plan-card section .text-preview-stack {
+  display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: left;
 }
 
-.career-development-page .mobile-section .goal-stack {
-  justify-items: center;
+.career-development-page .mobile-plan-card section .mobile-value,
+.career-development-page .mobile-plan-card section .text-preview,
+.career-development-page .mobile-plan-card section .compact-list,
+.career-development-page .mobile-plan-card section .compact-list li {
+  font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+}
+
+.career-development-page .mobile-plan-card section .mobile-value {
+  color: #2b2b2b;
+}
+
+.career-development-page .mobile-plan-card section .text-preview,
+.career-development-page .mobile-plan-card section .mobile-value {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+}
+
+.career-development-page .mobile-plan-card section .view-more-btn {
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.career-development-page .mobile-plan-card section .goal-stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  justify-items: stretch;
+}
+
+.career-development-page .mobile-plan-card .linked-goal {
+  width: 100%;
+  max-width: none;
 }
 
 /* Mobile-only card layout for career plans. */
@@ -1334,26 +1596,48 @@ onMounted(() => {
 }
 
 .mobile-section {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8e8e8;
 }
 
-.mobile-label {
-  margin: 0 0 0.22rem 0;
-  font-size: 0.77rem;
-  color: #747474;
-  font-family: 'Montserrat Alternates', sans-serif;
+.career-development-page .mobile-plan-card > .mobile-section:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.career-development-page .mobile-grid {
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.career-development-page .mobile-grid .mobile-section {
+  padding-top: 0;
+  border-top: 0;
+  margin-bottom: 0;
+}
+
+.career-development-page .mobile-grid .mobile-section + .mobile-section {
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.career-development-page .mobile-plan-card .mobile-label {
+  margin: 0 0 0.45rem;
+  font: 600 0.82rem/1.3 'Montserrat Alternates', sans-serif;
+  color: #2b2b2b;
+  letter-spacing: 0.02em;
 }
 
 .mobile-value {
   margin: 0;
-  color: #2b2b2b;
 }
 
 .mobile-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-bottom: 0.85rem;
 }
 
 .mobile-actions {
@@ -1361,6 +1645,73 @@ onMounted(() => {
   grid-template-columns: 1fr 1fr;
   gap: 0.55rem;
   margin-top: 0.6rem;
+}
+
+
+.popUp-msg {
+  z-index: 9999;
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.delete-box .btn-filter,
+.delete-box .btn-add {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.delete-box .btn-add {
+  background: #555555;
+  color: #ffffff;
+}
+
+.delete-box .btn-add:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.delete-title {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1.1rem;
+  color: #222222;
 }
 
 @media (max-width: 992px) {
@@ -1417,10 +1768,6 @@ onMounted(() => {
 
   .mobile-plan-list {
     display: block;
-  }
-
-  .mobile-grid {
-    grid-template-columns: 1fr;
   }
 
   .goal-select-grid {

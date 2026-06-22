@@ -11,7 +11,7 @@
           <h2 class="text-center view-title mb-0">{{ reflec?.experience_title }}</h2>
           <div class="d-flex gap-2">
             <img class="plus-btn" src="@/assets/del.png" @click="showDeleteConfirm = true" title="Delete">
-            <img class="plus-btn" src="@/assets/edit.png" @click="enterEdit" title="Edit">
+            <img v-if="!compt?.discontinuedDate" class="plus-btn" src="@/assets/edit.png" @click="enterEdit" title="Edit">
           </div>
         </div>
 
@@ -54,7 +54,12 @@
                   <a v-if="ev.evidence_type === 'url'" :href="ev.evidence_value" target="_blank">
                     {{ ev.evidence_value }}
                   </a>
-                  <span v-else>{{ ev.evidence_value }}</span>
+                  <a v-else-if="ev.evidence_type === 'video'" :href="ev.evidence_value" target="_blank">
+                    {{ ev.evidence_value }}
+                  </a>
+                  <span v-else><a :href="ev.evidence_value" target="_blank">
+                    {{ ev.evidence_type }}
+                  </a></span>
                 </span>
               </div>
             </div>
@@ -91,24 +96,22 @@
         <!-- editable title in box-->
         <div class="border-bottom p-3">
           <label v-if="errors.title" class="field-label error-message">*Title cannot be empty</label>
-          <input v-model.trim="ef.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"
+          <input v-model.trim="editForm.experience_title" maxlength="50" class="form-control rounded-3 text-center edit-title-input"
            :class="{ 'field-error': errors.title }" @input="delete errors.title" />
 
           <!-- compt, level and year -->
           <div class="d-flex justify-content-center gap-2 mt-3">
-            <select v-model="ef.indicator_id" class="pill-select">
+            <select v-model="editForm.indicator_id" class="pill-select">
               <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
             </select>
 
-            <select v-model="ef.associated_year" class="pill-select">
-              <option value="0">Prior to degree</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-              <option value="4">Year 4</option>
+            <select v-model="editForm.associated_year" class="pill-select">
+              <option v-for="opt in yearOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
             </select>
 
-            <select v-model="ef.entry_level_id" class="pill-select">
+            <select v-model="editForm.entry_level_id" class="pill-select">
               <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>
@@ -118,10 +121,10 @@
           <!-- date range-->
           <label v-if="errors.startDate" class="field-label error-message">*Invalid start date</label>
           <div class="d-flex justify-content-center align-items-center gap-2 mt-3">
-            <input v-model="ef.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"
+            <input v-model="editForm.start_date" type="date" class="form-control field-input rounded-3 text-center date-picker"
               :class="{ 'field-error': errors.startDate }" @input="delete errors.startDate"/>
             <span class="body-txt">–</span>
-            <input v-model="ef.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
+            <input v-model="editForm.end_date" type="date" class="form-control field-input rounded-3 text-center date-picker"/>
           </div>
         </div>
 
@@ -134,7 +137,7 @@
               <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
               <label v-if="errors.tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
             </div>
-            <textarea v-model.trim="ef.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model.trim="editForm.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
               :class="{ 'field-error': errors.tasks }" @input="delete errors.tasks"  
               placeholder="Describe the experience and tasks you undertook"></textarea>
           </div>
@@ -142,26 +145,43 @@
           <!-- key learnings -->
           <div>
             <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
-            <textarea v-model.trim="ef.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model.trim="editForm.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="What did you learn that was most valuable?"></textarea>
           </div>
 
           <!-- future application -->
           <div>
             <label class="form-label field-label">Future application: (Max 500 characters)</label>
-            <textarea v-model.trim="ef.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
+            <textarea v-model.trim="editForm.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
               placeholder="How will you apply these learnings in the future?"></textarea>
           </div>
 
+          <!-- existing evidence entries -->
+          <div v-if="editForm.existingEvidence?.length">
+            <p class="form-label field-label">Existing Evidence</p>
+            <div class="d-flex flex-column gap-2 mb-3">
+              <div v-for="ev in editForm.existingEvidence" :key="ev.evidence_id"
+                class="d-flex align-items-center justify-content-between p-2 rounded-3 field-input">
+                <span class="field-label">{{ evLabel(ev.evidence_type) }}: 
+                  <a :href="ev.evidence_value" target="_blank">{{ ev.evidence_type === 'url' || ev.evidence_type === 'video' ? ev.evidence_value : 'View file' }}</a>
+                </span>
+                <button class="del-btn" @click="editForm.existingEvidence = editForm.existingEvidence.filter(e => e.evidence_id !== ev.evidence_id); evidenceToDelete.push(ev.evidence_id)" title="Remove">
+                  <img src="@/assets/delete.png">
+                </button>
+              </div>
+            </div>
+          </div>
+
+
           <!-- editable evidence entries -->
           <div>
-            <div v-for="(ev, idx) in ef.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3" 
-            :class="{ 'border-bottom': idx < ef.evidenceEntries.length-1 }">
+            <div v-for="(ev, idx) in editForm.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-start mb-3 pb-3" 
+            :class="{ 'border-bottom': idx < editForm.evidenceEntries.length-1 }">
 
               <!-- evidence type -->
               <div>
                 <label class="form-label field-label mb-3">Evidence type</label>
-                <select v-model="ev.type" class="form-select field-select rounded-3" @change="ev.value = ''; ev.fileName = ''">
+                <select v-model="ev.type" class="form-select field-select rounded-3" @change="ev.value = ''; ev.fileName = ''; ev.file = null">
                   <option value="">Select evidence type</option>
                   <option value="url">Link</option>
                   <option value="document">Document</option>
@@ -175,6 +195,8 @@
                 <div class="d-flex justify-content-between align-items-center"> 
                   <label class="form-label field-label mb-3">Evidence input</label>
                   <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
+                  <label v-else-if="errors[`evidenceVideo_${idx}`]" class="field-label error-message">*Invalid YouTube link</label>
+                  <label v-else-if="errors[`evidenceFileType_${idx}`]" class="field-label error-message">*Invalid file type</label>
                 </div> 
 
                 <!-- nothing selected -->
@@ -182,15 +204,19 @@
                   disabled placeholder="Select a type first"/>
 
                 <!-- link -->
-                <input v-else-if="ev.type === 'url'" v-model="ev.value" type="url"
+                <input v-else-if="ev.type === 'url'" v-model="ev.value" type="text"
                   class="form-control field-input rounded-3" 
                   :class="{ 'field-error': errors[`evidenceURL_${idx}`] }" @input="delete errors[`evidenceURL_${idx}`]"
                   placeholder="https://example.com"/>
 
+                <input v-else-if="ev.type==='video'" v-model="ev.value" type="text"
+                  class="form-control field-input rounded-3" 
+                  :class="{ 'field-error': errors[`evidenceVideo_${idx}`] }" @input="delete errors[`evidenceVideo_${idx}`]"
+                  placeholder="https://www.youtube.com/watch?v="/>
                 <!-- file upload -->
                 <div v-else>
                   <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': ev.fileName }">
-                    <input type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev)"/>
+                    <input type="file" :accept="fileAccept(ev.type)" class="position-absolute opacity-0" @change="e=> handleFile(e, ev, idx)"/>
 
                     <div v-if="!ev.fileName">
                       <p><b>Click to upload or drag & drop</b></p>
@@ -205,13 +231,13 @@
               </div>
 
               <!-- remove evidence row -->
-              <button v-if="ef.evidenceEntries.length>1" class="del-btn mb-1"
-              @click="ef.evidenceEntries.splice(idx, 1)" title="Remove">
+              <button v-if="editForm.evidenceEntries.length>1" class="del-btn mb-1"
+              @click="editForm.evidenceEntries.splice(idx, 1)" title="Remove">
                 <img src="@/assets/delete.png">
               </button>
             </div>
 
-            <button  v-if="ef.evidenceEntries.length < 3"
+            <button  v-if="editForm.evidenceEntries.length + editForm.existingEvidence.length < 3"
             class="btn btn-filter rounded-pill px-3 py-1" 
             @click="addEvidence()">+ Add evidence</button>
           </div>
@@ -262,9 +288,10 @@
 <script setup>
   import { ref, watch, computed } from 'vue'
   import { useRoute } from 'vue-router'
-  import { evLabel, fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+  import { evLabel, fileAccept, uploadHint, yearOptions } from '@/composables/useCompetencies.js'
   import api from "@/services/api"
 
+  // Props received from currentCompetencies or draftReflections when an entry is open
   const props = defineProps({
     show: Boolean,
     reflec: Object,
@@ -275,26 +302,38 @@
     categories: Array
   })
 
+  // Variables for getting profile id from url
+  const route = useRoute();
+
+
+  // Store errors from input and show/hide cancel confirm popup
   const errors = ref({});
-  const emit = defineEmits(['close', 'refresh'])
-  const route = useRoute()
-  const originalEf = ref(null)
-  const showCancelConfirm = ref(false)
 
-  // Set up a pop up notification instead of having an alert
-  const popUp = ref({ show: false, message: '', type: '' })
-
-  const showPopUp = (message, type) => {
-    popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
-  }
-
-  // local state
+  // Show popup window states
   const editing = ref(false)
+  const showCancelConfirm = ref(false)
   const showDeleteConfirm = ref(false)
 
-  // edit form
-  const ef = ref({
+  // Declares that events that can be sent to parent 
+  const emit = defineEmits(['close', 'refresh'])
+
+  // Stores the original entry to be compared to any edits to see if changes were made
+  const originalEditForm = ref(null)
+  const evidenceToDelete = ref([])
+
+  // Object to store data about the popup message
+  const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
+
+  // Used to display the popup message and the type being either success or error
+  const showPopUp = (message, type) => {
+    popUp.value = { show: true, message, type }
+    setTimeout(() => popUp.value.show = false, popUpTime)
+  }
+  
+  // Edit form
+  const editForm = ref({
     profile_id: route.params.id,
     indicator_id: null,
     experience_title: '',
@@ -309,22 +348,27 @@
     evidenceEntries: []
   })
 
+  // Takes the competency data and turns it into an array of competencies so it can be used for the drop down
   const allCompts = computed(() => {
-    if (!props.categories) return []
-    return props.categories.flatMap(cat =>
-      cat.compt.map(c => ({
-        id: c.id,
-        displayId: c.displayId,
-      }))
-    )
-  })
+    // Flatmap gives a single array containing all competencies instead of nested arrays
+    return props.categories.flatMap(category => {
+      return category.compt
+      .filter(indicator => !indicator.discontinuedDate)
+      .map(indicator => ({
+        id: indicator.id, 
+        displayId: indicator.displayId,
+      }));
+    });
+  });
 
+   // Add a new evidence entry to the form, limited to 3 evidence entries
   const addEvidence = () => {
-    if (ef.value.evidenceEntries.length < 3) {
-      ef.value.evidenceEntries.push({
+    if (editForm.value.evidenceEntries.length < 3) {
+      editForm.value.evidenceEntries.push({
         type: '',
         value: '',
         fileName: '',
+        file: null
       })
     }
   };
@@ -337,46 +381,76 @@
     }
   })
 
-  function handleFile(e, ev) {
+  // Gets the file from the upload field and prepares it for upload
+  function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) {
+      const allowedDocTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ]
+
+
+      if (ev.type === 'document' && !allowedDocTypes.includes(file.type)) {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
+
+      if (ev.type === 'image' && !file.type.startsWith('image/')) {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
       ev.fileName = file.name
       ev.value = file.name
+      ev.file = file
+      delete errors.value[`evidenceFileType_${idx}`]
     }
   }
 
   // enter edit
   function enterEdit() {
+    // Map existing reflection evidence with new file name field. Name it the evidence type for a start
     const existingEvidence = (props.reflec.evidence || []).map(ev => ({
       evidence_id: ev.evidence_id,
       type: ev.evidence_type,
       value: ev.evidence_value,
-      fileName: ev.evidence_type !== 'url' ? ev.evidence_value : ''
+      // If it is a url set to empty string, else set it to the filename
+      fileName: ev.evidence_type !== 'url' ? ev.evidence_value : '',
+      file: null
     }))
 
-    ef.value = {
+    evidenceToDelete.value = []
+
+    // Populate the edit form with the values saved 
+    editForm.value = {
       id: props.reflec.entry_id,
       experience_title: props.reflec.experience_title || '',
       indicator_id: props.compt?.id || '',
-      associated_year: props.reflec.associated_year ?? 0,
+      associated_year: props.reflec.associated_year || 0,
       entry_level_id: props.reflec.entry_level_id || null,
       start_date: props.reflec.start_date || '',
       end_date: props.reflec.end_date || '',
       experience_tasks: props.reflec.experience_tasks || '',
       key_learnings: props.reflec.key_learnings || '',
       future_applications: props.reflec.future_applications || '',
-      evidenceEntries: existingEvidence.length 
-        ? existingEvidence
-        : [{ type: '', value: '', fileName: '' }]
+      existingEvidence: props.reflec.evidence || [],  // read-only, just for display and deletion
+      evidenceEntries: [{ type: '', value: '', fileName: '', file: null }] 
     }
+
+    // Enter editing
     editing.value = true
     // Store original entry as string to check for changes
-    originalEf.value = JSON.stringify(ef.value)
+    originalEditForm.value = JSON.stringify(editForm.value)
   }
 
-  // Check to see if url sent is valid
-  function isValidUrl(url) {
+  // Attempt to make a URL object to test if link is correct
+  const isValidUrl = (url) => {
     try {
+      // URL constructor throws an error if the url format is invalid
       new URL(url)
       return true
     } catch {
@@ -390,79 +464,100 @@
       errors.value = {} 
 
       // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
-      const noChange = JSON.stringify(ef.value) === originalEf.value
+      const noChange = (JSON.stringify(editForm.value) === originalEditForm.value && editForm.value.entry_status_id === statusId)
         if (noChange) {
           emit('close');
           return;
         }
 
       // Removes empty evidence
-      const evidenceToSave = ef.value.evidenceEntries.filter(ev => ev.type && ev.value)
+      const evidenceToSave = editForm.value.evidenceEntries.filter(ev => ev.type && ev.value)
 
       // If the user is trying to publish the entry, not triggered for drafts
       if (Number(statusId) === 2) {
         // Check for valid title
-        if (!ef.value.experience_title) {
+        if (!editForm.value.experience_title) {
           errors.value.title = true
         }
 
-        if (!ef.value.start_date) {
+        // Check if a start date has been inputted
+        if (!editForm.value.start_date) {
           errors.value.startDate = true
         }
 
         // Check for experiences field
-        if (!ef.value.experience_tasks) {
+        if (!editForm.value.experience_tasks) {
           errors.value.tasks = true
         }
 
-        // Check for valid links
+        // Loop through and check if url evidence contains a valid link
         for (let i = 0; i < evidenceToSave.length; i++) {
           if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
             errors.value[`evidenceURL_${i}`] = true
+          } else if (evidenceToSave[i].type === 'video' && !evidenceToSave[i].value.startsWith('https://www.youtube.com/watch?v=')) {
+            errors.value[`evidenceVideo_${i}`] = true
           }
         }
       }
 
-      if (Object.keys(errors.value).length) {
+      if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not submit entry. Please fix highlighted fields.", "error");
         return;
       }
 
-      await api.put(`/competency-entries/${ef.value.id}`, {
+      // Creates a payload to be submitted, some compulsory values have fallback values if the user chooses to save as a draft
+      const payload = {
         profile_id: route.params.id,
-        indicator_id: Number(ef.value.indicator_id),
-        experience_title: ef.value.experience_title || 'Untitled',
-        associated_year: Number(ef.value.associated_year),
-        entry_level_id: ef.value.entry_level_id,
+        indicator_id: Number(editForm.value.indicator_id),
+        experience_title: editForm.value.experience_title || 'Untitled',
+        associated_year: Number(editForm.value.associated_year),
+        entry_level_id: editForm.value.entry_level_id,
         entry_status_id: statusId,
-        start_date: ef.value.start_date,
-        end_date: ef.value.end_date,
-        experience_tasks: ef.value.experience_tasks || 'Empty',
-        key_learnings: ef.value.key_learnings,
-        future_applications: ef.value.future_applications,
-      })
+        start_date: editForm.value.start_date,
+        end_date: editForm.value.end_date,
+        experience_tasks: editForm.value.experience_tasks || 'Empty',
+        key_learnings: editForm.value.key_learnings,
+        future_applications: editForm.value.future_applications,
+      }
 
-      const existingIds = (props.reflec.evidence || []).map(ev => ev.evidence_id)
-      for (const id of existingIds) {
+      // Edit the backend database with the changed data
+      await api.put(`/competency-entries/${editForm.value.id}`, payload)
+
+      // Delete evidence that was deleted by the user
+      for (const id of evidenceToDelete.value) {
         await api.delete(`/competency-evidence/${id}`)
       }
 
-      // Save current evidence entries
-      for (const ev of evidenceToSave) {
-        await api.post('/competency-evidence', {
-          entry_id: ef.value.id,
-          evidence_type: ev.type,
-          evidence_value: ev.value
-        })
+      // Go through each evidence to save  
+      const newEvidence = editForm.value.evidenceEntries.filter(ev => ev.type && ev.value)
+      for (const ev of newEvidence) {
+        if (ev.type === 'document' || ev.type === 'image') {
+          const formData = new FormData()
+          formData.append('entry_id', editForm.value.id)
+          formData.append('evidence_type', ev.type)
+          formData.append(ev.type === 'document' ? 'file' : 'image', ev.file)
+          await api.post('/competency-evidence', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        } else {
+          await api.post('/competency-evidence', {
+            entry_id: editForm.value.id,
+            evidence_type: ev.type,
+            evidence_value: ev.value
+          })
+        }
       }
 
+      // Only add a post to student actions when the competency is published
       if (Number(statusId) === 2) {
-        // Add a post to student actions for updated certificates
         await api.post(`/student-actions/new`, {action: `Updated entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
       }
 
-      // Close window
-      emit('refresh', statusId, ef.value.experience_title || 'Untitled')
+      // Reset evidence to delete
+      evidenceToDelete.value = []
+
+      // Call parent functions to close the window and show the popup message
+      emit('refresh', statusId, editForm.value.experience_title || 'Untitled')
       emit('close');
       
     } catch (error) {
@@ -475,9 +570,11 @@
   const saveEdit = () => saveEntry(2)
   const saveAsDraft = () => saveEntry(1)
  
+  
+
   // Check if the competency has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
-    const noChange = JSON.stringify(ef.value) === originalEf.value
+    const noChange = JSON.stringify(editForm.value) === originalEditForm.value
     if (noChange) {
       editing.value = false
       errors.value = {}
@@ -486,12 +583,18 @@
     }
   }
 
+  // Delete the competency entry
   async function doDelete() {
     try {
+      // Send call to the backend to check for delete
       await api.delete(`/competency-entries/${props.reflec.entry_id}`)
       showDeleteConfirm.value = false
+
+      // Add new entry to the student actions table
       await api.post(`/student-actions/new`, {action: `Deleted entry to competency ${props.compt?.displayId}`, student_profile_id: route.params.id});
-      emit('refresh')
+      
+      // Send calls to currentCompetency to run onSaveReflec
+      emit('refresh', -1, '')
       emit('close')
     } catch (error) {
       showPopUp('Could not delete this reflection', "error")
@@ -672,6 +775,8 @@
   text-align: center;
   background: #fafafa;
   cursor: pointer;
+  margin-top: auto; 
+  transform: translateY(0);
 }
 
 .upload-zone p {
@@ -690,6 +795,11 @@
   border-style: solid;
   border-color: #88c2d2;
   background: #f0fafa;
+  cursor: default;
+}
+
+.upload-zone input[type="file"] {
+  cursor: pointer;
 }
 
 .del-btn {

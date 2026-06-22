@@ -1,27 +1,13 @@
 <template>
-  <Navbar />
-
   <main class="networking-page">
     <section class="networking-shell">
-      <div class="pitch-box">
-        <label class="pitch-label"> Elevator Pitch</label>
-        <textarea v-model="elevatorPitch" class="pitch-textarea" placeholder="Write your elevator pitch here..."></textarea>
-        <div class="pitch-actions">
-          <button class="action-button small-button" @click="saveElevatorPitch" :disabled="savingPitch">{{ savingPitch ? 'Saving...' : 'Save' }}</button>
-        </div>
-      </div>
       <div class="page-header">
         <div>
-          <p class="eyebrow">Networking Planner</p>
           <h1 class="page-title">Track events on a calendar</h1>
           <p class="page-copy">
             Tap a date to add a new event, or open an event day to review its details,
             questions, and comments.
           </p>
-          <div class="networking-switch">
-            <RouterLink :to="`/student/networking/${route.params.id || 1}`" class="switch-pill active"> Events Calendar</RouterLink>
-            <RouterLink :to="`/student/networking/contacts/${route.params.id || 1}`" class="switch-pill"> Industry Contacts</RouterLink>
-          </div>
         </div>
 
         <button class="action-button" @click="openCreateForm()">
@@ -201,14 +187,35 @@
               placeholder="What is this event about, and what do you want to remember?"
             ></textarea>
           </label>
+
           <div class="field field-full">
             <span>Related Contacts</span>
-            <div v-if="contacts.length" class="contact-picker">
-              <label v-for="contact in contacts" :key="contact.contact_id" class="contact-option">
-                <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids">
-                <span>{{ contact.contact_name }}</span>
-              </label>
+
+            <div v-if="contacts.length" class="contact-picker-panel">
+              <div class="contact-picker-toolbar">
+                <input v-model="contactSearch" class="contact-search" type="text" placeholder="Search contact or company..."/>
+
+                <select v-model="contactSort" class="contact-sort">
+                  <option value="name-asc">Name A-Z</option>
+                  <option value="name-desc">Name Z-A</option>
+                  <option value="company-asc">Company A-Z</option>
+                  <option value="company-desc">Company Z-A</option>
+                </select>
+              </div>
+
+              <div class="contact-picker-scroll">
+                <label v-for="contact in filteredContactsForPicker" :key="contact.contact_id" class="contact-option">
+                  <input type="checkbox" :value="contact.contact_id" v-model="newEvent.contact_ids"/>
+                  <span class="contact-option-text">
+                    <strong>{{ contact.contact_name }}</strong>
+                    <small v-if="contact.company">{{ contact.company }}</small>
+                  </span>
+                </label>
+
+                <p v-if="!filteredContactsForPicker.length" class="contact-empty"> No matching contacts found.</p>
+              </div>
             </div>
+          
             <p v-else>No contacts available</p>
           </div>
         </div>
@@ -246,8 +253,9 @@
               </div>
 
               <div class="card-actions">
-                <button class="ghost-button" @click="editEvent(event)">Edit</button>
-                <button class="delete-button" @click="deleteEvent(event.event_id)">Delete</button>
+                <ButtonsStyle
+                  @edit="editEvent(event)"
+                  @delete="deleteEvent(event.event_id)"/>
               </div>
             </div>
 
@@ -302,15 +310,9 @@
                   <li v-for="question in event.questions" :key="question.question_id" class="list-item">
                     <span>{{ question.question_text }}</span>
                     <div class="list-actions">
-                      <button class="ghost-button small-button" @click="editQuestion(event.event_id, question)">
-                        Edit
-                      </button>
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteQuestion(event.event_id, question.question_id)"
-                      >
-                        Delete
-                      </button>
+                      <ButtonsStyle
+                        @edit="editQuestion(event.event_id, question)"
+                        @delete="deleteQuestion(event.event_id , question.question_id)"/>
                     </div>
                   </li>
                 </ul>
@@ -410,13 +412,9 @@
                       <span v-else>No file available</span>
                     </div>
 
-                    <div class="list-actions">
-                      <button
-                        class="delete-button small-button"
-                        @click="deleteComment(event.event_id, comment.id)"
-                      >
-                        Delete
-                      </button>
+                    <div class="list-actions comment-delete-only">
+                      <ButtonsStyle
+                        @delete="deleteComment(event.event_id, comment.id)"/>
                     </div>
                   </li>
                 </ul>
@@ -450,19 +448,20 @@
         </div>
       </div>
     </div>
-    <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
-      {{ popUp.message }}
-    </div>
   </main>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
-import axios from 'axios'
-import Navbar from '@/components/Navbar.vue'
+import api from "@/services/api";
 import { useRoute } from 'vue-router'
+import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 
+//route + constants 
 const route = useRoute()
 const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const miniWeekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -480,37 +479,45 @@ const monthOptions = [
   'November',
   'December',
 ]
-const apiBaseUrl = 'http://127.0.0.1:8000/api'
-const YEAR_VIEW_START = 1900
-const YEAR_VIEW_END = 2100
+const YEAR_VIEW_START = 2020
+const YEAR_VIEW_END = 2030
 
+//main reactive state
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
 const calendarView = ref('month')
-const elevatorPitch = ref('')
-const savingPitch = ref(false)
+
 const showForm = ref(false)
 const showEventDetails = ref(false)
 const showConfirmDialog = ref(false)
+
 const editingEventId = ref(null)
 const selectedDate = ref('')
+
 const questionDrafts = ref({})
 const editingQuestionIds = ref({})
 const commentDrafts = ref({})
 const editingCommentIds = ref({})
+
 const eventEditSnapshot = ref(null)
 const questionEditSnapshots = ref({})
 const commentEditSnapshots = ref({})
+
 const yearScrollContainer = ref(null)
 
 const newEvent = ref(createEmptyEvent())
 const confirmDialog = ref(createConfirmDialog())
 
 const contacts = ref([])
+const contactSearch = ref('')
+const contactSort = ref('name-asc')
+
+//non-reactive helper flags 
 let confirmResolver = null
 let syncingYearScroll = false
 let yearScrollFrameId = null
 
+//build a clean empty event object whenever we open a fresh event form
 function createEmptyEvent(date = '') {
   return {
     name: '',
@@ -521,6 +528,7 @@ function createEmptyEvent(date = '') {
   }
 }
 
+//build a clean empty comment/evidence draft
 function createEmptyCommentDraft(){
   return{
     comment_type: '',
@@ -530,6 +538,7 @@ function createEmptyCommentDraft(){
   }
 }
 
+//build a clean default confirm dialog object
 function createConfirmDialog() {
   return {
     title: '',
@@ -540,20 +549,24 @@ function createConfirmDialog() {
   }
 }
 
+//return the first day of a given month
 function startOfMonth(date) {
   return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
+//convert a YYYY-MM-DD date string into a real date object
 function dateKeyToDate(dateKey) {
   const [year, month, day] = dateKey.split('-').map(Number)
   return new Date(year, month - 1, day)
 }
 
+//backend event date time may include time 
 function normalizeEventDate(dateTime) {
   if (!dateTime) return ''
   return String(dateTime).slice(0, 10)
 }
 
+//Convert a date object into a YYYY-MM-DD string 
 function formatDateKey(date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -561,6 +574,7 @@ function formatDateKey(date) {
   return `${year}-${month}-${day}`
 }
 
+//turn a YYYY-MM-DD key int o a readable full date string for the UI
 function formatFullDate(dateKey) {
   if (!dateKey) return ''
 
@@ -572,17 +586,20 @@ function formatFullDate(dateKey) {
   }).format(dateKeyToDate(dateKey))
 }
 
+//replace the current visible month/year in the calendar
 function setCurrentMonth(year, month) {
   currentMonth.value = new Date(year, month, 1)
 }
 
+//build a full 6-row calendar grid for one month and use 42 cells keep the layout stable every month
 function createMonthGrid(baseDate) {
   const year = baseDate.getFullYear()
   const month = baseDate.getMonth()
   const firstDayOfMonth = new Date(year, month, 1)
+  //convert sunday first weekday into monday first offset
   const mondayFirstOffset = (firstDayOfMonth.getDay() + 6) % 7
+  //find the first visible day in the grid event if it belongs to the previous month
   const gridStartDate = new Date(year, month, 1 - mondayFirstOffset)
-  //
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(gridStartDate)
     date.setDate(gridStartDate.getDate() + index)
@@ -600,34 +617,50 @@ function createMonthGrid(baseDate) {
   })
 }
 
+//make the selected date's month visible in the calendar
 function ensureMonthForDate(dateKey) {
   if (!dateKey) return
   currentMonth.value = startOfMonth(dateKeyToDate(dateKey))
 }
 
+//get the current draft text for a question editor
+//if no draft exists yet return an empty string
 function getQuestionDraft(eventId) {
   return questionDrafts.value[eventId] || ''
 }
 
+//get the current draft object for a comment editor
 function getCommentDraft(eventId) {
+  //if no draft exist yet create one 
   if(!commentDrafts.value[eventId]) {
     commentDrafts.value[eventId] = createEmptyCommentDraft()
   }
   return commentDrafts.value[eventId]
 }
 
+//reset a question editor back to. clean state
 function clearQuestionEditor(eventId) {
   questionDrafts.value[eventId] = ''
   editingQuestionIds.value[eventId] = null
   questionEditSnapshots.value[eventId] = null
 }
 
+//reset comment editor back to a clean state
 function clearCommentEditor(eventId) {
   commentDrafts.value[eventId] = createEmptyCommentDraft()
   editingCommentIds.value[eventId] = null
   commentEditSnapshots.value[eventId] = null
 }
 
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
+//open the confirm dialog and return a promise so calling code can wait for the answer 
 function openConfirmDialog(options) {
   confirmDialog.value = {
     ...createConfirmDialog(),
@@ -640,6 +673,7 @@ function openConfirmDialog(options) {
   })
 }
 
+//close the confirm dialog and resolve the waiting promising with true/false
 function resolveConfirmDialog(result) {
   showConfirmDialog.value = false
 
@@ -650,19 +684,20 @@ function resolveConfirmDialog(result) {
 }
 
 const fetchEvents = async () => {
-  const response = await axios.get(`${apiBaseUrl}/networking-events`)
+  const response = await api.get(`/networking-events`)
   events.value = response.data
 }
 
+//load industry contacts for the current student
+//these are used when linking contacts to an events
 const fetchContacts = async () => {
-  const response = await axios.get(`${apiBaseUrl}/users/${route.params.id}/industry-contacts`)
+  const response = await api.get(`/users/${route.params.id}/industry-contacts`)
   contacts.value = response.data
 }
 
 onMounted(async () => {
   await fetchEvents()
   fetchContacts()
-  fetchElevatorPitch()
 
   if (route.query.eventId) {
     const event = events.value.find(e=> e.event_id === Number(route.query.eventId))
@@ -673,39 +708,7 @@ onMounted(async () => {
   }
 })
 
-const fetchElevatorPitch = async() => {
-  const response = await axios.get(
-    `${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`
-  )
-  elevatorPitch.value = response.data.pitch_text || ''
-}
-
-const saveElevatorPitch = async() => {
-  const trimmedPitch = elevatorPitch.value.trim();
-
-  if(!trimmedPitch) {
-    showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
-    return;
-  }
-  savingPitch.value = true
-  try {
-    await axios.put(`${apiBaseUrl}/profile/${route.params.id}/elevator-pitch`,{pitch_text: elevatorPitch.value,});
-
-    showPopUp("Your elevator pitch has been saved.", "success");
-  } finally {
-    savingPitch.value = false
-  }
-}
-
-// Set up a pop up notification instead of having an alert
-const popUp = ref({ show: false, message: '', type: '' })
-
-const showPopUp = (message, type) => {
-  popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, 3000)
-}
-
-
+// group events by YYYY-MM-DD so each calendar day can quickly find its events
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
     const dateKey = normalizeEventDate(event.event_datetime)
@@ -723,6 +726,7 @@ const eventsByDate = computed(() => {
   }, {})
 })
 
+//readable month label for the calendar header (left corner)
 const currentMonthLabel = computed(() => {
   return new Intl.DateTimeFormat('en-AU', {
     month: 'long',
@@ -730,14 +734,21 @@ const currentMonthLabel = computed(() => {
   }).format(currentMonth.value)
 })
 
+//readable year label for the calendar header
 const currentYearLabel = computed(() => String(currentMonth.value.getFullYear()))
+
+//switch the calendar header title depending on current view mode
 const currentCalendarTitle = computed(() => {
   return calendarView.value === 'year' ? currentYearLabel.value : currentMonthLabel.value
 })
 
+//today date key so the UI can highlight the current day
 const todayKey = computed(() => formatDateKey(new Date()))
 
+//the visible month grid shown in month view 
 const calendarDays = computed(() => createMonthGrid(currentMonth.value))
+
+//build the 12 mini month cards for one year in year view 
 function buildYearMonthCards(year) {
   return monthOptions.map((monthLabel, monthIndex) => {
     const monthDate = new Date(year, monthIndex, 1)
@@ -752,6 +763,7 @@ function buildYearMonthCards(year) {
   })
 }
 
+//full year-view data across the configured your range
 const yearViewYears = computed(() => {
   return Array.from({ length: YEAR_VIEW_END - YEAR_VIEW_START + 1 }, (_, index) => {
     const year = YEAR_VIEW_START + index
@@ -764,6 +776,7 @@ const yearViewYears = computed(() => {
   })
 })
 
+//Events belonging to the currently selected date
 const selectedDateEvents = computed(() => {
   if (!selectedDate.value) {
     return []
@@ -772,8 +785,42 @@ const selectedDateEvents = computed(() => {
   return eventsByDate.value[selectedDate.value] || []
 })
 
+//human-readable label for the selected date shown in the modal header
 const selectedDateLabel = computed(() => formatFullDate(selectedDate.value))
 
+//filter and sort contacts for the related contacts picker in the event form
+const filteredContactsForPicker = computed(() => {
+  const keyword = contactSearch.value.trim().toLowerCase()
+
+  let result = contacts.value.filter((contact) => {
+    const name = (contact.contact_name || '').toLowerCase()
+    const company = (contact.company || '').toLowerCase()
+
+    return !keyword || name.includes(keyword) || company.includes(keyword)
+  })
+
+  result = [...result].sort((a,b) => {
+    const nameA = (a.contact_name || '').toLowerCase()
+    const nameB = (b.contact_name || '').toLowerCase()
+    const companyA = (a.company || '').toLowerCase()
+    const companyB = (b.company || '').toLowerCase()
+
+    switch (contactSort.value) {
+      case 'name-desc':
+        return nameB.localeCompare(nameA)
+      case 'company-asc':
+        return companyA.localeCompare(companyB)
+      case 'company-desc':
+        return companyB.localeCompare(companyA)
+      case 'name-asc':
+      default:
+        return nameA.localeCompare(nameB)
+    }
+  })
+  return result
+})
+
+//open a fresh create event form optionally prefilled with a chosen date
 function openCreateForm(date = '') {
   editingEventId.value = null
   newEvent.value = createEmptyEvent(date)
@@ -781,6 +828,7 @@ function openCreateForm(date = '') {
   showForm.value = true
 }
 
+//close the event form and reset edit state
 function closeForm() {
   showForm.value = false
   editingEventId.value = null
@@ -788,23 +836,29 @@ function closeForm() {
   newEvent.value = createEmptyEvent()
 }
 
+//open the event details modal for one specific data
 function openEventDetails(dateKey) {
   selectedDate.value = dateKey
   showEventDetails.value = true
 }
 
+//close the event details
 function closeEventDetails() {
   showEventDetails.value = false
 }
 
+//switch between month view and year view
 function switchCalendarView(view) {
   calendarView.value = view
-
+  //when entering year view auto-center the scroll position on the active year 
   if (view === 'year') {
     centerYearScroll()
   }
 }
 
+//handle clicking a calendar day
+//if event exists, show details
+//if not open the create form for that date
 function handleDateClick(day) {
   ensureMonthForDate(day.dateKey)
   selectedDate.value = day.dateKey
@@ -817,6 +871,8 @@ function handleDateClick(day) {
   openCreateForm(day.dateKey)
 }
 
+//jump from year view into a specific month
+//if a specific date was clicked keep that selected
 function openMonthFromYear(year, monthIndex, dateKey = '') {
   setCurrentMonth(year, monthIndex)
   calendarView.value = 'month'
@@ -826,6 +882,7 @@ function openMonthFromYear(year, monthIndex, dateKey = '') {
   }
 }
 
+//Wait for Vue to render the year-view then scroll to the active year section
 async function centerYearScroll() {
   await nextTick()
 
@@ -846,12 +903,14 @@ async function centerYearScroll() {
   container.style.scrollBehavior = 'auto'
   container.scrollTop = targetSection.offsetTop
 
+  //wait for next screen refresh to run this 
   requestAnimationFrame(() => {
     container.style.scrollBehavior = previousScrollBehavior
     syncingYearScroll = false
   })
 }
 
+//while the user scrolls in year view, detect which year is nearest the top and keep current month in sync with that year 
 function handleYearViewScroll() {
   if (calendarView.value !== 'year' || syncingYearScroll) {
     return
@@ -897,9 +956,16 @@ function handleYearViewScroll() {
   })
 }
 
+// create a new event or update an existing one using the same form
 async function addEvent() {
+  if (!newEvent.value.name) {
+    showPopUp('Event name cannot be empty.', 'error')
+    return;
+  }
+  
   const isUpdate = Boolean(editingEventId.value)
 
+  //if user cancel update
   if (isUpdate) {
     const shouldUpdate = await openConfirmDialog({
       title: 'Confirm update',
@@ -914,6 +980,8 @@ async function addEvent() {
       }
       return
     }
+
+
   }
 
   const payload ={
@@ -921,10 +989,23 @@ async function addEvent() {
     profile_id: Number(route.params.id),
   }
 
+  //update or add
   if (isUpdate) {
-    await axios.put(`${apiBaseUrl}/networking-events/${editingEventId.value}`, payload)
+    try {
+      await api.put(`/networking-events/${editingEventId.value}`, payload)
+      showPopUp(`Event ${newEvent.value.name} successfully updated.`, "success");
+    } catch {
+      showPopUp("Error saving event.", "error");
+      return
+    }
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events`, payload)
+    try {
+      await api.post(`/networking-events`, payload)
+      showPopUp(`Event ${newEvent.value.name} successfully added.`, "success");
+    } catch {
+      showPopUp("Error adding event.", "error");
+      return
+    }
   }
 
   const savedDate = newEvent.value.date
@@ -939,6 +1020,7 @@ async function addEvent() {
   }
 }
 
+//Load an existing event into the form so user can edit it 
 function editEvent(event) {
   editingEventId.value = event.event_id
   eventEditSnapshot.value = {
@@ -953,33 +1035,42 @@ function editEvent(event) {
   showForm.value = true
 }
 
+//Delete an event after confirmation and refresh the calender data
 async function deleteEvent(id) {
-  const shouldDelete = await openConfirmDialog({
-    title: 'Confirm delete',
-    message: 'Delete this event? This action cannot be undone.',
-    confirmLabel: 'Delete',
-    cancelLabel: 'Keep',
-    variant: 'danger',
-  })
+  try {
+    const shouldDelete = await openConfirmDialog({
+      title: 'Confirm delete',
+      message: 'Delete this event? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Keep',
+      variant: 'danger',
+    })
 
-  if (!shouldDelete) {
-    return
-  }
+    if (!shouldDelete) {
+      return
+    }
 
-  await axios.delete(`${apiBaseUrl}/networking-events/${id}`)
-  await fetchEvents()
+    await api.delete(`/networking-events/${id}`)
 
-  if (selectedDate.value && !selectedDateEvents.value.length) {
-    closeEventDetails()
+    showPopUp(`Event deleted successfully.`, "success");
+    await fetchEvents()
+
+    if (selectedDate.value && !selectedDateEvents.value.length) {
+      closeEventDetails()
+    }
+  } catch {
+    showPopUp(`Error deleting event.`, "error");
   }
 }
 
+//load a saved question into the inline editor for editing
 function editQuestion(eventId, question) {
   questionDrafts.value[eventId] = question.question_text
   editingQuestionIds.value[eventId] = question.question_id
   questionEditSnapshots.value[eventId] = question.question_text
 }
 
+//Save a new question or update an existing one for the chosen event
 async function submitQuestion(eventId) {
   const questionText = getQuestionDraft(eventId).trim()
   const editingId = editingQuestionIds.value[eventId]
@@ -1001,11 +1092,11 @@ async function submitQuestion(eventId) {
       return
     }
 
-    await axios.put(`${apiBaseUrl}/questions/${editingId}`, {
+    await api.put(`/questions/${editingId}`, {
       question: questionText,
     })
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events/${eventId}/questions`, {
+    await api.post(`/networking-events/${eventId}/questions`, {
       question: questionText,
     })
   }
@@ -1014,6 +1105,7 @@ async function submitQuestion(eventId) {
   clearQuestionEditor(eventId)
 }
 
+//Delete one saved question after confirmation
 async function deleteQuestion(eventId, questionId) {
   const shouldDelete = await openConfirmDialog({
     title: 'Confirm delete',
@@ -1027,7 +1119,7 @@ async function deleteQuestion(eventId, questionId) {
     return
   }
 
-  await axios.delete(`${apiBaseUrl}/questions/${questionId}`)
+  await api.delete(`/questions/${questionId}`)
   await fetchEvents()
 
   if (editingQuestionIds.value[eventId] === questionId) {
@@ -1035,18 +1127,7 @@ async function deleteQuestion(eventId, questionId) {
   }
 }
 
-function editComment(eventId, comment) {
-  const draft = {
-    comment_type: comment.comment_type || '',
-    link_url: comment.link_url || '',
-    file: null,
-    file_name: comment.file_name || '',
-  }
-  commentDrafts.value[eventId] = {...draft}
-  editingCommentIds.value[eventId] = comment.id
-  commentEditSnapshots.value[eventId] = {...draft}
-}
-
+//Handle file selection for image/video evidence and submit it right away
 async function handleCommentFileChange(eventId, event) {
   const draft = getCommentDraft(eventId)
   const file = event.target.files?.[0] || null
@@ -1063,6 +1144,7 @@ async function handleCommentFileChange(eventId, event) {
   }
 }
 
+//save alink, image, or video comment for selected event
 async function submitComment(eventId) {
   const draft = getCommentDraft(eventId)
   const editingId = editingCommentIds.value[eventId]
@@ -1099,13 +1181,13 @@ async function submitComment(eventId) {
   }
 
   if(editingId){
-    await axios.post(`${apiBaseUrl}/comments/${editingId}?_method=PUT`, formData, {
+    await api.post(`/comments/${editingId}?_method=PUT`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
   } else {
-    await axios.post(`${apiBaseUrl}/networking-events/${eventId}/comments`, formData, {
+    await api.post(`/networking-events/${eventId}/comments`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -1115,6 +1197,7 @@ async function submitComment(eventId) {
   clearCommentEditor(eventId)
 }
 
+//Delete one saved comment after confirmation
 async function deleteComment(eventId, commentId) {
   const shouldDelete = await openConfirmDialog({
     title: 'Confirm delete',
@@ -1128,7 +1211,7 @@ async function deleteComment(eventId, commentId) {
     return
   }
 
-  await axios.delete(`${apiBaseUrl}/comments/${commentId}`)
+  await api.delete(`/comments/${commentId}`)
   await fetchEvents()
 
   if (editingCommentIds.value[eventId] === commentId) {
@@ -1136,6 +1219,7 @@ async function deleteComment(eventId, commentId) {
   }
 }
 
+//Move backward by one month or one year if the page is currently in year view 
 function goToPreviousMonth() {
   if (calendarView.value === 'year') {
     currentMonth.value = new Date(currentMonth.value.getFullYear() - 1, 0, 1)
@@ -1146,6 +1230,7 @@ function goToPreviousMonth() {
   currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() - 1, 1)
 }
 
+//Move forward by one month or one year if the page is currently in year view 
 function goToNextMonth() {
   if (calendarView.value === 'year') {
     currentMonth.value = new Date(currentMonth.value.getFullYear() + 1, 0, 1)
@@ -1156,6 +1241,7 @@ function goToNextMonth() {
   currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() + 1, 1)
 }
 
+//jump back to the current date and center the active year if needed
 function goToToday() {
   currentMonth.value = startOfMonth(new Date())
 
@@ -1169,7 +1255,6 @@ function goToToday() {
 <style scoped>
 .networking-page {
   min-height: 100vh;
-  background: #ffffff;
   font-family: 'Maven Pro', sans-serif;
 }
 
@@ -1192,11 +1277,12 @@ function goToToday() {
   width: auto;
   white-space: nowrap;
 }
-.eyebrow,
+
 .toolbar-label,
 .modal-label,
 .event-date,
 .detail-label {
+  font-family: 'Maven Pro', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.8rem;
@@ -1205,9 +1291,14 @@ function goToToday() {
 }
 
 .page-title,
-.calendar-title,
 .modal-header h2,
 .event-detail-card h3 {
+  font-family: 'Maven', sans-serif;
+  margin: 0;
+  color: #13202c;
+}
+
+.calendar-title {
   font-family: 'Maven Pro', sans-serif;
   margin: 0;
   color: #13202c;
@@ -1330,7 +1421,7 @@ function goToToday() {
 .year-section-title {
   margin: 0 0 1rem;
   color: #13202c;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Martel', sans-serif;
   font-size: clamp(2rem, 3vw, 2.6rem);
 }
 
@@ -1361,7 +1452,7 @@ function goToToday() {
   border: 0;
   background: transparent;
   color: #f05c48;
-  font-family: 'Maven Pro', sans-serif;
+  font-family: 'Martel', sans-serif;
   font-size: 1.2rem;
   padding: 0;
   margin-bottom: 0.8rem;
@@ -1546,7 +1637,7 @@ function goToToday() {
 .ghost-button,
 .delete-button,
 .icon-button {
-  border: 1px solid transparent;
+  border: none;
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -1554,30 +1645,38 @@ function goToToday() {
     border-color 0.18s ease;
 }
 
-.action-button:hover,
-.ghost-button:hover,
-.delete-button:hover,
-.icon-button:hover {
+.action-button:hover {
   transform: translateY(-1px);
+  color: #ffffff;
+  background: #666666;
 }
 
+.ghost-button:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+  background: #e6e6e6;
+  color: #2d4658;
+}
+
+.delete-button:hover {
+  transform: translateY(-1px);
+  background: #f5dede;
+  color: #a63f3f;
+}
 .action-button {
-  background: #13202c;
-  color: #ffffff;
+  background: #e6e6e6;
   padding: 0.85rem 1.4rem;
 }
 
 .ghost-button,
 .icon-button {
   background: #f5f8fb;
-  border-color: #d4dfe9;
   color: #2d4658;
   padding: 0.8rem 1.2rem;
 }
 
 .delete-button {
   background: #fff1f1;
-  border-color: #f3c6c6;
   color: #a63f3f;
   padding: 0.8rem 1.2rem;
 }
@@ -1935,63 +2034,6 @@ function goToToday() {
   font-style: italic;
 }
 
-.networking-switch {
-  display: inline-flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.switch-pill {
-  padding: 0.6rem 1rem;
-  border-radius: 999px;
-  border: 1px solid #d6e0ea;
-  text-decoration: none;
-  color: #4e6577;
-  background: #fff;
-  font-size: 0.95rem;
-}
-
-.switch-pill.active {
-  background:#172334;
-  color: #fff;
-  border-color: #172334;
-}
-
-.pitch-box {
-  background: #fff;
-  border: 1px solid #d9e0e7;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  width: 100%;
-  box-sizing: border-box;
-
-}
-
-.pitch-label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #24364b;
-}
-
-.pitch-textarea{
-  width: 100%;
-  min-height: 120px;
-  border: 1px solid #cfd8e3;
-  border-radius: 10px;
-  padding: 12px;
-  resize: vertical;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.pitch-actions{
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
 .comment-evidence-grid{
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
@@ -2081,6 +2123,7 @@ function goToToday() {
 
 .popUp-msg {
   position: fixed;
+  z-index: 9999;
   top: 5rem;   
   left: 0;
   right: 0;
@@ -2110,5 +2153,76 @@ function goToToday() {
 
 .error-message {
   color:  #db7979;
+}
+
+.contact-picker-panel {
+  border: 1px solid #d9e3ec;
+  border-radius: 1rem;
+  background: #f9fbfd;
+  padding: 1rem;
+}
+
+.contact-picker-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.contact-search,
+.contact-sort {
+  width: 100%;
+  border: 1px solid #ccd8e2;
+  border-radius: 0.9rem;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  background: #ffffff;
+  color: #13202c;
+}
+
+.contact-picker-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.65rem;
+  padding-right: 0.25rem;
+}
+
+.contact-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e1e9f0;
+  border-radius: 0.9rem;
+  background: #ffffff;
+}
+
+.contact-option input {
+  margin-top: 0.2rem;
+}
+.contact-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  color: #243746;
+}
+
+.contact-option-text strong {
+  font-weight: 600;
+}
+
+.contact-option-text small {
+  color: #6b8293;
+}
+
+@media (max-width: 640px) {
+  .contact-picker-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comment-delete-only :deep(.icon-btn:first-child) {
+  display: none;
 }
 </style>

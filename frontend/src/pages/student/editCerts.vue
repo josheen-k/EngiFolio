@@ -11,7 +11,7 @@
       <div v-if="profile.achievement_certs.length" class="d-flex flex-column gap-3">
         <div class="cert-row" v-for="(cert, index) in profile.achievement_certs" :key="index" :class="{ 
             'cert-dragging': movedAchCertId  === cert.achievement_cert_id,
-            'cert-error': (errors[`achieveTitle_${index}`] || errors[`achieveURL_${index}`]) && expandedAchCerts !== index
+            'cert-error': (errors[`achieveTitle_${index}`]) && expandedAchCerts !== index
           }"
           @dragenter.prevent
           @dragover.prevent
@@ -49,14 +49,27 @@
                 placeholder="Brief description of this certification" />
             </div>
             <div class="col-12">
-              <div class="d-flex justify-content-between align-items-center">  
-                <label class="field-label">File path / URL</label>
-                <label v-if="errors[`achieveURL_${index}`]" class="field-label error-message">*Must be a valid path</label>
+              <div class="d-flex align-items-center gap-2">  
+                <label class="field-label">Certificate File</label>
+                <label v-if="errors[`achieveFileType_${index}`]" class="field-label error-message">*Must be a pdf file</label>
               </div>
-              <input v-model.trim="cert.file_path" maxlength="255" :class="{ 'field-error': errors[`achieveURL_${index}`] }" @input="delete errors[`achieveURL_${index}`]" class="field-input form-control"
-                placeholder="https://example.com/cert.pdf" />
+              <div class="upload-zone-wrap">
+                <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': achCertFileNames[index], 'upload-zone-error': errors[`achieveFileType_${index}`] }">
+                  <input type="file" accept="application/pdf" class="position-absolute w-100 h-100 opacity-0" @change="newCert($event, 'achievement', index)"/>
+                  <div v-if="!achCertFileNames[index]">
+                    <p><b>Click to upload or drag & drop</b></p>
+                    <p class="mb-0">PDF</p>
+                  </div>
+                  <div v-else class="d-flex align-items-center gap-2">
+                    <span>{{ achCertFileNames[index] }}</span>
+                  </div>
+                </div>
+              </div>
+                <a :href="cert.file_path" target="_blank" v-if="cert.file_path && !achCertFileNames[index]" class="field-label mt-1 mb-0">
+                    Current file
+                </a>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-2">
               <label class="field-label">Issued date</label>
               <input type="date" v-model.trim="cert.issued_date" class="field-input form-control" />
             </div>
@@ -77,7 +90,7 @@
       <div v-if="profile.attainment_certs.length" class="d-flex flex-column gap-3">
         <div class="cert-row" v-for="(cert, index) in profile.attainment_certs" :key="index" :class="{ 
             'cert-dragging': movedAttCertId  === cert.attainment_cert_id,
-            'cert-error': (errors[`attainTitle_${index}`] || errors[`attainURL_${index}`]) && expandedAttCerts !== index
+            'cert-error': (errors[`attainTitle_${index}`]) && expandedAttCerts !== index
           }"
           @dragenter.prevent
           @dragover.prevent
@@ -114,18 +127,31 @@
                 placeholder="Brief description of this certification" />
             </div>
             <div class="col-12">
-              <div class="d-flex justify-content-between align-items-center">  
-                <label class="field-label">File path / URL</label>
-                <label v-if="errors[`attainURL_${index}`]" class="field-label error-message">*Must be a valid path</label>
+              <div class="d-flex align-items-center gap-2">
+                <label class="field-label">Certificate File</label>
+                <label v-if="errors[`attainFileType_${index}`]" class="field-label error-message">*Must be a pdf file</label>
               </div>
-              <input v-model.trim="cert.file_path" maxlength="255" :class="{ 'field-error': errors[`attainURL_${index}`] }" @input="delete errors[`attainURL_${index}`]" class="field-input form-control"
-                placeholder="https://example.com/cert.pdf" />
+               <div class="upload-zone-wrap">
+                <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': attCertFileNames[index], 'upload-zone-error': errors[`attainFileType_${index}`] }">
+                  <input type="file" accept="application/pdf" class="position-absolute w-100 h-100 opacity-0" @change="newCert($event, 'attainment', index)"/>
+                  <div v-if="!attCertFileNames[index]">
+                    <p><b>Click to upload or drag & drop</b></p>
+                    <p class="mb-0">PDF</p>
+                  </div>
+                  <div v-else class="d-flex align-items-center gap-2">
+                    <span>{{ attCertFileNames[index] }}</span>
+                  </div>
+                </div>
+                <a :href="cert.file_path" target="_blank" v-if="cert.file_path && !attCertFileNames[index]" class="field-label mt-1 mb-0">
+                  Current file
+                </a>
+              </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-2">
               <label class="field-label">Issued date</label>
               <input type="date" v-model.trim="cert.issued_date" class="field-input form-control" />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-2">
               <label class="field-label">Expiry date</label>
               <input type="date" v-model.trim="cert.expiry_date" class="field-input form-control" />
             </div>
@@ -154,10 +180,8 @@
     <!--Cancel confirm -->
   <div v-if="showCancelConfirm" class="view-popup" @click.self="showCancelConfirm = false">
     <div class="cancel-box text-center p-4">
-
       <h5 class="fw-bold mb-2 field-label cancel-title">Cancel editing profile?</h5>
       <p class="field-desc mb-4">All profile changes will be lost.</p>
-
       <div class="d-flex gap-2 justify-content-center">
         <button class="btn btn-filter" @click="showCancelConfirm = false">Continue editing</button>
         <button class="btn btn-add rounded-pill px-4" @click="cancel">Exit editing</button>
@@ -167,43 +191,67 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
 
+  // Variables for getting and changing URL information
   const router = useRouter();
   const route = useRoute();
+
+  // Store profile data and loading status
   const profile = ref(null);
   const loading = ref(true);
+
+  // Keep track of the certs that need to be deleted when the user deletes the profile
   const achievementCertsToDelete = ref([]);
   const attainmentCertsToDelete = ref([]);
+
+  // Keep track of what certs have been expanded. Only one cert from each category can be expanded at once
   const expandedAchCerts = ref();
   const expandedAttCerts = ref();
+
+  // Keep track of moved certificates
   const movedAchCertId = ref(null);
   const movedAttCertId = ref(null);
+
+  // Track all errors from user input
   const errors = ref({});
+
+  // Show cancel prompt if user tries to cancel with profile changes and keep track of original profile to check for changes
   const showCancelConfirm = ref(false)
   const originalProfile = ref(null)
 
-  // Set up a pop up notification instead of having an alert
-  const popUp = ref({ show: false, message: '', type: '' })
+  // Store the files for all the achievement and attainment certs
+  const achCertFiles = ref({})
+  const attCertFiles = ref({})
 
+  // Store the file paths for the certificates
+  const achCertFileNames = ref({})
+  const attCertFileNames = ref({})
+
+  // Object to store data about the popup message
+  const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
+
+  // Used to display the popup message and the type being either success or error
   const showPopUp = (message, type) => {
     popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
 
+  // Load the student profile data from backend
   const loadProfile = async () => {
-    // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
-      profile.value = response.data.profile || response.data;
+      profile.value = response.data;
       // Store original profile as a string to check for changes
       originalProfile.value = JSON.stringify(profile.value)
       loading.value = false;
     } catch (error) {
-      showPopUp("Error while fetching profile:", "error");
+      console.error("Error while fetching profile:", error);
     }
   };
 
@@ -276,6 +324,7 @@
     expandedAchCerts.value = 0;
 	};
 
+  // Adds an empty cert to the frontend profile data when add cert is clicked
 	const addAttCert = () => {
 		profile.value.attainment_certs.unshift({
 			title: '',
@@ -289,37 +338,86 @@
     expandedAttCerts.value = 0;
 	};
 
+  // Push the index of certs to be deleted to a special array to be handled on save
 	const removeAchCert = (index) => {
     const cert = profile.value.achievement_certs[index];
 		if (cert.achievement_cert_id) {
 			achievementCertsToDelete.value.push(cert.achievement_cert_id);
 		}
-
+    // Remove from the certs shown on the page
 		profile.value.achievement_certs.splice(index, 1);
+
+    // Remove file values from cert arrays
+    delete achCertFiles.value[index]
+    delete achCertFileNames.value[index]
+
+    // Remove errors on delete
+    errors.value = {}
 	};
 
+  // Push the index of certs to be deleted to a special array to be handled on save
 	const removeAttCert = (index) => {
 		const cert = profile.value.attainment_certs[index];
 		if (cert.attainment_cert_id) {
 			attainmentCertsToDelete.value.push(cert.attainment_cert_id);
 		}
+    // Remove from the certs shown on the page
 		profile.value.attainment_certs.splice(index, 1);
+
+    // Remove file values from cert arrays
+    delete attCertFiles.value[index]
+    delete attCertFileNames.value[index]
+
+    // Remove errors on delete
+    errors.value = {}
 	};
 
-  // Attempt to make a URL object to test if link is correct
-  function isValidUrl(url) {
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
+   const newCert = (e, type, index) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        if (type === 'achievement') {
+          errors.value[`achieveFileType_${index}`] = true
+        } else {
+          errors.value[`attainFileType_${index}`] = true
+        }
+        return
+      }
+
+      if (type === 'achievement') {
+        achCertFiles.value[index] = file
+        achCertFileNames.value[index] = file.name
+        delete errors.value[`achieveFileType_${index}`]
+      } else {
+        attCertFiles.value[index] = file
+        attCertFileNames.value[index] = file.name
+        delete errors.value[`attainFileType_${index}`]
+      }
     }
+  }
+
+  // Save the certificate to the backend and returns the file path where the file is located
+  const certFileUpload = async (file, type, cert) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', type)
+
+    if (cert.achievement_cert_id || cert.attainment_cert_id) {
+      formData.append('cert_id', cert.achievement_cert_id ?? cert.attainment_cert_id)
+    }
+    const res = await api.post(`/profile/${route.params.id}/upload-cert`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return res.data.file_path
   }
 
   const saveChanges = async () => {
     try {
+      // Check certFiles to see if any new certs have been uploaded
+      const hasNewFiles = Object.keys(achCertFiles.value).length > 0 || Object.keys(attCertFiles.value).length > 0
+
       // Check to see if any changes have been made. Ignore rest of the logic if no change
-      const noChange = JSON.stringify(profile.value) === originalProfile.value
+      const noChange = JSON.stringify(profile.value) === originalProfile.value && !hasNewFiles
       if (noChange) {
         cancel();
         return;
@@ -328,76 +426,90 @@
       errors.value = {}
 
       // Loop through each cert and check for errors and assign order, entries deconstructs the array into index and entry pairs
-      for (const [index, cert] of profile.value.achievement_certs.entries()) {
+      for (let i = 0; i < profile.value.achievement_certs.length; i++) {
+        const cert = profile.value.achievement_certs[i]
         if (!cert.title) {
-          errors.value[`achieveTitle_${index}`] = true
+          errors.value[`achieveTitle_${i}`] = true
         }
-        if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
-          errors.value[`achieveURL_${index}`] = true
-        }
-        // Set the order based off the array
-        cert.sort_order = index + 1;
+        // Set the order based off the array since i starts at 0 and order starts at 1
+        cert.sort_order = i + 1;
       }
 
-      for (const [index, cert] of profile.value.attainment_certs.entries()) {
+      for (let i = 0; i < profile.value.attainment_certs.length; i++) {
+        const cert = profile.value.attainment_certs[i]
         if (!cert.title) {
-          errors.value[`attainTitle_${index}`] = true
+          errors.value[`attainTitle_${i}`] = true
         }
-        if (cert.file_path && !isValidUrl(cert.file_path) && cert.file_path[0] !== '/') {
-          errors.value[`attainURL_${index}`] = true
-        }
-        // Set the order based off the array
-        cert.sort_order = index + 1;
+        // Set the order based off the array since i starts at 0 and order starts at 1
+        cert.sort_order = i + 1;
       }
 
-      // Check if error object contains any key value pairs by converting it into an array of keys
-      if (Object.keys(errors.value).length) {
+      // Covert object into JSON and check if it is empty to see if there are any errors
+      if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not save certificates. Please fix highlighted fields.", "error");
         return;
+      } 
+
+      // Upload files for any changes
+      for (const [i, file] of Object.entries(achCertFiles.value)) {
+        profile.value.achievement_certs[i].file_path = await certFileUpload(file, 'achievement', profile.value.achievement_certs[i])
+      }
+      for (const [i, file] of Object.entries(attCertFiles.value)) {
+        profile.value.attainment_certs[i].file_path = await certFileUpload(file, 'attainment', profile.value.attainment_certs[i])
       }
 
-      // Deletions (Handles both types of certs)
+      // Create arrays of delete requests to be run
       const deleteAchPromises = achievementCertsToDelete.value.map(id => api.delete(`/achievement-cert/${id}`));
       const deleteAttPromises = attainmentCertsToDelete.value.map(id => api.delete(`/attainment-cert/${id}`));
 
-      // Handle Achievement Upserts
-      const achUpsertPromises = profile.value.achievement_certs.map(cert => {
-        if (!cert.title || cert.title.trim() === '') return null;
-
+      // Handle Achievement updates
+      const achUpdatesPromises = profile.value.achievement_certs.map(cert => {
+        // Ignore certs with empty titles, filtered out so are not passed to promise.all
+        if (cert.title.trim() === '') {
+          return null;
+        }
+        // If it already exists put to update, else post a new cert
         if (cert.achievement_cert_id) {
           return api.put(`/achievement-cert/${cert.achievement_cert_id}`, cert);
         } else {
-          return api.post(`/achievement-cert`, { ...cert, profile_id: route.params.id });
+          return api.post(`/achievement-cert`, cert);
         }
       }).filter(p => p !== null);
 
-      // Handle Attainment Upserts
-      const attUpsertPromises = profile.value.attainment_certs.map(cert => {
-        if (!cert.title || cert.title.trim() === '') return null;
-
+      // Handle Attainment Updates
+      const attUpdatesPromises = profile.value.attainment_certs.map(cert => {
+         // Ignore certs with empty titles, filtered out so are not passed to promise.all
+        if (!cert.title || cert.title.trim() === '') {
+          return null;
+        }
+        // If it already exists put to update, else post a new cert
         if (cert.attainment_cert_id) {
           return api.put(`/attainment-cert/${cert.attainment_cert_id}`, cert);
         } else {
-          return api.post(`/attainment-cert`, { ...cert, profile_id: route.params.id });
+          return api.post(`/attainment-cert`, cert);
         }
       }).filter(p => p !== null);
 
-      // Execute all API calls concurrently
+      // Execute all backend delete and update calls in parallel
       await Promise.all([
           ...deleteAchPromises, 
           ...deleteAttPromises, 
-          ...achUpsertPromises, 
-          ...attUpsertPromises
+          ...achUpdatesPromises, 
+          ...attUpdatesPromises
       ]);
       
-      // Clear tracking arrays
+      // Reset arrays tracking what certs to delete and file uploads
       achievementCertsToDelete.value = [];
       attainmentCertsToDelete.value = [];
+      achCertFiles.value = {}
+      attCertFiles.value = {}
+      achCertFileNames.value = {}
+      attCertFileNames.value = {}
 
       // Add a post to student actions for updated certificates
       await api.post(`/student-actions/new`, {action: "Updated certificates", student_profile_id: route.params.id});
       
-      // Redirect back to the view page
+      // Redirect back to the view profile page
       router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
     } catch (error) {
       showPopUp("There was an error saving your certifications.", "error");
@@ -406,23 +518,23 @@
 
   // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
+    const hasNewFiles = Object.keys(achCertFiles.value).length > 0 || Object.keys(attCertFiles.value).length > 0
+
     // Convert objects so strings and compare for any changes
-    const noChange = JSON.stringify(profile.value) !== originalProfile.value
+    const noChange = JSON.stringify(profile.value) !== originalProfile.value && !hasNewFiles
     if (noChange) {
-      showCancelConfirm.value = true
-    } else {
       cancel()
+    } else {
+      showCancelConfirm.value = true
     }
   }
 
   // Redirect back to profile page without saving changes
   const cancel = () => {
-    router.push({ name: 'profile', params: { id: route.params.id } });
+    router.push({ name: 'profile', params: { id: route.params.id }, query: { tab: 'CERTIFICATIONS' } });
   };
 
-  onMounted(() => {
-    loadProfile();
-  })
+  loadProfile();
 </script>
 
 <style scoped>
@@ -671,6 +783,48 @@
     font-family: 'Montserrat Alternates', sans-serif;
     font-size: 1.1rem;
     color: #222222;
+  }
+
+  .upload-zone {
+    position: relative;
+    max-height: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 0.15rem dashed #d0d0d0;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+  }
+
+  .upload-zone p {
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 0.8rem;
+    color: #555555;
+    margin-bottom: 0.2rem;
+  }
+
+  .upload-zone:hover {
+    border-color: #88c2d2;
+    background: #f0fafa;
+  }
+
+  .upload-zone-filled {
+    border-style: solid;
+    border-color: #88c2d2;
+    background: #f0fafa;
+  }
+
+  .upload-zone-error {
+    border-style: solid;
+    border-color: #db7979;
+    background: #fff5f5;
+  }
+
+  .upload-zone-wrap {
+    flex-grow: 1;
+    max-width: 20rem;
   }
     
   @media (min-width: 820px) {

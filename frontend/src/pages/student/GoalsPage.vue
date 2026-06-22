@@ -176,6 +176,7 @@
             </td>
 
             <td class="progress-cell">
+              <!-- @focus stores the prior value so updateGoalStatus can revert the dropdown on API failure. -->
               <select
                 class="status-select"
                 v-model.number="goal.goal_status_id"
@@ -230,7 +231,7 @@
                   class="action-icon-btn"
                   aria-label="Delete goal"
                   title="Delete"
-                  @click="deleteGoal(goal)"
+                  @click="showDeleteConfirm = true, goalToDelete = goal"
                 >
                   <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                 </button>
@@ -266,6 +267,7 @@
 
           <div class="mobile-section">
             <p class="mobile-label">Progress</p>
+            <!-- Same _previousStatusId rollback pattern as the desktop status dropdown. -->
             <select
               class="status-select mobile-status-select"
               v-model.number="goal.goal_status_id"
@@ -353,17 +355,28 @@
 
         <div class="steps-editor">
           <div v-for="(step, index) in stepDrafts" :key="step.localKey" class="step-row">
-            <label class="step-label">
-              <span>Step {{ index + 1 }}</span>
+            <div class="step-editor-body">
+              <div class="step-row-head">
+                <span class="step-number">Step {{ index + 1 }}</span>
+                <label class="step-complete-label">
+                  <input
+                    v-model="step.is_completed"
+                    type="checkbox"
+                    class="step-complete-checkbox"
+                  />
+                  <span>Completed</span>
+                </label>
+                <button type="button" class="btn page-btn-danger step-remove-btn" @click="removeStep(index)">
+                  Remove
+                </button>
+              </div>
               <textarea
                 v-model="step.step_description"
                 class="step-input"
+                :class="{ 'step-input--done': step.is_completed }"
                 placeholder="Describe this action step"
               ></textarea>
-            </label>
-            <button type="button" class="btn page-btn-danger align-self-start" @click="removeStep(index)">
-              Remove
-            </button>
+            </div>
           </div>
         </div>
 
@@ -389,6 +402,20 @@
     </div>
     </main>
   </div>
+  <!--Delete confirm -->
+  <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+    <div class="delete-box text-center p-4">
+      <h5 class="fw-bold mb-2 field-label delete-title">Delete goal {{ goalToDelete.name }}? This cannot be undone.</h5>
+
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
+        <button class="btn btn-add rounded-pill px-4" @click="deleteGoal(goalToDelete); showDeleteConfirm = false">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
 </template>
 
 <script setup>
@@ -408,6 +435,8 @@ const showNewGoalForm = ref(false)
 const showEditGoalForm = ref(false)
 const showStepModal = ref(false)
 const editingGoal = ref(null)
+const showDeleteConfirm = ref(false)
+const goalToDelete = ref(null)
 // Optional default career plan: new goals are also attached there when set (same goal can link to multiple plans later).
 const defaultPlanIdForNewGoals = ref(null)
 const stepModalGoal = ref(null)
@@ -456,8 +485,18 @@ const editGoalData = reactive({
   goal_status_id: 1,
 })
 
+// Set up a pop up notification instead of having an alert
+const popUp = ref({ show: false, message: '', type: '' })
+
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, 3000)
+}
+
+
 // Backend can return relationship keys in snake_case or camelCase depending on serializer/config.
 const getGoalSteps = (goal) => goal.action_steps || goal.actionSteps || []
+const isStepCompleted = (step) => Boolean(step?.is_completed ?? step?.isCompleted ?? false)
 const getStatusLabel = (goalStatusId) => {
   const matched = progressStatusOptions.find((item) => item.value === Number(goalStatusId))
   return matched ? matched.label : '—'
@@ -647,6 +686,7 @@ const moveGoalBefore = (sourceGoalId, targetGoalId) => {
 
   const nextGoals = [...goals.value]
   const [movedGoal] = nextGoals.splice(sourceIndex, 1)
+  // Drop on a row inserts the dragged goal at that row's index (after the source row is removed).
   const insertIndex = sourceIndex < targetIndex ? targetIndex : targetIndex
   nextGoals.splice(insertIndex, 0, movedGoal)
 
@@ -687,12 +727,13 @@ const persistGoalOrder = async (previousGoals) => {
     goals.value = previousGoals
     console.error('Error reordering goals:', error)
     const errorMessage = error.response?.data?.message || 'Failed to reorder goals'
-    alert(`Failed to reorder goals: ${errorMessage}`)
+    showPopUp('Error: failed to reorder goals', 'error')
   } finally {
     isReorderingGoals.value = false
   }
 }
 
+// Pick the first career plan returned for this profile so new goals auto-link when one exists.
 const loadDefaultPlanForNewGoals = async () => {
   try {
     const response = await api.get('/career-plans', {
@@ -730,6 +771,7 @@ const createGoal = async () => {
       ...payload,
       profile_id: profileId.value
     }
+    // Attach to the default career plan when available; goals can be linked to more plans later.
     if (defaultPlanIdForNewGoals.value) {
       body.plan_id = defaultPlanIdForNewGoals.value
     }
@@ -746,13 +788,13 @@ const createGoal = async () => {
       goal_status_id: 1,
     })
     loadGoals() // Refresh the list
-    alert('Goal created successfully!')
+    showPopUp('Goal created successfully.', 'success')
   } catch (error) {
     console.error('Error creating goal:', error)
     const errorMessage = error.response?.data?.message || 
                         Object.values(error.response?.data?.errors || {}).flat()[0] ||
                         'Failed to create goal'
-    alert(`Failed to create goal: ${errorMessage}`)
+    showPopUp('Error: failed to create goal.', 'error')
   }
 }
 
@@ -806,6 +848,7 @@ const editSteps = (goal) => {
     step_id: step.step_id,
     step_description: step.step_description || '',
     step_order: step.step_order ?? index + 1,
+    is_completed: isStepCompleted(step),
     localKey: `existing-${step.step_id}`
   }))
 
@@ -821,6 +864,7 @@ const addStep = () => {
     step_id: null,
     step_description: '',
     step_order: stepDrafts.value.length + 1,
+    is_completed: false,
     localKey: `new-${Date.now()}-${Math.random()}`
   })
 }
@@ -833,8 +877,8 @@ const removeStep = (index) => {
   })
 }
 
-const closeStepModal = () => {
-  if (savingSteps.value) {
+const closeStepModal = (force = false) => {
+  if (!force && savingSteps.value) {
     return
   }
 
@@ -850,26 +894,29 @@ const saveSteps = async () => {
   }
 
   const normalizedSteps = stepDrafts.value
-    .map((step) => step.step_description.trim())
-    .filter((stepDescription) => stepDescription)
+    .map((step) => ({
+      step_description: step.step_description.trim(),
+      is_completed: Boolean(step.is_completed),
+    }))
+    .filter((step) => step.step_description)
 
   try {
     savingSteps.value = true
 
     await api.put(`/smart-goals/${stepModalGoal.value.goal_id}/action-steps`, {
       profile_id: profileId.value,
-      steps: normalizedSteps.map((step_description) => ({ step_description }))
+      steps: normalizedSteps,
     })
 
     await loadGoals()
-    closeStepModal()
-    alert('Action steps updated successfully!')
+    closeStepModal(true)
+    showPopUp('Action steps updated successfully.', 'success')
   } catch (error) {
     console.error('Error updating action steps:', error)
     const errorMessage = error.response?.data?.message ||
       Object.values(error.response?.data?.errors || {}).flat()[0] ||
       'Failed to update action steps'
-    alert(`Failed to update action steps: ${errorMessage}`)
+    showPopUp(`Error: failed to update action steps.`, 'error')
   } finally {
     savingSteps.value = false
   }
@@ -877,6 +924,7 @@ const saveSteps = async () => {
 
 // Optimistically update status from dropdown; revert on API failure.
 const updateGoalStatus = async (goal) => {
+  // Set on @focus in the template before the user changes the dropdown.
   const previousId = goal._previousStatusId ?? goal.goal_status_id
   try {
     await api.put(`/smart-goals/${goal.goal_id}`, {
@@ -899,6 +947,8 @@ const updateGoalStatus = async (goal) => {
         await persistGoalOrder(previousGoals)
       }
     }
+    showPopUp('Goal has been updated.', 'success')
+
   } catch (error) {
     goal.goal_status_id = previousId
     if (goal.status) {
@@ -912,7 +962,7 @@ const updateGoalStatus = async (goal) => {
     const errorMessage = error.response?.data?.message ||
       Object.values(error.response?.data?.errors || {}).flat()[0] ||
       'Failed to update goal status'
-    alert(`Failed to update goal status: ${errorMessage}`)
+    showPopUp('Error: failed to update goal status', 'error')
   }
 }
 
@@ -942,33 +992,34 @@ const updateGoal = async () => {
     showEditGoalForm.value = false
     editingGoal.value = null
     loadGoals() // Refresh the list
-    alert('Goal updated successfully!')
+    showPopUp('Goal updated successfully.', 'success')
   } catch (error) {
     console.error('Error updating goal:', error)
     const errorMessage = error.response?.data?.message || 
                         Object.values(error.response?.data?.errors || {}).flat()[0] ||
                         'Failed to update goal'
-    alert(`Failed to update goal: ${errorMessage}`)
+    showPopUp('Failed to update goal.', 'error')
   }
 }
 
 // Delete selected goal after user confirmation and refresh table.
 const deleteGoal = async (goal) => {
-  if (confirm(`Are you sure you want to delete this goal: ${goal.goal_description}?`)) {
-    try {
-      await api.delete(`/smart-goals/${goal.goal_id}`, {
-        params: {
-          profile_id: profileId.value
-        }
-      })
-      loadGoals() // Refresh the list
-      alert('Goal deleted successfully!')
-    } catch (error) {
-      console.error('Error deleting goal:', error)
-      const errorMessage = error.response?.data?.message || 'Failed to delete goal'
-      alert(`Failed to delete goal: ${errorMessage}`)
-    }
+  showDeleteConfirm.value = false
+
+  try {
+    await api.delete(`/smart-goals/${goal.goal_id}`, {
+      params: {
+        profile_id: profileId.value
+      }
+    })
+    loadGoals() // Refresh the list
+    showPopUp('Goal deleted successfully.', 'success')
+  } catch (error) {
+    console.error('Error deleting goal:', error)
+    const errorMessage = error.response?.data?.message || 'Failed to delete goal'
+    showPopUp('Error: failed to delete goal', 'error')
   }
+  
 }
 </script>
 
@@ -1166,7 +1217,7 @@ const deleteGoal = async (goal) => {
 .goals-table {
   /* Wide desktop table is intentionally scrollable in its wrapper to preserve readable column widths. */
   width: 100%;
-  min-width: 1220px;
+  min-width: 1360px;
   table-layout: auto;
   border: 1px solid #dddddd;
   border-collapse: separate;
@@ -1179,10 +1230,20 @@ const deleteGoal = async (goal) => {
   border-color: #e0e0e0;
   padding: 0.9rem 0.8rem;
   vertical-align: middle;
-  text-align: center;
+  text-align: left;
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.4;
+}
+
+.goals-table th:nth-child(1),
+.goals-table td:nth-child(1),
+.goals-table th:nth-child(4),
+.goals-table td:nth-child(4),
+.goals-table th:last-child,
+.goals-table td:last-child {
+  text-align: center;
+  vertical-align: middle;
 }
 
 .goals-table th {
@@ -1264,7 +1325,8 @@ const deleteGoal = async (goal) => {
 .goals-table th:nth-child(8),
 .goals-table td:nth-child(8) {
   /* Columns 5,8: Learnings, Completion Notes */
-  min-width: 10rem;
+  min-width: 16rem;
+  width: 16rem;
 }
 
 .goals-table th:nth-child(4),
@@ -1303,6 +1365,11 @@ const deleteGoal = async (goal) => {
 .steps-list li {
   font: 400 0.92rem/1.35 'Maven Pro', sans-serif;
   color: #6d6d6d;
+}
+
+.step-input--done {
+  color: #9a9a9a;
+  text-decoration: line-through;
 }
 
 .step-preview-text {
@@ -1350,14 +1417,11 @@ const deleteGoal = async (goal) => {
   letter-spacing: -0.1rem;
 }
 
-.steps-cell {
-  vertical-align: middle !important;
-}
 
 .steps-stack {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
 }
 
@@ -1379,21 +1443,18 @@ const deleteGoal = async (goal) => {
   color: #6d6d6d;
 }
 
-.text-preview-cell {
-  vertical-align: middle !important;
-}
-
 .text-preview-stack {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
+  width: 100%;
 }
 
 .text-preview {
   display: -webkit-box;
   margin: 0;
-  max-width: 12rem;
+  max-width: 100%;
   overflow: hidden;
   line-clamp: 3;
   -webkit-line-clamp: 3;
@@ -1422,12 +1483,7 @@ const deleteGoal = async (goal) => {
 }
 
 .completion-notes-cell {
-  min-width: 10rem;
-  vertical-align: middle !important;
-}
-
-.actions-cell {
-  vertical-align: middle !important;
+  min-width: 16rem;
 }
 
 .actions-stack {
@@ -1569,20 +1625,51 @@ const deleteGoal = async (goal) => {
 }
 
 .step-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
   padding: 1rem;
   border: 1px solid #e4e4e4;
   border-radius: 1rem;
   background: #fafafa;
 }
 
-.step-label {
-  flex: 1;
+.step-editor-body {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
+}
+
+.step-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+}
+
+.step-number {
+  font: 600 0.9rem/1.2 'Maven Pro', sans-serif;
+  color: #555555;
+}
+
+.step-complete-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font: 400 0.88rem/1.2 'Maven Pro', sans-serif;
+  color: #6d6d6d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.step-complete-checkbox {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: #3f7ccf;
+  cursor: pointer;
+}
+
+.step-row-head .step-remove-btn {
+  margin-left: auto;
 }
 
 .step-input {
@@ -1697,6 +1784,73 @@ const deleteGoal = async (goal) => {
   margin-top: 0.6rem;
 }
 
+.popUp-msg {
+  z-index: 9999;
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
+}
+
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
+}
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.delete-box .btn-filter,
+.delete-box .btn-add {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.delete-box .btn-add {
+  background: #555555;
+  color: #ffffff;
+}
+
+.delete-box .btn-add:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.delete-title {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1.1rem;
+  color: #222222;
+}
+
+
 @media (max-width: 992px) {
   .page-title {
     font-size: 2rem;
@@ -1808,12 +1962,31 @@ const deleteGoal = async (goal) => {
     border-radius: 1rem;
   }
 
-  .step-row {
-    flex-direction: column;
+  .step-row-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.45rem 0.75rem;
   }
 
-  .step-row .btn {
-    width: 100%;
+  .step-number {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .step-row-head .step-remove-btn {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    margin-left: 0;
+    justify-self: end;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .step-complete-label {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .table-scroll {

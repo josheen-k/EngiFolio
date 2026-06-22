@@ -11,15 +11,18 @@ class CdlModuleController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
+    {   
+        //select only the fields the frontend CDL page needs 
         $modules = CdlModule::select([
             'cdl_id',
             'title',
             'description',
             'module_url',
             'updated_at',
-        ])->orderBy('updated_at', 'desc')->get();
-
+        ])
+        //show the most recently updated modules first 
+        ->orderBy('updated_at', 'desc')->get();
+        //return the module list as JSON for the frontend 
         return response()->json($modules);    
     }
 
@@ -28,7 +31,7 @@ class CdlModuleController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //this function is currently empty and not being used 
     }
 
     /**
@@ -36,7 +39,7 @@ class CdlModuleController extends Controller
      */
     public function show(CdlModule $cdlModule)
     {
-        //
+        //this function is currently empty and not being used 
     }
 
     /**
@@ -44,7 +47,7 @@ class CdlModuleController extends Controller
      */
     public function update(Request $request, CdlModule $cdlModule)
     {
-        //
+        //this function is currently empty and not being used
     }
 
     /**
@@ -52,6 +55,6 @@ class CdlModuleController extends Controller
      */
     public function destroy(CdlModule $cdlModule)
     {
-        //
+        //this function is currently empty and not being used
     }
 }

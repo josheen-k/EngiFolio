@@ -12,7 +12,7 @@ class NetworkingEventQuestionController extends Controller
      */
     public function index($eventId)
     {
-        //
+        //return all questions that belong to the selected event
         return NetworkingEventQuestion::where('event_id', $eventId)->get();
     }
 
@@ -21,14 +21,16 @@ class NetworkingEventQuestionController extends Controller
      */
     public function store(Request $request, $eventId)
     {
-        //
+        //stop the save if the question is missing or only contains spaces
         if (!$request->question || !trim($request->question)) {
             return response()->json(['error' => 'Question cannot be empty'], 400);
         }
-        //find biggest order (if dont want can delete)
+        //find biggest order (if don't want can delete)
         $maxOrder = NetworkingEventQuestion::where('event_id', $eventId) -> max('question_order');
-        //from 1
+        //if there are already questions, put the new one after the last question
         $newOrder = $maxOrder ? $maxOrder +1:1;
+
+        //create and return the new question
         return NetworkingEventQuestion::Create([
             'event_id' => $eventId,
             'question_text' => $request->question,
@@ -43,7 +45,7 @@ class NetworkingEventQuestionController extends Controller
      */
     public function show(NetworkingEventQuestion $networkingEventQuestion)
     {
-        //
+        //this function is currently empty and not being used 
     }
 
     /**
@@ -51,12 +53,15 @@ class NetworkingEventQuestionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        //find the question to update, or return 404 if it does not exist 
         $question = NetworkingEventQuestion::findOrFail($id);
 
+        //update the question text with the new value from the request 
         $question->update([
             'question_text' => $request->question
         ]);
+
+        //return the updated question
         return $question;
     }
 
@@ -65,8 +70,9 @@ class NetworkingEventQuestionController extends Controller
      */
     public function destroy($id)
     {
-        //
+        //delete the question by its id 
         NetworkingEventQuestion::destroy($id);
+        //return a simple success message 
         return ['message' => 'deleted'];
     }
 }

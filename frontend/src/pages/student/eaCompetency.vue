@@ -30,17 +30,20 @@ import DraftReflections from '@/components/DraftReflections.vue';
 import FeedbackReflections from '@/components/FeedbackReflections.vue';
 import DiscontinuedCompetency from '@/components/DiscontinuedCompetency.vue';
 import api from "@/services/api";
+
+// Variables for getting and changing URL information
 const route = useRoute()
 const router = useRouter()
 
-// --- State ---
+// Holds information about the student competencies and the level options that the student has
 const categories = ref([])
 const levelOptions = ref([])
 
+// Read the ?tab= parameter to render the tab buttons
 const currTab = computed(() => route.query.tab || 'current');
-
 const tabs = ['current', 'drafts', 'feedback', 'discontinued']
 
+// Map current tab to the component
 const currComponent = computed(() => {
   switch (currTab.value) {
     case 'current': return CurrentCompetency
@@ -62,13 +65,18 @@ function switchTab(tab) {
   });
 }
 
+// Load the data required for the components
 const loadData = async () => {
   try {
+    // Parallel calls to retrieve required competency data
     const [compRes, levelRes] = await Promise.all([
+      // Load competency groups with all competency indicators and competency entries for the logged in student
       api.get(`/competency-groups-student/${route.params.id}`),
+      // Get competency levels that can be assigned by a student
       api.get('/competency-levels'),
     ])
 
+    // Pass categories with competency details with student reflections and feedback
     categories.value = compRes.data.map(group => ({
       key: group.display_id,
       label: group.group_name,
@@ -88,20 +96,24 @@ const loadData = async () => {
       }))
     }));
 
-    levelOptions.value = [
-      ...levelRes.data.map(l => ({
+    // Populate the level options table with the level ids and labels
+    levelOptions.value =
+      levelRes.data.map(l => ({
         value: l.entry_level_id,
         label: l.competency_level
-      }))
-    ];
+      }));
   } catch (error) {
     console.error('Error when loading competencies and levels', error)
   }
 };
 
+// Directs the user to a certain competency indicator if the indicator query is present
+// For when the user selects a competency indicator from the dashboard
 const handleIndicatorParam = () => {
+  // Get the indicator id from the url
   const indicatorId = route.query.indicator;
-  if (indicatorId && currTab.value !== 'current' && categories.value.length) {
+
+  if (indicatorId && currTab.value !== 'current') {
     for (const cat of categories.value) {
       const match = cat.compt.find(c => Number(c.id) === Number(indicatorId));
       if (match) {

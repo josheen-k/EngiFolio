@@ -36,13 +36,19 @@
 
                     <!-- bottom row: degree, specialisation -->
                     <div class="row g-3">
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-4">
+                            <div class="info">
+                                <span class="info-label">Year Started</span>
+                                <span class="info-value">{{ profile.year_started }}</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4">
                             <div class="info">
                                 <span class="info-label">Degree undertaking</span>
                                 <span class="info-value">{{ profile.degree_title }}</span>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-4">
                             <div class="info">
                                 <span class="info-label">Specialisation chosen</span>
                                 <span class="info-value">{{ profile.specialisation }}</span>
@@ -95,29 +101,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router'
 import defaultAvatar from '@/assets/placeholder-av.webp';
 import api from "@/services/api";
 
+// Route used for route parameters to get id
 const route = useRoute();
+
+// Store profile data rendered by vue and loading status
 const profile = ref(null);
 const loading = ref(true);
 
+// Calls the backend api route to fetch the profile data
 const loadProfile = async () => {
     try {
         const response = await api.get(`/profile/${route.params.id}`);
-        profile.value = response.data.profile || response.data;
+        profile.value = response.data;
+        loading.value = false;
     } catch (error) {
         console.error("Error while fetching profile:", error);
-    } finally {
-        loading.value = false;
     }
 };
 
-onMounted(() => {
-    loadProfile();
-})
+// Call load profile immediately
+loadProfile();
+
 </script>
 
 <style scoped>

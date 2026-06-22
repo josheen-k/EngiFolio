@@ -17,6 +17,7 @@ class NetworkingEventQuestion extends Model
         'question_order'
     ];
 
+    //get the networking event that owns this question
     public function event()
     {
         return $this->belongsTo(NetworkingEvent::class, 'event_id', 'event_id');

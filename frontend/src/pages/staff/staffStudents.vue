@@ -981,7 +981,7 @@ onMounted(fetchStudents)
   justify-content: flex-end;
   margin-top: 20px;
 
-  .feedback-cell {
+.feedback-cell {
   display: flex;
   flex-direction: column;
   gap: 8px;

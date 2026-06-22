@@ -65,23 +65,23 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('student_profiles')->insert([
-            ['user_id' => 2, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems.', 'profile_image_url' => '/src/assets/alex.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 3, 'degree_title' => 'Bachelor of Civil Engineering', 'specialisation' => 'Structural', 'personal_intro' => 'Interested in earthquake-resistant urban design.', 'profile_image_url' => '/src/assets/kate.jpeg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 5, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems and thermal dynamics.', 'profile_image_url' => '/src/assets/kate.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 6, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Software', 'personal_intro' => 'Interested in distributed systems and scalable cloud architecture.', 'profile_image_url' => '/src/assets/samuel.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 7, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Civil', 'personal_intro' => 'Specialising in structural integrity and earthquake-resistant design.', 'profile_image_url' => '/src/assets/isabella.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 8, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Electrical & Electronic', 'personal_intro' => 'Researching renewable grid integration and power electronics.', 'profile_image_url' => '/src/assets/lachlan.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 9, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Chemical', 'personal_intro' => 'Focused on process optimisation and carbon capture technologies.', 'profile_image_url' => '/src/assets/grace.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 10, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechatronic', 'personal_intro' => 'Developing autonomous robotics for industrial automation.', 'profile_image_url' => '/src/assets/james.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 11, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Aerospace', 'personal_intro' => 'Passionate about orbital mechanics and propulsion systems.', 'profile_image_url' => '/src/assets/sarah.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 12, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Biomedical', 'personal_intro' => 'Designing next-generation prosthetic limbs and wearable sensors.', 'profile_image_url' => '/src/assets/liam.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 13, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mining', 'personal_intro' => 'Exploring sustainable extraction methods and mine safety automation.', 'profile_image_url' => '/src/assets/chloe.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 14, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Petroleum', 'personal_intro' => 'Focused on reservoir simulation and enhanced recovery techniques.', 'profile_image_url' => '/src/assets/oliver.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 15, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Environmental', 'personal_intro' => 'Specialising in wastewater treatment and urban water management.', 'profile_image_url' => '/src/assets/emma.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 16, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Computer Systems', 'personal_intro' => 'Interested in hardware-software co-design and IoT security.', 'profile_image_url' => '/src/assets/noah.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 17, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Materials', 'personal_intro' => 'Researching high-performance composites for extreme environments.', 'profile_image_url' => '/src/assets/mia.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 18, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Systems', 'personal_intro' => 'Managing complex lifecycle engineering for large-scale projects.', 'profile_image_url' => '/src/assets/lucas.jpg', 'created_at' => now(), 'updated_at' => now()],
-            ['user_id' => 19, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Renewable Energy', 'personal_intro' => 'Advancing solar photovoltaic efficiency and storage solutions.', 'profile_image_url' => '/src/assets/sophia.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 2, 'year_started' => 2022, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems.', 'profile_image_url' => '/src/assets/alex.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 3, 'year_started' => 2021, 'degree_title' => 'Bachelor of Civil Engineering', 'specialisation' => 'Structural', 'personal_intro' => 'Interested in earthquake-resistant urban design.', 'profile_image_url' => '/src/assets/kate.jpeg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 5, 'year_started' => 2023, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechanical', 'personal_intro' => 'Focused on sustainable energy systems and thermal dynamics.', 'profile_image_url' => '/src/assets/kate.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 6, 'year_started' => 2022, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Software', 'personal_intro' => 'Interested in distributed systems and scalable cloud architecture.', 'profile_image_url' => '/src/assets/samuel.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 7, 'year_started' => 2021, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Civil', 'personal_intro' => 'Specialising in structural integrity and earthquake-resistant design.', 'profile_image_url' => '/src/assets/isabella.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 8, 'year_started' => 2023, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Electrical & Electronic', 'personal_intro' => 'Researching renewable grid integration and power electronics.', 'profile_image_url' => '/src/assets/lachlan.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 9, 'year_started' => 2020, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Chemical', 'personal_intro' => 'Focused on process optimisation and carbon capture technologies.', 'profile_image_url' => '/src/assets/grace.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 10, 'year_started' => 2022, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mechatronic', 'personal_intro' => 'Developing autonomous robotics for industrial automation.', 'profile_image_url' => '/src/assets/james.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 11, 'year_started' => 2021, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Aerospace', 'personal_intro' => 'Passionate about orbital mechanics and propulsion systems.', 'profile_image_url' => '/src/assets/sarah.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 12, 'year_started' => 2023, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Biomedical', 'personal_intro' => 'Designing next-generation prosthetic limbs and wearable sensors.', 'profile_image_url' => '/src/assets/liam.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 13, 'year_started' => 2020, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Mining', 'personal_intro' => 'Exploring sustainable extraction methods and mine safety automation.', 'profile_image_url' => '/src/assets/chloe.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 14, 'year_started' => 2022, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Petroleum', 'personal_intro' => 'Focused on reservoir simulation and enhanced recovery techniques.', 'profile_image_url' => '/src/assets/oliver.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 15, 'year_started' => 2021, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Environmental', 'personal_intro' => 'Specialising in wastewater treatment and urban water management.', 'profile_image_url' => '/src/assets/emma.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 16, 'year_started' => 2023, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Computer Systems', 'personal_intro' => 'Interested in hardware-software co-design and IoT security.', 'profile_image_url' => '/src/assets/noah.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 17, 'year_started' => 2022, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Materials', 'personal_intro' => 'Researching high-performance composites for extreme environments.', 'profile_image_url' => '/src/assets/mia.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 18, 'year_started' => 2020, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Systems', 'personal_intro' => 'Managing complex lifecycle engineering for large-scale projects.', 'profile_image_url' => '/src/assets/lucas.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['user_id' => 19, 'year_started' => 2021, 'degree_title' => 'Bachelor of Engineering', 'specialisation' => 'Renewable Energy', 'personal_intro' => 'Advancing solar photovoltaic efficiency and storage solutions.', 'profile_image_url' => '/src/assets/sophia.jpg', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('student_links')->insert([
@@ -288,20 +288,22 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('industry_contacts')->insert([
-            ['contact_id' => 3, 'profile_id' => 1, 'contact_name' => 'Elena Rodriguez', 'company' => 'Arup Adelaide', 'date_met' => '2026-03-12', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 4, 'profile_id' => 1, 'contact_name' => 'Kenji Sato', 'company' => 'Mitsubishi Heavy Industries', 'date_met' => '2026-04-05', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 5, 'profile_id' => 1, 'contact_name' => 'Sarah Jenkins', 'company' => 'Santos Ltd', 'date_met' => '2026-02-18', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 6, 'profile_id' => 1, 'contact_name' => 'Marcus Aurelius', 'company' => 'Roman Concrete Solutions', 'date_met' => '2026-01-10', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 7, 'profile_id' => 1, 'contact_name' => 'Amara Okafor', 'company' => 'Google Cloud', 'date_met' => '2026-05-20', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 8, 'profile_id' => 1, 'contact_name' => 'Lachlan Murdoch', 'company' => 'BAE Systems Australia', 'date_met' => '2026-03-25', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 9, 'profile_id' => 1, 'contact_name' => 'Siobhan Roy', 'company' => 'Waystar Civil Engineering', 'date_met' => '2026-04-15', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 10, 'profile_id' => 1, 'contact_name' => 'Chen Wei', 'company' => 'Telsa Motors', 'date_met' => '2026-05-02', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 11, 'profile_id' => 1, 'contact_name' => 'Alistair Cook', 'company' => 'Cook Renewable Energy', 'date_met' => '2026-02-28', 'created_at' => now(), 'updated_at' => now()],
-            ['contact_id' => 12, 'profile_id' => 1, 'contact_name' => 'Dana Scully', 'company' => 'FBI Forensic Engineering', 'date_met' => '2026-01-30', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'profile_id' => 1, 'contact_name' => 'Elena Rodriguez', 'company' => 'Arup Adelaide', 'date_met' => '2026-03-12', 'progress_notes' => 'Met at the Adelaide engineering expo. Discussed structural analysis roles and she offered to review my portfolio.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 4, 'profile_id' => 1, 'contact_name' => 'Kenji Sato', 'company' => 'Mitsubishi Heavy Industries', 'date_met' => '2026-04-05', 'progress_notes' => 'Connected at a mechatronics seminar. Interested in graduate intake for 2027. Follow up in September.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 5, 'profile_id' => 1, 'contact_name' => 'Sarah Jenkins', 'company' => 'Santos Ltd', 'date_met' => '2026-02-18', 'progress_notes' => 'Spoke at a campus careers panel. Mentioned internship openings in process engineering for mid-year.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 6, 'profile_id' => 1, 'contact_name' => 'Marcus Aurelius', 'company' => 'Roman Concrete Solutions', 'date_met' => '2026-01-10', 'progress_notes' => 'Met at a materials conference. Sent a follow-up email, awaiting response about a site visit opportunity.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 7, 'profile_id' => 1, 'contact_name' => 'Amara Okafor', 'company' => 'Google Cloud', 'date_met' => '2026-05-20', 'progress_notes' => 'Connected on LinkedIn after a cloud infrastructure talk. She suggested applying for the APAC engineering graduate program.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 8, 'profile_id' => 1, 'contact_name' => 'Lachlan Murdoch', 'company' => 'BAE Systems Australia', 'date_met' => '2026-03-25', 'progress_notes' => 'Met at a defence industry networking night. Discussed systems engineering pathways and security clearance requirements.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 9, 'profile_id' => 1, 'contact_name' => 'Siobhan Roy', 'company' => 'Waystar Civil Engineering', 'date_met' => '2026-04-15', 'progress_notes' => 'Introduced by a mutual contact. Had a coffee chat about urban infrastructure projects in Adelaide.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 10, 'profile_id' => 1, 'contact_name' => 'Chen Wei', 'company' => 'Telsa Motors', 'date_met' => '2026-05-02', 'progress_notes' => 'Met at an EV technology showcase. Expressed interest in battery thermal management research. Sent resume.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 11, 'profile_id' => 1, 'contact_name' => 'Alistair Cook', 'company' => 'Cook Renewable Energy', 'date_met' => '2026-02-28', 'progress_notes' => 'Attended his guest lecture on solar grid integration. Stayed back to ask questions and exchanged contacts.', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 12, 'profile_id' => 1, 'contact_name' => 'Dana Scully', 'company' => 'FBI Forensic Engineering', 'date_met' => '2026-01-30', 'progress_notes' => 'Met at a forensic engineering workshop. Fascinating discussion on failure analysis methodology. Agreed to keep in touch.', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('industry_contact_methods')->insert([
             ['contact_id' => 3, 'method_type' => 'Email', 'method_value' => 'elena.rodriguez@arup.com.au', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5012', 'created_at' => now(), 'updated_at' => now()],
+            ['contact_id' => 3, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/elena-rodriguez', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 4, 'method_type' => 'LinkedIn', 'method_value' => 'linkedin.com/in/ksato-mhi', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 5, 'method_type' => 'Phone', 'method_value' => '+61 8 8116 5000', 'created_at' => now(), 'updated_at' => now()],
             ['contact_id' => 6, 'method_type' => 'Email', 'method_value' => 'm.aurelius@romanconcrete.it', 'created_at' => now(), 'updated_at' => now()],
@@ -800,6 +802,269 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now()
             ],
+
+            [
+                'entry_id' => 33, 'profile_id' => 3, 'indicator_id' => 1,
+                'experience_title' => 'Thermodynamics Lab', 'associated_year' => 2,
+                'experience_tasks' => 'Analyzing heat exchanger efficiency',
+                'key_learnings' => 'Calculated logarithmic mean temperature differences (LMTD) and identified real-world thermal losses.',
+                'future_applications' => 'Optimizing industrial HVAC and cooling systems for renewable power plants.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-03-14', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 34, 'profile_id' => 3, 'indicator_id' => 3,
+                'experience_title' => 'Solar Concentrator Design', 'associated_year' => 3,
+                'experience_tasks' => 'CAD modeling of parabolic reflectors',
+                'key_learnings' => 'Understood geometric ray tracing and material reflectivity constraints under high thermal stress.',
+                'future_applications' => 'Developing high-efficiency solar thermal capture arrays.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-05-22', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 35, 'profile_id' => 3, 'indicator_id' => 9,
+                'experience_title' => 'Manufacturing Safety Audit', 'associated_year' => 2,
+                'experience_tasks' => 'Drafting standard operating procedures for heavy machinery',
+                'key_learnings' => 'Identified pinch points and high-temperature zones requiring structural guarding layers.',
+                'future_applications' => 'Enforcing rigorous plant-floor safety configurations as a production engineer.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-08-04', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 36, 'profile_id' => 4, 'indicator_id' => 2,
+                'experience_title' => 'Microservices Architecture', 'associated_year' => 3,
+                'experience_tasks' => 'Refactoring a monolithic codebase into Docker containers',
+                'key_learnings' => 'Mastered container isolation, network bridging, and decoupled application states.',
+                'future_applications' => 'Architecting highly available, fault-tolerant cloud platforms.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-04-18', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 37, 'profile_id' => 4, 'indicator_id' => 11,
+                'experience_title' => 'CI/CD Pipeline Setup', 'associated_year' => 2,
+                'experience_tasks' => 'Writing GitHub Actions automation scripts',
+                'key_learnings' => 'Configured automated linting, unit test blocks, and seamless staging deployments.',
+                'future_applications' => 'Eliminating manual release overhead within agile software teams.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-07-19', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 38, 'profile_id' => 5, 'indicator_id' => 1,
+                'experience_title' => 'Geotechnical Soil Testing', 'associated_year' => 2,
+                'experience_tasks' => 'Conducting triaxial shear tests on clay variants',
+                'key_learnings' => 'Evaluated pore water pressure effects and soil consolidation characteristics.',
+                'future_applications' => 'Predicting foundation settlement margins for multi-story urban projects.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-03-29', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 39, 'profile_id' => 5, 'indicator_id' => 7,
+                'experience_title' => 'Retaining Wall Calculations', 'associated_year' => 3,
+                'experience_tasks' => 'Determining active and passive earth pressure values',
+                'key_learnings' => 'Applied Rankine theory parameters to assess safety factors against sliding and overturning.',
+                'future_applications' => 'Specifying sound earth-retention structures along steep transport corridors.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-09-12', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 40, 'profile_id' => 6, 'indicator_id' => 2,
+                'experience_title' => 'Microgrid Inverter Sync', 'associated_year' => 3,
+                'experience_tasks' => 'Programming phase-locked loops (PLL) on microcontrollers',
+                'key_learnings' => 'Synchronized inverter output frequency cleanly with live grid electrical waveforms.',
+                'future_applications' => 'Preventing grid instability during high-penetration solar injection cycles.',
+                'entry_level_id' => 4, 'entry_status_id' => 2, 'start_date' => '2026-03-05', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 41, 'profile_id' => 6, 'indicator_id' => 9,
+                'experience_title' => 'Substation Arc Flash Study', 'associated_year' => 2,
+                'experience_tasks' => 'Calculating incident energy levels using IEEE 1584 standards',
+                'key_learnings' => 'Determined necessary PPE boundary perimeters and boundary markers for maintenance technicians.',
+                'future_applications' => 'Designing safe high-voltage electrical distribution panels.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-05-14', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 42, 'profile_id' => 7, 'indicator_id' => 1,
+                'experience_title' => 'Distillation Column Run', 'associated_year' => 3,
+                'experience_tasks' => 'Optimizing reflux ratios for ethanol separation',
+                'key_learnings' => 'Balanced thermal energy inputs against column yield metrics via McCabe-Thiele analysis.',
+                'future_applications' => 'Refining chemical process systems to maximize asset energy efficiency.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-04-02', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 43, 'profile_id' => 7, 'indicator_id' => 3,
+                'experience_title' => 'Amine Absorption Modeling', 'associated_year' => 4,
+                'experience_tasks' => 'Simulating post-combustion CO2 scrubbing loops in Aspen Plus',
+                'key_learnings' => 'Identified solvent degradation thresholds and gas-to-liquid flow restrictions.',
+                'future_applications' => 'Deploying large-scale carbon capture infrastructure at industrial production plants.',
+                'entry_level_id' => 4, 'entry_status_id' => 2, 'start_date' => '2026-10-22', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 44, 'profile_id' => 8, 'indicator_id' => 2,
+                'experience_title' => 'Robotic Arm Inverse Kinematics', 'associated_year' => 3,
+                'experience_tasks' => 'Writing Denavit-Hartenberg matrices in MATLAB',
+                'key_learnings' => 'Translated spatial X-Y-Z end-effector coordinates cleanly into required physical joint angle motions.',
+                'future_applications' => 'Programming smooth pick-and-place trajectories for factory assembly automation.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-20', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 45, 'profile_id' => 8, 'indicator_id' => 8,
+                'experience_title' => 'LiDAR Mapping Integration', 'associated_year' => 2,
+                'experience_tasks' => 'Interfacing laser scanners with ROS navigation nodes',
+                'key_learnings' => 'Filtered sensor noise arrays to build reliable 2D occupancy grids for mobile units.',
+                'future_applications' => 'Enabling collision-free indoor navigation logic for autonomous sorting hardware.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-08-11', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 46, 'profile_id' => 9, 'indicator_id' => 1,
+                'experience_title' => 'Wind Tunnel Testing', 'associated_year' => 2,
+                'experience_tasks' => 'Measuring lift and drag coefficients on NACA airfoils',
+                'key_learnings' => 'Observed boundary layer separation and stall angles directly through pressure tap arrays.',
+                'future_applications' => 'Optimizing wing geometeries to reduce aerodynamic drag on commercial aircraft.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-05-02', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 47, 'profile_id' => 9, 'indicator_id' => 8,
+                'experience_title' => 'Rocket Nozzle CFD', 'associated_year' => 3,
+                'experience_tasks' => 'Simulating supersonic exhaust flow profiles in ANSYS Fluent',
+                'key_learnings' => 'Evaluated shock diamond formations and expansion ratios relative to shifting atmospheric pressures.',
+                'future_applications' => 'Designing highly optimized engine bells for multi-stage orbital vehicles.',
+                'entry_level_id' => 4, 'entry_status_id' => 2, 'start_date' => '2026-09-17', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 48, 'profile_id' => 10, 'indicator_id' => 2,
+                'experience_title' => 'EMG Signal Filtering', 'associated_year' => 2,
+                'experience_tasks' => 'Coding digital bandpass filters for muscle voltage arrays',
+                'key_learnings' => 'Isolated micro-volt muscle firing inputs cleanly from raw 50Hz environmental power line noise.',
+                'future_applications' => 'Developing intuitive, biometric intent control loops for active prosthetic hardware.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-04-11', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 49, 'profile_id' => 10, 'indicator_id' => 6,
+                'experience_title' => 'Biocompatible Implant Review', 'associated_year' => 3,
+                'experience_tasks' => 'Evaluating titanium vs PEEK stress shielding factors',
+                'key_learnings' => 'Analyzed Young\'s modulus matchups to prevent structural bone resorption risks over time.',
+                'future_applications' => 'Designing orthopedic structural implants with superior operating life spans.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-07-28', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 50, 'profile_id' => 11, 'indicator_id' => 1,
+                'experience_title' => 'Rock Mass Rating (RMR)', 'associated_year' => 3,
+                'experience_tasks' => 'Logging core samples to map underground structural stability',
+                'key_learnings' => 'Correlated joint spacing and groundwater conditions directly to safe unsupported span limits.',
+                'future_applications' => 'Designing optimal rock-bolting patterns to secure stable tunnel paths.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-09', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 51, 'profile_id' => 11, 'indicator_id' => 9,
+                'experience_title' => 'Mine Ventilation Layout', 'associated_year' => 4,
+                'experience_tasks' => 'Modeling diesel particulate extraction fans in Ventsim',
+                'key_learnings' => 'Calculated friction losses across shafts to maintain regulatory airflows at the deepest working faces.',
+                'future_applications' => 'Mitigating long-term respiratory hazards in complex sub-surface mining ops.',
+                'entry_level_id' => 4, 'entry_status_id' => 2, 'start_date' => '2026-10-04', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 52, 'profile_id' => 12, 'indicator_id' => 1,
+                'experience_title' => 'Core Porosity Analysis', 'associated_year' => 2,
+                'experience_tasks' => 'Measuring fluid saturation using Boyle\'s law gas expansion',
+                'key_learnings' => 'Determined exact matrix storage capacities relative to varying sandstone compaction zones.',
+                'future_applications' => 'Generating accurate hydrocarbon reserve calculations for field valuations.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-04-14', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 53, 'profile_id' => 12, 'indicator_id' => 8,
+                'experience_title' => 'Well Log Interpretation', 'associated_year' => 3,
+                'experience_tasks' => 'Analyzing gamma ray and resistivity profiles',
+                'key_learnings' => 'Identified shale boundaries and localized specific water-oil contacts across reservoir horizons.',
+                'future_applications' => 'Optimizing horizontal drill paths to maximize production targets.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-08-21', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 54, 'profile_id' => 13, 'indicator_id' => 3,
+                'experience_title' => 'Stormwater Basin Sizing', 'associated_year' => 3,
+                'experience_tasks' => 'Modeling urban runoff peaks using 1-in-100 year rain events',
+                'key_learnings' => 'Applied the Rational Method to configure retention volumes and avoid neighborhood flash flooding.',
+                'future_applications' => 'Building resilient civil drainage infrastructures suited to climate fluctuations.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-02-28', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 55, 'profile_id' => 13, 'indicator_id' => 6,
+                'experience_title' => 'Eutrophication Analysis', 'associated_year' => 2,
+                'experience_tasks' => 'Testing nitrogen and phosphorus balances in urban wetland loops',
+                'key_learnings' => 'Quantified agricultural fertilizer runoff impacts on dissolved oxygen baselines.',
+                'future_applications' => 'Designing bio-retention swales to filter surface runoff naturally.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-11-03', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 56, 'profile_id' => 14, 'indicator_id' => 2,
+                'experience_title' => 'SPI Driver Architecture', 'associated_year' => 2,
+                'experience_tasks' => 'Writing register-level C code for peripheral communications',
+                'key_learnings' => 'Configured clock polarity, data frame boundaries, and hardware interrupt registers without external library abstractions.',
+                'future_applications' => 'Developing high-throughput firmware links for custom processing platforms.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-05-19', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 57, 'profile_id' => 14, 'indicator_id' => 11,
+                'experience_title' => 'MQTT Network Stress Test', 'associated_year' => 3,
+                'experience_tasks' => 'Evaluating payload drop rates over low-bandwidth cellular channels',
+                'key_learnings' => 'Optimized Quality of Service (QoS) tier configurations to ensure sensor data continuity.',
+                'future_applications' => 'Deploying large-scale, remote telemetry grids across agricultural monitoring zones.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-09-02', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 58, 'profile_id' => 15, 'indicator_id' => 1,
+                'experience_title' => 'Austenite Transformation Lab', 'associated_year' => 2,
+                'experience_tasks' => 'Heat-treating carbon steel blocks followed by water quenching',
+                'key_learnings' => 'Correlated rapid cooling tracks directly to hard, brittle martensitic crystal phases.',
+                'future_applications' => 'Specifying tailored structural tempering cycles to maximize tooling life spans.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-03-24', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 59, 'profile_id' => 15, 'indicator_id' => 7,
+                'experience_title' => 'Composite Delamination Study', 'associated_year' => 3,
+                'experience_tasks' => 'Ultrasound imaging of impacted carbon-fiber structural sheets',
+                'key_learnings' => 'Mapped hidden internal void propagation zones that compromise structural load pathways without showing surface wear.',
+                'future_applications' => 'Implementing aerospace non-destructive testing (NDT) workflows.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-06-15', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 60, 'profile_id' => 16, 'indicator_id' => 4,
+                'experience_title' => 'Requirements Traceability Matrix', 'associated_year' => 3,
+                'experience_tasks' => 'Mapping stakeholder needs to hardware verification metrics',
+                'key_learnings' => 'Discovered how loose constraint definitions create scope creep and inflate production budgets.',
+                'future_applications' => 'Managing complex product lifecycles across defense or civil projects.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-04-10', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 61, 'profile_id' => 16, 'indicator_id' => 10,
+                'experience_title' => 'FMEA Aviation Exercise', 'associated_year' => 2,
+                'experience_tasks' => 'Executing a Failure Modes and Effects Analysis on fuel valves',
+                'key_learnings' => 'Calculated Risk Priority Numbers (RPN) to prioritize critical redundant component investments.',
+                'future_applications' => 'Minimizing catastrophic physical liabilities in heavy transport frameworks.',
+                'entry_level_id' => 2, 'entry_status_id' => 2, 'start_date' => '2026-08-25', 'created_at' => now(), 'updated_at' => now()
+            ],
+
+            [
+                'entry_id' => 62, 'profile_id' => 17, 'indicator_id' => 3,
+                'experience_title' => 'PV Array Degradation Assessment', 'associated_year' => 2,
+                'experience_tasks' => 'Analyzing solar panel voltage drop over 36 months of outdoor use',
+                'key_learnings' => 'Quantified micro-cracking and PID losses caused by thermal cycling patterns.',
+                'future_applications' => 'Refining economic payback models for utility-scale solar asset investments.',
+                'entry_level_id' => 3, 'entry_status_id' => 2, 'start_date' => '2026-03-11', 'created_at' => now(), 'updated_at' => now()
+            ],
+            [
+                'entry_id' => 63, 'profile_id' => 17, 'indicator_id' => 8,
+                'experience_title' => 'Wind Farm Layout Plan', 'associated_year' => 3,
+                'experience_tasks' => 'Optimizing turbine spacing to limit internal wake shading losses',
+                'key_learnings' => 'Utilized fluid velocity wake models to position configurations out of up-wind turbulence cones.',
+                'future_applications' => 'Maximizing capacity factors for coastal wind generation systems.',
+                'entry_level_id' => 4, 'entry_status_id' => 2, 'start_date' => '2026-07-05', 'created_at' => now(), 'updated_at' => now()
+            ],
         ]);
 
         DB::table('cdl_modules')->insert([
@@ -1036,6 +1301,44 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now()
             ],
+        ]);
+
+        DB::table('networking_event_questions')->insert([
+            ['event_id' => 1, 'question_order' => 1, 'question_text' => 'What has been the biggest shift in sustainable infrastructure practice you have seen in the last five years?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 1, 'question_order' => 2, 'question_text' => 'How do you approach balancing budget constraints with sustainable design outcomes?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 2, 'question_order' => 1, 'question_text' => 'What does your graduate program look like and what skills are you prioritising this year?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 2, 'question_order' => 2, 'question_text' => 'What differentiates a strong graduate application from an average one?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 2, 'question_order' => 3, 'question_text' => 'Are there opportunities for mechanical engineering graduates in your energy division?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 3, 'question_order' => 1, 'question_text' => 'What are the current limitations of machine learning in predictive maintenance applications?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 3, 'question_order' => 2, 'question_text' => 'How do you validate a predictive model before deploying it on critical infrastructure?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 5, 'question_order' => 1, 'question_text' => 'What software stack does Arup typically use for digital twin development?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 5, 'question_order' => 2, 'question_text' => 'How do you handle data accuracy and sensor drift in long-running digital twin models?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 6, 'question_order' => 1, 'question_text' => 'What are the main engineering challenges in scaling hydrogen production in South Australia?', 'created_at' => now(), 'updated_at' => now()],
+            ['event_id' => 6, 'question_order' => 2, 'question_text' => 'How does the Spencer Gulf project compare to international hydrogen hubs in terms of timeline?', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('competency_evidences')->insert([
+            ['entry_id' => 1, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/bridge_project_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 1, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/bridge_cad_model.png', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 2, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/wiring_diagram.png', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 3, 'evidence_type' => 'url', 'evidence_value' => 'https://github.com/alex-smith/csv-automation', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 3, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/python_script_output.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 4, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/robotics_team_photo.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 4, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/robotics_meeting_minutes.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 5, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/carbon_audit_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 7, 'evidence_type' => 'url', 'evidence_value' => 'https://linkedin.com/in/alex-smith', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 8, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/pid_lab_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 8, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/pid_oscillation_plot.png', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 9, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/challenger_case_study.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 12, 'evidence_type' => 'image', 'evidence_value' => 'uploads/evidence/port_adelaide_site.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 13, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/solar_array_report.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 13, 'evidence_type' => 'url', 'evidence_value' => 'https://alex-eng.com/solar-report', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 15, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/risk_register.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 17, 'evidence_type' => 'url', 'evidence_value' => 'https://github.com/alex-smith/git-workshop', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 20, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/steel_bridge_fem.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 23, 'evidence_type' => 'url', 'evidence_value' => 'https://github.com/samuel-chen/aws-deploy', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 25, 'evidence_type' => 'document', 'evidence_value' => 'uploads/evidence/recycled_concrete_research.pdf', 'created_at' => now(), 'updated_at' => now()],
+            ['entry_id' => 25, 'evidence_type' => 'url', 'evidence_value' => 'https://doi.org/10.1016/j.conbuildmat.2024.01.001', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

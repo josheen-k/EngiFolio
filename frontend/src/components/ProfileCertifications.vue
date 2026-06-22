@@ -95,39 +95,51 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router'
 import api from "@/services/api";
 
+// Used for accessing the route parameters for backend call
 const route = useRoute();
+
+// Store profile data rendered by vue and loading status
 const profile = ref(null);
 const loading = ref(true);
+
+// Keep track of the index for the current certificates
 const achIndex = ref(0)
 const attIndex = ref(0)
 
-function prevAch() { 
+// Reduce achievement index by one if possible
+const prevAch = () => { 
     if (achIndex.value>0) {
         achIndex.value--
     }
 }
-function nextAch() { 
-    if (profile.value && achIndex.value < profile.value.achievement_certs.length - 1) {
+
+// Increase achievement index by one if possible
+const nextAch = () =>{ 
+    if (achIndex.value < profile.value?.achievement_certs?.length - 1) {
         achIndex.value++ 
     }
 }
-function prevAtt() { 
+
+// Reduce attainment index by one if possible
+const prevAtt = () => { 
     if (attIndex.value>0) {
         attIndex.value-- 
     }
 }
-function nextAtt() { 
-    if (profile.value && attIndex.value < profile.value.attainment_certs.length - 1) {
+
+// Increase attainment index by one if possible
+const nextAtt = () => { 
+    if (attIndex.value < profile.value?.attainment_certs?.length - 1) {
         attIndex.value++ 
     }
 }
 
-// return position class relative to the active index
-function cardClass(i, activeIndex) {
+// Return position class relative to the active index
+const cardClass = (i, activeIndex) => {
     const diff = i-activeIndex
     if (diff===0) {
         return 'card-center'
@@ -141,28 +153,34 @@ function cardClass(i, activeIndex) {
     return 'card-hidden'
 }
 
-function formatDate(str) {
-    if (!str) {
+// Format the certificate dates into a better visual representation
+const formatDate = (rawDate) => {
+    if (rawDate) {
+        // Takes a raw text string and passes it to the date constructor 
+        const d = new Date(rawDate)
+        // Formats the date data into British order (DD MM YYYY)
+        // Day and year are represented by a number and the month is a short abbreviation (E.g., 1 Jan 2026) 
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    } else {
         return ''
     }
-    const d = new Date(str)
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+// Fetches profile data from backend asynchronously without interrupting main code
 const loadProfile = async () => {
     try {
+        // Pause execution here while waiting for a response without blocking the rest of the browser
         const response = await api.get(`/profile/${route.params.id}`);
-        profile.value = response.data.profile || response.data;
+        profile.value = response.data;
+        loading.value = false;
     } catch (error) {
         console.error("Error while fetching profile:", error);
-    } finally {
-        loading.value = false;
     }
 };
 
-onMounted(() => {
-    loadProfile();
-})
+// Load profile data immediately
+loadProfile();
+
 </script>
 
 <style scoped>

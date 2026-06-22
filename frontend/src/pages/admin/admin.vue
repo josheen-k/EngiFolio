@@ -1,6 +1,6 @@
 <template>
   <div class="admin-page">
-    <Navbar />
+    <AdminNavbar />
 
     <main class="container-xl py-4 px-4 px-md-5 admin-main">
       <section class="page-header mb-4">
@@ -13,21 +13,20 @@
       <!-- Summary cards: totals mirror backend aggregation over the current result set (same request as the table). -->
       <section class="stats-grid mb-4">
         <article class="stat-card">
+          <p class="stat-label">Students</p>
+          <p class="stat-value">{{ totalStudents }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Staff</p>
+          <p class="stat-value">{{ totalStaff }}</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Admins</p>
+          <p class="stat-value">{{ totalAdmins }}</p>
+        </article>
+        <article class="stat-card">
           <p class="stat-label">Total Users</p>
           <p class="stat-value">{{ totalUsers }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Total Goals Logged</p>
-          <p class="stat-value">{{ totalGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Completed Goals</p>
-          <p class="stat-value">{{ totalCompletedGoals }}</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-label">Open Goals</p>
-          <!-- Derived on the client; backend exposes completed count via goal_status_id = 3. -->
-          <p class="stat-value">{{ Math.max(0, totalGoals - totalCompletedGoals) }}</p>
         </article>
       </section>
 
@@ -35,23 +34,99 @@
       <section class="panel-card mb-4">
         <h2 class="panel-title mb-3">Create User</h2>
         <form class="create-user-form" @submit.prevent="createUser">
-          <!-- Role IDs align with backend seed data: 1=Admin, 2=Staff, 3=Student. -->
-          <select v-model.number="newUser.role_id" class="filter-select" required>
-            <option :value="1">Admin</option>
-            <option :value="2">Staff</option>
-            <option :value="3">Student</option>
-          </select>
-          <input v-model.trim="newUser.username" type="text" class="filter-input" placeholder="ID (max 9 chars)" maxlength="9" required />
-          <input v-model.trim="newUser.email" type="email" class="filter-input" placeholder="Email" required />
-          <input v-model.trim="newUser.first_name" type="text" class="filter-input" placeholder="First name (optional)" />
-          <input v-model.trim="newUser.last_name" type="text" class="filter-input" placeholder="Last name" required />
-          <input v-model="newUser.password" type="password" class="filter-input" placeholder="Password (min 6 chars)" minlength="6" required />
-          <button type="submit" class="btn page-btn-primary" :disabled="creatingUser">
-            {{ creatingUser ? 'Creating...' : 'Create User' }}
-          </button>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="create-role">Role</label>
+              <select id="create-role" v-model.number="newUser.role_id" class="filter-select" required>
+                <option :value="1">Admin</option>
+                <option :value="2">Staff</option>
+                <option :value="3">Student</option>
+              </select>
+            </div>
+            <div class="form-field form-field-id">
+              <label for="create-username">ID</label>
+              <input
+                id="create-username"
+                ref="usernameInput"
+                v-model.trim="newUser.username"
+                type="text"
+                class="filter-input"
+                placeholder="e.g. a123456"
+                maxlength="9"
+                required
+                @input="clearUsernameValidation"
+                @blur="checkUsernameAvailable"
+              />
+            </div>
+            <div class="form-field">
+              <label for="create-email">Email</label>
+              <input
+                id="create-email"
+                ref="emailInput"
+                v-model.trim="newUser.email"
+                type="email"
+                class="filter-input"
+                placeholder="name@adelaide.edu.au"
+                required
+                @input="clearEmailValidation"
+                @blur="checkEmailAvailable"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="create-first-name">First name</label>
+              <input
+                id="create-first-name"
+                v-model.trim="newUser.first_name"
+                type="text"
+                class="filter-input"
+                placeholder="First name"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="create-last-name">Last name</label>
+              <input
+                id="create-last-name"
+                v-model.trim="newUser.last_name"
+                type="text"
+                class="filter-input"
+                placeholder="Last name"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="create-password">Password</label>
+              <input
+                id="create-password"
+                v-model="newUser.password"
+                type="password"
+                class="filter-input"
+                placeholder="Minimum 6 characters"
+                minlength="6"
+                required
+              />
+            </div>
+          </div>
+
+          <div v-if="newUser.role_id === 3" class="form-row form-row-student">
+            <div class="form-field form-field-year">
+              <label for="create-year">Start year</label>
+              <select id="create-year" v-model.number="newUser.year_started" class="filter-select" required>
+                <option disabled value="">Select start year</option>
+                <option v-for="year in yearOptions" :key="year" :value="year">{{ year }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn page-btn-primary create-user-btn" :disabled="creatingUser">
+              {{ creatingUser ? 'Creating...' : 'Create User' }}
+            </button>
+          </div>
         </form>
-        <p v-if="actionSuccess" class="action-feedback success-text mb-0 mt-2">{{ actionSuccess }}</p>
-        <p v-if="actionError" class="action-feedback error-text mb-0 mt-2">{{ actionError }}</p>
       </section>
 
       <section class="panel-card mb-4">
@@ -89,6 +164,15 @@
 
         <div class="table-scroll">
           <table class="admin-table">
+            <colgroup>
+              <col class="col-user" />
+              <col class="col-role" />
+              <col class="col-id" />
+              <col class="col-goals" />
+              <col class="col-completed" />
+              <col class="col-date" />
+              <col class="col-actions" />
+            </colgroup>
             <thead>
               <tr>
                 <th>User</th>
@@ -149,7 +233,7 @@
                       aria-label="Delete user"
                       title="Delete"
                       :disabled="deletingUserId === user.user_id"
-                      @click="deleteUser(user)"
+                      @click="showDeleteConfirm = true, userToDelete = user; "
                     >
                       <img :src="deleteIcon" alt="" class="action-icon-image" aria-hidden="true" />
                     </button>
@@ -176,17 +260,32 @@
       -->
     </main>
   </div>
+  <div v-if="popUp.show" class="popUp-msg" :class="popUp.type">
+    {{ popUp.message }}
+  </div>
+
+  <!--Delete confirm -->
+  <div v-if="showDeleteConfirm" class="view-popup" @click.self="showDeleteConfirm = false">
+    <div class="delete-box text-center p-4">
+      <h5 class="fw-bold mb-2 field-label delete-title">Delete user {{ userToDelete?.username || userToDelete?.email }}? This cannot be undone.</h5>
+
+      <div class="d-flex gap-2 justify-content-center">
+        <button class="btn btn-filter" @click="showDeleteConfirm = false">Cancel</button>
+        <button class="btn btn-add rounded-pill px-4" @click="deleteUser(userToDelete); showDeleteConfirm = false">Delete</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '@/components/Navbar.vue'
 import api from '@/services/api'
 import profileIcon from '@/assets/default.jpg'
 import goalsIcon from '@/assets/edit.png'
 import deleteIcon from '@/assets/delete.png'
+import AdminNavbar from '@/components/AdminNavbar.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -195,8 +294,18 @@ const loading = ref(false)
 const loadError = ref('')
 const creatingUser = ref(false)
 const deletingUserId = ref(null)
-const actionError = ref('')
-const actionSuccess = ref('')
+const userToDelete = ref(null)
+const showDeleteConfirm = ref(false)
+
+const currentYear = new Date().getFullYear()
+
+const yearOptions = computed(() => {
+  const years = []
+  for (let year = currentYear - 6; year <= currentYear + 2; year += 1) {
+    years.push(year)
+  }
+  return years
+})
 
 const newUser = ref({
   // Role mapping in this project: 1 = Admin, 2 = Staff, 3 = Student.
@@ -206,14 +315,16 @@ const newUser = ref({
   email: '',
   first_name: '',
   last_name: '',
-  password: ''
+  password: '',
+  year_started: '',
 })
 
 // Populated from the same /admin/users-overview response as the table (totals are sums over returned rows).
 const stats = ref({
   totalUsers: 0,
-  totalGoals: 0,
-  totalCompletedGoals: 0
+  totalStudents: 0,
+  totalStaff: 0,
+  totalAdmins: 0,
 })
 
 const filteredUsers = computed(() => {
@@ -222,8 +333,46 @@ const filteredUsers = computed(() => {
 })
 
 const totalUsers = computed(() => stats.value.totalUsers)
-const totalGoals = computed(() => stats.value.totalGoals)
-const totalCompletedGoals = computed(() => stats.value.totalCompletedGoals)
+const totalStudents = computed(() => stats.value.totalStudents)
+const totalStaff = computed(() => stats.value.totalStaff)
+const totalAdmins = computed(() => stats.value.totalAdmins)
+
+// Object to store data about the popup message
+const popUp = ref({ show: false, message: '', type: '' })
+// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+const popUpTime = 3000
+
+// Used to display the popup message and the type being either success or error
+const showPopUp = (message, type) => {
+  popUp.value = { show: true, message, type }
+  setTimeout(() => popUp.value.show = false, popUpTime)
+}
+
+const usernameInput = ref(null)
+const emailInput = ref(null)
+
+// Inline field validation via the browser constraint API (same bubble UI for ID and email).
+const clearUsernameValidation = () => {
+  usernameInput.value?.setCustomValidity('')
+}
+
+const showUsernameValidation = (message) => {
+  if (usernameInput.value) {
+    usernameInput.value.setCustomValidity(message)
+    usernameInput.value.reportValidity()
+  }
+}
+
+const clearEmailValidation = () => {
+  emailInput.value?.setCustomValidity('')
+}
+
+const showEmailValidation = (message) => {
+  if (emailInput.value) {
+    emailInput.value.setCustomValidity(message)
+    emailInput.value.reportValidity()
+  }
+}
 
 const fetchUsersOverview = async () => {
   try {
@@ -245,8 +394,9 @@ const fetchUsersOverview = async () => {
     users.value = response.data.users || []
     stats.value = response.data.stats || {
       totalUsers: 0,
-      totalGoals: 0,
-      totalCompletedGoals: 0
+      totalStudents: 0,
+      totalStaff: 0,
+      totalAdmins: 0,
     }
   } catch (error) {
     // Reset displayed data on failure so stale results are not shown.
@@ -254,8 +404,9 @@ const fetchUsersOverview = async () => {
     users.value = []
     stats.value = {
       totalUsers: 0,
-      totalGoals: 0,
-      totalCompletedGoals: 0
+      totalStudents: 0,
+      totalStaff: 0,
+      totalAdmins: 0,
     }
     // Prefer the backend error message when available.
     loadError.value = error.response?.data?.message || 'Failed to load user management data'
@@ -289,23 +440,125 @@ const resetCreateForm = () => {
     email: '',
     first_name: '',
     last_name: '',
-    password: ''
+    password: '',
+    year_started: '',
+  }
+  clearUsernameValidation()
+  clearEmailValidation()
+}
+
+// Check ID uniqueness on blur and before submit; local list first, then server search.
+const checkUsernameAvailable = async () => {
+  const id = newUser.value.username.trim()
+  if (!id) {
+    clearUsernameValidation()
+    return true
+  }
+
+  // Fast path: already loaded in the current overview table.
+  if (users.value.some((user) => user.username === id)) {
+    showUsernameValidation('This ID is already in use.')
+    return false
+  }
+
+  try {
+    // `q` matches username on the server; catches users outside the current table page/filter.
+    const response = await api.get('/admin/users-overview', { params: { q: id } })
+    const taken = (response.data.users || []).some((user) => user.username === id)
+    if (taken) {
+      showUsernameValidation('This ID is already in use.')
+      return false
+    }
+    clearUsernameValidation()
+    return true
+  } catch {
+    // Do not block submit if the availability check request fails.
+    clearUsernameValidation()
+    return true
   }
 }
 
+// Same availability pattern as ID; email comparison is case-insensitive.
+const checkEmailAvailable = async () => {
+  const email = newUser.value.email.trim()
+  if (!email) {
+    clearEmailValidation()
+    return true
+  }
+
+  if (users.value.some((user) => user.email.toLowerCase() === email.toLowerCase())) {
+    showEmailValidation('This email is already in use.')
+    return false
+  }
+
+  try {
+    const response = await api.get('/admin/users-overview', { params: { q: email } })
+    const taken = (response.data.users || []).some(
+      (user) => user.email.toLowerCase() === email.toLowerCase()
+    )
+    if (taken) {
+      showEmailValidation('This email is already in use.')
+      return false
+    }
+    clearEmailValidation()
+    return true
+  } catch {
+    clearEmailValidation()
+    return true
+  }
+}
+
+// Map Laravel validation errors to short messages for inline field feedback.
+const getCreateUserErrorMessage = (error) => {
+  const errors = error.response?.data?.errors // ?.
+  if (errors?.username?.length) {
+    return 'This ID is already in use.'
+  }
+  if (errors?.email?.length) {
+    return 'This email is already in use.'
+  }
+  return error.response?.data?.message || 'Failed to create user.'
+}
+
 const createUser = async () => {
+  if (newUser.value.role_id === 3 && !newUser.value.year_started) {
+    showPopUp('Please select a start year for the student.', 'error')
+    return
+  }
+
+  const idAvailable = await checkUsernameAvailable()
+  if (!idAvailable) {
+    return
+  }
+
+  const emailAvailable = await checkEmailAvailable()
+  if (!emailAvailable) {
+    return
+  }
+
   try {
     creatingUser.value = true
-    actionError.value = ''
-    actionSuccess.value = ''
-    // Backend expects role_id, names, email, and plaintext password for hashing server-side.
-    await api.post('/admin/users', newUser.value)
-    actionSuccess.value = 'User created successfully.'
+    const payload = { ...newUser.value } // Create a copy of the newUser object to avoid mutating it directly when deleting year_started for non-students.
+    if (payload.role_id !== 3) {
+      delete payload.year_started
+    }
+    await api.post('/admin/users', payload)
+    showPopUp("User created successfully.", "success")
     resetCreateForm()
     await fetchUsersOverview()
   } catch (error) {
     console.error('Failed to create user:', error)
-    actionError.value = error.response?.data?.message || 'Failed to create user'
+    const message = getCreateUserErrorMessage(error)
+    // Duplicate ID/email: show on the field; other errors use the top toast.
+    if (message === 'This ID is already in use.') {
+      showUsernameValidation(message)
+      return
+    }
+    if (message === 'This email is already in use.') {
+      showEmailValidation(message)
+      return
+    }
+    showPopUp(message, "error")
   } finally {
     creatingUser.value = false
   }
@@ -326,80 +579,142 @@ const viewGoals = (user) => {
 }
 
 const escapeCsvCell = (value) => {
-  const text = String(value ?? '')
-  return `"${text.replace(/"/g, '""')}"`
+  const text = String(value ?? '') // Convert null/undefined to empty string and ensure value is a string for replacement
+  return `"${text.replace(/"/g, '""')}"` //replace " with "" and wrap in quotes to escape for CSV
 }
 
 const exportUsersCsv = () => {
   if (users.value.length === 0) {
-    alert('No users to export.')
-    return
-  }
-
-  const lines = [
-    '"----- User Management -----"',
-    [
-      'Name',
-      'Email',
-      'Role',
-      'ID',
-      'Goals',
-      'Completed',
-      'Last Updated'
-    ]
-      .map(escapeCsvCell)
-      .join(',')
-  ]
-
-  users.value.forEach((user) => {
-    lines.push(
-      [
-        user.name,
-        user.email,
-        user.role,
-        user.username || '-',
-        user.goals,
-        user.completedGoals,
-        user.updatedAt || ''
-      ]
-        .map(escapeCsvCell)
-        .join(',')
-    )
-  })
-
-  lines.push('')
-  lines.push(
-    [
-      escapeCsvCell('Total Users'),
-      escapeCsvCell(stats.value.totalUsers),
-      escapeCsvCell('Total Goals'),
-      escapeCsvCell(stats.value.totalGoals),
-      escapeCsvCell('Completed Goals'),
-      escapeCsvCell(stats.value.totalCompletedGoals)
-    ].join(',')
-  )
-
-  const blob = new Blob(['\ufeff', lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(blob)
-  link.setAttribute('href', url)
-  link.setAttribute('download', 'user_management_export.csv')
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-
-  alert('Downloading exported data')
-}
-
-const exportUsersPdf = async () => {
-  if (users.value.length === 0) {
-    alert('No users to export.')
+    showPopUp('No users to export.', 'error')
     return
   }
 
   try {
+    const lines = ['"----- User Management -----"']
+
+    // Push user stats to the lines array
+    lines.push(
+      [
+        escapeCsvCell('Total Users'),
+        escapeCsvCell(stats.value.totalUsers),
+        escapeCsvCell('Students'),
+        escapeCsvCell(stats.value.totalStudents),
+        escapeCsvCell('Staff'),
+        escapeCsvCell(stats.value.totalStaff),
+        escapeCsvCell('Admins'),
+        escapeCsvCell(stats.value.totalAdmins)
+      ].join(',')
+    )
+    lines.push('')
+
+    // Filter into students, staff and admin
+    const students = users.value.filter((user) => user.role === 'Student')
+    const staff = users.value.filter((user) => user.role === 'Staff')
+    const admins = users.value.filter((user) => user.role === 'Admin')
+
+    // Add student stats and amount of possible competency indicators
+    lines.push(`"Students: ${students.length}"`)
+    lines.push(`"Student Details And Competency Level Count Out Of ${stats.value.totalIndicators ?? ''}"`)
+
+
+    // Group the students by their year starting with an empty object
+    const byYear = students.reduce((groups, user) => {
+      // If a year does not exist then add to no year
+      const year = user.year_started ?? 'No year'
+
+      // If a year does not exist in the groups then add it
+      if (!groups[year]) groups[year] = []
+
+      // Add the user to the group and return the group
+      groups[year].push(user)
+      return groups
+    }, {})
+
+    // Sort the years from oldest to newest
+    const sortedYears = Object.keys(byYear).sort((a, b) => {
+      if (a === 'No year') return 1
+      if (b === 'No year') return -1
+      return Number(a) - Number(b)
+    })
+
+    // Go through each year and add the students for each year level
+    sortedYears.forEach((year) => {
+      // Add the year number and titles
+      lines.push(`"${year}"`)
+      lines.push(['Name', 'Email', 'ID', 'Not Started', 'Emerging', 'Developing', 'Proficient', 'Confident'].map(escapeCsvCell).join(','))
+      
+      // Add each student from that year into the file
+      byYear[year].forEach((user) => {
+        lines.push(
+          [
+            user.name,
+            user.email,
+            user.username || '-',
+            user.notStarted,
+            user.levels?.Emerging ?? 0, // Use optional chaining ?. and nullish coalescing to handle missing levels or counts
+            user.levels?.Developing ?? 0,
+            user.levels?.Proficient ?? 0,
+            user.levels?.Confident ?? 0
+          ]
+            .map(escapeCsvCell)
+            .join(',')
+        )
+      })
+      lines.push('')
+    })
+
+    // Add staff members section and all users who are staff
+    lines.push(`"Staff members: ${staff.length}"`)
+    lines.push(['Name', 'Email', 'ID'].map(escapeCsvCell).join(','))
+    if (staff.length === 0) {
+      lines.push(escapeCsvCell('No staff members found.'))
+    } else {
+      staff.forEach((user) => {
+        lines.push([user.name, user.email, user.username || '-'].map(escapeCsvCell).join(',')) // Map each field to an escaped CSV cell and join with commas
+      })
+    }
+    lines.push('')
+
+    // Add admin members sections and all members who are admins
+    lines.push(`"Admins: ${admins.length}"`)
+    lines.push(['Name', 'Email', 'ID'].map(escapeCsvCell).join(','))
+    if (admins.length === 0) {
+      lines.push(escapeCsvCell('No users in this group.'))
+    } else {
+      admins.forEach((user) => {
+        lines.push([user.name, user.email, user.username || '-'].map(escapeCsvCell).join(','))
+      })
+    }
+
+    // Create and download the CSV file
+    const blob = new Blob(['\ufeff', lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'user_management_export.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    showPopUp('Downloading exported data', 'success')
+
+  } catch {
+    showPopUp('Error downloading data', 'error')
+  }
+
+}
+
+// PDF export is generated on the server so layout matches the admin overview report.
+const exportUsersPdf = async () => {
+  if (users.value.length === 0) {
+    showPopUp('No users to export.', 'error')
+    return
+  }
+
+  try {
+    // Pass the same search filter as the table so the PDF matches what is on screen.
     const params = {}
     const query = searchQuery.value.trim()
     if (query) {
@@ -412,6 +727,7 @@ const exportUsersPdf = async () => {
       headers: { Accept: 'application/pdf' }
     })
 
+    // Trigger a browser download from the PDF blob returned by the API.
     const blob = new Blob([response.data], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -422,30 +738,22 @@ const exportUsersPdf = async () => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    alert('PDF downloaded successfully')
+    showPopUp('PDF downloaded successfully', 'success')
   } catch (error) {
     console.error('Failed to export user management PDF:', error)
-    alert('Error generating the PDF.')
+    showPopUp('Error generating the PDF.', 'error')
   }
 }
 
 const deleteUser = async (user) => {
-  // Simple confirmation guard for a destructive operation.
-  const confirmed = window.confirm(`Delete user ${user.username || user.email}? This cannot be undone.`)
-  if (!confirmed) {
-    return
-  }
-
   try {
     deletingUserId.value = user.user_id
-    actionError.value = ''
-    actionSuccess.value = ''
     await api.delete(`/admin/users/${user.user_id}`)
-    actionSuccess.value = 'User deleted successfully.'
+    showPopUp("User deleted successfully.", "success")
     await fetchUsersOverview()
   } catch (error) {
     console.error('Failed to delete user:', error)
-    actionError.value = error.response?.data?.message || 'Failed to delete user'
+    showPopUp("Failed to delete user", "error")
   } finally {
     deletingUserId.value = null
   }
@@ -489,19 +797,20 @@ const deleteUser = async (user) => {
   border-radius: 1rem;
   padding: 1rem 1.1rem;
   background: #fbfbfb;
+  text-align: center;
 }
 
 .stat-label {
   margin: 0;
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   color: #707070;
 }
 
 .stat-value {
   margin: 0.35rem 0 0;
   font-family: 'Martel', serif;
-  font-size: 1.9rem;
+  font-size: 2.25rem;
 }
 
 .panel-card {
@@ -512,9 +821,75 @@ const deleteUser = async (user) => {
 }
 
 .create-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.create-user-form .form-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
+  gap: 0.85rem 1rem;
+  align-items: end;
+}
+
+.create-user-form .form-row-student {
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 0.15rem;
+}
+
+.create-user-form .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.create-user-form .form-field label {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #666666;
+}
+
+.create-user-form .form-field-year {
+  max-width: 14rem;
+}
+
+.create-user-form .filter-input,
+.create-user-form .filter-select {
+  width: 100%;
+  min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-user-form .filter-input:focus,
+.create-user-form .filter-select:focus {
+  outline: none;
+  border-color: #8a8a8a;
+  box-shadow: 0 0 0 3px rgba(43, 43, 43, 0.08);
+}
+
+.create-user-form .form-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  margin-top: 0.15rem;
+  border-top: 1px solid #ececec;
+}
+
+.create-user-btn {
+  padding: 0.55rem 1.5rem;
+  min-height: 2.5rem;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.create-user-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .panel-head {
@@ -612,24 +987,55 @@ const deleteUser = async (user) => {
 
 .admin-table {
   width: 100%;
-  min-width: 860px;
+  min-width: 920px;
+  table-layout: fixed;
   border: 1px solid #dddddd;
   border-collapse: separate;
   border-spacing: 0;
   background: #ffffff;
 }
 
+.admin-table .col-user {
+  width: 26%;
+}
+
+.admin-table .col-role {
+  width: 9%;
+}
+
+.admin-table .col-id {
+  width: 10%;
+}
+
+.admin-table .col-goals {
+  width: 8%;
+}
+
+.admin-table .col-completed {
+  width: 9%;
+}
+
+.admin-table .col-date {
+  width: 14%;
+}
+
+.admin-table .col-actions {
+  width: 9.5rem;
+}
+
 .admin-table th,
 .admin-table td {
   padding: 0.82rem 0.75rem;
   border-bottom: 1px solid #e6e6e6;
+  text-align: center;
   vertical-align: middle;
+  font-size: 0.95rem;
 }
 
 .admin-table th {
   background: #f3f3f3;
   font-family: 'Montserrat Alternates', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   color: #333333;
   font-weight: 500;
 }
@@ -640,16 +1046,22 @@ const deleteUser = async (user) => {
 
 .user-name {
   font-weight: 600;
+  text-align: center;
 }
 
 .user-email {
   color: #6c6c6c;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.admin-table th:nth-child(6),
+.admin-table td:nth-child(6) {
+  white-space: nowrap;
 }
 
 .actions-col,
 .actions-cell {
-  width: 1%;
   white-space: nowrap;
 }
 
@@ -662,7 +1074,8 @@ const deleteUser = async (user) => {
   flex-direction: row;
   gap: 0.55rem;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 .action-icon-btn {
@@ -724,54 +1137,77 @@ const deleteUser = async (user) => {
   color: #ffffff;
 }
 
-.page-btn-outline {
-  background: #ffffff;
-  color: #2b2b2b;
-  border: 1px solid #cfcfcf;
-}
-
-.page-btn-outline:hover {
-  background: #f3f3f3;
-}
-
-.page-btn-danger {
-  background: #b42318;
-  color: #ffffff;
-  border: 1px solid #b42318;
-}
-
-.page-btn-danger:hover {
-  background: #912018;
-  color: #ffffff;
-}
-
-.action-feedback {
-  font-size: 0.92rem;
-}
-
-.success-text {
-  color: #166534;
-}
-
-.error-text {
-  color: #b42318;
-}
-
 .empty-state {
   text-align: center;
   color: #707070;
   padding: 1rem;
 }
 
-.quick-actions .panel-title {
-  margin-bottom: 0.7rem;
+.popUp-msg {
+  position: fixed;
+  top: 5rem;   
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.75rem 2rem;
+  border-radius: 2rem; 
+  font-family: 'Maven Pro', sans-serif;
+  font-size: 1.15rem;
 }
 
-.quick-action-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.6rem;
+.popUp-msg.success {
+  background: #5d5d5d;
+  color: #fff;
 }
+
+.popUp-msg.error {
+  background: #db7979;
+  color: #fff;
+}
+
+.view-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(0.375rem);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.delete-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  max-width: 22.5rem;
+  width: 100%;
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.2);
+}
+
+.delete-box .btn-filter,
+.delete-box .btn-add {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.delete-box .btn-add {
+  background: #555555;
+  color: #ffffff;
+}
+
+.delete-box .btn-add:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.delete-title {
+  font-family: 'Montserrat Alternates', sans-serif;
+  font-size: 1.1rem;
+  color: #222222;
+}
+
 
 @media (max-width: 992px) {
   .page-title {
@@ -792,8 +1228,12 @@ const deleteUser = async (user) => {
     align-items: stretch;
   }
 
-  .create-user-form {
+  .create-user-form .form-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .create-user-form .form-field-year {
+    max-width: none;
   }
 
   .filter-input {
@@ -815,11 +1255,7 @@ const deleteUser = async (user) => {
     grid-template-columns: 1fr;
   }
 
-  .create-user-form {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-action-grid {
+  .create-user-form .form-row {
     grid-template-columns: 1fr;
   }
 }

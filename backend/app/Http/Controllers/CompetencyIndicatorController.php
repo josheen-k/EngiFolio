@@ -13,8 +13,7 @@ class CompetencyIndicatorController extends Controller
      */
     public function index()
     {
-        $indicators = CompetencyIndicator::all();
-
+        $indicators = CompetencyIndicator::with('attainmentIndicators')->get();
         return response()->json($indicators);
     }
 
@@ -24,6 +23,24 @@ class CompetencyIndicatorController extends Controller
     public function store(Request $request)
     {
         //
+        $validated = $request->validate([
+            'group_id'                => 'required|exists:competency_groups,group_id',
+            'display_id'              => 'required|string|max:5',
+            'indicator_name'          => 'required|string|max:255',
+            'description'             => 'required|string',
+            'indicator_link'          => 'nullable|url',
+            'discontinued_date'       => 'nullable|date',
+            'attainment_indicators'   => 'nullable|array',
+            'attainment_indicators.*' => 'string',
+        ]);
+
+        $indicator = CompetencyIndicator::create($validated);
+
+        foreach ($validated['attainment_indicators'] ?? [] as $text) {
+            $indicator->attainmentIndicators()->create(['attainment_indicator' => $text]);
+        }
+
+        return response()->json($indicator->load('attainmentIndicators'), 201);
     }
 
     /**
@@ -44,6 +61,27 @@ class CompetencyIndicatorController extends Controller
     public function update(Request $request, CompetencyIndicator $competencyIndicator)
     {
         //
+        $validated = $request->validate([
+            'group_id'                => 'sometimes|required|exists:competency_groups,group_id',
+            'display_id'              => 'sometimes|required|string|max:5',
+            'indicator_name'          => 'sometimes|required|string|max:255',
+            'description'             => 'sometimes|required|string',
+            'indicator_link'          => 'nullable|url',
+            'discontinued_date'       => 'nullable|date',
+            'attainment_indicators'   => 'nullable|array',
+            'attainment_indicators.*' => 'string',
+        ]);
+
+        $competencyIndicator->update($validated);
+
+        if (array_key_exists('attainment_indicators', $validated)) {
+            $competencyIndicator->attainmentIndicators()->delete();
+            foreach ($validated['attainment_indicators'] as $text) {
+                $competencyIndicator->attainmentIndicators()->create(['attainment_indicator' => $text]);
+            }
+        }
+
+        return response()->json($competencyIndicator->load('attainmentIndicators'));
     }
 
     /**
@@ -52,6 +90,9 @@ class CompetencyIndicatorController extends Controller
     public function destroy(CompetencyIndicator $competencyIndicator)
     {
         //
+        $competencyIndicator->attainmentIndicators()->delete();
+        $competencyIndicator->delete();
+        return response()->json(['message' => 'Deleted successfully']);
     }
 
     // Retrieves all competencies and count of how many entries the student has for each and highest level

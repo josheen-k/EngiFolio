@@ -18,6 +18,7 @@ class StudentProfile extends Model
         'specialisation',
         'personal_intro',
         'profile_image_url',
+        'year_started',
     ];
 
     public function user()
@@ -73,7 +74,7 @@ class StudentProfile extends Model
 
     public function actions()
     {
-        return $this->hasMany(StudentAction::class, 'profile_id', 'profile_id');
+        return $this->hasMany(StudentAction::class, 'student_profile_id', 'profile_id');
     }
 
     public function smartGoals()

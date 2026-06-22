@@ -28,11 +28,6 @@
           <label v-if="errors.imageType" class="field-label error-message">*Invalid image type</label>
           <label v-else-if="errors.imageSize" class="field-label error-message">*Image is too large. Must be less than 2MB.</label>
         </div>
-          <div class="col-12 col-sm-2 d-flex align-items-end">
-            <button v-if="profile.profile_image_url" class="remove-btn" @click="removeImage" title="Remove link">
-                <img src="@/assets/delete.png" class="del-icon" alt="remove" />
-            </button>
-          </div>
       </div>
     </section>
 
@@ -145,36 +140,48 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import Navbar from '@/components/Navbar.vue'
   import api from "@/services/api";
 
+  // Variables for getting and changing URL information
   const router = useRouter();
   const route = useRoute();
-  const profile = ref(null);
-  const loading = ref(true);
-  const linksToDelete = ref([]);
-  const errors = ref({});
-  const showCancelConfirm = ref(false)
+
+  // Store original profile information, changed profile information and links get deleted when the profile is saved
   const originalProfile = ref(null)
+  const profile = ref(null);
+  const linksToDelete = ref([]);
+
+  // Check if profile has loaded and store any errors that may occur
+  const loading = ref(true);
+  const errors = ref({});
+
+  // For hiding or showing cancel prompt when leaving the page
+  const showCancelConfirm = ref(false)
+  
+  // Store information related to the uploaded profile image
   const imageFileName = ref('')
   const imageFile = ref(null)
 
-  // Set up a pop up notification instead of having an alert
+  // Object to store data about the popup message
   const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
 
+  // Used to display the popup message and the type being either success or error
   const showPopUp = (message, type) => {
     popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
 
+  // Retrieve profile data from the backend
   const loadProfile = async () => {
-    // Get profile data, throw error if unsuccessful
     try {
       const response = await  api.get(`/profile/${route.params.id}`);
-      profile.value = response.data.profile || response.data;
-      // Store original profile as a string to check for changes
+      profile.value = response.data;
+      // Store original profile as a standard text format to check for changes
       originalProfile.value = JSON.stringify(profile.value)
       loading.value = false;
     } catch (error) {
@@ -182,9 +189,9 @@
     }
   };
 
-  // Adds an empty link to the frontend profile data when add link is clicked
-  // Restricted to 8 links
+  // Add an empty link to the frontend profile data when add link is clicked
   const addLink = () => {
+    // Restricted to only 8 links at a time so user does not add too many
     if (profile.value.links.length - linksToDelete.value.length < 8) {
       profile.value.links.push({
         link_label: '',
@@ -196,17 +203,20 @@
     }
   };
 
+  // Deletes link by adding it to an array of links to be deleted once the profile is saved
   const removeLink = (index) => {
     const link = profile.value.links[index];
     if (link.link_id) {
       linksToDelete.value.push(link.link_id);
     }  
+    // Remove link from index for currently rendering profile
     profile.value.links.splice(index, 1);
   };
 
   // Attempt to make a URL object to test if link is correct
-  function isValidUrl(url) {
+  const isValidUrl = (url) => {
     try {
+      // URL constructor throws an error if the url format is invalid
       new URL(url)
       return true
     } catch {
@@ -214,6 +224,7 @@
     }
   }
 
+  // Runs once the user selects to save their changes. Updates the profile and the links
   const saveChanges = async () => {
     try {
       // Check to see if any changes have been made. Ignore rest of the logic if no change
@@ -226,15 +237,16 @@
       // Reset errors
       errors.value = {}
 
-      // Check if last name is empty and add to errors if so
+      // Add errors to error object if last name is empty
       if (!profile.value.user.last_name.trim()) {
         errors.value.lastName = true
       }
 
-      // Remove all links without a label or a url
+      // Remove all links without a label or a url 
       profile.value.links = profile.value.links.filter(link => link.link_label || link.link_url);
 
       // Loop through each link, add entry to errors for the links located at position i
+      // Need to keep track of index i
       for (let i = 0; i < profile.value.links.length; i++) {
         const link = profile.value.links[i]
         if (!link.link_label) {
@@ -245,8 +257,8 @@
         } 
       }
 
-      // Check if error object contains any key value pairs by converting it into an array of keys
-      if (Object.keys(errors.value).length) {
+      // Convert object into JSON and check if it is empty to see if there are any errors
+      if (JSON.stringify(errors.value) !== '{}') {
         showPopUp("Could not save profile. Please fix highlighted fields.", "error");
         return;
       }
@@ -267,33 +279,33 @@
         const savedUrl = res.data.image_url;
         profile.value.profile_image_url = savedUrl;
 
-        // Local storage used by the dashboard for persistent profile images
+        // Update the local storage used by the dashboard with new url
         localStorage.setItem(`profile_img_${route.params.id}`, savedUrl);
       }
 
-      // Saves the main profile
+      // Update the student profile with changes
       await api.put(`/profile/${route.params.id}`, profile.value);
       
-      // Deletes the required links
+      // Create an array of calls for the links to be deleted
       const deletePromises = linksToDelete.value.map(id => api.delete(`/link/${id}`));
 
       // Handle Updates and Creations
-      const upsertPromises = profile.value.links.map(link => {
+      const updatesPromises = profile.value.links.map(link => {
         // Ignore empty rows
         if (!link.link_url.trim()) {
           return null;
         }
 
-        // Create or update the link
+        // If link exists then use put to update, else use post to create a new link and filter out empty rows
         if (link.link_id) {
           return api.put(`/link/${link.link_id}`, link);
         } else {
           return api.post(`/link`, link);
         }
-      }).filter(p => p !== null);
+      }).filter(links => links !== null);
 
-      // Execute all API calls
-      await Promise.all([...deletePromises, ...upsertPromises]);
+      // Combine the arrays of the deletes, adds and updates
+      await Promise.all([...deletePromises, ...updatesPromises]);
 
       // Clear the delete tracking for next time
       linksToDelete.value = [];
@@ -313,10 +325,12 @@
     }
   };
 
-  function imageUpload(e) {
-    // The event object passed, target is the input and the file[0] represents the image
+  // Temporarily add a new image to profile picture and display it. Get information ready in case of profile save
+  const imageUpload = (e) => {
+    // The event object passed, target is the input and the file[0] represents the image to be uploaded
     const file = e.target.files[0]
     if (file) {
+      // Set file name and the file itself
       imageFileName.value = file.name
       imageFile.value = file
 
@@ -329,13 +343,7 @@
     }
   }
 
-  const removeImage = () => {
-    profile.value.profile_image_url = null
-    imageFileName.value = ''
-    imageFile.value = null
-  }
-
-  // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
+  // Check if profile has been changed, if so load cancel confirmation so user does not unknowingly cancel with unsaved data
   const handleCancel = () => {
     // Convert objects so strings and compare for any changes, also check if there is a new image file
     const noChange = JSON.stringify(profile.value) === originalProfile.value && !imageFile.value;
@@ -346,14 +354,13 @@
     }
   }
 
-  // Redirect back to profile page without saving changes
+  // Redirect back to profile page
   const cancel = () => {
     router.push({ name: 'profile', params: { id: route.params.id } });
   };
 
-  onMounted(() => {
-    loadProfile();
-  })
+  // Run the load profile to get the profile data
+  loadProfile();
 </script>
 
 <style scoped>

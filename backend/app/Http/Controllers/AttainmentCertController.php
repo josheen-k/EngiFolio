@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AttainmentCert;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AttainmentCertController extends Controller
 {
@@ -61,7 +63,18 @@ class AttainmentCertController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy($id) {
-        AttainmentCert::findOrFail($id)->delete();
+        $cert = AttainmentCert::findOrFail($id);
+
+        // Deletes existing cert, find in storage folder with a file that starts with the url 
+        if ($cert && $cert->file_path) {
+            // Breaks the url into its parts
+            $parsed = parse_url($cert->file_path);
+            // Remove /storage/ as backend already knows this
+            $storagePath = str_replace('/storage/', '', $parsed['path']);
+            Storage::disk('public')->delete($storagePath);
+        }
+
+        $cert->delete();
 
         return response()->json(['message' => 'Attainment certificate successfully deleted']);
     }

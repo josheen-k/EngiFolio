@@ -1,31 +1,38 @@
 <script setup>
-	import { ref, onMounted, computed } from 'vue';
+	import { ref, computed } from 'vue';
 	import { onClickOutside } from '@vueuse/core';
 	import { useRoute } from 'vue-router';
 	import api from "@/services/api";
 	import defaultAvatar from '@/assets/placeholder-av.webp';
 
+	// For retrieving the user parameter id from url
 	const route = useRoute();
-	// Goals nav opens Career Development Plan; highlight when on that route or on SMART Goals (GoalsPage).
-	const isGoalsSectionActive = computed(
-		() => route.name === 'careerDevelopment' || route.name === 'GoalsPage',
-	);
+
+	// Objects for controlling the state of the dropdown menu
 	const isOpen = ref(false);
 	const dropdown = ref(null);
 	const isMenuOpen = ref(false);
 
-	// Store image in a local cache so image doesn't flicker when user navigates between pages
-	const cachedImage = localStorage.getItem(`profile_img_${route.params.id}`);
-	const profileImage = ref(cachedImage || null);
+	// Goals nav opens Career Development Plan; highlight when on that route or on SMART Goals (GoalsPage).
+	const isGoalsSectionActive = computed(
+		() => route.name === 'careerDevelopment' || route.name === 'GoalsPage',
+	);
 
-	// For getting the profile picture
-	const fetchProfileData = async () => {
+	// Store image in a local cache on the user's browser so image doesn't flicker when user navigates between pages
+	// Get item searches local storage for the profile picture with key profile_img_(profile_id)
+	const cachedImage = localStorage.getItem(`profile_img_${route.params.id}`);
+	// Update profile picture with cachedImage or use default avatar if no cached image
+	const profileImage = ref(cachedImage || defaultAvatar);
+
+	// Get the profile data so that the profile picture can be retrieved
+	const fetchProfileImage = async () => {
 		try {
 			const response = await api.get(`/profile/${route.params.id}`);
 
-			if (response.data && response.data.profile_image_url) {
+			if (response.data?.profile_image_url) {
 				const newProfilePic = response.data.profile_image_url;
 
+				// Checks if profile image has changed. If so updates profile image and the local cache
 				if (profileImage.value !== newProfilePic) {
 					profileImage.value = newProfilePic;
 					localStorage.setItem(`profile_img_${route.params.id}`, newProfilePic);
@@ -36,26 +43,18 @@
 		}
 	};
 
-	const openDropdown = () => {
-		isOpen.value = !isOpen.value;
-	};
-	const closeDropdown = () => {
-		isOpen.value = false;
-	};
-	const toggleMenu = () => {
-		isMenuOpen.value = !isMenuOpen.value;
-	};
-	const closeMenu = () => {
-		isMenuOpen.value = false;
-	};
+	// Functions for controlling the dropdown menu
+	const openDropdown = () => {isOpen.value = !isOpen.value}
+	const closeDropdown = () => {isOpen.value = false}
+	const toggleMenu = () => {isMenuOpen.value = !isMenuOpen.value}
+	const closeMenu = () => {isMenuOpen.value = false}
 
+	// Closes the dropdown menu if the user clicks anywhere on the page outside the menu
 	onClickOutside(dropdown, () => {
 		isOpen.value = false;
 	});
 
-	onMounted(() => {
-		fetchProfileData();
-	});
+	fetchProfileImage();
 </script>
 
 <template>
@@ -65,7 +64,6 @@
 			<div class="d-flex align-items-center gap-3 nav-left">
 
 				<div class="navLogo"></div>
-				<!-- </router-link> -->
 				<button class="menu-toggle" type="button" @click.stop="toggleMenu" aria-label="Toggle navigation">
 					<span></span>
 					<span></span>
@@ -96,7 +94,7 @@
 			</div>
 
 			<div class="nav-item" ref="dropdown">
-					<img  class="rounded-circle av-img" :src="profileImage || defaultAvatar" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" @click="openDropdown"/>
+					<img  class="rounded-circle av-img" :src="profileImage" @error="(e) => e.target.src = defaultAvatar" alt="Profile Picture" @click="openDropdown"/>
 
 				<div v-if="isOpen" class="dd">
 					<router-link :to="`/profile/${$route.params.id}`" class="dd-item"

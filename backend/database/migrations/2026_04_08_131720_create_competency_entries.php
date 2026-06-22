@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('competency_entries', function (Blueprint $table) {
             $table->id('entry_id');
             $table->foreignId('profile_id')->constrained('student_profiles', 'profile_id')->onDelete('cascade');
-            $table->foreignId('indicator_id')->constrained('competency_indicators', 'indicator_id');
+            $table->foreignId('indicator_id')->constrained('competency_indicators', 'indicator_id')->onDelete('cascade');
             $table->string('experience_title', 50);
             $table->integer('associated_year');
             $table->text('experience_tasks', 500);

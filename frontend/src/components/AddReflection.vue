@@ -9,7 +9,7 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Adding reflection for:</label>
-            <select v-model="f.comptId" class="form-select field-select rounded-3">
+            <select v-model="newEntry.indicator_id" class="form-select field-select rounded-3">
               <option v-for="c in allCompts" :key="c.id" :value="c.id">Competency {{ c.displayId }}</option>
             </select>
           </div>
@@ -23,7 +23,7 @@
         <div class="row g-4">
           <div class="col-5">
             <label class="form-label field-label">Attainment level</label>
-            <select v-model="f.level" class="form-select field-select rounded-3">
+            <select v-model="newEntry.entry_level_id" class="form-select field-select rounded-3">
             <option v-for="opt in levelOptions.filter(o=> o.label !== 'Not Started')" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
@@ -32,9 +32,9 @@
           <div class="col-7">
             <div class="d-flex justify-content-between align-items-center">  
               <label class="form-label field-label">Experience title</label>
-              <label v-if="errors.title" class="field-label error-message">*Title cannot be empty</label>
+              <label v-if="errors.experience_title" class="field-label error-message">*Title cannot be empty</label>
             </div>
-            <input v-model="f.title" maxlength="50" class="form-control field-input rounded-3" :class="{ 'field-error': errors.title }" @input="delete errors.title" placeholder="My experience"/>
+            <input v-model="newEntry.experience_title" maxlength="50" class="form-control field-input rounded-3" :class="{ 'field-error': errors.experience_title }" @input="delete errors.experience_title" placeholder="My experience"/>
           </div>
         </div>
 
@@ -43,23 +43,21 @@
           <div class="col-4">
             <div class="d-flex justify-content-between align-items-center">  
               <label class="form-label field-label">Start date</label>
-              <label v-if="errors.startDate" class="field-label error-message">*Invalid start date</label>
+              <label v-if="errors.start_date" class="field-label error-message">*Invalid start date</label>
             </div>
-            <input v-model="f.startDate" type="date" class="form-control field-input rounded-3" 
-            :class="{ 'field-error': errors.startDate }" @input="delete errors.startDate"/>
+            <input v-model="newEntry.start_date" type="date" class="form-control field-input rounded-3" 
+            :class="{ 'field-error': errors.start_date }" @input="delete errors.start_date"/>
           </div>
           <div class="col-4">
             <label class="form-label field-label">End date</label>
-            <input v-model="f.endDate" type="date" class="form-control field-input rounded-3"/>
+            <input v-model="newEntry.end_date" type="date" class="form-control field-input rounded-3"/>
           </div>
           <div class="col-4">
             <label class="form-label field-label">Associated year</label>
-            <select v-model="f.year" class="form-select field-select rounded-3">
-              <option value="0">Prior to degree</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-              <option value="4">Year 4</option>
+            <select v-model="newEntry.associated_year" class="form-select field-select rounded-3">
+              <option v-for="opt in yearOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
             </select>
           </div>
         </div>
@@ -68,37 +66,37 @@
         <div>
           <div class="d-flex justify-content-between align-items-center">  
             <label class="form-label field-label">Experience &amp; tasks: (Max 500 characters)</label>
-            <label v-if="errors.tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
+            <label v-if="errors.experience_tasks" class="field-label error-message">*Experience & tasks cannot be empty</label>
           </div>
-          <textarea v-model="f.tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
-          :class="{ 'field-error': errors.tasks }" @input="delete errors.tasks"
+          <textarea v-model="newEntry.experience_tasks" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          :class="{ 'field-error': errors.experience_tasks }" @input="delete errors.experience_tasks"
           placeholder="Describe the experience and tasks you undertook"></textarea>
         </div>
 
         <!-- key learnings textbox-->
         <div>
           <label class="form-label field-label">Key learnings: (Max 500 characters)</label>
-          <textarea v-model="f.learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          <textarea v-model="newEntry.key_learnings" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="What did you learn that was most valuable?"></textarea>
         </div>
 
         <!-- future application textbox-->
         <div>
           <label class="form-label field-label">Future application: (Max 500 characters)</label>
-          <textarea v-model="f.future" maxlength="500" class="form-control field-input rounded-3" rows="4"
+          <textarea v-model="newEntry.future_applications" maxlength="500" class="form-control field-input rounded-3" rows="4"
           placeholder="How will you apply these learnings in the future?"></textarea>
         </div>
 
         <!-- evidence entries-->
         <div>
-          <div v-for="(ev, idx) in f.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-end mb-3 pb-3"
-          :class="{ 'border-bottom': idx < f.evidenceEntries.length-1 }">
+          <div v-for="(ev, idx) in newEntry.evidenceEntries" :key="idx" class="d-flex gap-3 align-items-start mb-3 pb-3"
+          :class="{ 'border-bottom': idx < newEntry.evidenceEntries.length-1 }">
 
             <!-- evidence type -->
             <div>
               <label class="form-label field-label mb-3">Evidence type</label>
               <select v-model="ev.type" class="form-select field-select rounded-3"
-              @change="ev.value = ''; ev.fileName = ''">
+              @change="ev.value = ''; ev.fileName = ''; ev.file = null">
                 <option value="">Select evidence type</option>
                 <option value="url">Link</option>
                 <option value="document">Document</option>
@@ -112,6 +110,8 @@
               <div class="d-flex justify-content-between align-items-center"> 
                 <label class="form-label field-label mb-3">Evidence input</label>
                 <label v-if="errors[`evidenceURL_${idx}`]" class="field-label error-message">*Invalid evidence URL</label>
+                <label v-else-if="errors[`evidenceVideo_${idx}`]" class="field-label error-message">*Invalid YouTube link</label>
+                <label v-else-if="errors[`evidenceFileType_${idx}`]" class="field-label error-message">*Invalid file type</label>
               </div> 
             
               <!-- nothing selected-->
@@ -124,12 +124,17 @@
                 :class="{ 'field-error': errors[`evidenceURL_${idx}`] }" @input="delete errors[`evidenceURL_${idx}`]"
                 placeholder="https://example.com"/>
 
+              <input v-else-if="ev.type==='video'" v-model="ev.value" type="video"
+                class="form-control field-input rounded-3" 
+                :class="{ 'field-error': errors[`evidenceVideo_${idx}`] }" @input="delete errors[`evidenceVideo_${idx}`]"
+                placeholder="https://www.youtube.com/watch?v="/>
+
               <!-- if file upload selected -->
               <div v-else>
                 <div class="upload-zone rounded-3 p-3" :class="{ 'upload-zone-filled': ev.fileName }">
 
                   <input type="file" :accept="fileAccept(ev.type)" class="position-absolute w-100 h-100 opacity-0"
-                  @change="e=> handleFile(e, ev)"/>
+                  @change="e=> handleFile(e, ev, idx)"/>
 
                   <div v-if="!ev.fileName">
                     <p><b>Click to upload or drag & drop</b></p>
@@ -144,13 +149,13 @@
             </div>
 
             <!-- remove evidence (need 1 field atleast)-->
-            <button v-if="f.evidenceEntries.length>1" class="del-btn mb-1"
-            @click="f.evidenceEntries.splice(idx, 1)" title="Remove">
+            <button v-if="newEntry.evidenceEntries.length>1" class="del-btn mb-1"
+            @click="newEntry.evidenceEntries.splice(idx, 1)" title="Remove">
               <img src="@/assets/delete.png">
             </button>
           </div>
 
-          <button v-if="f.evidenceEntries.length < 3" class="btn btn-add-ev rounded-pill px-3 py-1 mt-1"
+          <button v-if="newEntry.evidenceEntries.length < 3" class="btn btn-add-ev rounded-pill px-3 py-1 mt-1"
           @click="addEvidence()">+ Add evidence</button>
         </div>
       </div>
@@ -185,10 +190,11 @@
 
 <script setup>
   import { ref, computed, watch } from 'vue'
-  import { fileAccept, uploadHint } from '@/composables/useCompetencies.js'
+  import { fileAccept, uploadHint, yearOptions } from '@/composables/useCompetencies.js'
   import { useRoute } from 'vue-router'
   import api from "@/services/api"
 
+  // Props received from add reflection
   const props = defineProps({
     show: Boolean,
     initialComptId: [String, Number], 
@@ -196,24 +202,34 @@
     categories: Array
   })
   
+  // Variables for getting profile id from url
+  const route = useRoute();
+
+  // Store errors from input and show/hide cancel confirm popup
   const errors = ref({});
   const showCancelConfirm = ref(false)
 
-  // Set up a pop up notification instead of having an alert
-  const popUp = ref({ show: false, message: '', type: '' })
+  // Declares that events that can be sent to parent
+  const emit = defineEmits(['close', 'refresh']);
 
+  // Object to store data about the popup message
+  const popUp = ref({ show: false, message: '', type: '' })
+  // Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+  const popUpTime = 3000
+
+  // Used to display the popup message and the type being either success or error
   const showPopUp = (message, type) => {
     popUp.value = { show: true, message, type }
-    setTimeout(() => popUp.value.show = false, 3000)
+    setTimeout(() => popUp.value.show = false, popUpTime)
   }
 
-  const emit = defineEmits(['close', 'refresh']);
-  const route = useRoute();
-
+  // Takes the competency data and turns it into an array of competencies so it can be used for the drop down
   const allCompts = computed(() => {
-    // Get the indicator id and description for the selected competency
+    // Flatmap gives a single array containing all competencies instead of nested arrays
     return props.categories.flatMap(category => {
-      return category.compt.map(indicator => ({
+      return category.compt
+      .filter(indicator => !indicator.discontinuedDate)
+      .map(indicator => ({
         id: indicator.id, 
         displayId: indicator.displayId,
         desc: indicator.desc || '' 
@@ -221,62 +237,74 @@
     });
   });
 
+  // Add a new evidence entry to the form, limited to 3 evidence entries
   const addEvidence = () => {
-    if (f.value.evidenceEntries.length < 3) {
-      f.value.evidenceEntries.push({
+    if (newEntry.value.evidenceEntries.length < 3) {
+      newEntry.value.evidenceEntries.push({
         type: '',
         value: '',
         fileName: '',
+        file: null
       })
     }
   };
 
-  const newForm = () => ({
-    comptId: null,
-    title: '',
-    year: 1,
-    level: 1,
-    startDate: '',
-    endDate: '',
-    tasks: '',
-    learnings: '',
-    future: '',
-    evidenceEntries: [{ type: '', value: '', fileName: '' }]
+  // Create an empty competency entry, with year and level set so that there is a default drop down value
+  const emptyEntry  = () => ({
+    indicator_id: null,
+    experience_title: '',
+    associated_year: 1,
+    entry_level_id: 1,
+    start_date: '',
+    end_date: '',
+    experience_tasks: '',
+    key_learnings: '',
+    future_applications: '',
+    evidenceEntries: [{ type: '', value: '', fileName: '', file: null }]
   })
 
-  // form state
-  const f = ref(newForm())
+  // Create a new form
+  const newEntry = ref(emptyEntry())
 
   // when popup opens or initialComptId changes, reset and prefill
   watch(() => props.show, (v) => {
     if (v) {
-      f.value = newForm();
-      f.value.comptId = props.initialComptId;
+      newEntry.value = emptyEntry();
+      newEntry.value.indicator_id = props.initialComptId;
     }}, 
     // Run straight away
     { immediate: true });
 
-  watch(()=> props.initialComptId, (id)=> {
-    if (props.show) {
-      f.value.comptId = id
-    }
-  })
-
+  // Find the competency that has been passed as the indicator_id
   const selectedCompt = computed(()=>
-    allCompts.value.find(c=> c.id===f.value.comptId)
+    allCompts.value.find(c=> c.id === newEntry.value.indicator_id)
   )
 
-  function handleFile(e, ev) {
+  // Gets the file from the upload field and prepares it for upload
+  function handleFile(e, ev, idx) {
     const file = e.target.files[0]
     if (file) { 
+      if (ev.type === 'document' && file.type !== 'application/pdf') {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
+
+      if (ev.type === 'image' && !file.type.startsWith('image/')) {
+        errors.value[`evidenceFileType_${idx}`] = true
+        return
+      }
+
       ev.fileName = file.name; 
-      ev.value = file.name 
+      ev.value = file.name;
+      ev.file = file;
+      delete errors.value[`evidenceFileType_${idx}`]
     }
   }
 
-  // Check to see if url sent is valid
-  function isValidUrl(url) {
+  // Attempt to make a URL object to test if link is correct
+  const isValidUrl = (url) => {
     try {
+      // URL constructor throws an error if the url format is invalid
       new URL(url)
       return true
     } catch {
@@ -285,80 +313,108 @@
   }
 
 // submit form
-async function submit(statusId) {
-  try {
-    // Reset errors
-    errors.value = {} 
+  async function submit(statusId) {
+    try {
+      // Reset errors
+      errors.value = {} 
 
-    // Removes empty evidence
-    const evidenceToSave = f.value.evidenceEntries.filter(ev => ev.type && ev.value)
+      // Removes empty evidence by filtering out entries without a type and a value
+      const evidenceToSave = newEntry.value.evidenceEntries.filter(ev => ev.type && ev.value)
 
-    // If the user is trying to publish the entry, not triggered for drafts
-    if (Number(statusId) === 2) {
-      // Check for valid title
-      if (!f.value.title) {
-        errors.value.title = true
-      }
+      // If the user is trying to publish the entry, not triggered for drafts
+      if (Number(statusId) === 2) {
+        // Check for valid title
+        if (!newEntry.value.experience_title.trim()) {
+          errors.value.experience_title = true
+        }
 
-      // Check for valid title
-      if (!f.value.startDate) {
-        errors.value.startDate = true
-      }
+        // Check if a start date has been inputted
+        if (!newEntry.value.start_date) {
+          errors.value.start_date = true
+        }
 
-      // Check for experiences field
-      if (!f.value.tasks) {
-        errors.value.tasks = true
-      }
+        // Check for experiences field
+        if (!newEntry.value.experience_tasks.trim()) {
+          errors.value.experience_tasks = true
+        }
 
-      // Check for valid links
-      for (let i = 0; i < evidenceToSave.length; i++) {
-        if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
-          errors.value[`evidenceURL_${i}`] = true
+        // Loop through and check if evidence input is valid
+        for (let i = 0; i < evidenceToSave.length; i++) {
+          if (evidenceToSave[i].type === 'url' && !isValidUrl(evidenceToSave[i].value)) {
+            errors.value[`evidenceURL_${i}`] = true
+          } else if (evidenceToSave[i].type === 'video' && !evidenceToSave[i].value.startsWith('https://www.youtube.com/watch?v=')) {
+            errors.value[`evidenceVideo_${i}`] = true
+          }
         }
       }
+
+      // Convert object into JSON and check if it is empty to see if there are any errors
+      if (JSON.stringify(errors.value) !== '{}') {
+        showPopUp("Could not submit entry. Please fix highlighted fields.", "error");
+        return;
+      }
+
+      // Creates a payload to be submitted, some compulsory values have fallback values if the user chooses to save as a draft
+      // date() creates a standardised date string for the current date and time and splits the string so only the date is saved
+      const payload = {
+        profile_id: route.params.id,
+        indicator_id: Number(newEntry.value.indicator_id),
+        experience_title: newEntry.value.experience_title || 'Untitled',
+        associated_year: Number(newEntry.value.associated_year),
+        entry_level_id: newEntry.value.entry_level_id, 
+        entry_status_id: statusId, 
+        start_date: newEntry.value.start_date || new Date().toISOString().split('T')[0],
+        end_date: newEntry.value.end_date,
+        experience_tasks: newEntry.value.experience_tasks || "Empty",
+        key_learnings: newEntry.value.key_learnings,
+        future_applications: newEntry.value.future_applications,
+      };
+
+      // Create the new entry on the backend. Get the returned entry_id so that evidence can be linked to the entry
+      const res = await api.post('/competency-entries', payload);
+      const entryId = res.data.entry_id
+
+      // Save each evidence entry
+      for (const ev of evidenceToSave) {
+        // Check if evidence type requires a file upload
+        if (ev.type === 'document' || ev.type === 'image') {
+          // Create a special object for sending files over HTTP, handles binary data
+          const formData = new FormData()
+          // Add data to the form for passing to the backend
+          formData.append('entry_id', entryId);
+          formData.append('evidence_type', ev.type)
+
+          // Set the content type so laravel knows to parse it as a file upload
+          if (ev.type === 'document') {
+            formData.append('file', ev.file)
+          } else {
+            formData.append('image', ev.file)
+          }
+          
+          // Call the backend to add the evidence
+          await api.post('/competency-evidence', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        } else {
+          // If the evidence is a link, add it
+          await api.post('/competency-evidence', {
+            entry_id: entryId,
+            evidence_type: ev.type,
+            evidence_value: ev.value
+          })
+        } 
+      }
+
+      // Add a post to student actions for an added competency
+      await api.post(`/student-actions/new`, {action: `Added entry to competency ${selectedCompt.value?.displayId}`, student_profile_id: route.params.id});
+      // Refresh and close the window, pass the statusId and title to current competencies so that confirmation bubble can display them
+      emit('refresh', statusId, newEntry.value.experience_title || 'Untitled');
+      emit('close');
+
+    } catch (error) {
+      showPopUp("Error saving submission.", "error");
     }
-
-    if (Object.keys(errors.value).length) {
-      showPopUp("Could not submit entry. Please fix highlighted fields.", "error");
-      return;
-    }
-
-    const payload = {
-      profile_id: route.params.id,
-      indicator_id: Number(f.value.comptId),
-      experience_title: f.value.title || 'Untitled',
-      associated_year: Number(f.value.year),
-      entry_level_id: f.value.level, 
-      entry_status_id: statusId, 
-      start_date: f.value.startDate || new Date().toISOString().split('T')[0],
-      end_date: f.value.endDate,
-      experience_tasks: f.value.tasks || "Draft",
-      key_learnings: f.value.learnings,
-      future_applications: f.value.future,
-    };
-
-    const res = await api.post('/competency-entries', payload);
-    const entryId = res.data.entry_id
-
-    // Save each evidence entry
-    for (const ev of evidenceToSave) {
-      await api.post('/competency-evidence', {
-        entry_id: entryId,
-        evidence_type: ev.type,
-        evidence_value: ev.value
-      })
-    }
-
-    // Add a post to student actions for an added competency
-    await api.post(`/student-actions/new`, {action: `Added entry to competency ${selectedCompt.value?.displayId}`, student_profile_id: route.params.id});
-    // RefreshClose window
-    emit('refresh', statusId, f.value.title || 'Untitled');
-    emit('close');
-
-  } catch (error) {
-    showPopUp("Error saving submission.", "error");
   }
-}
 
   // Pass the entry status id when saving the entry
   // 1 for draft, 2 for submitted
@@ -367,8 +423,8 @@ async function submit(statusId) {
 
   // Check if profile has been changed, if so load cancel confirmation, else don't prompt the user
   const handleCancel = () => {
-    // Copy all data from newForm and add the competency id before checking if there was a change
-    const noChange = JSON.stringify(f.value) === JSON.stringify({ ...newForm(), comptId: props.initialComptId })
+    // Copy all data from emptyEntry and add the competency id before checking if there was a change
+    const noChange = JSON.stringify(newEntry.value) === JSON.stringify({ ...emptyEntry(), indicator_id: props.initialComptId })
     if (noChange) {
       emit('close')
     } else {
@@ -468,6 +524,10 @@ async function submit(statusId) {
   border-style: solid;
   border-color: #88c2d2;
   background: #f0fafa;
+}
+
+.upload-zone input[type="file"] {
+  cursor: pointer;
 }
 
 .del-btn {
@@ -591,4 +651,4 @@ async function submit(statusId) {
   font-size: 1.1rem;
   color: #222222;
 }
-</style>
+</style>URL

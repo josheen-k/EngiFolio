@@ -61,30 +61,42 @@
 import { ref, computed, watch } from 'vue'
 import ViewReflection from '@/components/ViewReflection.vue'
 
+// Catches components passed down though the eaCompetencies template
+// Categories contains competency data and student entry data
 const props = defineProps({
   categories: { type: Array, required: true },
   levelOptions: { type: Array, required: true }
 });
 
-
+// Signal parent to reload the data when changed
 const emit = defineEmits(['refresh'])
+// Stores the search input from the user
 const searchQuery = ref('')
+
+// Empty view reflection that is filled when the user selects a reflection
+const viewReflec = ref({
+  show: false,
+  reflec: null,
+  compt: null,
+  index: null
+})
 
 // collect all reflections with feedback
 const feedbackItems = computed(function () {
   const out = []
-  // For each category
+  // Loop through each category
   for (const cat of props.categories) {
-    // For each competency
+    // Loop through each competency
     for (const compt of cat.compt) {
-      // For each entry
-      for (const r of compt.reflec) {
-        if (r.feedback?.length) {
-          for (const fb of r.feedback) { 
+      // Loop through each user reflection
+      for (const reflec of compt.reflec) {
+        if (reflec.feedback?.length) {
+          // Loop through each feedback for this student reflection
+          for (const fb of reflec.feedback) { 
             out.push({
               comptId: compt.displayId,
               compt: compt,
-              reflec: r,
+              reflec: reflec,
               fb: fb,
               authorName: `${fb.staff.first_name} ${fb.staff.last_name}`
             })
@@ -119,14 +131,7 @@ function toggleOpen(i) {
   openStates.value[i] = !openStates.value[i]
 }
 
-// view reflection popup
-const viewReflec = ref({
-  show: false,
-  reflec: null,
-  compt: null,
-  index: null
-})
-
+// Set the details of the reflection to be opened
 function openReflec(item) {
   viewReflec.value = {
     show: true,
@@ -136,6 +141,7 @@ function openReflec(item) {
   }
 }
 
+// Close the refection window and send refresh to the parent
 function onRefresh() {
   emit('refresh')
   viewReflec.value.show = false

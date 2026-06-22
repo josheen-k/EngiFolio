@@ -63,10 +63,13 @@ Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
 
 Route::get('/profile/{id}', [StudentProfileController::class, 'show']);
 Route::put('/profile/{id}', [StudentProfileController::class, 'update']);
-Route::get('/profileDash/{id}', [StudentProfileController::class, 'getDashboardInfo']);
+Route::get('/profile/{id}/dashboard', [StudentProfileController::class, 'getDashboardInfo']);
+Route::get('/profile/{id}/image', [StudentProfileController::class, 'getProfileImage']);
+Route::get('/profile/{id}/certifications', [StudentProfileController::class, 'getCertifications']);
 Route::post('/profile/{id}/export-pdf', [StudentProfileController::class, 'exportPdf']);
-/* ================= INDUSTRY CONTACTS ================= */
+Route::post('/profile/{id}/upload-cert', [StudentProfileController::class, 'uploadCertFile']);
 
+/* ================= INDUSTRY CONTACTS ================= */
 // Industry contacts/networking pages
 Route::get('/users/{profile}/industry-contacts', [IndustryContactController::class, 'index']);
 Route::post('/users/{profile}/industry-contacts', [IndustryContactController::class, 'store']);
@@ -195,3 +198,16 @@ Route::put('/profile/{profile}/elevator-pitch', [ElevatorPitchController::class,
 
 //CDL Page
 Route::get('/cdl-modules', [CdlModuleController::class, 'index']);
+
+
+/* ================= ADMIN ================= */
+// Competency Groups for admin
+Route::get('/competency-groups', [CompetencyGroupController::class, 'index']);
+Route::post('/competency-groups', [CompetencyGroupController::class, 'store']);
+Route::put('/competency-groups/{competencyGroup}', [CompetencyGroupController::class, 'update']);
+Route::delete('/competency-groups/{competencyGroup}', [CompetencyGroupController::class, 'destroy']);
+
+// Competencies for admin
+Route::post('/competency-indicators', [CompetencyIndicatorController::class, 'store']);
+Route::put('/competency-indicators/{competencyIndicator}', [CompetencyIndicatorController::class, 'update']);
+Route::delete('/competency-indicators/{competencyIndicator}', [CompetencyIndicatorController::class, 'destroy']);

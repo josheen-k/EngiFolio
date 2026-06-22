@@ -34,18 +34,18 @@
               <p class="filter-heading">Sort by</p>
               <div class="d-flex flex-column gap-1 mb-3">
                 <label class="filter-option" v-for="opt in sortByOptions" :key="opt.value">
-                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"  @click="sortOrder = 'desc'"/>{{ opt.label }}
+                  <input type="radio" :value="opt.value" v-model="sortBy" class="filter-radio"  @click="sortOrder = 'asc'"/>{{ opt.label }}
                 </label>
               </div>
 
               <p class="filter-heading">Order</p>
               <div class="d-flex flex-column gap-1">
                 <label class="filter-option">
-                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>
+                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>
                   {{ sortBy === 'date' ? 'Newest to Oldest' : 'A to Z' }}
                 </label>
                 <label class="filter-option">
-                  <input type="radio" value="asc" v-model="sortOrder" class="filter-radio"/>
+                  <input type="radio" value="desc" v-model="sortOrder" class="filter-radio"/>
                   {{ sortBy === 'date' ? 'Oldest to Newest' : 'Z to A' }}
                 </label>
               </div>
@@ -201,6 +201,7 @@ import AddReflection from '@/components/AddReflection.vue'
 import { getLvl, publishedReflec, formatDate, yearOptions, sortByOptions } from '@/composables/useCompetencies.js'
 import { onClickOutside } from '@vueuse/core';
 
+// Variables for getting and changing URL information
 const route = useRoute()
 const router = useRouter()
 
@@ -211,15 +212,17 @@ const props = defineProps({
   initialIndicatorId: { type: [String, Number], default: null }
 });
 
-// Watch for an indicatorId
-watch(
-  [() => props.initialIndicatorId, () => props.categories],
-  ([id, cats]) => {
-    if (id && cats.length) {
+// Watch for an indicatorId, passed when the user clicks a competency from the dashboard
+// It then opens that competency
+watch([() => props.initialIndicatorId, () => props.categories],
+  ([display_id, cats]) => {
+    if (display_id && cats.length) {
       for (const cat of cats) {
-        const match = cat.compt.find(c => Number(c.id) === Number(id))
-        if (match) {
-          openDetail(match, cat.label)
+        // Find the id of the competency with this display_id
+        const competency_id = cat.compt.find(c => Number(c.id) === Number(display_id))
+        if (competency_id) {
+          // Open the competency with the found id
+          openDetail(competency_id, cat.label)
           break
         }
       }
@@ -241,11 +244,12 @@ onMounted(() => {
     openAdd()
   }
 })
+
 // Signal parent to reload the data when changed
 const emit = defineEmits(['refresh']);
 const selectedCompt = ref(null);
 
-// filter options for competencies
+// Filter options for competencies
 const filterRef = ref(null)
 const ddOpen = ref(false)
 const filterReflec = ref('all')
@@ -259,8 +263,10 @@ const reflecFilterLevel = ref([])
 const sortRef = ref(null)
 const sortDdOpen = ref(false)
 const sortBy = ref('date')
-const sortOrder = ref('desc')  // 'asc'  | 'desc'
+const sortOrder = ref('asc')  // 'asc'  | 'desc'
 
+// Triggers a data reload if a competency entry is updated
+// Deep allows the watch to detect changes deeper inside the nested array object
 watch(() => props.categories, () => {
   if (!selectedCompt.value) return
   for (const cat of props.categories) {
@@ -276,43 +282,55 @@ watch(() => props.categories, () => {
   }
 }, { deep: true })
 
+// Filtering options
 const reflecOption = [
   { value: 'all', label: 'All competencies' },
   { value: 'has-reflections', label: 'Has at least one reflection' },
   { value: 'no-reflections', label: 'No reflections yet' }
 ]
 
+// Returns true if there are any active filters, else returns false
 const hasActiveFilter = computed(function () {
   return filterReflec.value !== 'all' || filterLevel.value.length > 0
 })
 
+// Object to store data about the popup message
 const popUp = ref({ show: false, message: '', type: '' })
+// Time the popup can be viewed for. Currently set to 3 seconds allow time for the user to view the message
+const popUpTime = 3000
 
+// Used to display the popup message and the type being either success or error
 const showPopUp = (message, type) => {
   popUp.value = { show: true, message, type }
-  setTimeout(() => popUp.value.show = false, 3000)
+  setTimeout(() => popUp.value.show = false, popUpTime)
 }
 
+// Toggles the drop down menu to be open or closed
 function toggleDd() {
   ddOpen.value = !ddOpen.value
 }
 
+// Reset filter values
 function clearFilter() {
   filterReflec.value = 'all'
   filterLevel.value = []
   ddOpen.value = false
 }
 
+// Close the drop down menu if the user clicks anywhere on the page that isn't in the dd menu
 onClickOutside(filterRef, function () {
   ddOpen.value = false;
 });
 
+// Calls the function publishedReflec from useCompetency.js that filters out all draft reflections
 function publishedOnly(compt) {
   return publishedReflec(compt)
 }
 
 function filteredCompts(competency) {
+  // Loop through and filter competencies by the selected options
   return competency.compt.filter(function (compt) {
+    // Get the published entries and find the highest level for each competency
     const published = publishedOnly(compt)
     const highestLvl = getLvl(compt)
 
@@ -334,15 +352,14 @@ function filteredCompts(competency) {
   })
 }
 
-// filter & sort for reflec entries
-// reflec entry sort
-
+// Reset the sorting options
 function clearSort() {
   sortBy.value = 'date'
-  sortOrder.value = 'desc'
+  sortOrder.value = 'asc'
   sortDdOpen.value = false
 }
 
+// Close the sorting drop down box if the user clicks elsewhere on the screen
 onClickOutside(sortRef, function () {
   sortDdOpen.value = false
 })
@@ -351,16 +368,19 @@ const hasActiveReflecFilter = computed(function () {
   return reflecFilterYear.value.length > 0 || reflecFilterLevel.value.length > 0
 })
 
+// Reset reflection filters
 function clearReflecFilter() {
   reflecFilterYear.value = []
   reflecFilterLevel.value = []
-  reflecFilterDdOpen.value = false
+  reflecFilterDdOpen.value = false 
 }
 
+// Close filter drop down menu if the user clicks elsewhere
 onClickOutside(reflecFilterRef, function () {
   reflecFilterDdOpen.value = false
 })
 
+// Apply filters for filter by level or year
 const processedReflec = computed(() => {
   if (!selectedCompt.value) { return [] }
   let list = publishedOnly(selectedCompt.value)
@@ -373,40 +393,48 @@ const processedReflec = computed(() => {
   // filter by levels
   if (reflecFilterLevel.value.length > 0) {
     list = list.filter(r => {
-      // Use optional chaining to handle both object or string formats
       const currentLvl = r.entry_level?.competency_level;
       return reflecFilterLevel.value.includes(currentLvl);
     });
   }
 
-  // sort
+  // Sort by looping through the list by comparing two items at a time
+  // A negative number means a comes first, positive means b comes first and 0 means stay the same
   list = list.sort((a, b) => {
+    // Sorting by name
     if (sortBy.value === 'name') {
+      // Sort by alphabetical order
       if (sortOrder.value === 'asc') {
-        return (b.experience_title || '').localeCompare(a.experience_title || '')       
+        // Compares a to b and returns negative if a comes before b alphabetically
+        return (a.experience_title || '').localeCompare(b.experience_title || '')    
       } else {
-        return (a.experience_title || '').localeCompare(b.experience_title || '')
+        // Compares a to b and returns negative if b comes before a alphabetically
+        return (b.experience_title || '').localeCompare(a.experience_title || '')  
       }
     }
 
-    // Convert date into a number
-    const da = new Date(a.updated_at);
-    const db = new Date(b.updated_at);
+    // Convert date into a number and sort by date
+    const dateA = new Date(a.updated_at);
+    const dateB = new Date(b.updated_at);
 
+    // Sort newest to oldest
     if (sortOrder.value === 'asc') {
-      return da - db
+      // Positive number means b is before a
+      return dateB - dateA
     } else {
-      return db - da
+      // Positive number means a is before b
+      return dateA - dateB
     }
   })
   return list
 })
 
+// Open details about a certain competency entry
 function openDetail(compt, catLabel) {
   // reset reflection filters and sort when opening new compt
   clearReflecFilter()
   clearSort()
-
+  // Set for displaying
   selectedCompt.value = {
     id: compt.id,
     displayId: compt.displayId,
@@ -418,6 +446,8 @@ function openDetail(compt, catLabel) {
   }
 }
 
+// Clear the selected competency and cleans the url, this is done for if a user directs from a certain
+// competency on the dashboard, the url resets once they close it
 function closeDetail() {
   selectedCompt.value = null
   router.replace({ 
@@ -429,7 +459,7 @@ function closeDetail() {
   });
 }
 
-//detailed reflection view
+// An empty ref that gets populated and passed to viewReflection
 const viewReflec = ref({ 
   show: false, 
   reflec: null, 
@@ -437,6 +467,7 @@ const viewReflec = ref({
   index: null 
 })
 
+// Pass details to viewReflection
 function openReflec(reflec, index) {
   viewReflec.value = {
     show: true,
@@ -446,26 +477,31 @@ function openReflec(reflec, index) {
   }
 }
 
+// Passed by the close emit from viewReflection, set view state to false
 function closeReflec() {
   viewReflec.value.show = false
 }
 
+// Called by refresh from viewReflection, shows the message depending on the action taken
 function onSaveReflec(statusId, entryName) {
-  viewReflec.value.show = false 
   emit('refresh')
-  if (Number(statusId) === 2) {
-    showPopUp(`${entryName} has been published.`, "success")
-  } else {
+  addModal.value.show = false 
+  if (Number(statusId) === -1) {
+    showPopUp(`Entry has successfully been deleted.`, "success")
+  } else if (Number(statusId) === 1) {
     showPopUp(`${entryName} has been saved to drafts.`, "success")
+  } else {
+    showPopUp(`${entryName} has been published.`, "success")
   }
 }
 
-// add reflection popup 
+// Add reflection popup 
 const addModal = ref({ 
   show: false, 
   comptId: '' 
 })
 
+// Open add, send required information to AddReflections
 function openAdd(comptId = '') {
   addModal.value = { 
     show: true, 
@@ -473,7 +509,7 @@ function openAdd(comptId = '') {
   }
 }
 
-// Refresh the data when an entry is added
+// Call refresh on eaCompetencies so that data is refreshed
 function onAddReflec() {
   emit('refresh')
   addModal.value.show = false
