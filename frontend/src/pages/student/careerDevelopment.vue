@@ -535,7 +535,8 @@ const planYearSelectOptions = computed(() => {
     }
   })
 
-  return [...years]
+  return [...years] // Convert Set to array for sorting and mapping
+
     .sort((a, b) => a - b)
     .map((year) => ({ value: year, label: String(year) }))
 })
@@ -545,7 +546,7 @@ const defaultPlanYearForCreate = () => {
   const currentYear = new Date().getFullYear()
   const options = planYearSelectOptions.value
   const match = options.find((opt) => opt.value === currentYear)
-  return match?.value ?? options[0]?.value ?? currentYear
+  return match?.value ?? options[0]?.value ?? currentYear // Fallback to currentYear even if it's not in options, to avoid empty selection.
 }
 
 const emptyPlanForm = () => ({
@@ -577,7 +578,7 @@ const splitList = (value) => {
     return []
   }
 
-  return String(value)
+  return String(value) // Convert null/undefined to empty string and ensure value is a string for splitting
     .split(/\r?\n|,/)
     .map((item) => item.trim())
     .filter(Boolean)
