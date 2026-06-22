@@ -726,7 +726,7 @@ const eventsByDate = computed(() => {
   }, {})
 })
 
-//readable month label for the calendar header
+//readable month label for the calendar header (left corner)
 const currentMonthLabel = computed(() => {
   return new Intl.DateTimeFormat('en-AU', {
     month: 'long',
@@ -903,6 +903,7 @@ async function centerYearScroll() {
   container.style.scrollBehavior = 'auto'
   container.scrollTop = targetSection.offsetTop
 
+  //wait for next screen refresh to run this 
   requestAnimationFrame(() => {
     container.style.scrollBehavior = previousScrollBehavior
     syncingYearScroll = false
@@ -964,6 +965,7 @@ async function addEvent() {
   
   const isUpdate = Boolean(editingEventId.value)
 
+  //if user cancel update
   if (isUpdate) {
     const shouldUpdate = await openConfirmDialog({
       title: 'Confirm update',
@@ -987,6 +989,7 @@ async function addEvent() {
     profile_id: Number(route.params.id),
   }
 
+  //update or add
   if (isUpdate) {
     try {
       await api.put(`/networking-events/${editingEventId.value}`, payload)
