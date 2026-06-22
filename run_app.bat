@@ -1,6 +1,0 @@
-@echo off
-echo Starting your application...
-docker-compose up -d
-echo Opening the application in your browser...
-start http://localhost:8000
-pause
