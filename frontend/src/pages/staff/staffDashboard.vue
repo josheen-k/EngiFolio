@@ -82,10 +82,10 @@
             class="activity-item clickable"
             @click="openEntry(entry)"
           >
-            <div
-              v-if="!readEntries.includes(entry.entry_id)"
-              class="activity-dot"
-            ></div>
+          <div
+          v-if="!hasFeedback(entry) && !readEntries.includes(entry.entry_id)"
+          class="activity-dot"
+          ></div>
 
             <div class="activity-content">
               <div class="activity-top">
@@ -213,6 +213,7 @@ const recentEntries = computed(() => {
 const unreadCount = computed(() => {
   return recentEntries.value.filter(
     entry =>
+      !hasFeedback(entry) &&
       !readEntries.value.includes(entry.entry_id)
   ).length
 })
