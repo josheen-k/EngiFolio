@@ -1,7 +1,7 @@
 # EngiFolio
 ICT Project, Sem 1 , 2026, AU
 
-## Install Steps
+## Install Steps Linux (debian based)
 ### Backend PHP and Laravel 10
 Update and install dependencies:
 `sudo apt update && sudo apt upgrade -y`
@@ -45,6 +45,13 @@ In the second terminal run:
 `cd frontend`
 `npm run dev`
 
+## Install Steps Windows using install script
+
+### STEPS:
+- Download engifolio as zip file from github and unzip it
+- Run terminal/powershell as admin from windows menu
+- ```cd``` into project folder where the frontend, backend and this file are in, for example: if you extracted the zip file in Downloads folder and the unzipped folder is called Engifolio then you would do ```cd ~/Downloads/Engifolio/```
+- Run this cmd  ```powershell -ExecutionPolicy Bypass -File install.ps1```
 
 ## Populating The Database
 To populate the database with set sample data, run this command from the backend folder.
