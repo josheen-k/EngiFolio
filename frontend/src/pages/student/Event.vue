@@ -461,7 +461,7 @@ import { useRoute } from 'vue-router'
 import ButtonsStyle from '@/components/ButtonsStyle.vue'
 
 
-
+//route + constants 
 const route = useRoute()
 const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const miniWeekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -479,10 +479,10 @@ const monthOptions = [
   'November',
   'December',
 ]
-
 const YEAR_VIEW_START = 2020
 const YEAR_VIEW_END = 2030
 
+//main reactive state
 const events = ref([])
 const currentMonth = ref(startOfMonth(new Date()))
 const calendarView = ref('month')
@@ -490,15 +490,19 @@ const calendarView = ref('month')
 const showForm = ref(false)
 const showEventDetails = ref(false)
 const showConfirmDialog = ref(false)
+
 const editingEventId = ref(null)
 const selectedDate = ref('')
+
 const questionDrafts = ref({})
 const editingQuestionIds = ref({})
 const commentDrafts = ref({})
 const editingCommentIds = ref({})
+
 const eventEditSnapshot = ref(null)
 const questionEditSnapshots = ref({})
 const commentEditSnapshots = ref({})
+
 const yearScrollContainer = ref(null)
 
 const newEvent = ref(createEmptyEvent())
@@ -508,10 +512,12 @@ const contacts = ref([])
 const contactSearch = ref('')
 const contactSort = ref('name-asc')
 
+//non-reactive helper flags 
 let confirmResolver = null
 let syncingYearScroll = false
 let yearScrollFrameId = null
 
+//build a clean empty event object whenever we open a fresh event form
 function createEmptyEvent(date = '') {
   return {
     name: '',
@@ -522,6 +528,7 @@ function createEmptyEvent(date = '') {
   }
 }
 
+//build a clean empty comment/evidence draft
 function createEmptyCommentDraft(){
   return{
     comment_type: '',
@@ -531,6 +538,7 @@ function createEmptyCommentDraft(){
   }
 }
 
+//build a clean default confirm dialog object
 function createConfirmDialog() {
   return {
     title: '',
@@ -541,20 +549,24 @@ function createConfirmDialog() {
   }
 }
 
+//return the first day of a given month
 function startOfMonth(date) {
   return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
+//convert a YYYY-MM-DD date string into a real date object
 function dateKeyToDate(dateKey) {
   const [year, month, day] = dateKey.split('-').map(Number)
   return new Date(year, month - 1, day)
 }
 
+//backend event date time may include time 
 function normalizeEventDate(dateTime) {
   if (!dateTime) return ''
   return String(dateTime).slice(0, 10)
 }
 
+//Convert a date object into a YYYY-MM-DD string 
 function formatDateKey(date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -562,6 +574,7 @@ function formatDateKey(date) {
   return `${year}-${month}-${day}`
 }
 
+//turn a YYYY-MM-DD key int o a readable full date string for the UI
 function formatFullDate(dateKey) {
   if (!dateKey) return ''
 
@@ -573,17 +586,20 @@ function formatFullDate(dateKey) {
   }).format(dateKeyToDate(dateKey))
 }
 
+//replace the current visible month/year in the calendar
 function setCurrentMonth(year, month) {
   currentMonth.value = new Date(year, month, 1)
 }
 
+//build a full 6-row calendar grid for one month and use 42 cells keep the layout stable every month
 function createMonthGrid(baseDate) {
   const year = baseDate.getFullYear()
   const month = baseDate.getMonth()
   const firstDayOfMonth = new Date(year, month, 1)
+  //convert sunday first weekday into monday first offset
   const mondayFirstOffset = (firstDayOfMonth.getDay() + 6) % 7
+  //find the first visible day in the grid event if it belongs to the previous month
   const gridStartDate = new Date(year, month, 1 - mondayFirstOffset)
-  //
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(gridStartDate)
     date.setDate(gridStartDate.getDate() + index)
@@ -601,28 +617,35 @@ function createMonthGrid(baseDate) {
   })
 }
 
+//make the selected date's month visible in the calendar
 function ensureMonthForDate(dateKey) {
   if (!dateKey) return
   currentMonth.value = startOfMonth(dateKeyToDate(dateKey))
 }
 
+//get the current draft text for a question editor
+//if no draft exists yet return an empty string
 function getQuestionDraft(eventId) {
   return questionDrafts.value[eventId] || ''
 }
 
+//get the current draft object for a comment editor
 function getCommentDraft(eventId) {
+  //if no draft exist yet create one 
   if(!commentDrafts.value[eventId]) {
     commentDrafts.value[eventId] = createEmptyCommentDraft()
   }
   return commentDrafts.value[eventId]
 }
 
+//reset a question editor back to. clean state
 function clearQuestionEditor(eventId) {
   questionDrafts.value[eventId] = ''
   editingQuestionIds.value[eventId] = null
   questionEditSnapshots.value[eventId] = null
 }
 
+//reset comment editor back to a clean state
 function clearCommentEditor(eventId) {
   commentDrafts.value[eventId] = createEmptyCommentDraft()
   editingCommentIds.value[eventId] = null
@@ -637,6 +660,7 @@ const showPopUp = (message, type) => {
   setTimeout(() => popUp.value.show = false, 3000)
 }
 
+//open the confirm dialog and return a promise so calling code can wait for the answer 
 function openConfirmDialog(options) {
   confirmDialog.value = {
     ...createConfirmDialog(),
@@ -649,6 +673,7 @@ function openConfirmDialog(options) {
   })
 }
 
+//close the confirm dialog and resolve the waiting promising with true/false
 function resolveConfirmDialog(result) {
   showConfirmDialog.value = false
 
@@ -663,6 +688,8 @@ const fetchEvents = async () => {
   events.value = response.data
 }
 
+//load industry contacts for the current student
+//these are used when linking contacts to an events
 const fetchContacts = async () => {
   const response = await api.get(`/users/${route.params.id}/industry-contacts`)
   contacts.value = response.data
@@ -681,6 +708,7 @@ onMounted(async () => {
   }
 })
 
+// group events by YYYY-MM-DD so each calendar day can quickly find its events
 const eventsByDate = computed(() => {
   return events.value.reduce((grouped, event) => {
     const dateKey = normalizeEventDate(event.event_datetime)
@@ -698,6 +726,7 @@ const eventsByDate = computed(() => {
   }, {})
 })
 
+//readable month label for the calendar header (left corner)
 const currentMonthLabel = computed(() => {
   return new Intl.DateTimeFormat('en-AU', {
     month: 'long',
@@ -705,14 +734,21 @@ const currentMonthLabel = computed(() => {
   }).format(currentMonth.value)
 })
 
+//readable year label for the calendar header
 const currentYearLabel = computed(() => String(currentMonth.value.getFullYear()))
+
+//switch the calendar header title depending on current view mode
 const currentCalendarTitle = computed(() => {
   return calendarView.value === 'year' ? currentYearLabel.value : currentMonthLabel.value
 })
 
+//today date key so the UI can highlight the current day
 const todayKey = computed(() => formatDateKey(new Date()))
 
+//the visible month grid shown in month view 
 const calendarDays = computed(() => createMonthGrid(currentMonth.value))
+
+//build the 12 mini month cards for one year in year view 
 function buildYearMonthCards(year) {
   return monthOptions.map((monthLabel, monthIndex) => {
     const monthDate = new Date(year, monthIndex, 1)
@@ -727,6 +763,7 @@ function buildYearMonthCards(year) {
   })
 }
 
+//full year-view data across the configured your range
 const yearViewYears = computed(() => {
   return Array.from({ length: YEAR_VIEW_END - YEAR_VIEW_START + 1 }, (_, index) => {
     const year = YEAR_VIEW_START + index
@@ -739,6 +776,7 @@ const yearViewYears = computed(() => {
   })
 })
 
+//Events belonging to the currently selected date
 const selectedDateEvents = computed(() => {
   if (!selectedDate.value) {
     return []
@@ -747,8 +785,10 @@ const selectedDateEvents = computed(() => {
   return eventsByDate.value[selectedDate.value] || []
 })
 
+//human-readable label for the selected date shown in the modal header
 const selectedDateLabel = computed(() => formatFullDate(selectedDate.value))
 
+//filter and sort contacts for the related contacts picker in the event form
 const filteredContactsForPicker = computed(() => {
   const keyword = contactSearch.value.trim().toLowerCase()
 
@@ -780,6 +820,7 @@ const filteredContactsForPicker = computed(() => {
   return result
 })
 
+//open a fresh create event form optionally prefilled with a chosen date
 function openCreateForm(date = '') {
   editingEventId.value = null
   newEvent.value = createEmptyEvent(date)
@@ -787,6 +828,7 @@ function openCreateForm(date = '') {
   showForm.value = true
 }
 
+//close the event form and reset edit state
 function closeForm() {
   showForm.value = false
   editingEventId.value = null
@@ -794,23 +836,29 @@ function closeForm() {
   newEvent.value = createEmptyEvent()
 }
 
+//open the event details modal for one specific data
 function openEventDetails(dateKey) {
   selectedDate.value = dateKey
   showEventDetails.value = true
 }
 
+//close the event details
 function closeEventDetails() {
   showEventDetails.value = false
 }
 
+//switch between month view and year view
 function switchCalendarView(view) {
   calendarView.value = view
-
+  //when entering year view auto-center the scroll position on the active year 
   if (view === 'year') {
     centerYearScroll()
   }
 }
 
+//handle clicking a calendar day
+//if event exists, show details
+//if not open the create form for that date
 function handleDateClick(day) {
   ensureMonthForDate(day.dateKey)
   selectedDate.value = day.dateKey
@@ -823,6 +871,8 @@ function handleDateClick(day) {
   openCreateForm(day.dateKey)
 }
 
+//jump from year view into a specific month
+//if a specific date was clicked keep that selected
 function openMonthFromYear(year, monthIndex, dateKey = '') {
   setCurrentMonth(year, monthIndex)
   calendarView.value = 'month'
@@ -832,6 +882,7 @@ function openMonthFromYear(year, monthIndex, dateKey = '') {
   }
 }
 
+//Wait for Vue to render the year-view then scroll to the active year section
 async function centerYearScroll() {
   await nextTick()
 
@@ -852,12 +903,14 @@ async function centerYearScroll() {
   container.style.scrollBehavior = 'auto'
   container.scrollTop = targetSection.offsetTop
 
+  //wait for next screen refresh to run this 
   requestAnimationFrame(() => {
     container.style.scrollBehavior = previousScrollBehavior
     syncingYearScroll = false
   })
 }
 
+//while the user scrolls in year view, detect which year is nearest the top and keep current month in sync with that year 
 function handleYearViewScroll() {
   if (calendarView.value !== 'year' || syncingYearScroll) {
     return
@@ -903,6 +956,7 @@ function handleYearViewScroll() {
   })
 }
 
+// create a new event or update an existing one using the same form
 async function addEvent() {
   if (!newEvent.value.name) {
     showPopUp('Event name cannot be empty.', 'error')
@@ -911,6 +965,7 @@ async function addEvent() {
   
   const isUpdate = Boolean(editingEventId.value)
 
+  //if user cancel update
   if (isUpdate) {
     const shouldUpdate = await openConfirmDialog({
       title: 'Confirm update',
@@ -934,6 +989,7 @@ async function addEvent() {
     profile_id: Number(route.params.id),
   }
 
+  //update or add
   if (isUpdate) {
     try {
       await api.put(`/networking-events/${editingEventId.value}`, payload)
@@ -964,6 +1020,7 @@ async function addEvent() {
   }
 }
 
+//Load an existing event into the form so user can edit it 
 function editEvent(event) {
   editingEventId.value = event.event_id
   eventEditSnapshot.value = {
@@ -978,6 +1035,7 @@ function editEvent(event) {
   showForm.value = true
 }
 
+//Delete an event after confirmation and refresh the calender data
 async function deleteEvent(id) {
   try {
     const shouldDelete = await openConfirmDialog({
@@ -1005,12 +1063,14 @@ async function deleteEvent(id) {
   }
 }
 
+//load a saved question into the inline editor for editing
 function editQuestion(eventId, question) {
   questionDrafts.value[eventId] = question.question_text
   editingQuestionIds.value[eventId] = question.question_id
   questionEditSnapshots.value[eventId] = question.question_text
 }
 
+//Save a new question or update an existing one for the chosen event
 async function submitQuestion(eventId) {
   const questionText = getQuestionDraft(eventId).trim()
   const editingId = editingQuestionIds.value[eventId]
@@ -1045,6 +1105,7 @@ async function submitQuestion(eventId) {
   clearQuestionEditor(eventId)
 }
 
+//Delete one saved question after confirmation
 async function deleteQuestion(eventId, questionId) {
   const shouldDelete = await openConfirmDialog({
     title: 'Confirm delete',
@@ -1066,18 +1127,7 @@ async function deleteQuestion(eventId, questionId) {
   }
 }
 
-function editComment(eventId, comment) {
-  const draft = {
-    comment_type: comment.comment_type || '',
-    link_url: comment.link_url || '',
-    file: null,
-    file_name: comment.file_name || '',
-  }
-  commentDrafts.value[eventId] = {...draft}
-  editingCommentIds.value[eventId] = comment.id
-  commentEditSnapshots.value[eventId] = {...draft}
-}
-
+//Handle file selection for image/video evidence and submit it right away
 async function handleCommentFileChange(eventId, event) {
   const draft = getCommentDraft(eventId)
   const file = event.target.files?.[0] || null
@@ -1094,6 +1144,7 @@ async function handleCommentFileChange(eventId, event) {
   }
 }
 
+//save alink, image, or video comment for selected event
 async function submitComment(eventId) {
   const draft = getCommentDraft(eventId)
   const editingId = editingCommentIds.value[eventId]
@@ -1146,6 +1197,7 @@ async function submitComment(eventId) {
   clearCommentEditor(eventId)
 }
 
+//Delete one saved comment after confirmation
 async function deleteComment(eventId, commentId) {
   const shouldDelete = await openConfirmDialog({
     title: 'Confirm delete',
@@ -1167,6 +1219,7 @@ async function deleteComment(eventId, commentId) {
   }
 }
 
+//Move backward by one month or one year if the page is currently in year view 
 function goToPreviousMonth() {
   if (calendarView.value === 'year') {
     currentMonth.value = new Date(currentMonth.value.getFullYear() - 1, 0, 1)
@@ -1177,6 +1230,7 @@ function goToPreviousMonth() {
   currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() - 1, 1)
 }
 
+//Move forward by one month or one year if the page is currently in year view 
 function goToNextMonth() {
   if (calendarView.value === 'year') {
     currentMonth.value = new Date(currentMonth.value.getFullYear() + 1, 0, 1)
@@ -1187,6 +1241,7 @@ function goToNextMonth() {
   currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() + 1, 1)
 }
 
+//jump back to the current date and center the active year if needed
 function goToToday() {
   currentMonth.value = startOfMonth(new Date())
 
@@ -1592,7 +1647,8 @@ function goToToday() {
 
 .action-button:hover {
   transform: translateY(-1px);
-  background: #333333;
+  color: #ffffff;
+  background: #666666;
 }
 
 .ghost-button:hover,
@@ -1608,8 +1664,7 @@ function goToToday() {
   color: #a63f3f;
 }
 .action-button {
-  background: #555555;
-  color: #ffffff;
+  background: #e6e6e6;
   padding: 0.85rem 1.4rem;
 }
 

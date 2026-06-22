@@ -15,8 +15,6 @@ class IndustryContactController extends Controller
             ->where('profile_id', $profile)
             ->get()
             ->map(function ($contact) {
-                $link = $contact->contactMethods->firstWhere('method_type', 'link');
-
                 return [
                     'contact_id' => $contact->contact_id,
                     'profile_id' => $contact->profile_id,
@@ -24,7 +22,12 @@ class IndustryContactController extends Controller
                     'company' => $contact->company,
                     'progress_notes' => $contact->progress_notes,
                     'date_met' => $contact->date_met,
-                    'link_url' => $link?->method_value,
+                    'contact_methods' => $contact->contactMethods->map(function ($method) {
+                        return [
+                            'type' => $method->method_type,
+                            'value' => $method->method_value,
+                        ];
+                    })->values(),
                 ];
             });
 
@@ -37,8 +40,11 @@ class IndustryContactController extends Controller
             'contact_name' => 'required|string|max:100',
             'company' => 'nullable|string|max:100',
             'progress_notes' => 'nullable|string',
-            'link_url' => 'nullable|url|max:255',
             'date_met' => 'nullable|date',
+
+            'contact_methods' => 'nullable|array',
+            'contact_methods.*.type' => 'required|string|max:50', // * for automatic indexing for every item in the array
+            'contact_methods.*.value' => 'required|string|max:255',
         ]);
 
         $contact = IndustryContact::create([
@@ -49,22 +55,20 @@ class IndustryContactController extends Controller
             'date_met' => $validated['date_met'] ?? null,
         ]);
 
-        if (!empty($validated['link_url'])) {
+        foreach ($validated['contact_methods'] ?? [] as $method) {
             IndustryContactMethod::create([
                 'contact_id' => $contact->contact_id,
-                'method_type' => 'link',
-                'method_value' => $validated['link_url'],
+                'method_type' => $method['type'],
+                'method_value' => $method['value'],
             ]);
         }
 
-        return response()->json($contact, 201);
+        return response()->json($contact->load('contactMethods'), 201);
     }
 
     public function show($profile, IndustryContact $industryContact)
     {
         $industryContact->load('contactMethods');
-
-        $link = $industryContact->contactMethods->firstWhere('method_type', 'link');
 
         return response()->json([
             'contact_id' => $industryContact->contact_id,
@@ -73,7 +77,12 @@ class IndustryContactController extends Controller
             'company' => $industryContact->company,
             'progress_notes' => $industryContact->progress_notes,
             'date_met' => $industryContact->date_met,
-            'link_url' => $link?->method_value,
+            'contact_methods' => $industryContact->contactMethods->map(function ($method) {
+                return [
+                    'type' => $method->method_type,
+                    'value' => $method->method_value,
+                ];
+            })->values(),
         ]);
     }
 
@@ -83,8 +92,11 @@ class IndustryContactController extends Controller
             'contact_name' => 'required|string|max:100',
             'company' => 'nullable|string|max:100',
             'progress_notes' => 'nullable|string',
-            'link_url' => 'nullable|url|max:255',
             'date_met' => 'nullable|date',
+
+            'contact_methods' => 'nullable|array',
+            'contact_methods.*.type' => 'required|string|max:50',
+            'contact_methods.*.value' => 'required|string|max:255',
         ]);
 
         $industryContact->update([
@@ -94,36 +106,17 @@ class IndustryContactController extends Controller
             'date_met' => $validated['date_met'] ?? null,
         ]);
 
-        $linkMethod = $industryContact
-            ->contactMethods()
-            ->where('method_type', 'link')
-            ->first();
+        $industryContact->contactMethods()->delete();
 
-        if (!empty($validated['link_url'])) {
-            if ($linkMethod) {
-                $linkMethod->update([
-                    'method_value' => $validated['link_url'],
-                ]);
-            } else {
-                IndustryContactMethod::create([
-                    'contact_id' => $industryContact->contact_id,
-                    'method_type' => 'link',
-                    'method_value' => $validated['link_url'],
-                ]);
-            }
-        } elseif ($linkMethod) {
-            $linkMethod->delete();
+        foreach ($validated['contact_methods'] ?? [] as $method) {
+            IndustryContactMethod::create([
+                'contact_id' => $industryContact->contact_id,
+                'method_type' => $method['type'],
+                'method_value' => $method['value'],
+            ]);
         }
 
-        return response()->json([
-            'contact_id' => $industryContact->contact_id,
-            'profile_id' => $industryContact->profile_id,
-            'contact_name' => $industryContact->contact_name,
-            'company' => $industryContact->company,
-            'progress_notes' => $industryContact->progress_notes,
-            'date_met' => $industryContact->date_met,
-            'link_url' => $validated['link_url'] ?? null,
-        ]);
+        return response()->json($industryContact->load('contactMethods'));
     }
 
     public function destroy($profile, IndustryContact $industryContact)

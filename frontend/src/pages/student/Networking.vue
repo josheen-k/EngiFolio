@@ -3,6 +3,7 @@
     <Navbar />
 
     <section class="container-lg py-5">
+      <!-- Elevator pitch -->
       <div class="pitch-box">
         <label class="pitch-label">Elevator pitch</label>
 
@@ -13,6 +14,7 @@
         ></textarea>
 
         <div class="pitch-actions">
+          <!-- save button of elevator pitch -->
           <button
             class="action-button small-button"
             @click="saveElevatorPitch"
@@ -50,6 +52,7 @@ import { RouterView, useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 import Navbar from '@/components/Navbar.vue'
 
+//gives this file information about the current route URL
 const route = useRoute()
 
 // Object to store data about the popup message
@@ -62,21 +65,31 @@ const showPopUp = (message, type) => {
   popUp.value = { show: true, message, type }
   setTimeout(() => popUp.value.show = false, popUpTime)
 }
+
+//give this files the ability to change route in code
 const router = useRouter()
 
+//create a reactive variable
 const currentTab = ref(route.name === 'networking-contacts' ? 'contacts' : 'events')
 
+//store pitch text
 const elevatorPitch = ref('')
+
+//store whether saving is happen
 const savingPitch = ref(false)
 
+//ask backend for save & put the result into elevator pitch
 const fetchElevatorPitch = async () => {
   const res = await api.get(`/profile/${route.params.id}/elevator-pitch`)
   elevatorPitch.value = res.data.pitch_text || ''
 }
 
+//save function
 const saveElevatorPitch = async () => {
+  //removes space from beginning and end
   const trimmedPitch = elevatorPitch.value.trim()
 
+  //if pitch is empty, show error popup and stop
   if (!trimmedPitch) {
     showPopUp("Elevator Pitch is empty. Enter in your pitch.", "error");
     return
@@ -85,23 +98,29 @@ const saveElevatorPitch = async () => {
   savingPitch.value = true
 
   try {
+    //sends the pitch to backend using PUT request
     await api.put(`/profile/${route.params.id}/elevator-pitch`, {
       pitch_text: trimmedPitch,
     })
 
     showPopUp("Your elevator pitch has been saved.", "success");
+    //if API fails, show error
   } catch {
     showPopUp("Error saving elevator pitch", "error");
-  }  
-  
+  }
+
+  //no matter success or not, stop saving state
   finally {
     savingPitch.value = false
   }
 }
 
+//runs fetchElevatorPitch() when this components appears
 onMounted(() => {
   fetchElevatorPitch()
 })
+
+//watch the current route name, whenever the route name changes -> it updates
 watch(
   () => route.name,
   (name) => {
@@ -109,11 +128,14 @@ watch(
   }
 )
 
+
 const switchNetworkingTab = (tab) => {
   currentTab.value = tab
 
+  //creates the URL we want to navigate to
   const target = tab === 'events' ? `/student/networking/${route.params.id}` : `/student/networking/${route.params.id}/contacts`
 
+  //give the toggle pill a tiny moment to slide -> more smooth
   setTimeout(() => {
     router.push(target)
   }, 100)
@@ -165,8 +187,7 @@ const switchNetworkingTab = (tab) => {
 
 .action-button {
   font-family: 'Montserrat Alternates', sans-serif;
-  background: #555555;
-  color: #ffffff;
+  background: #e6e6e6;
   padding: 0.85rem 1.4rem;
   border: none;
   border-radius: 999px;
@@ -179,7 +200,8 @@ const switchNetworkingTab = (tab) => {
 
 .action-button:hover {
   transform: translateY(-1px);
-  background: #333333;
+  background: #666666;
+  color: #ffffff;
 }
 
 .small-button {
@@ -282,13 +304,13 @@ const switchNetworkingTab = (tab) => {
 
 .popUp-msg {
   position: fixed;
-  top: 5rem;   
+  top: 5rem;
   left: 0;
   right: 0;
   margin-inline: auto;
   width: max-content;
   padding: 0.75rem 2rem;
-  border-radius: 2rem; 
+  border-radius: 2rem;
   font-family: 'Maven Pro', sans-serif;
   font-size: 1.15rem;
 }
@@ -315,13 +337,13 @@ const switchNetworkingTab = (tab) => {
 
 .popUp-msg {
   position: fixed;
-  top: 5rem;   
+  top: 5rem;
   left: 0;
   right: 0;
   margin-inline: auto;
   width: max-content;
   padding: 0.75rem 2rem;
-  border-radius: 2rem; 
+  border-radius: 2rem;
   font-family: 'Maven Pro', sans-serif;
   font-size: 1.15rem;
 }
@@ -336,33 +358,15 @@ const switchNetworkingTab = (tab) => {
   color: #fff;
 }
 
-
-.action-button {
-  border: 1px solid transparent;
-  cursor: pointer;
-  background: #13202c;
-  color: #ffffff;
-  padding: 0.85rem 1.4rem;
-  transition:
-    transform 0.18s ease,
-    background-color 0.18s ease,
-    border-color 0.18s ease;
-}
-
-.action-button:hover {
-  transform: translateY(-1px);
-}
-
-
 .popUp-msg {
   position: fixed;
-  top: 5rem;   
+  top: 5rem;
   left: 0;
   right: 0;
   margin-inline: auto;
   width: max-content;
   padding: 0.75rem 2rem;
-  border-radius: 2rem; 
+  border-radius: 2rem;
   font-family: 'Maven Pro', sans-serif;
   font-size: 1.15rem;
 }

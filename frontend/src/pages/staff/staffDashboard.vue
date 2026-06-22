@@ -82,10 +82,10 @@
             class="activity-item clickable"
             @click="openEntry(entry)"
           >
-            <div
-              v-if="!readEntries.includes(entry.entry_id)"
-              class="activity-dot"
-            ></div>
+          <div
+          v-if="!hasFeedback(entry) && !readEntries.includes(entry.entry_id)"
+          class="activity-dot"
+          ></div>
 
             <div class="activity-content">
               <div class="activity-top">
@@ -139,7 +139,7 @@ import StaffNavbar from '@/components/StaffNavbar.vue'
 
 const router = useRouter()
 
-const staffUserId = 4
+const staffUserId = 4 // staff user id hardcoded to 4 for the project scope
 
 const students = ref([])
 const allEntries = ref([])
@@ -160,7 +160,7 @@ const fetchDashboardData = async () => {
       api.get(`/competency-entries/${student.profile_id}`)
     )
 
-    const entryResponses = await Promise.allSettled(entryRequests)
+    const entryResponses = await Promise.allSettled(entryRequests) // promise all settled is used to return all requests, even if one fails
 
     allEntries.value = entryResponses.flatMap((result, index) => {
       if (result.status !== 'fulfilled') {
@@ -186,17 +186,20 @@ const fetchDashboardData = async () => {
 }
 
 const hasFeedback = (entry) => {
-  return entry.competency_feedback?.length > 0
+  return entry.competency_feedback?.length > 0 // optional chaining used here
 }
 
+// count the pending feedback entries
 const pendingFeedbackCount = computed(() => {
   return allEntries.value.filter(entry => !hasFeedback(entry)).length
 })
 
+// count the reviewed feedback entries
 const reviewedEntriesCount = computed(() => {
   return allEntries.value.filter(entry => hasFeedback(entry)).length
 })
 
+// recent entries, restricted to 5 at most
 const recentEntries = computed(() => {
   return [...allEntries.value]
     .sort(
@@ -206,9 +209,11 @@ const recentEntries = computed(() => {
     .slice(0, 5)
 })
 
+// unread notification(for entries)
 const unreadCount = computed(() => {
   return recentEntries.value.filter(
     entry =>
+      !hasFeedback(entry) &&
       !readEntries.value.includes(entry.entry_id)
   ).length
 })
@@ -219,13 +224,14 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString()
 }
 
+// open entry mechanism
 const openEntry = (entry) => {
   if (!readEntries.value.includes(entry.entry_id)) {
     readEntries.value.push(entry.entry_id)
 
     localStorage.setItem(
       'readEntries',
-      JSON.stringify(readEntries.value)
+      JSON.stringify(readEntries.value) // conversion into a string
     )
   }
 
@@ -240,8 +246,6 @@ onMounted(fetchDashboardData)
   min-height: 100vh;
   background: #f8f8fb;
 }
-
-/* Hero */
 
 .dash {
   background:
@@ -306,10 +310,11 @@ onMounted(fetchDashboardData)
 
 .stat-card strong {
   display: block;
-  font-family: 'Martel', serif;
+  font-family: 'Martian Mono', monospace;
   font-size: 2rem;
   margin-top: 8px;
   color: #222;
+  font-weight: 200;
 }
 
 .stat-card.warning strong {
@@ -340,8 +345,8 @@ onMounted(fetchDashboardData)
   text-decoration: none;
   color: inherit;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transform 0.2s ease,
+  box-shadow 0.2s ease;
 }
 
 .dashboard-card:hover {
@@ -428,7 +433,7 @@ onMounted(fetchDashboardData)
   border-radius: 50%;
   background: #302a86;
   margin-top: 6px;
-  flex-shrink: 0;
+  flex-shrink: 0; /*use to maintain the size*/
 }
 
 .activity-content {
@@ -481,8 +486,8 @@ onMounted(fetchDashboardData)
 .clickable {
   cursor: pointer;
   transition:
-    background 0.2s ease,
-    padding-left 0.2s ease;
+  background 0.2s ease,
+  padding-left 0.2s ease;
 }
 
 .clickable:hover {

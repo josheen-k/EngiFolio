@@ -510,7 +510,7 @@ const checkEmailAvailable = async () => {
 
 // Map Laravel validation errors to short messages for inline field feedback.
 const getCreateUserErrorMessage = (error) => {
-  const errors = error.response?.data?.errors
+  const errors = error.response?.data?.errors // ?.
   if (errors?.username?.length) {
     return 'This ID is already in use.'
   }
@@ -538,7 +538,7 @@ const createUser = async () => {
 
   try {
     creatingUser.value = true
-    const payload = { ...newUser.value }
+    const payload = { ...newUser.value } // Create a copy of the newUser object to avoid mutating it directly when deleting year_started for non-students.
     if (payload.role_id !== 3) {
       delete payload.year_started
     }
@@ -579,8 +579,8 @@ const viewGoals = (user) => {
 }
 
 const escapeCsvCell = (value) => {
-  const text = String(value ?? '')
-  return `"${text.replace(/"/g, '""')}"`
+  const text = String(value ?? '') // Convert null/undefined to empty string and ensure value is a string for replacement
+  return `"${text.replace(/"/g, '""')}"` //replace " with "" and wrap in quotes to escape for CSV
 }
 
 const exportUsersCsv = () => {
@@ -643,7 +643,7 @@ const exportUsersCsv = () => {
             user.email,
             user.username || '-',
             user.notStarted,
-            user.levels?.Emerging ?? 0,
+            user.levels?.Emerging ?? 0, // Use optional chaining ?. and nullish coalescing to handle missing levels or counts
             user.levels?.Developing ?? 0,
             user.levels?.Proficient ?? 0,
             user.levels?.Confident ?? 0
@@ -662,7 +662,7 @@ const exportUsersCsv = () => {
       lines.push(escapeCsvCell('No staff members found.'))
     } else {
       staff.forEach((user) => {
-        lines.push([user.name, user.email, user.username || '-'].map(escapeCsvCell).join(','))
+        lines.push([user.name, user.email, user.username || '-'].map(escapeCsvCell).join(',')) // Map each field to an escaped CSV cell and join with commas
       })
     }
     lines.push('')
