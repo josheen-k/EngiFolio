@@ -38,7 +38,7 @@
   </div>
 
   <div class="legend">
-    <span class="legend-title">Legend:</span>
+    <span class="legend-title">Entries submitted:</span>
 
     <span class="legend-pill low">0-5</span>
     <span class="legend-pill medium">6-10</span>
