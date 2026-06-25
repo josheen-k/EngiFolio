@@ -127,8 +127,7 @@
                   </li>
 
                   <!--if more than 3 steps, show extra steps no.-->
-                  <li v-if="(goal.action_steps || []).length > 3" class="action more-steps">
-                    <span class="ac-check"></span>
+                  <li v-if="(goal.action_steps || []).length > 3" class="action more-steps" @click="goToGoal(goal.goal_id)">
                     <span class="ac-name">+ {{ (goal.action_steps).length-3 }} more steps</span>
                   </li>
                 </ul>
