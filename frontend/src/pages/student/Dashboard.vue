@@ -118,9 +118,9 @@
               </div>
 
               <ul class="action-list" v-if="(goal.action_steps).length">
-                <li class="action" v-for="step in (goal.action_steps).slice(0, 3)" :key="step.step_id">
-                  <span class="ac-check"></span>
-                  <span class="ac-name">{{ step.step_description }}</span>
+                <li class="action" v-for="step in (goal.action_steps).slice(0, 3)" :key="step.step_id"@click="toggleStep(step)">
+                  <span class="ac-check" :class="{'ac-check-done': step.is_completed}"></span>
+                  <span class="ac-name" :class="{'ac-name-done': step.is_completed}">{{ step.step_description }}</span>
                 </li>
                 <li v-if="(goal.action_steps || []).length > 3" class="action more-steps">
                   <span class="ac-check"></span>
@@ -315,6 +315,20 @@
 
     // priority filtering will be added whe backend supports that
     const priorityGoals = ref([])
+
+    const toggleStep = async (step)=> {
+      const newVal = !step.is_completed
+      step.is_completed = newVal
+      try {
+        await api.put(`/action-steps/${step.step_id}`, { 
+          is_completed: newVal,
+          profile_id: route.params.id
+        })
+      } catch (error) {
+        step.is_completed = !newVal
+        console.error('Failed to update step:', error)
+      }
+    }
     
     const allEvents = ref([])
     const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -745,6 +759,20 @@
 .ac-name-done {
   text-decoration: line-through;
   color: #aaaaaa;
+}
+
+.ac-check {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 0.25rem;
+  border: 1.5px solid #cccccc;
+  flex-shrink: 0;
+  transition: background 0.7s ease, border-color 0.7s ease;
+}
+
+.ac-check-done {
+  background: #898989;
+  border-color: #898989;
 }
 
 .week-card {
