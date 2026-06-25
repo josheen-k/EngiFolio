@@ -104,31 +104,37 @@
 
     <!--goals & weekly evets-->
     <div class="row g-5 mb-5">
-      <!--TODO- incomplete goals sorted by nearest deadline only, no user priority system yet-->
-      <!--TODO- action steps for goals are read only, cant tick them off, need to add a tracked state for their completion in backend-->
       <div class="col-12 col-lg-6">
         <h2 class="sec-title text-center">To Do</h2>
         <div class="todo-card">
 
           <div v-if="priorityGoals.length">
-            <div class="goal-grp" v-for="goal in priorityGoals" :key="goal.goal_id">
-              <div class="goal-row">
-                <p class="goal-heading">Goal: {{ goal.goal_description }}</p>
-                <span v-if="goal.end_date" class="goal-deadline">Due {{ goal.end_date }}</span>
-              </div>
+            <!--TransitionGroup animates goals entering and leaving list-->
+            <TransitionGroup name="goal-fade" tag="div">
+              <div class="goal-grp" v-for="goal in priorityGoals" :key="goal.goal_id">
+                <div class="goal-row">
 
-              <ul class="action-list" v-if="(goal.action_steps).length">
-                <li class="action" v-for="step in (goal.action_steps).slice(0, 3)" :key="step.step_id"@click="toggleStep(step)">
-                  <span class="ac-check" :class="{'ac-check-done': step.is_completed}"></span>
-                  <span class="ac-name" :class="{'ac-name-done': step.is_completed}">{{ step.step_description }}</span>
-                </li>
-                <li v-if="(goal.action_steps || []).length > 3" class="action more-steps">
-                  <span class="ac-check"></span>
-                  <span class="ac-name">+ {{ (goal.action_steps).length-3 }} more steps</span>
-                </li>
-              </ul>
-              <p v-else class="no-steps">No action steps added yet.</p>
-            </div>
+                  <!--clicking goal heading goes to goals page and opens that goal's action steps-->
+                  <p class="goal-heading" @click="goToGoal(goal.goal_id)">Goal: {{ goal.goal_description }}</p>
+                  <span v-if="goal.end_date" class="goal-deadline">Due {{ goal.end_date }}</span>
+                </div>
+
+                <ul class="action-list" v-if="(goal.action_steps).length">
+                  <!-- only show first 3 steps, clicking step toggles completion state -->
+                  <li class="action" v-for="step in (goal.action_steps).slice(0, 3)" :key="step.step_id" @click="toggleStep(step, goal)">
+                    <span class="ac-check" :class="{'ac-check-done': step.is_completed}"></span>
+                    <span class="ac-name" :class="{'ac-name-done': step.is_completed}">{{ step.step_description }}</span>
+                  </li>
+
+                  <!--if more than 3 steps, show extra steps no.-->
+                  <li v-if="(goal.action_steps || []).length > 3" class="action more-steps">
+                    <span class="ac-check"></span>
+                    <span class="ac-name">+ {{ (goal.action_steps).length-3 }} more steps</span>
+                  </li>
+                </ul>
+                <p v-else class="no-steps">No action steps added yet.</p>
+              </div>
+            </TransitionGroup>
           </div>
           <p v-else class="empty-sub text-center py-3">No active goals right now.</p>
         </div>
@@ -313,21 +319,55 @@
       }   
     }
 
-    // priority filtering will be added whe backend supports that
-    const priorityGoals = ref([])
+    // use computed list of max 3 incomplete goals sorted by deadline
+    const priorityGoals = computed(() => {
+     // exclude goals already completed (complete status=3) using filter
+      return userGoals.value.filter(goal => Number(goal.goal_status_id) !== 3).sort((a, b)=> {
+        if (!a.end_date) {
+          return 1
+        }
+        if (!b.end_date) {
+          return -1
+        }
+        // sort ascending by end date, nearest first
+        return new Date(a.end_date) - new Date(b.end_date)
+      }).slice(0, 3) // only show top 3 on dash
+    })
 
-    const toggleStep = async (step)=> {
+    // toggle an action step's completion state
+    // logic: update ui before api call, revert if api fails
+    const toggleStep = async (step, goal)=> {
       const newVal = !step.is_completed
+      // update local ui first
       step.is_completed = newVal
       try {
         await api.put(`/action-steps/${step.step_id}`, { 
           is_completed: newVal,
           profile_id: route.params.id
         })
+        // if all steps now completed, mark goal as completed too
+        const allDone = goal.action_steps.every(s=> s.is_completed)
+        // goal moves out of priority and fade transition triggers 
+        if (allDone && newVal) {
+          goal.goal_status_id = 3
+          await api.put(`/smart-goals/${goal.goal_id}`, {
+            profile_id: route.params.id,
+            goal_status_id: 3
+          })
+        }
       } catch (error) {
+        // revert if failed
         step.is_completed = !newVal
         console.error('Failed to update step:', error)
       }
+    }
+
+    // go to goals page and open action steps popup for this goal
+    function goToGoal(goalId) {
+      router.push({
+        path: `/goals/${route.params.id}`,
+        query: { goalId }
+      })
     }
     
     const allEvents = ref([])
@@ -440,25 +480,9 @@
         });
       
       userGoals.value = Array.isArray(response.data) ? response.data : [];
-
-      let incompleteGoals = userGoals.value.filter(goal => {
-        return Number(goal.goal_status_id) !== 3;
-      });
-
-      incompleteGoals.sort((a, b) => {
-        // Goals without end dates go to the very end
-        if (!a.end_date) return 1;
-        if (!b.end_date) return -1;
-        
-        return new Date(a.end_date) - new Date(b.end_date);
-      });
-
-      priorityGoals.value = incompleteGoals.slice(0, 3);
-
       } catch (error) {
         console.error("Error fetching goals:", error);
         userGoals.value = [];
-        priorityGoals.value = [];
       }
     };
 
@@ -712,6 +736,7 @@
   font-size: clamp(0.85rem, 2vw, 1rem);
   font-weight: 500;
   color: #222222;
+  cursor: pointer;
   margin-bottom: 0;
   flex: 1;
 }
@@ -773,6 +798,28 @@
 .ac-check-done {
   background: #898989;
   border-color: #898989;
+}
+
+.goal-fade-enter-active {
+  transition: all 0.4s ease;
+}
+
+.goal-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.goal-fade-enter-from {
+  opacity: 0;
+  transform: translateY(0.8rem);
+}
+
+.goal-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-1.2rem);
+}
+
+.goal-fade-move {
+  transition: transform 0.4s ease;
 }
 
 .week-card {

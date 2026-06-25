@@ -755,7 +755,15 @@ const loadDefaultPlanForNewGoals = async () => {
 // Initialize required data as soon as the page is mounted.
 onMounted(() => {
   loadDefaultPlanForNewGoals()
-  loadGoals()
+  loadGoals().then(() => {
+    if (route.query.goalId) {
+      const id = Number(route.query.goalId)
+      const match = goals.value.find(g=> g.goal_id===id)
+      if (match) {
+        editSteps(match)
+      }
+    }
+  })
 })
 
 const newGoal = () => {
